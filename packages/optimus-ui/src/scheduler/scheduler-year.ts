@@ -111,7 +111,7 @@ export class SchedulerYearView extends SchedulerViewBase {
                     date,
                     otherMonth: date.getMonth() !== monthIndex,
                     weekend: date.getDay() === 0 || date.getDay() === 6,
-                    today: isToday(date),
+                    today: isToday(date, this.state.now()),
                     count: dayEvents.length,
                     // El punto lleva el color del primer evento del día, no un acento genérico: a
                     // este zoom el color es la única pista de QUÉ pasa ese día.

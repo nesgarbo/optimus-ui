@@ -342,7 +342,7 @@ export class SchedulerMonthView extends SchedulerViewBase {
                     key,
                     date,
                     end: endOfDay(date),
-                    today: isToday(date),
+                    today: isToday(date, this.state.now()),
                     weekend: date.getDay() === 0 || date.getDay() === 6,
                     otherMonth: date.getMonth() !== anchorMonth,
                     count: all.length + barRows,

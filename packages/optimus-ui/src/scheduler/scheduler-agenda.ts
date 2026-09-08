@@ -106,7 +106,7 @@ export class SchedulerAgendaView extends SchedulerViewBase {
                     formattedDate: date.toLocaleDateString(this.locale(), { month: 'long', day: 'numeric', year: 'numeric' }),
                     dayName: date.toLocaleDateString(this.locale(), { weekday: 'long' }).toUpperCase(),
                     count: sorted.length,
-                    today: isToday(date)
+                    today: isToday(date, this.state.now())
                 };
                 const binding = this.bindCellRaw(`agenda|${key}`, {
                     date,

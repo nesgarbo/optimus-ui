@@ -217,7 +217,8 @@ export class SchedulerTimelineView extends SchedulerViewBase {
             dayBounds: this.state.dayBounds(),
             slotMinutes: this.state.timelineSlotMinutes(),
             firstDayOfWeek: this.state.firstDayOfWeek(),
-            locale: this.locale()
+            locale: this.locale(),
+            now: this.state.now()
         })
     );
 

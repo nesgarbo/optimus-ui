@@ -429,7 +429,7 @@ export class SchedulerTimeGridView extends SchedulerViewBase {
                 resource,
                 resourceLabel,
                 end: endOfDay(date),
-                today: isToday(date),
+                today: isToday(date, this.state.now()),
                 weekend: date.getDay() === 0 || date.getDay() === 6,
                 weekdayLabel: date.toLocaleDateString(this.locale(), { weekday: 'short' }).toUpperCase(),
                 cell: this.bindCell(date, dayEvents, { ...cellExtra, label: date.toLocaleDateString(this.locale(), { weekday: 'long', day: 'numeric' }) }),

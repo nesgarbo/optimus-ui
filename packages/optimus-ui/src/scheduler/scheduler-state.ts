@@ -493,6 +493,17 @@ export class SchedulerState {
     /** The target timezone, when the page asked for one. */
     readonly timeZone = computed(() => this.inputs.timeZone());
 
+    /**
+     * Now, as the views see it.
+     *
+     * Everything that means "today" or "right now" has to be asked in the RENDERED zone: at 23:00 in
+     * Madrid it is already tomorrow in Tokyo, and a grid showing Tokyo that highlights the Madrid
+     * day is highlighting the wrong column.
+     */
+    now(): Date {
+        return this.toDisplay(new Date());
+    }
+
     /** Label of the rendered zone, for the corner of the time gutter. */
     readonly timeZoneLabel = computed(() => zoneLabel(this.inputs.date(), this.inputs.timeZone()));
 
@@ -776,9 +787,9 @@ export class SchedulerState {
         this.inputs.setView('day');
     }
 
-    /** Moves the anchor date to today. */
+    /** Moves the anchor date to today — today in the rendered zone, which is the one on screen. */
     goToToday(): void {
-        this.inputs.setDate(startOfDay(new Date()));
+        this.inputs.setDate(startOfDay(this.now()));
     }
 
     /** Switches view, keeping the anchor date. */

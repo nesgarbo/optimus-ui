@@ -85,6 +85,13 @@ export interface SchedulerTimelineAxisOptions {
     firstDayOfWeek: number;
     /** Locale every label is formatted in. */
     locale?: string;
+    /**
+     * Now, in the zone being rendered.
+     *
+     * Passed in rather than read from the clock: with a target timezone it is already tomorrow over
+     * there at 23:00 here, and an axis that marks the local day marks the wrong column.
+     */
+    now?: Date;
 }
 
 /**
@@ -122,7 +129,7 @@ function timeColumns(scale: SchedulerTimelineScale, options: SchedulerTimelineAx
                 end: addMinutes(start, slotMinutes),
                 label: formatTime(start, locale),
                 major: slot.major,
-                today: isToday(day)
+                today: isToday(day, options.now)
             });
         }
     }
@@ -141,7 +148,7 @@ function daySlots(options: SchedulerTimelineAxisOptions): SchedulerTimelineSlot[
         // La regla sólida cae al empezar la semana: es lo que deja contar semanas de un vistazo en
         // un eje de treinta y una columnas iguales.
         major: day.getDay() === firstDayOfWeek,
-        today: isToday(day)
+        today: isToday(day, options.now)
     }));
 }
 
@@ -150,12 +157,12 @@ function monthSlots(options: SchedulerTimelineAxisOptions): SchedulerTimelineSlo
     const { range, locale } = options;
     const slots: SchedulerTimelineSlot[] = [];
     const first = startOfMonth(range.start);
+    const now = options.now ?? new Date();
 
     for (let index = 0; ; index++) {
         const start = new Date(first.getFullYear(), first.getMonth() + index, 1);
         if (start >= range.end) break;
         const end = new Date(first.getFullYear(), first.getMonth() + index + 1, 1);
-        const now = new Date();
         slots.push({
             key: `${start.getFullYear()}-${start.getMonth()}`,
             start,

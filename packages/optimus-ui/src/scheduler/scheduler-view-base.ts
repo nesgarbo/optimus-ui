@@ -121,7 +121,7 @@ export abstract class SchedulerViewBase {
             dateKey: dayKey(date),
             events,
             count: events.length,
-            today: isToday(date),
+            today: isToday(date, this.state.now()),
             weekend: date.getDay() === 0 || date.getDay() === 6,
             otherMonth: false,
             businessHours: this.state.isBusinessTime(date),
@@ -254,6 +254,6 @@ export abstract class SchedulerViewBase {
         this.state.handleContextMenu(originalEvent, { date, events });
     }
 
-    /** Today's local midnight, recomputed per render pass so the highlight does not go stale. */
-    protected readonly todayKey = signal(dayKey(startOfDay(new Date())));
+    /** Today's midnight in the rendered zone, so the highlight does not go stale. */
+    protected readonly todayKey = computed(() => dayKey(startOfDay(this.state.now())));
 }
