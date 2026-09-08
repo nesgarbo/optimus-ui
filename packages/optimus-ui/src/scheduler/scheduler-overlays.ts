@@ -29,7 +29,10 @@ import { SCHEDULER_STATE } from './scheduler-state';
  * the "+N more" list used before it had one.
  */
 function anchorOffset(host: HTMLElement, anchor?: HTMLElement): { top: number; start: number } | null {
-    if (!anchor?.isConnected) return null;
+    // getBoundingClientRect y getComputedStyle no existen fuera del navegador: el servidor tiene
+    // árbol de elementos pero no motor de layout, y un overlay sin posicionar es exactamente lo que
+    // debe salir en el HTML prerenderizado.
+    if (!anchor?.isConnected || typeof anchor.getBoundingClientRect !== 'function' || typeof getComputedStyle !== 'function') return null;
 
     const parent = (host.offsetParent as HTMLElement | null) ?? host.ownerDocument.body;
     const anchorBox = anchor.getBoundingClientRect();

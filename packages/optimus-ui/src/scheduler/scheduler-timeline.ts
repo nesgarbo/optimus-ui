@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, ElementRef, ViewEncapsulation, computed, input, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, PLATFORM_ID, ViewEncapsulation, computed, inject, input, signal, viewChild } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { NgTemplateOutlet } from '@angular/common';
 import type { SchedulerEvent, SchedulerResource, SchedulerTimelineScale, SchedulerViewType } from '@openng/optimus-ui/types/scheduler';
 import { isResourceTimeline, timelineScaleOf, toDate } from './scheduler-date';
@@ -404,10 +405,20 @@ export class SchedulerTimelineView extends SchedulerViewBase {
 
     private readonly scroll = viewChild<ElementRef<HTMLElement>>('scroll');
 
+    /**
+     * Whether there is a real DOM to measure.
+     *
+     * Server-side rendering has an element tree but not a layout engine: `getBoundingClientRect` and
+     * `scrollIntoView` simply are not there. Windowing and the scroll-to-today both need real
+     * geometry, so on the server the whole axis renders and nothing is measured — which is the right
+     * output for prerendered HTML anyway.
+     */
+    private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
+
     /** Reads the scroll offset back on every scroll of the axis. */
     protected onScroll(): void {
         const host = this.scroll()?.nativeElement;
-        if (!host) return;
+        if (!host || !this.browser) return;
         // Math.abs porque en RTL scrollLeft es negativo en los navegadores basados en Chromium: la
         // ventana se calcula sobre la distancia recorrida, que no tiene signo.
         this.scrollOffset.set(Math.abs(host.scrollLeft));
@@ -422,6 +433,8 @@ export class SchedulerTimelineView extends SchedulerViewBase {
      * computing the window from the token would then window the wrong columns.
      */
     private measure(host: HTMLElement): void {
+        if (!this.browser) return;
+
         const viewport = host.clientWidth;
         if (viewport && viewport !== this.viewportWidth()) this.viewportWidth.set(viewport);
 
@@ -458,7 +471,7 @@ export class SchedulerTimelineView extends SchedulerViewBase {
     private scrollToToday(): void {
         const axis = this.axis();
         const host = this.scroll()?.nativeElement;
-        if (!host || !axis.multiDay) return;
+        if (!host || !this.browser || !axis.multiDay) return;
 
         const range = this.state.range();
         const key = `${this.viewType()}|${range.start.getTime()}|${range.end.getTime()}`;

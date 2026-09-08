@@ -159,6 +159,17 @@ function cellUnder(clientX: number, clientY: number): CellHit | null {
     return null;
 }
 
+/**
+ * Whether there is a browser to interact with.
+ *
+ * Nothing in here can run server-side — there is no pointer — but `teardown` is reached anyway,
+ * because prerendering renders the component and then destroys it. Removing a listener that was
+ * never added has to be a no-op rather than a `ReferenceError`.
+ */
+function hasBrowser(): boolean {
+    return typeof window !== 'undefined' && typeof document !== 'undefined';
+}
+
 /** Whether a point is inside a box. */
 function inside(box: DOMRect, clientX: number, clientY: number): boolean {
     return clientX >= box.left && clientX < box.right && clientY >= box.top && clientY < box.bottom;
@@ -308,6 +319,7 @@ export class SchedulerDragController {
             hit: under
         };
 
+        if (!hasBrowser()) return;
         window.addEventListener('pointermove', this.onPointerMove, true);
         window.addEventListener('pointerup', this.onPointerUp, true);
         window.addEventListener('pointercancel', this.onPointerCancel, true);
@@ -331,7 +343,7 @@ export class SchedulerDragController {
     private readonly onPointerMove = (originalEvent: PointerEvent): void => {
         if (!this.session) return;
         this.queued = originalEvent;
-        if (this.frame) return;
+        if (this.frame || !hasBrowser()) return;
         this.frame = requestAnimationFrame(() => {
             this.frame = 0;
             const queued = this.queued;
@@ -350,7 +362,7 @@ export class SchedulerDragController {
             session.started = true;
             // Una selección ya empezada sigue viva y el navegador la arrastraría con el puntero: se
             // limpia al cruzar el umbral, que es cuando esto pasa a ser un arrastre.
-            document.getSelection()?.removeAllRanges();
+            document.getSelection?.()?.removeAllRanges();
             const payload = this.payload(originalEvent, { start: new Date(session.baseStart), end: new Date(session.baseEnd), resourceId: session.baseResourceId, allDay: session.baseAllDay }, session);
             session.kind === 'move' ? this.deps.emitDragStart(payload) : this.deps.emitResizeStart(payload);
         }
@@ -466,13 +478,15 @@ export class SchedulerDragController {
     }
 
     private teardown(): void {
+        this.session = null;
+        this.queued = null;
+        if (!hasBrowser()) return;
+
         if (this.frame) cancelAnimationFrame(this.frame);
         this.frame = 0;
-        this.queued = null;
         window.removeEventListener('pointermove', this.onPointerMove, true);
         window.removeEventListener('pointerup', this.onPointerUp, true);
         window.removeEventListener('pointercancel', this.onPointerCancel, true);
-        this.session = null;
     }
 
     /** Drops any listener still attached, for when the Scheduler goes away mid-drag. */
