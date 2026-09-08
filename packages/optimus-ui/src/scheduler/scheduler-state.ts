@@ -1,7 +1,19 @@
 import { InjectionToken, Signal, computed, signal } from '@angular/core';
-import type { SchedulerBlockedInterval, SchedulerCategory, SchedulerDateSelectionMode, SchedulerDragPayload, SchedulerDropInfo, SchedulerEvent, SchedulerResource, SchedulerViewType } from '@openng/optimus-ui/types/scheduler';
+import type {
+    SchedulerAppointmentSlot,
+    SchedulerAppointmentSlotDisplay,
+    SchedulerBlockedInterval,
+    SchedulerCategory,
+    SchedulerDateSelectionMode,
+    SchedulerDragPayload,
+    SchedulerDropInfo,
+    SchedulerEvent,
+    SchedulerResource,
+    SchedulerViewType
+} from '@openng/optimus-ui/types/scheduler';
 import { addDays, dayKey, formatTimeRange, navigate, startOfDay, timelineScaleOf, toDate, viewRange, type SchedulerRange } from './scheduler-date';
 import { expandEvents } from './scheduler-recurrence';
+import { fromDisplayTime, toDisplayTime, zoneLabel } from './scheduler-timezone';
 import { SchedulerDragController, applyPendingChanges, type SchedulerDragTarget, type SchedulerPendingChange } from './scheduler-drag';
 
 /**
@@ -21,11 +33,7 @@ import { SchedulerDragController, applyPendingChanges, type SchedulerDragTarget,
 export const SCHEDULER_STATE = new InjectionToken<SchedulerState>('SCHEDULER_STATE');
 
 /**
- * Views this build actually renders.
- *
- * The remaining five the compound API declares (resourceDay, resourceWeek, resourceMonth and the two
- * remaining date views) exist as scopes so their definitions can be declared, but they have no
- * renderer yet, so they are not offered by the view selector.
+ * Views this build renders, which is what the view selector offers when the page declares no scopes.
  *
  * @internal
  */
@@ -35,6 +43,12 @@ export const SCHEDULER_IMPLEMENTED_VIEWS: SchedulerViewType[] = [
     'month',
     'agenda',
     'year',
+    'resourceDay',
+    'resourceWeek',
+    'resourceMonth',
+    'dateDay',
+    'dateWeek',
+    'dateMonth',
     'timeline',
     'timelineDay',
     'timelineWeek',
@@ -128,6 +142,7 @@ export interface SchedulerStateInputs {
     timelineVirtualOverscan: Signal<number>;
     timelineVirtualEventBuffer: Signal<number>;
     rtl: Signal<boolean>;
+    timeZone: Signal<string | undefined>;
     dayStartHour: Signal<number>;
     dayEndHour: Signal<number>;
     minEventMinutes: Signal<number>;
@@ -141,7 +156,18 @@ export interface SchedulerStateInputs {
     dragMinDistance: Signal<number>;
     eventAllow: Signal<((info: SchedulerDropInfo) => boolean) | undefined>;
     blockedIntervals: Signal<SchedulerBlockedInterval[]>;
+    appointmentSlots: Signal<SchedulerAppointmentSlot[]>;
+    appointmentSlotDisplay: Signal<SchedulerAppointmentSlotDisplay>;
     dateSelection: Signal<SchedulerDateSelectionMode>;
+    groupByResource: Signal<boolean>;
+    groupByDate: Signal<boolean>;
+    resourceColumnMinWidth: Signal<string | undefined>;
+    adaptiveMode: Signal<boolean | 'auto'>;
+    adaptiveThreshold: Signal<number>;
+    selectedResourceId: Signal<string | number | undefined>;
+    setSelectedResourceId: (id: string | number | undefined) => void;
+    emitResourceClick: (resource: SchedulerResource) => void;
+    emitAdaptiveAutoSelect: (resource: SchedulerResource) => void;
     selectedDates: Signal<Date[]>;
     setSelectedDates: (dates: Date[]) => void;
     emitDragStart: (payload: SchedulerDragPayload) => void;
@@ -335,6 +361,52 @@ export class SchedulerState {
         }))
     );
 
+    /** How the available windows are drawn. */
+    readonly appointmentSlotDisplay = computed(() => this.inputs.appointmentSlotDisplay());
+
+    /** The available windows, with their instants resolved once. */
+    readonly appointmentSlots = computed(() =>
+        this.inputs.appointmentSlots().map((slot) => {
+            const start = toDate(slot.start);
+            const end = toDate(slot.end);
+            const capacity = slot.capacity;
+            const booked = slot.booked ?? 0;
+            return { ...slot, start, end, capacity, booked, full: capacity != null && booked >= capacity };
+        })
+    );
+
+    /**
+     * The windows that overlap a day, for one resource.
+     *
+     * Each one comes back with the fraction of the rendered hours it covers, so a view can draw it
+     * without redoing the geometry the time grid already knows.
+     */
+    slotsForColumn(date: Date, resourceId: string | number | undefined, bounds: { start: number; end: number }): { key: string; offset: number; size: number; label: string; full: boolean; slot: SchedulerAppointmentSlot }[] {
+        const slots = this.appointmentSlots();
+        if (!slots.length) return [];
+
+        const dayStart = startOfDay(date);
+        const from = dayStart.getTime() + bounds.start * 3_600_000;
+        const to = dayStart.getTime() + bounds.end * 3_600_000;
+        const span = to - from;
+        if (span <= 0) return [];
+
+        return slots
+            .filter((slot) => (slot.resourceId == null || slot.resourceId === resourceId) && slot.start.getTime() < to && slot.end.getTime() > from)
+            .map((slot, index) => {
+                const visibleStart = Math.max(slot.start.getTime(), from);
+                const visibleEnd = Math.min(slot.end.getTime(), to);
+                return {
+                    key: `${dayKey(date)}|${resourceId ?? ''}|${index}`,
+                    offset: (visibleStart - from) / span,
+                    size: (visibleEnd - visibleStart) / span,
+                    label: slot.capacity != null ? `${Math.max(slot.capacity - slot.booked, 0)}/${slot.capacity}` : '',
+                    full: slot.full,
+                    slot
+                };
+            });
+    }
+
     /**
      * Whether an instant falls in a blocked window.
      *
@@ -418,7 +490,46 @@ export class SchedulerState {
      * Everything downstream reads THIS and not the input, so no view has to know that recurrence
      * exists. A collection with no `rrule` in it comes back untouched, by identity.
      */
-    private readonly seriesEvents = computed(() => expandEvents(this.inputs.events(), this.expansionWindow(), this.inputs.defaultEventDuration()));
+    /** The target timezone, when the page asked for one. */
+    readonly timeZone = computed(() => this.inputs.timeZone());
+
+    /** Label of the rendered zone, for the corner of the time gutter. */
+    readonly timeZoneLabel = computed(() => zoneLabel(this.inputs.date(), this.inputs.timeZone()));
+
+    /**
+     * An instant as the date the views render, and back.
+     *
+     * With no target zone both are the identity, so nothing pays for the feature.
+     */
+    toDisplay(date: Date): Date {
+        return toDisplayTime(date, this.inputs.timeZone());
+    }
+
+    /** @see toDisplay */
+    fromDisplay(date: Date): Date {
+        return fromDisplayTime(date, this.inputs.timeZone());
+    }
+
+    /**
+     * The bound events shifted into the rendered zone.
+     *
+     * Shifting the DATA and not the renderers is what keeps the target zone from leaking into every
+     * view: the engine goes on doing local-time arithmetic, and the only places that convert back are
+     * the outputs, where a real instant is what the application needs.
+     */
+    private readonly zonedEvents = computed(() => {
+        const zone = this.inputs.timeZone();
+        const events = this.inputs.events();
+        if (!zone) return events;
+
+        return events.map((event) => ({
+            ...event,
+            start: this.toDisplay(toDate(event.start)),
+            ...(event.end != null ? { end: this.toDisplay(toDate(event.end)) } : {})
+        }));
+    });
+
+    private readonly seriesEvents = computed(() => expandEvents(this.zonedEvents(), this.expansionWindow(), this.inputs.defaultEventDuration()));
 
     readonly expandedEvents = computed(() => {
         // Dos capas y no una: la expansión de series depende SOLO de los datos y de la ventana, así
@@ -495,6 +606,104 @@ export class SchedulerState {
             active: !hidden.has(category.id)
         }));
     });
+
+    /** Whether a plain timed view should still break its columns down by resource. */
+    readonly groupByResource = computed(() => this.inputs.groupByResource());
+
+    /** Whether a plain timed view should break each date down by resource. */
+    readonly groupByDate = computed(() => this.inputs.groupByDate());
+
+    /** Minimum width of one column once the columns are per resource. */
+    readonly resourceColumnMinWidth = computed(() => this.inputs.resourceColumnMinWidth());
+
+    /**
+     * Whether the resource views are showing one resource at a time.
+     *
+     * `auto` turns it on past `adaptiveThreshold`, because the point of adaptive mode is that forty
+     * resource columns are forty columns of nothing: below the threshold, showing them all is both
+     * possible and more useful.
+     */
+    readonly adaptive = computed(() => {
+        const mode = this.inputs.adaptiveMode();
+        if (mode === false) return false;
+        return mode === true || this.inputs.resources().length >= this.inputs.adaptiveThreshold();
+    });
+
+    /** Id of the resource adaptive mode is focused on. */
+    readonly selectedResourceId = computed(() => this.inputs.selectedResourceId());
+
+    /** The resource adaptive mode is focused on, when there is one. */
+    readonly selectedResource = computed(() => {
+        const id = this.inputs.selectedResourceId();
+        return id != null ? this.resourceMap().get(id) : undefined;
+    });
+
+    /**
+     * The resources the grouped views should render.
+     *
+     * Outside adaptive mode that is all of them. Inside it, the selected resource plus its children,
+     * so picking a parent group still shows what is inside it.
+     */
+    readonly groupedResources = computed<SchedulerResource[]>(() => {
+        const all = this.inputs.resources();
+        if (!this.adaptive()) return all;
+
+        const selected = this.selectedResource();
+        if (!selected) return all.length ? [all[0]] : [];
+
+        const children = all.filter((resource) => resource.parentId === selected.id);
+        return children.length ? [selected, ...children] : [selected];
+    });
+
+    /**
+     * Picks the resource adaptive mode should focus on when the page has not chosen one.
+     *
+     * Reports it through `adaptiveAutoSelect` rather than silently deciding, so the application can
+     * mirror the choice in its own state — a selector that disagrees with the grid is worse than no
+     * selector.
+     */
+    autoSelectResource(): void {
+        if (!this.adaptive() || this.inputs.selectedResourceId() != null) return;
+
+        const events = this.visibleEvents();
+        const withEvents = this.inputs.resources().find((resource) => events.some((event) => this.eventBelongsTo(event, resource.id)));
+        const pick = withEvents ?? this.inputs.resources()[0];
+        if (!pick) return;
+
+        this.inputs.setSelectedResourceId(pick.id);
+        this.inputs.emitAdaptiveAutoSelect(pick);
+    }
+
+    /** A click on a resource row or column header. */
+    handleResourceClick(resource: SchedulerResource | null | undefined): void {
+        if (!resource) return;
+        if (this.adaptive()) this.inputs.setSelectedResourceId(resource.id);
+        this.inputs.emitResourceClick(resource);
+    }
+
+    /**
+     * The resources an event belongs to.
+     *
+     * `resourceIds` wins over `resourceId` so one appointment can occupy several columns — a meeting
+     * that books a room AND a projector is one event, not two.
+     */
+    resourceIdsOf(event: SchedulerEvent): (string | number)[] {
+        const many = event['resourceIds'];
+        if (Array.isArray(many)) return many.filter((id) => id != null);
+        return event.resourceId != null ? [event.resourceId] : [];
+    }
+
+    /**
+     * Whether an event belongs in a resource's column or lane.
+     *
+     * `null` asks for the unassigned bucket: an event with no resource, or with one that is not in
+     * the bound collection. Dropping those silently is the worst failure a scheduler has.
+     */
+    eventBelongsTo(event: SchedulerEvent, resourceId: string | number | null): boolean {
+        const ids = this.resourceIdsOf(event);
+        if (resourceId === null) return !ids.length || !ids.some((id) => this.resourceMap().has(id));
+        return ids.includes(resourceId);
+    }
 
     /** Resources indexed by id, for the event → resource lookup. */
     readonly resourceMap = computed(() => new Map(this.inputs.resources().map((resource) => [resource.id, resource])));
@@ -699,15 +908,22 @@ export class SchedulerState {
         this.contextMenu.set({ ...target, anchor: (originalEvent.currentTarget as HTMLElement) ?? undefined });
     }
 
+    /** Turns a payload's rendered dates back into the instants they stand for. */
+    private realise(payload: SchedulerDragPayload): SchedulerDragPayload {
+        if (!this.inputs.timeZone()) return payload;
+        return { ...payload, start: this.fromDisplay(payload.start), end: this.fromDisplay(payload.end) };
+    }
+
     /**
      * A click on an empty slot, which is how a new appointment starts.
      *
      * The date selection is applied BEFORE the output fires, so an application listening to
-     * `dateClick` already sees the selection the click produced.
+     * `dateClick` already sees the selection the click produced. The instants are converted out of
+     * the rendered zone first.
      */
     handleSlotClick(originalEvent: MouseEvent, start: Date, end: Date): void {
         this.selectDate(start);
-        this.inputs.emitSlotClick(originalEvent, start, end);
+        this.inputs.emitSlotClick(originalEvent, this.fromDisplay(start), this.fromDisplay(end));
     }
 
     /** Asks the application to edit an event. The Scheduler never mutates it itself. */
@@ -733,6 +949,8 @@ export class SchedulerState {
         this.morePopover.set({ date, events, anchor });
     }
 
+    /** Minutes one keyboard step moves or resizes an event: the same rounding a drag uses. */
+    readonly snapMinutes = computed(() => this.inputs.snapDuration());
     /**
      * Whether an event may be moved.
      *
@@ -787,11 +1005,13 @@ export class SchedulerState {
             next.delete(id);
             this.pendingChanges.set(next);
         },
-        emitDragStart: (payload) => this.inputs.emitDragStart(payload),
-        emitDrop: (payload) => this.inputs.emitDrop(payload),
-        emitResizeStart: (payload) => this.inputs.emitResizeStart(payload),
-        emitResize: (payload) => this.inputs.emitResize(payload),
-        emitResizeStop: (payload) => this.inputs.emitResizeStop(payload)
+        // Cada salida deshace el desplazamiento de zona: el componente pinta en la zona destino, la
+        // aplicación guarda instantes reales.
+        emitDragStart: (payload) => this.inputs.emitDragStart(this.realise(payload)),
+        emitDrop: (payload) => this.inputs.emitDrop(this.realise(payload)),
+        emitResizeStart: (payload) => this.inputs.emitResizeStart(this.realise(payload)),
+        emitResize: (payload) => this.inputs.emitResize(this.realise(payload)),
+        emitResizeStop: (payload) => this.inputs.emitResizeStop(this.realise(payload))
     });
 
     /**

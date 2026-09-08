@@ -247,6 +247,48 @@ export interface SchedulerBlockedInterval {
 }
 
 /**
+ * A window an appointment can be booked into.
+ *
+ * Availability is not the absence of events: a clinic with nothing booked at 3am is not open at 3am.
+ * Slots say where booking is possible, and they are drawn behind the events rather than as events,
+ * because a free slot is a property of the calendar and not an appointment.
+ *
+ * @group Interface
+ */
+export interface SchedulerAppointmentSlot {
+    /**
+     * First instant of the window.
+     */
+    start: Date | string | number;
+    /**
+     * First instant after it.
+     */
+    end: Date | string | number;
+    /**
+     * Resource the window belongs to. Left out, it applies to every resource.
+     */
+    resourceId?: string | number;
+    /**
+     * How many appointments fit. Rendered as the slot's label when there is room for it.
+     */
+    capacity?: number;
+    /**
+     * How many are already taken. A slot with `booked >= capacity` is drawn as full.
+     */
+    booked?: number;
+}
+
+/**
+ * How available slots are drawn.
+ *
+ * `overlay` is a band behind the events, `grid` tints the cells the slot covers, and `indicator` is
+ * a marker on the edge of the column for a calendar too dense to tint.
+ *
+ * @group Types
+ */
+export type SchedulerAppointmentSlotDisplay = 'overlay' | 'grid' | 'indicator';
+
+/**
  * How clicking a date builds a selection.
  *
  * @group Types
@@ -299,9 +341,10 @@ export interface SchedulerDropInfo {
  */
 export interface SchedulerDragPayload {
     /**
-     * Pointer event that produced it.
+     * The event that produced it: a pointer event for a drag, a keyboard event when the move came
+     * from the arrow keys.
      */
-    originalEvent: PointerEvent;
+    originalEvent: PointerEvent | KeyboardEvent;
     /**
      * The event, as it is bound. For a recurring series this is the OCCURRENCE, so `recurrenceId`
      * and `recurrenceStart` are what identify it inside the series.

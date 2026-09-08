@@ -179,10 +179,41 @@ export const style = /*css*/ `
         min-height: 0;
     }
 
+    /* El mínimo de columna sale de una variable con el token como respaldo: cuando las columnas son
+       recursos y no días hay muchas más y necesitan otro suelo, y quien lo decide es la vista. */
     .p-scheduler-time-grid-header,
-    .p-scheduler-time-grid-body {
+    .p-scheduler-time-grid-body,
+    .p-scheduler-time-grid-groups {
         display: grid;
-        grid-template-columns: dt('scheduler.gutter.width') repeat(var(--p-scheduler-columns, 1), minmax(dt('scheduler.day.min.width'), 1fr));
+        grid-template-columns: dt('scheduler.gutter.width') repeat(var(--p-scheduler-columns, 1), minmax(var(--p-scheduler-column-min-width, dt('scheduler.day.min.width')), 1fr));
+    }
+
+    .p-scheduler-time-grid-groups {
+        position: sticky;
+        inset-block-start: 0;
+        z-index: 2;
+        background: dt('scheduler.weekday.background');
+        border-bottom: 1px solid dt('scheduler.border.color');
+    }
+
+    .p-scheduler-resource-column-header {
+        grid-column: span var(--p-scheduler-column-span, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.375rem;
+        padding: dt('scheduler.day.header.padding');
+        border-inline-start: 1px solid dt('scheduler.border.color');
+        font-size: 0.8125rem;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
+    /* Pegada por debajo de la banda de grupos, que mide lo mismo que una cabecera de día. */
+    .p-scheduler-time-grid[data-grouping='resource'] .p-scheduler-time-grid-header,
+    .p-scheduler-time-grid[data-grouping='date'] .p-scheduler-time-grid-header {
+        top: calc(dt('scheduler.day.header.padding') * 2 + 1.2em);
     }
 
     .p-scheduler-time-grid-header {
@@ -206,6 +237,13 @@ export const style = /*css*/ `
     .p-scheduler-day-header-number {
         font-weight: 600;
         font-variant-numeric: tabular-nums;
+    }
+
+    .p-scheduler-day-header-resource {
+        font-weight: 600;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .p-scheduler-day-header-weekday {
@@ -423,6 +461,55 @@ export const style = /*css*/ `
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+    }
+
+    /* ── Huecos de cita ───────────────────────────────────────────────────── */
+
+    /* Detrás de los eventos (z-index por debajo, sin puntero salvo el clic) y con el color de
+       "disponible" del tema. Un hueco lleno se raya como un bloqueo, porque para reservar es lo
+       mismo. */
+    .p-scheduler-appointment-slot {
+        position: absolute;
+        inset-inline: 0;
+        z-index: 0;
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-end;
+        padding: 0.0625rem 0.25rem;
+        background: dt('scheduler.slot.available.background');
+        border-block: 1px solid color-mix(in srgb, dt('scheduler.accent.color') 35%, transparent);
+        font-size: dt('scheduler.event.time.font.size');
+        color: dt('scheduler.gutter.color');
+        cursor: pointer;
+    }
+
+    .p-scheduler-appointment-slot[data-full] {
+        background-image: dt('scheduler.blocked.background');
+        cursor: not-allowed;
+    }
+
+    /* data-display=grid tiñe el hueco de la celda entera sin borde ni etiqueta: es para cuando lo que importa
+       es la mancha y no el detalle. */
+    .p-scheduler-appointment-slot[data-display='grid'] {
+        border-block: 0;
+    }
+
+    .p-scheduler-appointment-slot[data-display='grid'] .p-scheduler-appointment-slot-label {
+        display: none;
+    }
+
+    /* data-display=indicator no tiñe nada: una barra de 3px en el borde de la columna, para una rejilla
+       demasiado densa como para pintarle fondos. */
+    .p-scheduler-appointment-slot[data-display='indicator'] {
+        inset-inline: auto 0;
+        inline-size: 3px;
+        padding: 0;
+        border-block: 0;
+        background: dt('scheduler.accent.color');
+    }
+
+    .p-scheduler-appointment-slot[data-display='indicator'] .p-scheduler-appointment-slot-label {
+        display: none;
     }
 
     /* ── Arrastre y redimensión ───────────────────────────────────────────── */
@@ -690,6 +777,36 @@ export const style = /*css*/ `
         color: dt('scheduler.more.link.color');
         font-size: dt('scheduler.event.font.size');
         cursor: pointer;
+    }
+
+    /* Cabecera de un grid de mes por recurso, y la etiqueta de recurso dentro de una celda. */
+    .p-scheduler-month-resource-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: dt('scheduler.resource.area.row.padding');
+        background: dt('scheduler.weekday.background');
+        border-bottom: 1px solid dt('scheduler.border.color');
+        font-weight: 600;
+    }
+
+    /* Los grids apilados necesitan una raya entre ellos, o el último día de uno y el primero del
+       siguiente se leen como la misma rejilla. */
+    .p-scheduler-view-month .p-scheduler-month + .p-scheduler-month {
+        border-top: 2px solid dt('scheduler.border.color');
+    }
+
+    .p-scheduler-month-resource-group {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding-inline: 0.125rem;
+        font-size: dt('scheduler.event.time.font.size');
+        color: dt('scheduler.gutter.color');
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        white-space: nowrap;
+        overflow: hidden;
     }
 
     /* ── Agenda ───────────────────────────────────────────────────────────── */
@@ -1276,6 +1393,67 @@ export const style = /*css*/ `
     .p-scheduler-disabled {
         pointer-events: none;
         opacity: 0.6;
+    }
+
+    /* ── Impresión ────────────────────────────────────────────────────────── */
+
+    /* Un Scheduler impreso no tiene scroll ni cabeceras pegajosas: lo que en pantalla es una ventana
+       con desplazamiento, en papel es todo el contenido de una vez. Sin esto se imprime el trozo
+       visible y nada más, que es el fallo clásico de imprimir un calendario. */
+    @media print {
+        .p-scheduler {
+            border: 0;
+            block-size: auto !important;
+            max-block-size: none !important;
+        }
+
+        .p-scheduler-content,
+        .p-scheduler-timeline,
+        .p-scheduler-timeline-scroll,
+        .p-scheduler-year {
+            overflow: visible !important;
+        }
+
+        /* Pegajoso en papel no significa nada, y encima superpone la cabecera sobre el contenido de
+           la primera página. */
+        .p-scheduler-time-grid-header,
+        .p-scheduler-time-grid-groups,
+        .p-scheduler-timeline-header,
+        .p-scheduler-timeline-tier,
+        .p-scheduler-resource-area,
+        .p-scheduler-agenda-date-header {
+            position: static !important;
+        }
+
+        /* Los controles no se pueden pulsar en una hoja. */
+        .p-scheduler-navigation,
+        .p-scheduler-view-selector,
+        .p-scheduler-event-resize-handle,
+        .p-scheduler-month-more-link,
+        .p-scheduler-more-popover,
+        .p-scheduler-quick-info,
+        .p-scheduler-popover,
+        .p-scheduler-context-menu,
+        .p-scheduler-selection-toolbar {
+            display: none !important;
+        }
+
+        /* Una semana, un día de agenda o un carril de recurso partidos entre dos páginas son
+           ilegibles: es la unidad que hay que mantener entera. */
+        .p-scheduler-month-week,
+        .p-scheduler-agenda-group,
+        .p-scheduler-resource,
+        .p-scheduler-timeline-lane {
+            break-inside: avoid;
+        }
+
+        /* El color ES el dato: sin esto el navegador imprime los rellenos de categoría en blanco y
+           todos los eventos pasan a ser el mismo evento. */
+        .p-scheduler,
+        .p-scheduler * {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
     }
 
     /* Sin motion para quien lo pida: el indicador de "ahora" y los hovers no necesitan animación. */

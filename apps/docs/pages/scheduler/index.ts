@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { AppDoc } from '@/components/doc/app.doc';
 import { AccessibilityDoc } from '@/doc/scheduler/accessibility-doc';
+import { AdaptiveDoc } from '@/doc/scheduler/adaptive-doc';
 import { AgendaDoc } from '@/doc/scheduler/agenda-doc';
 import { AvailabilityDoc } from '@/doc/scheduler/availability-doc';
 import { BasicDoc } from '@/doc/scheduler/basic-doc';
@@ -11,6 +12,7 @@ import { DataAttributesDoc } from '@/doc/scheduler/data-attributes-doc';
 import { DayDoc } from '@/doc/scheduler/day-doc';
 import { DefinitionsDoc } from '@/doc/scheduler/definitions-doc';
 import { EventUiDoc } from '@/doc/scheduler/event-ui-doc';
+import { GroupingDoc } from '@/doc/scheduler/grouping-doc';
 import { ImportDoc } from '@/doc/scheduler/import-doc';
 import { InteractionDoc } from '@/doc/scheduler/interaction-doc';
 import { LocaleDoc } from '@/doc/scheduler/locale-doc';
@@ -22,6 +24,9 @@ import { ResourceTimelineDoc } from '@/doc/scheduler/resource-timeline-doc';
 import { ResourcesDoc } from '@/doc/scheduler/resources-doc';
 import { RtlDoc } from '@/doc/scheduler/rtl-doc';
 import { SelectionDoc } from '@/doc/scheduler/selection-doc';
+import { SlotsDoc } from '@/doc/scheduler/slots-doc';
+import { TimezoneDoc } from '@/doc/scheduler/timezone-doc';
+import { TransferDoc } from '@/doc/scheduler/transfer-doc';
 import { TimelineDoc } from '@/doc/scheduler/timeline-doc';
 import { ViewsDoc } from '@/doc/scheduler/views-doc';
 import { WeekDoc } from '@/doc/scheduler/week-doc';
@@ -97,6 +102,16 @@ export class SchedulerDemo {
             component: ResourcesDoc
         },
         {
+            id: 'grouping',
+            label: 'Grouping',
+            component: GroupingDoc
+        },
+        {
+            id: 'adaptive',
+            label: 'Adaptive Grouping',
+            component: AdaptiveDoc
+        },
+        {
             id: 'businesshours',
             label: 'Business Hours',
             component: BusinessHoursDoc
@@ -105,6 +120,11 @@ export class SchedulerDemo {
             id: 'availability',
             label: 'Availability',
             component: AvailabilityDoc
+        },
+        {
+            id: 'slots',
+            label: 'Appointment Slots',
+            component: SlotsDoc
         },
         {
             id: 'interaction',
@@ -152,9 +172,19 @@ export class SchedulerDemo {
             component: LocaleDoc
         },
         {
+            id: 'timezone',
+            label: 'Timezones',
+            component: TimezoneDoc
+        },
+        {
             id: 'rtl',
             label: 'RTL',
             component: RtlDoc
+        },
+        {
+            id: 'transfer',
+            label: 'Import, Export and Print',
+            component: TransferDoc
         },
         {
             id: 'performance',

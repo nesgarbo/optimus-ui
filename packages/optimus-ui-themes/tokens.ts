@@ -10052,6 +10052,12 @@ export default {
                 description: 'Background of a business-hours cell'
             },
             {
+                name: 'scheduler.slotAvailable.background',
+                token: 'scheduler.slot.available.background',
+                variable: '--p-scheduler-slot-available-background',
+                description: 'Background of an available appointment slot'
+            },
+            {
                 name: 'scheduler.blocked.background',
                 token: 'scheduler.blocked.background',
                 variable: '--p-scheduler-blocked-background',

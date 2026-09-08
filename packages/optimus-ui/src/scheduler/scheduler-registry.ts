@@ -105,8 +105,26 @@ export abstract class SchedulerScope implements SchedulerScopeLike {
             @case ('week') {
                 <p-scheduler-time-grid-view viewType="week" />
             }
+            @case ('resourceDay') {
+                <p-scheduler-time-grid-view viewType="resourceDay" />
+            }
+            @case ('resourceWeek') {
+                <p-scheduler-time-grid-view viewType="resourceWeek" />
+            }
+            @case ('dateDay') {
+                <p-scheduler-time-grid-view viewType="dateDay" />
+            }
+            @case ('dateWeek') {
+                <p-scheduler-time-grid-view viewType="dateWeek" />
+            }
+            @case ('resourceMonth') {
+                <p-scheduler-month-view viewType="resourceMonth" />
+            }
+            @case ('dateMonth') {
+                <p-scheduler-month-view viewType="dateMonth" />
+            }
             @case ('month') {
-                <p-scheduler-month-view />
+                <p-scheduler-month-view viewType="month" />
             }
             @case ('agenda') {
                 <p-scheduler-agenda-view />

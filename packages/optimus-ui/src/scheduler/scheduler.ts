@@ -3,6 +3,8 @@ import { TranslationKeys } from '@openng/optimus-ui/api';
 import { BaseComponent, PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { Bind } from '@openng/optimus-ui/bind';
 import type {
+    SchedulerAppointmentSlot,
+    SchedulerAppointmentSlotDisplay,
     SchedulerBlockedInterval,
     SchedulerCategory,
     SchedulerDateSelectionMode,
@@ -192,11 +194,65 @@ export class Scheduler extends BaseComponent<SchedulerPassThrough> {
      */
     readonly eventAllow = input<((info: SchedulerDropInfo) => boolean) | undefined>(undefined);
     /**
+     * Whether the resource views show one resource at a time instead of every column at once.
+     *
+     * `auto` turns it on past `adaptiveThreshold`. Forty resource columns are forty columns of
+     * nothing; below the threshold, showing them all is more useful.
+     * @defaultValue false
+     * @group Props
+     */
+    readonly adaptiveMode = input<boolean | 'auto'>(false, { transform: (value: unknown) => (value === 'auto' ? 'auto' : booleanAttribute(value)) });
+    /**
+     * How many resources `adaptiveMode="auto"` needs before it kicks in.
+     * @defaultValue 8
+     * @group Props
+     */
+    readonly adaptiveThreshold = input(8, { transform: numberAttribute });
+    /**
+     * The resource adaptive mode is focused on. Supports `[(selectedResourceId)]`.
+     * @group Props
+     */
+    readonly selectedResourceId = model<string | number | undefined>(undefined);
+    /**
+     * Whether a timed view breaks its columns down by resource, one vertical schedule per resource.
+     * The `resourceDay`/`resourceWeek` views imply it; this is for turning it on without changing
+     * the view name.
+     * @defaultValue false
+     * @group Props
+     */
+    readonly groupByResource = input(false, { transform: booleanAttribute });
+    /**
+     * Whether a timed view puts the date first and nests the resource columns inside each day.
+     * Implied by the `dateDay`/`dateWeek` views.
+     * @defaultValue false
+     * @group Props
+     */
+    readonly groupByDate = input(false, { transform: booleanAttribute });
+    /**
+     * Minimum width of one column when the columns are per resource, as a CSS length. Resource
+     * columns are narrower than day columns by nature — a week of six resources is 42 of them.
+     * @group Props
+     */
+    readonly resourceColumnMinWidth = input<string | undefined>(undefined);
+    /**
      * Windows nothing can be scheduled in. Cells inside one carry `data-blocked`, and a move or
      * resize that would land in one is refused before `eventAllow` is asked.
      * @group Props
      */
     readonly blockedIntervals = input<SchedulerBlockedInterval[]>([]);
+    /**
+     * Windows an appointment can be booked into. Drawn behind the events, because a free slot is a
+     * property of the calendar and not an appointment.
+     * @group Props
+     */
+    readonly appointmentSlots = input<SchedulerAppointmentSlot[]>([]);
+    /**
+     * How the available windows are drawn: a band behind the events, a tint on the cells they cover,
+     * or a marker on the edge of the column for a calendar too dense to tint.
+     * @defaultValue 'overlay'
+     * @group Props
+     */
+    readonly appointmentSlotDisplay = input<SchedulerAppointmentSlotDisplay>('overlay');
     /**
      * How clicking a date builds a selection. `range` takes two clicks: an anchor and an end.
      * @defaultValue 'none'
@@ -252,6 +308,15 @@ export class Scheduler extends BaseComponent<SchedulerPassThrough> {
      * @group Props
      */
     readonly timelineVirtualEventBuffer = input(192, { transform: numberAttribute });
+    /**
+     * Timezone the schedule is DISPLAYED in, as an IANA name (`Europe/Madrid`, `Asia/Tokyo`). Left
+     * unset, the browser's own zone is used.
+     *
+     * The events keep their real instants: only the rendering moves, and every output converts back
+     * before it reaches you.
+     * @group Props
+     */
+    readonly timeZone = input<string | undefined>(undefined);
     /**
      * Whether the Scheduler lays out right to left. Sets `dir` on the root, which is what every
      * logical property in the stylesheet keys off.
@@ -382,6 +447,17 @@ export class Scheduler extends BaseComponent<SchedulerPassThrough> {
      */
     readonly moreClick = output<{ date: Date; events: SchedulerEvent[]; view: SchedulerViewType }>();
     /**
+     * Fires when a resource row or column header is activated.
+     * @group Emits
+     */
+    readonly resourceClick = output<{ resource: SchedulerResource }>();
+    /**
+     * Fires when adaptive mode had to pick a resource because the page had not chosen one. Mirror it
+     * into your own state so a selector cannot disagree with the grid.
+     * @group Emits
+     */
+    readonly adaptiveAutoSelect = output<{ resource: SchedulerResource }>();
+    /**
      * Fires when a move begins, once the pointer has travelled `dragMinDistance`.
      * @group Emits
      */
@@ -501,6 +577,7 @@ export class Scheduler extends BaseComponent<SchedulerPassThrough> {
         timelineVirtualOverscan: this.timelineVirtualOverscan,
         timelineVirtualEventBuffer: this.timelineVirtualEventBuffer,
         rtl: this.rtl,
+        timeZone: this.timeZone,
         dayStartHour: this.dayStartHour,
         dayEndHour: this.dayEndHour,
         minEventMinutes: this.minEventMinutes,
@@ -514,7 +591,18 @@ export class Scheduler extends BaseComponent<SchedulerPassThrough> {
         dragMinDistance: this.dragMinDistance,
         eventAllow: this.eventAllow,
         blockedIntervals: this.blockedIntervals,
+        appointmentSlots: this.appointmentSlots,
+        appointmentSlotDisplay: this.appointmentSlotDisplay,
         dateSelection: this.dateSelection,
+        groupByResource: this.groupByResource,
+        groupByDate: this.groupByDate,
+        resourceColumnMinWidth: this.resourceColumnMinWidth,
+        adaptiveMode: this.adaptiveMode,
+        adaptiveThreshold: this.adaptiveThreshold,
+        selectedResourceId: this.selectedResourceId,
+        setSelectedResourceId: (id) => this.selectedResourceId.set(id),
+        emitResourceClick: (resource) => this.resourceClick.emit({ resource }),
+        emitAdaptiveAutoSelect: (resource) => this.adaptiveAutoSelect.emit({ resource }),
         selectedDates: this.selectedDates,
         setSelectedDates: (dates) => this.selectedDates.set(dates),
         emitDragStart: (payload) => this.eventDragStart.emit(payload),

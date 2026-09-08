@@ -29,7 +29,7 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
         </p>
         <p>
             Overlays and chrome: <i>scheduler-more-popover</i>, <i>scheduler-quick-info</i>, <i>scheduler-event-popover</i>, <i>scheduler-context-menu</i>, <i>scheduler-selection-toolbar</i>, <i>scheduler-category-legend</i>,
-            <i>scheduler-category-legend-ui-item</i>, <i>scheduler-event-resize-handle</i>.
+            <i>scheduler-category-legend-ui-item</i>, <i>scheduler-event-resize-handle</i>, <i>scheduler-appointment-slot</i>, <i>scheduler-resource-column-header</i>.
         </p>
         <h3>State</h3>
         <p>
@@ -37,7 +37,8 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
             <i>data-today</i>, <i>data-weekend</i>, <i>data-other-month</i>, <i>data-business</i>, <i>data-major</i> and <i>data-event-count</i>, and every cell that stands for an interval also carries <i>data-start-date</i> and
             <i>data-end-date</i> as epoch milliseconds (timeline cells add <i>data-col-index</i>). Event surfaces carry <i>data-event-id</i>, <i>data-selected</i>, <i>data-continues-before</i> and <i>data-continues-after</i>, plus
             <i>data-draggable</i>, <i>data-dragging</i> and <i>data-resizing</i> while they are editable or being moved; resource rows carry <i>data-resource-id</i> and <i>data-depth</i>. The root carries <i>data-disabled</i> and <i>data-rtl</i>, and
-            a windowed timeline's scroll container carries <i>data-virtual</i>.
+            a windowed timeline's scroll container carries <i>data-virtual</i>. A grouped view carries <i>data-grouping</i> on its root, a cell inside a blocked interval carries <i>data-blocked</i>, and an appointment slot carries
+            <i>data-display</i> and <i>data-full</i>.
         </p>
         <p>
             <i>data-start-date</i> and <i>data-end-date</i> are the two the drag pipeline actually READS: a drop target is resolved from the cell under the pointer, which is how one controller handles the week grid, the month and a timeline whose

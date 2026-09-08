@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, input } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import type { SchedulerEvent, SchedulerViewType } from '@openng/optimus-ui/types/scheduler';
+import type { SchedulerEvent, SchedulerResource, SchedulerViewType } from '@openng/optimus-ui/types/scheduler';
 import { addDays, dayKey, eachDay, endOfDay, isToday, startOfWeek, toDate } from './scheduler-date';
 import { layoutRows } from './scheduler-layout';
 import { SchedulerViewBase } from './scheduler-view-base';
@@ -13,6 +13,11 @@ import { SchedulerViewBase } from './scheduler-view-base';
  * marked as continuing. Packing the whole month at once would put the second half of that event on
  * a row index that means nothing in the following week.
  *
+ * Three views share it. `month` is one grid. `resourceMonth` is one grid PER resource, stacked and
+ * labelled, because a month cell is a day and a day cannot be split into six readable columns.
+ * `dateMonth` keeps the single grid and groups the events inside each cell under their resource,
+ * which is the same "resources under dates" idea at the only scale a month cell has room for.
+ *
  * @module scheduler-month
  */
 @Component({
@@ -20,135 +25,209 @@ import { SchedulerViewBase } from './scheduler-view-base';
     standalone: true,
     imports: [NgTemplateOutlet],
     template: `
-        <div class="p-scheduler-month" [attr.data-view]="view">
-            <div class="p-scheduler-month-header" data-slot="scheduler-month-header-cell">
-                @if (monthHeaderDef(); as tpl) {
-                    <ng-container *ngTemplateOutlet="tpl; context: headerContext()" />
-                } @else {
-                    @for (weekday of weekdays(); track weekday) {
-                        <div class="p-scheduler-month-header-cell">{{ weekday }}</div>
-                    }
-                }
-            </div>
-
-            <div class="p-scheduler-month-body">
-                @for (week of weeks(); track week.key) {
-                    <div class="p-scheduler-month-week" [style.--p-scheduler-month-rows]="week.rowCount">
-                        @for (day of week.days; track day.key) {
-                            <div
-                                class="p-scheduler-month-cell"
-                                data-slot="scheduler-month-cell"
-                                [attr.data-date]="day.key"
-                                [attr.data-today]="day.today ? '' : null"
-                                [attr.data-weekend]="day.weekend ? '' : null"
-                                [attr.data-other-month]="day.otherMonth ? '' : null"
-                                [attr.data-selected]="day.binding.context.selected ? '' : null"
-                                [attr.data-event-count]="day.count"
-                                [style.--p-scheduler-bar-rows]="day.barRows"
-                                [attr.data-start-date]="day.date.getTime()"
-                                [attr.data-end-date]="day.end.getTime()"
-                                (click)="onSlotClick($event, day.date, day.end)"
-                                (contextmenu)="onCellContextMenu($event, day.date, day.events)"
-                            >
-                                @if (monthCellDef(); as tpl) {
-                                    <ng-container *ngTemplateOutlet="tpl; context: day.binding.context; injector: cellInjector(day.binding.key)" />
-                                } @else {
-                                    <div class="p-scheduler-month-cell-number" data-slot="scheduler-month-cell-number">
-                                        @if (monthCellNumberDef(); as tpl) {
-                                            <ng-container *ngTemplateOutlet="tpl; context: day.binding.context; injector: cellInjector(day.binding.key)" />
-                                        } @else {
-                                            {{ day.date.getDate() }}
-                                        }
-                                    </div>
-                                    <div class="p-scheduler-month-day-cell" data-slot="scheduler-month-day-cell">
-                                        @if (monthDayCellDef(); as tpl) {
-                                            <ng-container *ngTemplateOutlet="tpl; context: day.binding.context; injector: cellInjector(day.binding.key)" />
-                                        } @else {
-                                            @for (item of day.visibleEvents; track item.key) {
-                                                <button
-                                                    type="button"
-                                                    class="p-scheduler-month-event"
-                                                    data-slot="scheduler-month-event"
-                                                    [attr.data-event-id]="item.context.event.id"
-                                                    [attr.data-selected]="item.context.selected ? '' : null"
-                                                    (click)="onEventClick($event, item.context.event)"
-                                                    (mouseenter)="onEventPeek($event, item.context.event)"
-                                                    (mouseleave)="onEventPeekEnd()"
-                                                    (focusin)="onEventPeek($event, item.context.event)"
-                                                    (focusout)="onEventPeekEnd()"
-                                                    (contextmenu)="onEventContextMenu($event, item.context.event)"
-                                                    (pointerdown)="onEventPointerDown($event, item.context.event)"
-                                                    [attr.data-dragging]="item.context.dragging ? '' : null"
-                                                    [attr.data-resizing]="item.context.resizing ? '' : null"
-                                                    [attr.data-draggable]="item.context.draggable ? '' : null"
-                                                >
-                                                    @if (monthEventDef(); as tpl) {
-                                                        <ng-container *ngTemplateOutlet="tpl; context: item.context; injector: eventInjector(item.key)" />
-                                                    } @else {
-                                                        <span class="p-scheduler-event-dot" [style.background]="item.context.accentColor" aria-hidden="true"></span>
-                                                        <span class="p-scheduler-event-title">{{ item.context.title }}</span>
-                                                        <span class="p-scheduler-event-time">{{ item.shortTime }}</span>
-                                                    }
-                                                </button>
-                                            }
-                                        }
-                                    </div>
-                                    @if (day.overflow > 0) {
-                                        <button type="button" class="p-scheduler-month-more-link" data-slot="scheduler-month-more-link" [attr.data-event-count]="day.overflow" (click)="openMore($event, day.date, day.events)">
-                                            @if (monthMoreLinkDef(); as tpl) {
-                                                <ng-container *ngTemplateOutlet="tpl; context: day.moreContext" />
-                                            } @else {
-                                                {{ day.moreContext.label }}
-                                            }
-                                        </button>
-                                    }
-                                }
-                            </div>
-                        }
-
-                        @for (item of week.events; track item.key) {
-                            <div
-                                class="p-scheduler-month-bar"
-                                data-slot="scheduler-month-event"
-                                data-all-day=""
-                                [attr.data-event-id]="item.context.event.id"
-                                [attr.data-selected]="item.context.selected ? '' : null"
-                                [attr.data-continues-before]="item.context.continuesBefore ? '' : null"
-                                [attr.data-continues-after]="item.context.continuesAfter ? '' : null"
-                                [style.inset-inline-start.%]="item.offset * 100"
-                                [style.inline-size.%]="item.size * 100"
-                                [style.--p-scheduler-event-row]="item.row"
-                                [style.--p-scheduler-event-border-accent]="item.context.accentColor"
-                                (click)="onEventClick($event, item.context.event)"
-                                (mouseenter)="onEventPeek($event, item.context.event)"
-                                (mouseleave)="onEventPeekEnd()"
-                                (focusin)="onEventPeek($event, item.context.event)"
-                                (focusout)="onEventPeekEnd()"
-                                (contextmenu)="onEventContextMenu($event, item.context.event)"
-                                (pointerdown)="onEventPointerDown($event, item.context.event)"
-                                [attr.data-dragging]="item.context.dragging ? '' : null"
-                                [attr.data-resizing]="item.context.resizing ? '' : null"
-                                [attr.data-draggable]="item.context.draggable ? '' : null"
-                            >
-                                @if (monthEventDef(); as tpl) {
-                                    <ng-container *ngTemplateOutlet="tpl; context: item.context; injector: eventInjector(item.key)" />
-                                } @else {
-                                    <span class="p-scheduler-event-title">{{ item.context.title }}</span>
-                                }
-                            </div>
+        @for (panel of panels(); track panel.key) {
+            <div class="p-scheduler-month" [attr.data-view]="view" [attr.data-grouping]="grouping()" [attr.data-resource-id]="panel.resource?.id">
+                @if (panel.label) {
+                    <!-- Un grid por recurso necesita decir de quién es: sin la cabecera, tres meses
+                     apilados son tres meses idénticos. -->
+                    <div class="p-scheduler-month-resource-header" data-slot="scheduler-resource-header" [attr.data-resource-id]="panel.resource?.id" [attr.data-event-count]="panel.count">
+                        @if (resourceHeaderDef(); as tpl) {
+                            <ng-container *ngTemplateOutlet="tpl; context: panel.context" />
+                        } @else {
+                            @if (panel.resource) {
+                                <span class="p-scheduler-resource-dot" [style.background]="panel.resource.color" aria-hidden="true"></span>
+                            }
+                            <span class="p-scheduler-resource-label">{{ panel.label }}</span>
+                            @if (panel.count) {
+                                <span class="p-scheduler-resource-count">{{ panel.count }}</span>
+                            }
                         }
                     </div>
                 }
+                <div class="p-scheduler-month-header" data-slot="scheduler-month-header-cell">
+                    @if (monthHeaderDef(); as tpl) {
+                        <ng-container *ngTemplateOutlet="tpl; context: headerContext()" />
+                    } @else {
+                        @for (weekday of weekdays(); track weekday) {
+                            <div class="p-scheduler-month-header-cell">{{ weekday }}</div>
+                        }
+                    }
+                </div>
+
+                <div class="p-scheduler-month-body">
+                    @for (week of panel.weeks; track week.key) {
+                        <div class="p-scheduler-month-week" [style.--p-scheduler-month-rows]="week.rowCount">
+                            @for (day of week.days; track day.key) {
+                                <div
+                                    class="p-scheduler-month-cell"
+                                    data-slot="scheduler-month-cell"
+                                    [attr.data-date]="day.key"
+                                    [attr.data-today]="day.today ? '' : null"
+                                    [attr.data-weekend]="day.weekend ? '' : null"
+                                    [attr.data-other-month]="day.otherMonth ? '' : null"
+                                    [attr.data-selected]="day.binding.context.selected ? '' : null"
+                                    [attr.data-event-count]="day.count"
+                                    [style.--p-scheduler-bar-rows]="day.barRows"
+                                    [attr.data-start-date]="day.date.getTime()"
+                                    [attr.data-end-date]="day.end.getTime()"
+                                    (click)="onSlotClick($event, day.date, day.end)"
+                                    (contextmenu)="onCellContextMenu($event, day.date, day.events)"
+                                >
+                                    @if (monthCellDef(); as tpl) {
+                                        <ng-container *ngTemplateOutlet="tpl; context: day.binding.context; injector: cellInjector(day.binding.key)" />
+                                    } @else {
+                                        <div class="p-scheduler-month-cell-number" data-slot="scheduler-month-cell-number">
+                                            @if (monthCellNumberDef(); as tpl) {
+                                                <ng-container *ngTemplateOutlet="tpl; context: day.binding.context; injector: cellInjector(day.binding.key)" />
+                                            } @else {
+                                                {{ day.date.getDate() }}
+                                            }
+                                        </div>
+                                        <div class="p-scheduler-month-day-cell" data-slot="scheduler-month-day-cell">
+                                            @if (monthDayCellDef(); as tpl) {
+                                                <ng-container *ngTemplateOutlet="tpl; context: day.binding.context; injector: cellInjector(day.binding.key)" />
+                                            } @else {
+                                                @if (grouping() === 'date') {
+                                                    @for (group of day.resourceGroups; track group.key) {
+                                                        <span class="p-scheduler-month-resource-group" [attr.data-resource-id]="group.resource?.id">
+                                                            <span class="p-scheduler-event-dot" [style.background]="group.resource?.color" aria-hidden="true"></span>
+                                                            {{ group.label }}
+                                                        </span>
+                                                        @for (item of group.events; track item.key) {
+                                                            <button
+                                                                type="button"
+                                                                class="p-scheduler-month-event"
+                                                                data-slot="scheduler-month-event"
+                                                                [attr.data-event-id]="item.context.event.id"
+                                                                [attr.data-resource-id]="group.resource?.id"
+                                                                [attr.data-selected]="item.context.selected ? '' : null"
+                                                                (click)="onEventClick($event, item.context.event)"
+                                                                (mouseenter)="onEventPeek($event, item.context.event)"
+                                                                (mouseleave)="onEventPeekEnd()"
+                                                                (focusin)="onEventPeek($event, item.context.event)"
+                                                                (focusout)="onEventPeekEnd()"
+                                                                (contextmenu)="onEventContextMenu($event, item.context.event)"
+                                                                (pointerdown)="onEventPointerDown($event, item.context.event)"
+                                                                (keydown)="onEventKeydown($event, item.context.event)"
+                                                                [attr.data-dragging]="item.context.dragging ? '' : null"
+                                                                [attr.data-draggable]="item.context.draggable ? '' : null"
+                                                            >
+                                                                @if (monthEventDef(); as tpl) {
+                                                                    <ng-container *ngTemplateOutlet="tpl; context: item.context; injector: eventInjector(item.key)" />
+                                                                } @else {
+                                                                    <span class="p-scheduler-event-title">{{ item.context.title }}</span>
+                                                                    <span class="p-scheduler-event-time">{{ item.shortTime }}</span>
+                                                                }
+                                                            </button>
+                                                        }
+                                                    }
+                                                } @else {
+                                                    @for (item of day.visibleEvents; track item.key) {
+                                                        <button
+                                                            type="button"
+                                                            class="p-scheduler-month-event"
+                                                            data-slot="scheduler-month-event"
+                                                            [attr.data-event-id]="item.context.event.id"
+                                                            [attr.data-selected]="item.context.selected ? '' : null"
+                                                            (click)="onEventClick($event, item.context.event)"
+                                                            (mouseenter)="onEventPeek($event, item.context.event)"
+                                                            (mouseleave)="onEventPeekEnd()"
+                                                            (focusin)="onEventPeek($event, item.context.event)"
+                                                            (focusout)="onEventPeekEnd()"
+                                                            (contextmenu)="onEventContextMenu($event, item.context.event)"
+                                                            (pointerdown)="onEventPointerDown($event, item.context.event)"
+                                                            (keydown)="onEventKeydown($event, item.context.event)"
+                                                            [attr.data-dragging]="item.context.dragging ? '' : null"
+                                                            [attr.data-resizing]="item.context.resizing ? '' : null"
+                                                            [attr.data-draggable]="item.context.draggable ? '' : null"
+                                                        >
+                                                            @if (monthEventDef(); as tpl) {
+                                                                <ng-container *ngTemplateOutlet="tpl; context: item.context; injector: eventInjector(item.key)" />
+                                                            } @else {
+                                                                <span class="p-scheduler-event-dot" [style.background]="item.context.accentColor" aria-hidden="true"></span>
+                                                                <span class="p-scheduler-event-title">{{ item.context.title }}</span>
+                                                                <span class="p-scheduler-event-time">{{ item.shortTime }}</span>
+                                                            }
+                                                        </button>
+                                                    }
+                                                }
+                                            }
+                                        </div>
+                                        @if (day.overflow > 0) {
+                                            <button type="button" class="p-scheduler-month-more-link" data-slot="scheduler-month-more-link" [attr.data-event-count]="day.overflow" (click)="openMore($event, day.date, day.events)">
+                                                @if (monthMoreLinkDef(); as tpl) {
+                                                    <ng-container *ngTemplateOutlet="tpl; context: day.moreContext" />
+                                                } @else {
+                                                    {{ day.moreContext.label }}
+                                                }
+                                            </button>
+                                        }
+                                    }
+                                </div>
+                            }
+
+                            @for (item of week.events; track item.key) {
+                                <div
+                                    class="p-scheduler-month-bar"
+                                    data-slot="scheduler-month-event"
+                                    tabindex="0"
+                                    role="button"
+                                    data-all-day=""
+                                    [attr.data-event-id]="item.context.event.id"
+                                    [attr.data-selected]="item.context.selected ? '' : null"
+                                    [attr.data-continues-before]="item.context.continuesBefore ? '' : null"
+                                    [attr.data-continues-after]="item.context.continuesAfter ? '' : null"
+                                    [style.inset-inline-start.%]="item.offset * 100"
+                                    [style.inline-size.%]="item.size * 100"
+                                    [style.--p-scheduler-event-row]="item.row"
+                                    [style.--p-scheduler-event-border-accent]="item.context.accentColor"
+                                    (click)="onEventClick($event, item.context.event)"
+                                    (mouseenter)="onEventPeek($event, item.context.event)"
+                                    (mouseleave)="onEventPeekEnd()"
+                                    (focusin)="onEventPeek($event, item.context.event)"
+                                    (focusout)="onEventPeekEnd()"
+                                    (contextmenu)="onEventContextMenu($event, item.context.event)"
+                                    (pointerdown)="onEventPointerDown($event, item.context.event)"
+                                    (keydown)="onEventKeydown($event, item.context.event)"
+                                    [attr.data-dragging]="item.context.dragging ? '' : null"
+                                    [attr.data-resizing]="item.context.resizing ? '' : null"
+                                    [attr.data-draggable]="item.context.draggable ? '' : null"
+                                >
+                                    @if (monthEventDef(); as tpl) {
+                                        <ng-container *ngTemplateOutlet="tpl; context: item.context; injector: eventInjector(item.key)" />
+                                    } @else {
+                                        <span class="p-scheduler-event-title">{{ item.context.title }}</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
             </div>
-        </div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
     host: { class: 'p-scheduler-view p-scheduler-view-month' }
 })
 export class SchedulerMonthView extends SchedulerViewBase {
+    /** Which of the three month views is being drawn. */
+    readonly viewType = input<SchedulerViewType>('month');
+
     /** @internal */
-    override readonly view: SchedulerViewType = 'month';
+    override get view(): SchedulerViewType {
+        return this.viewType();
+    }
+
+    /** How the events are grouped inside the month. */
+    readonly grouping = computed<'none' | 'resource' | 'date'>(() => {
+        const view = this.viewType();
+        if (view === 'resourceMonth') return 'resource';
+        if (view === 'dateMonth') return 'date';
+        if (this.state.groupByDate()) return 'date';
+        if (this.state.groupByResource()) return 'resource';
+        return 'none';
+    });
 
     /**
      * No resize handles in the month grid: a cell is a whole day, so pulling an edge would be
@@ -168,6 +247,31 @@ export class SchedulerMonthView extends SchedulerViewBase {
     readonly monthEventDef = computed(() => this.def('monthEvent'));
     /** @internal */
     readonly monthMoreLinkDef = computed(() => this.def('monthMoreLink'));
+    /** @internal */
+    readonly resourceHeaderDef = computed(() => this.def('resourceHeader'));
+
+    /**
+     * One grid per resource in `resourceMonth`, a single grid otherwise.
+     *
+     * The unassigned bucket only gets a panel when something would otherwise have nowhere to go.
+     */
+    readonly panels = computed(() => {
+        if (this.grouping() !== 'resource') {
+            return [{ key: 'all', label: '', resource: null as SchedulerResource | null, count: 0, context: null as any, weeks: this.buildWeeks(this.state.visibleEvents(), 'all') }];
+        }
+
+        const events = this.state.visibleEvents();
+        const resources: (SchedulerResource | null)[] = [...this.state.resources()];
+        if (events.some((event) => this.state.eventBelongsTo(event, null))) resources.push(null);
+
+        return resources.map((resource) => {
+            const own = events.filter((event) => this.state.eventBelongsTo(event, resource?.id ?? null));
+            const label = resource ? (resource.name ?? String(resource.id)) : this.state.labels().unassigned;
+            const key = String(resource?.id ?? '__unassigned');
+            const context = { resource, title: label, label, depth: 0, group: false, expanded: true, toggle: () => undefined, events: own, count: own.length };
+            return { key, label, resource, count: own.length, context: { ...context, $implicit: context, context }, weeks: this.buildWeeks(own, key) };
+        });
+    });
 
     /** Weekday names, rotated so index 0 is `firstDayOfWeek`. */
     readonly weekdays = computed(() => {
@@ -198,11 +302,10 @@ export class SchedulerMonthView extends SchedulerViewBase {
      * The two share the per-cell budget: the bars take the top rows, the list starts below them, and
      * whatever does not fit is reported as overflow for the "+N more" link.
      */
-    readonly weeks = computed(() => {
+    private buildWeeks(events: SchedulerEvent[], panelKey: string) {
         const { start, end } = this.state.range();
         const anchorMonth = this.state.date().getMonth();
         const maxRows = this.state.maxEventsPerCell();
-        const events = this.state.visibleEvents();
         const moreTemplate = this.state.labels().more;
         const duration = this.state.defaultEventDuration();
 
@@ -246,9 +349,12 @@ export class SchedulerMonthView extends SchedulerViewBase {
                     events: all,
                     barRows,
                     visibleEvents: visible.map((event) => ({
-                        ...this.bindEvent(event, {}, key),
+                        ...this.bindEvent(event, {}, `${panelKey}|${key}`),
                         shortTime: toDate(event.start).toLocaleTimeString(this.locale(), { hour: 'numeric', minute: '2-digit' })
                     })),
+                    // En dateMonth los eventos del día se agrupan bajo su recurso: es lo único que
+                    // cabe en una celda de mes, que es un día y no se puede partir en seis columnas.
+                    resourceGroups: this.grouping() === 'date' ? this.groupByResource(visible, `${panelKey}|${key}`) : [],
                     overflow: hidden.length,
                     moreContext: {
                         $implicit: hidden.length,
@@ -274,13 +380,33 @@ export class SchedulerMonthView extends SchedulerViewBase {
                     offset: item.offset,
                     size: item.size,
                     row: item.row,
-                    ...this.bindEvent(item.event, { continuesBefore: item.continuesBefore, continuesAfter: item.continuesAfter }, dayKey(weekStart))
+                    ...this.bindEvent(item.event, { continuesBefore: item.continuesBefore, continuesAfter: item.continuesAfter }, `${panelKey}|${dayKey(weekStart)}`)
                 }))
             });
         }
 
         return rows;
-    });
+    }
+
+    /** The events of one cell, bucketed by the resource they belong to. */
+    private groupByResource(events: SchedulerEvent[], keySuffix: string) {
+        const resources: (SchedulerResource | null)[] = [...this.state.resources(), null];
+
+        return resources
+            .map((resource) => {
+                const own = events.filter((event) => this.state.eventBelongsTo(event, resource?.id ?? null));
+                return {
+                    key: String(resource?.id ?? '__unassigned'),
+                    resource,
+                    label: resource ? (resource.name ?? String(resource.id)) : this.state.labels().unassigned,
+                    events: own.map((event) => ({
+                        ...this.bindEvent(event, {}, `${keySuffix}|${resource?.id ?? ''}`),
+                        shortTime: toDate(event.start).toLocaleTimeString(this.locale(), { hour: 'numeric', minute: '2-digit' })
+                    }))
+                };
+            })
+            .filter((group) => group.events.length);
+    }
 
     /**
      * Whether an event is drawn as a bar across the week rather than as a row inside one cell:
@@ -296,10 +422,10 @@ export class SchedulerMonthView extends SchedulerViewBase {
     }
 
     ngAfterViewChecked(): void {
-        const weeks = this.weeks();
+        const weeks = this.panels().flatMap((panel) => panel.weeks);
         this.publishContexts(
-            weeks.flatMap((week) => week.events),
-            weeks.flatMap((week) => week.days.map((day) => day.binding))
+            [...weeks.flatMap((week) => week.events), ...weeks.flatMap((week) => week.days.flatMap((day: any) => [...day.visibleEvents, ...day.resourceGroups.flatMap((group: any) => group.events)]))],
+            weeks.flatMap((week) => week.days.map((day: any) => day.binding))
         );
     }
 

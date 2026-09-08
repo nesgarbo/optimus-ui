@@ -1,14 +1,20 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, input } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import type { SchedulerEvent, SchedulerViewType } from '@openng/optimus-ui/types/scheduler';
+import type { SchedulerEvent, SchedulerResource, SchedulerViewType } from '@openng/optimus-ui/types/scheduler';
 import { addMinutes, dayKey, eachDay, endOfDay, formatTime, isToday, startOfDay, timeSlots } from './scheduler-date';
 import { groupByDay, layoutRows, layoutTimeGrid } from './scheduler-layout';
 import { SchedulerViewBase } from './scheduler-view-base';
 
 /**
- * The vertical time grid: one column per day, an all-day strip on top and a time gutter down the
- * left. Day and week are the same renderer with a different range — the only difference between
- * them is how many columns come out of {@link eachDay}.
+ * The vertical time grid: an all-day strip on top, a time gutter down the left, and a column per
+ * unit of grouping.
+ *
+ * Six views share this renderer because they differ only in what a COLUMN is. `day` and `week` are
+ * one column per date. `resourceDay`/`resourceWeek` put the resource first and its dates inside, so
+ * each person or room owns a vertical schedule. `dateDay`/`dateWeek` put the date first and the
+ * resources inside it. That is one `columns()` computed and a header band, not four renderers —
+ * splitting them would duplicate the gutter, the all-day strip, the overlap layout and the drag
+ * geometry four times over.
  *
  * @module scheduler-time-grid
  */
@@ -17,17 +23,64 @@ import { SchedulerViewBase } from './scheduler-view-base';
     standalone: true,
     imports: [NgTemplateOutlet],
     template: `
-        <div class="p-scheduler-time-grid" [attr.data-view]="view" [attr.data-business-hours]="hasBusinessHours() ? '' : null" [style.--p-scheduler-columns]="days().length">
-            <!-- ── Cabecera: hueco del gutter + una columna por día ───────────────────────── -->
+        <div
+            class="p-scheduler-time-grid"
+            [attr.data-view]="view"
+            [attr.data-grouping]="grouping()"
+            [attr.data-business-hours]="hasBusinessHours() ? '' : null"
+            [style.--p-scheduler-columns]="columns().length"
+            [style.--p-scheduler-column-min-width]="columnMinWidth()"
+        >
+            <!-- ── Banda de grupos: el recurso sobre sus fechas, o la fecha sobre sus recursos.
+                 Cada celda abarca las columnas que le tocan, igual que las bandas del timeline. -->
+            @if (groups().length) {
+                <div class="p-scheduler-time-grid-groups">
+                    <div class="p-scheduler-time-gutter-spacer"></div>
+                    @for (group of groups(); track group.key) {
+                        <div
+                            class="p-scheduler-resource-column-header"
+                            data-slot="scheduler-resource-column-header"
+                            [attr.data-resource-id]="group.resource?.id"
+                            [attr.data-date]="group.dateKey"
+                            [attr.data-event-count]="group.count"
+                            [style.--p-scheduler-column-span]="group.span"
+                        >
+                            @if (resourceColumnHeaderDef(); as tpl) {
+                                <ng-container *ngTemplateOutlet="tpl; context: group.context" />
+                            } @else {
+                                @if (group.resource) {
+                                    <span class="p-scheduler-resource-dot" [style.background]="group.resource.color" aria-hidden="true"></span>
+                                }
+                                <span class="p-scheduler-resource-label">{{ group.label }}</span>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- ── Cabecera: hueco del gutter + una columna por unidad de agrupación ──────── -->
             <div class="p-scheduler-time-grid-header">
                 <div class="p-scheduler-time-gutter-spacer">{{ timeZoneLabel() }}</div>
-                @for (day of days(); track day.key) {
-                    <div class="p-scheduler-day-header-cell" data-slot="scheduler-day-header" [attr.data-date]="day.key" [attr.data-today]="day.today ? '' : null" [attr.data-weekend]="day.weekend ? '' : null">
+                @for (column of columns(); track column.key) {
+                    <div
+                        class="p-scheduler-day-header-cell"
+                        data-slot="scheduler-day-header"
+                        [attr.data-date]="column.dateKey"
+                        [attr.data-resource-id]="column.resource?.id"
+                        [attr.data-today]="column.today ? '' : null"
+                        [attr.data-weekend]="column.weekend ? '' : null"
+                    >
                         @if (dayHeaderDef(); as tpl) {
-                            <ng-container *ngTemplateOutlet="tpl; context: day.cell.context; injector: cellInjector(day.cell.key)" />
+                            <ng-container *ngTemplateOutlet="tpl; context: column.cell.context; injector: cellInjector(column.cell.key)" />
+                        } @else if (showResourceInHeader()) {
+                            <!-- La fecha ya está arriba —en la banda o en el título—: aquí manda el recurso. -->
+                            @if (column.resource) {
+                                <span class="p-scheduler-resource-dot" [style.background]="column.resource.color" aria-hidden="true"></span>
+                            }
+                            <span class="p-scheduler-day-header-resource">{{ column.resourceLabel }}</span>
                         } @else {
-                            <span class="p-scheduler-day-header-number">{{ day.date.getDate() }}</span>
-                            <span class="p-scheduler-day-header-weekday">{{ day.weekdayLabel }}</span>
+                            <span class="p-scheduler-day-header-number">{{ column.date.getDate() }}</span>
+                            <span class="p-scheduler-day-header-weekday">{{ column.weekdayLabel }}</span>
                         }
                     </div>
                 }
@@ -38,17 +91,18 @@ import { SchedulerViewBase } from './scheduler-view-base';
                 <div class="p-scheduler-all-day-row" data-slot="scheduler-all-day-row" [style.--p-scheduler-all-day-rows]="allDayRowCount()">
                     <div class="p-scheduler-all-day-gutter">{{ labels().allDay }}</div>
                     <div class="p-scheduler-all-day-lanes">
-                        @for (day of days(); track day.key) {
+                        @for (column of columns(); track column.key) {
                             <div
                                 class="p-scheduler-all-day-cell"
                                 data-slot="scheduler-all-day-cell"
-                                [attr.data-date]="day.key"
-                                [attr.data-start-date]="day.date.getTime()"
-                                [attr.data-end-date]="day.end.getTime()"
-                                (click)="onSlotClick($event, day.date, day.end)"
+                                [attr.data-date]="column.dateKey"
+                                [attr.data-resource-id]="column.resource?.id"
+                                [attr.data-start-date]="column.date.getTime()"
+                                [attr.data-end-date]="column.end.getTime()"
+                                (click)="onSlotClick($event, column.date, column.end)"
                             >
                                 @if (allDayCellDef(); as tpl) {
-                                    <ng-container *ngTemplateOutlet="tpl; context: day.allDayCell.context; injector: cellInjector(day.allDayCell.key)" />
+                                    <ng-container *ngTemplateOutlet="tpl; context: column.allDayCell.context; injector: cellInjector(column.allDayCell.key)" />
                                 }
                             </div>
                         }
@@ -69,6 +123,9 @@ import { SchedulerViewBase } from './scheduler-view-base';
                                 (focusout)="onEventPeekEnd()"
                                 (contextmenu)="onEventContextMenu($event, item.context.event)"
                                 (pointerdown)="onEventPointerDown($event, item.context.event)"
+                                (keydown)="onEventKeydown($event, item.context.event)"
+                                tabindex="0"
+                                role="button"
                                 [attr.data-dragging]="item.context.dragging ? '' : null"
                                 [attr.data-resizing]="item.context.resizing ? '' : null"
                                 [attr.data-draggable]="item.context.draggable ? '' : null"
@@ -98,9 +155,9 @@ import { SchedulerViewBase } from './scheduler-view-base';
                     }
                 </div>
 
-                @for (day of days(); track day.key) {
-                    <div class="p-scheduler-time-grid-column" data-slot="scheduler-time-grid-column" [attr.data-date]="day.key" [attr.data-today]="day.today ? '' : null">
-                        @for (cell of day.cells; track cell.key) {
+                @for (column of columns(); track column.key) {
+                    <div class="p-scheduler-time-grid-column" data-slot="scheduler-time-grid-column" [attr.data-date]="column.dateKey" [attr.data-resource-id]="column.resource?.id" [attr.data-today]="column.today && dateCount() > 1 ? '' : null">
+                        @for (cell of column.cells; track cell.key) {
                             <div
                                 class="p-scheduler-time-grid-cell"
                                 [attr.data-slot]="cell.business ? 'scheduler-work-cell' : 'scheduler-time-grid-cell'"
@@ -119,7 +176,26 @@ import { SchedulerViewBase } from './scheduler-view-base';
                             </div>
                         }
 
-                        @for (item of day.events; track item.key) {
+                        <!-- Los huecos disponibles van DETRÁS de los eventos y no como eventos: un
+                             hueco libre es una propiedad del calendario, no una cita. -->
+                        @for (slot of column.slots; track slot.key) {
+                            <div
+                                class="p-scheduler-appointment-slot"
+                                data-slot="scheduler-appointment-slot"
+                                [attr.data-display]="slotDisplay()"
+                                [attr.data-full]="slot.full ? '' : null"
+                                [attr.data-resource-id]="column.resource?.id"
+                                [style.inset-block-start.%]="slot.offset * 100"
+                                [style.block-size.%]="slot.size * 100"
+                                (click)="onSlotClick($event, slot.slot.start, slot.slot.end)"
+                            >
+                                @if (slot.label) {
+                                    <span class="p-scheduler-appointment-slot-label">{{ slot.label }}</span>
+                                }
+                            </div>
+                        }
+
+                        @for (item of column.events; track item.key) {
                             <div
                                 class="p-scheduler-time-grid-event"
                                 data-slot="scheduler-time-grid-event"
@@ -139,6 +215,9 @@ import { SchedulerViewBase } from './scheduler-view-base';
                                 (focusout)="onEventPeekEnd()"
                                 (contextmenu)="onEventContextMenu($event, item.context.event)"
                                 (pointerdown)="onEventPointerDown($event, item.context.event)"
+                                (keydown)="onEventKeydown($event, item.context.event)"
+                                tabindex="0"
+                                role="button"
                                 [attr.data-dragging]="item.context.dragging ? '' : null"
                                 [attr.data-resizing]="item.context.resizing ? '' : null"
                                 [attr.data-draggable]="item.context.draggable ? '' : null"
@@ -159,7 +238,7 @@ import { SchedulerViewBase } from './scheduler-view-base';
                             </div>
                         }
 
-                        @if (day.today) {
+                        @if (column.today) {
                             <div class="p-scheduler-now-indicator" aria-hidden="true" [style.inset-block-start.%]="nowOffset() * 100"></div>
                         }
                     </div>
@@ -223,39 +302,93 @@ export class SchedulerTimeGridView extends SchedulerViewBase {
         });
     });
 
-    /** Where the "now" line sits inside the day, as a fraction. `null` outside the visible hours. */
     /**
-     * Offset from UTC of the rendered day, as `GMT+2`. Goes in the gutter corner because a time grid
-     * without it is ambiguous the moment the data comes from another zone.
+     * Offset of the RENDERED zone, as `GMT+2`. Goes in the gutter corner because a time grid without
+     * it is ambiguous the moment the data comes from another zone — and a target timezone is exactly
+     * that situation.
      */
-    readonly timeZoneLabel = computed(() => {
-        const minutes = -this.state.date().getTimezoneOffset();
-        const sign = minutes < 0 ? '-' : '+';
-        const hours = Math.floor(Math.abs(minutes) / 60);
-        const rest = Math.abs(minutes) % 60;
-        return `GMT${sign}${hours}${rest ? `:${String(rest).padStart(2, '0')}` : ''}`;
-    });
+    readonly timeZoneLabel = computed(() => this.state.timeZoneLabel());
 
+    /** Where the "now" line sits inside the rendered hours, as a fraction. */
     readonly nowOffset = computed(() => {
         const { start, end } = this.state.dayBounds();
-        const now = new Date();
+        const now = this.state.toDisplay(new Date());
         const minutes = now.getHours() * 60 + now.getMinutes();
         const from = start * 60;
         const span = (end - start) * 60;
         return span > 0 ? Math.min(Math.max((minutes - from) / span, 0), 1) : 0;
     });
 
+    /**
+     * How the columns are grouped.
+     *
+     * The view name decides it, and the `groupByResource`/`groupByDate` inputs let a plain `day` or
+     * `week` view group without changing its name — which is what a page switching between "my
+     * week" and "the team's week" wants.
+     */
+    readonly grouping = computed<'none' | 'resource' | 'date'>(() => {
+        const view = this.viewType();
+        if (view === 'resourceDay' || view === 'resourceWeek') return 'resource';
+        if (view === 'dateDay' || view === 'dateWeek') return 'date';
+        if (this.state.groupByDate()) return 'date';
+        if (this.state.groupByResource()) return 'resource';
+        return 'none';
+    });
+
+    /**
+     * The resources the columns are built from, with a trailing unassigned bucket when something
+     * would otherwise have nowhere to go.
+     */
+    private readonly columnResources = computed<(SchedulerResource | null)[]>(() => {
+        if (this.grouping() === 'none') return [null];
+
+        const resources = this.state.resources();
+        const orphans = this.state.visibleEvents().some((event) => this.state.eventBelongsTo(event, null));
+        return orphans ? [...resources, null] : [...resources];
+    });
+
+    /** How many dates the range covers, which is what decides whether a second band earns its row. */
+    private readonly dateCount = computed(() => eachDay(this.state.range().start, this.state.range().end).length);
+
+    /** Minimum width of a column: resource columns are narrower than day columns by nature. */
+    readonly columnMinWidth = computed(() => (this.grouping() === 'none' ? null : (this.state.resourceColumnMinWidth() ?? '5rem')));
+
+    /** @internal */
+    readonly resourceColumnHeaderDef = computed(() => this.def('resourceColumnHeader'));
+
+    /** @internal */
+    readonly slotDisplay = computed(() => this.state.appointmentSlotDisplay());
+
+    /**
+     * Whether the per-column header names the RESOURCE rather than the date: always in date
+     * grouping, where the band above carries the date, and in resource grouping over a single date,
+     * where there is no band.
+     */
+    readonly showResourceInHeader = computed(() => this.grouping() === 'date' || (this.grouping() === 'resource' && this.dateCount() === 1));
+
     /** The columns, each with its cells and positioned events. */
-    readonly days = computed(() => {
+    readonly columns = computed(() => {
         const { start, end } = this.state.range();
         const bounds = this.state.dayBounds();
         const slotMinutes = this.state.slotMinutes();
         const byDay = groupByDay(this.state.visibleEvents(), this.state.defaultEventDuration());
         const interacting = this.state.interactingEventId();
+        const grouping = this.grouping();
+        const dates = eachDay(start, end);
+        const resources = this.columnResources();
 
-        const result = eachDay(start, end).map((date) => {
-            const key = dayKey(date);
-            const dayEvents = byDay.get(key) ?? [];
+        // El orden de las columnas ES la agrupación: recurso-primero recorre los recursos por fuera y
+        // las fechas por dentro, fecha-primero al contrario. Todo lo demás es idéntico.
+        const pairs: { date: Date; resource: SchedulerResource | null }[] =
+            grouping === 'resource'
+                ? resources.flatMap((resource) => dates.map((date) => ({ date, resource })))
+                : grouping === 'date'
+                  ? dates.flatMap((date) => resources.map((resource) => ({ date, resource })))
+                  : dates.map((date) => ({ date, resource: null }));
+
+        return pairs.map(({ date, resource }) => {
+            const dateKey = dayKey(date);
+            const dayEvents = (byDay.get(dateKey) ?? []).filter((event) => grouping === 'none' || this.state.eventBelongsTo(event, resource?.id ?? null));
             const { timed } = this.partitionEvents(dayEvents);
 
             const from = addMinutes(date, bounds.start * 60);
@@ -266,6 +399,7 @@ export class SchedulerTimeGridView extends SchedulerViewBase {
                 minEventMinutes: this.state.minEventMinutes()
             });
 
+            const cellExtra = resource ? { resource } : {};
             const cells = timeSlots(bounds.start, bounds.end, slotMinutes).map((slot) => {
                 const cellStart = addMinutes(date, slot.minutes);
                 const cellEnd = addMinutes(cellStart, slotMinutes);
@@ -275,26 +409,33 @@ export class SchedulerTimeGridView extends SchedulerViewBase {
                 // Scheduler sin businessHours marcaba TODAS sus celdas como work-cell.
                 const inBusiness = this.state.hasBusinessHours() && this.state.isBusinessTime(date, slot.minutes);
                 return {
-                    key: `${key}|${slot.minutes}`,
+                    key: `${dateKey}|${resource?.id ?? ''}|${slot.minutes}`,
                     start: cellStart,
                     end: cellEnd,
                     label: formatTime(cellStart, this.locale()),
                     major: slot.major,
                     business: inBusiness,
-                    binding: this.bindCell(cellStart, [], { label: '' })
+                    binding: this.bindCell(cellStart, [], { ...cellExtra, label: '' })
                 };
             });
 
+            const resourceLabel = resource ? (resource.name ?? String(resource.id)) : this.state.labels().unassigned;
+            const slots = this.state.slotsForColumn(date, resource?.id, bounds);
+
             return {
-                key,
+                key: `${dateKey}|${resource?.id ?? ''}`,
+                dateKey,
                 date,
+                resource,
+                resourceLabel,
                 end: endOfDay(date),
                 today: isToday(date),
                 weekend: date.getDay() === 0 || date.getDay() === 6,
                 weekdayLabel: date.toLocaleDateString(this.locale(), { weekday: 'short' }).toUpperCase(),
-                cell: this.bindCell(date, dayEvents, { label: date.toLocaleDateString(this.locale(), { weekday: 'long', day: 'numeric' }) }),
-                allDayCell: this.bindCell(date, this.partitionEvents(dayEvents).allDay, { label: this.state.labels().allDay }),
+                cell: this.bindCell(date, dayEvents, { ...cellExtra, label: date.toLocaleDateString(this.locale(), { weekday: 'long', day: 'numeric' }) }),
+                allDayCell: this.bindCell(date, this.partitionEvents(dayEvents).allDay, { ...cellExtra, label: this.state.labels().allDay }),
                 cells,
+                slots,
                 events: laid.map((item) => ({
                     top: item.offset,
                     height: item.size,
@@ -308,12 +449,56 @@ export class SchedulerTimeGridView extends SchedulerViewBase {
                     width: item.event.id === interacting ? 1 : (1 / item.columns) * 0.95,
                     continuesBefore: item.continuesBefore,
                     continuesAfter: item.continuesAfter,
-                    ...this.bindEvent(item.event, { continuesBefore: item.continuesBefore, continuesAfter: item.continuesAfter })
+                    // El sufijo de clave: un evento con `resourceIds` sale en varias columnas y son
+                    // superficies distintas, con su propio contexto y su propio injector.
+                    ...this.bindEvent(item.event, { continuesBefore: item.continuesBefore, continuesAfter: item.continuesAfter }, `${dateKey}|${resource?.id ?? ''}`)
                 }))
             };
         });
+    });
 
-        return result;
+    /**
+     * The header band above the columns: one cell per resource spanning its dates, or one per date
+     * spanning its resources. Empty when the columns are plain dates and there is nothing to group.
+     */
+    readonly groups = computed(() => {
+        const grouping = this.grouping();
+        if (grouping === 'none') return [];
+        // Con una sola fecha, el recurso cabe en la cabecera de su propia columna y la banda sería
+        // una fila entera para repetir cinco veces "8 TUE" debajo. La fecha ya está en el título.
+        if (grouping === 'resource' && this.dateCount() === 1) return [];
+
+        const columns = this.columns();
+        const cells: { key: string; label: string; span: number; count: number; resource: SchedulerResource | null; dateKey?: string; context: any }[] = [];
+
+        for (const column of columns) {
+            const key = grouping === 'resource' ? `r|${column.resource?.id ?? ''}` : `d|${column.dateKey}`;
+            const last = cells[cells.length - 1];
+            if (last?.key === key) {
+                last.span++;
+                last.count += column.cell.context.count;
+                continue;
+            }
+            const label = grouping === 'resource' ? column.resourceLabel : column.date.toLocaleDateString(this.locale(), { weekday: 'short', day: 'numeric', month: 'short' });
+            const context = {
+                $implicit: grouping === 'resource' ? column.resource : column.date,
+                resource: column.resource,
+                date: column.date,
+                title: label,
+                label,
+                depth: 0,
+                group: grouping === 'resource',
+                expanded: true,
+                toggle: () => undefined,
+                events: column.cell.context.events,
+                count: column.cell.context.count
+            };
+            // En agrupación por fecha la celda de banda ES una fecha: arrastrar aquí el recurso de la
+            // primera columna le ponía su punto de color al día.
+            cells.push({ key, label, span: 1, count: column.cell.context.count, resource: grouping === 'resource' ? column.resource : null, dateKey: grouping === 'date' ? column.dateKey : undefined, context: { ...context, context } });
+        }
+
+        return cells;
     });
 
     /** Events of the all-day strip, packed into rows across the whole range. */
@@ -329,12 +514,13 @@ export class SchedulerTimeGridView extends SchedulerViewBase {
     });
 
     ngAfterViewChecked(): void {
+        this.state.autoSelectResource();
         // Los contextos se publican DESPUÉS del render: escribir estas señales dentro del computed
         // del layout es justo lo que Angular prohíbe (NG0600).
-        const days = this.days();
+        const columns = this.columns();
         this.publishContexts(
-            [...days.flatMap((day) => day.events), ...this.allDayRows()],
-            days.flatMap((day) => [day.cell, day.allDayCell, ...day.cells.map((cell) => cell.binding)])
+            [...columns.flatMap((column) => column.events), ...this.allDayRows()],
+            columns.flatMap((column) => [column.cell, column.allDayCell, ...column.cells.map((cell) => cell.binding)])
         );
     }
 

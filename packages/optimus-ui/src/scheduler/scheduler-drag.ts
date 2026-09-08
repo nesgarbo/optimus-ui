@@ -232,6 +232,49 @@ export class SchedulerDragController {
         this.begin(originalEvent, event, 'move');
     }
 
+    /**
+     * Moves or resizes an event by a fixed amount, with no pointer involved.
+     *
+     * This is the keyboard path, and it goes through exactly the same validation and the same
+     * pending-change commit as a drag: a schedule you can only edit with a mouse is a schedule some
+     * users cannot edit, and giving the keyboard its own shortcut pipeline is how the two drift
+     * apart.
+     */
+    nudge(originalEvent: KeyboardEvent, event: SchedulerEvent, kind: 'move' | 'resize', minutes: number): boolean {
+        if (kind === 'move' ? !this.deps.startEditable(event) : !this.deps.durationEditable(event)) return false;
+
+        const baseStart = toDate(event.start);
+        const rawEnd = event.end != null ? toDate(event.end) : null;
+        const baseEnd = rawEnd && rawEnd > baseStart ? rawEnd : new Date(baseStart.getTime() + this.deps.defaultEventDuration() * MINUTE_MS);
+        const shift = minutes * MINUTE_MS;
+
+        const start = kind === 'move' ? new Date(baseStart.getTime() + shift) : baseStart;
+        const min = this.deps.minEventMinutes() * MINUTE_MS;
+        const end = kind === 'move' ? new Date(baseEnd.getTime() + shift) : new Date(Math.max(baseEnd.getTime() + shift, start.getTime() + min));
+
+        const to = { start, end, resourceId: event.resourceId, allDay: !!event.allDay };
+        if (!this.deps.allow({ event, start, end, allDay: to.allDay, resourceId: to.resourceId, view: this.deps.view() })) return false;
+
+        const change: SchedulerPendingChange = {
+            from: { start: baseStart.getTime(), end: baseEnd.getTime(), resourceId: event.resourceId, allDay: !!event.allDay },
+            to
+        };
+        this.deps.commit(event.id, change);
+
+        const payload: SchedulerDragPayload = {
+            originalEvent,
+            event,
+            start,
+            end,
+            allDay: to.allDay,
+            resourceId: to.resourceId,
+            edge: kind === 'resize' ? 'end' : undefined,
+            revert: () => this.deps.rollback(event.id)
+        };
+        kind === 'move' ? this.deps.emitDrop(payload) : this.deps.emitResizeStop(payload);
+        return true;
+    }
+
     /** Begins a resize of one edge. */
     startResize(originalEvent: PointerEvent, event: SchedulerEvent, edge: SchedulerResizeEdge): void {
         if (originalEvent.button !== 0 || !this.deps.durationEditable(event)) return;

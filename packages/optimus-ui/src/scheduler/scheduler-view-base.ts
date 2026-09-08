@@ -1,5 +1,5 @@
 import { Directive, EnvironmentInjector, TemplateRef, computed, inject, signal } from '@angular/core';
-import type { SchedulerEvent, SchedulerViewType } from '@openng/optimus-ui/types/scheduler';
+import type { SchedulerEvent, SchedulerResource, SchedulerViewType } from '@openng/optimus-ui/types/scheduler';
 import { SCHEDULER_CELL_CONTEXT, SCHEDULER_EVENT_CONTEXT, type SchedulerCellContext, type SchedulerEventContext } from './scheduler-context';
 import { dayKey, formatTimeRange, isToday, startOfDay, toDate } from './scheduler-date';
 import { SchedulerContextHost } from './scheduler-outlet';
@@ -215,6 +215,38 @@ export abstract class SchedulerViewBase {
     /** Right click on an event surface. */
     protected onEventContextMenu(originalEvent: MouseEvent, event: SchedulerEvent): void {
         this.state.handleContextMenu(originalEvent, { event });
+    }
+
+    /** Activation of a resource row or column header. */
+    protected onResourceClick(resource: SchedulerResource | null | undefined): void {
+        this.state.handleResourceClick(resource);
+    }
+
+    /**
+     * Keyboard editing on a focused event surface.
+     *
+     * Arrows move: up and down by one snap step, left and right by a day. With shift they resize the
+     * end instead. Enter and space activate the surface, which is what a button is announced as
+     * doing.
+     *
+     * It goes through the same controller as a drag, so the validation, the pending change and the
+     * outputs are identical. A schedule that can only be edited with a mouse is a schedule some
+     * users cannot edit, and giving the keyboard its own shortcut pipeline is how the two drift.
+     */
+    protected onEventKeydown(originalEvent: KeyboardEvent, event: SchedulerEvent): void {
+        const snap = this.state.snapMinutes();
+        const day = 24 * 60;
+        const step = originalEvent.key === 'ArrowUp' ? -snap : originalEvent.key === 'ArrowDown' ? snap : originalEvent.key === 'ArrowLeft' ? -day : originalEvent.key === 'ArrowRight' ? day : 0;
+
+        if (step) {
+            if (this.state.drag.nudge(originalEvent, event, originalEvent.shiftKey ? 'resize' : 'move', step)) originalEvent.preventDefault();
+            return;
+        }
+
+        if (originalEvent.key === 'Enter' || originalEvent.key === ' ') {
+            originalEvent.preventDefault();
+            this.state.handleEventClick(originalEvent as unknown as MouseEvent, event);
+        }
     }
 
     /** Right click on a date or time cell. */

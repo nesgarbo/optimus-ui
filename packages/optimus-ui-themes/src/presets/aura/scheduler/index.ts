@@ -76,6 +76,14 @@ export const business: SchedulerTokenSections.Business = {
  * de fuera de horario o con el tinte de hoy, y "aquí no se puede" tiene que leerse distinto de
  * "aquí no se suele".
  */
+/**
+ * El hueco disponible se tiñe con el acento a muy baja opacidad: tiene que verse por DEBAJO de los
+ * eventos sin competir con ellos, y un color propio lo convertiría en una tercera cosa que aprender.
+ */
+export const slotAvailable: SchedulerTokenSections.SlotAvailable = {
+    background: 'color-mix(in srgb, {primary.color}, transparent 94%)'
+};
+
 export const blocked: SchedulerTokenSections.Blocked = {
     background: 'repeating-linear-gradient(135deg, color-mix(in srgb, {text.muted.color}, transparent 88%) 0 4px, transparent 4px 8px)'
 };
@@ -225,6 +233,7 @@ export default {
     event,
     business,
     blocked,
+    slotAvailable,
     month,
     miniMonth,
     miniMonthWeekend,

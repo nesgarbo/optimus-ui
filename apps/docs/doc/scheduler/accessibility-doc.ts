@@ -22,8 +22,13 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
         <h3>Keyboard Support</h3>
         <p>Header controls, view buttons, event surfaces, cells and the overflow list are all native buttons and follow the standard tab order.</p>
         <p>
-            Moving and resizing are POINTER-ONLY today: there is no keyboard equivalent and no grid-style arrow navigation between cells. If editing has to be reachable without a pointer, give the same operation a form — the quick info's edit action,
-            or your own dialog — and treat the drag as the shortcut it is. An interface where the only way to reschedule is to drag is an interface some users cannot reschedule in.
+            Events are focusable and editable from the keyboard. With focus on an event the arrow keys move it — up and down by one <i>snapDuration</i> step, left and right by a day — and the same keys with shift resize its end instead. Enter and
+            space activate it. It runs through the same controller a drag does, so <i>eventAllow</i>, the blocked intervals, the pending change and the <i>(eventDrop)</i>/<i>(eventResizeStop)</i> outputs behave identically: giving the keyboard its
+            own shortcut pipeline is how the two drift apart.
+        </p>
+        <p>
+            What is still missing is grid-style arrow navigation between empty cells, so creating an appointment at a specific time without a pointer needs a form of your own — the quick info's edit action, or a dialog. An interface where the only
+            way to reschedule is to drag is an interface some users cannot reschedule in.
         </p>
         <h3>Direction</h3>
         <p>

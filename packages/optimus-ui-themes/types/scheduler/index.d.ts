@@ -290,6 +290,14 @@ export declare namespace SchedulerTokenSections {
          */
         background?: string;
     }
+    interface SlotAvailable {
+        /**
+         * Background of an available appointment slot
+         *
+         * @designToken scheduler.slot.available.background
+         */
+        background?: string;
+    }
     interface Blocked {
         /**
          * Background of a cell inside a blocked interval
@@ -535,6 +543,7 @@ export interface SchedulerDesignTokens extends DesignTokens<SchedulerDesignToken
     event?: SchedulerTokenSections.Event;
     business?: SchedulerTokenSections.Business;
     blocked?: SchedulerTokenSections.Blocked;
+    slotAvailable?: SchedulerTokenSections.SlotAvailable;
     nonBusiness?: SchedulerTokenSections.NonBusiness;
     month?: SchedulerTokenSections.Month;
     miniMonth?: SchedulerTokenSections.MiniMonth;

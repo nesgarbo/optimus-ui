@@ -5,6 +5,8 @@ import { groupByDay, groupByResource, layoutRows, layoutTimeGrid } from './sched
 import { buildTimelineAxis, placeOnAxis } from './scheduler-timeline-axis';
 import { applyPendingChanges, readCellTarget, snapInstant } from './scheduler-drag';
 import { expandEvents, parseRRule, recurrenceStarts } from './scheduler-recurrence';
+import { fromDisplayTime, toDisplayTime, zoneLabel, zoneOffsetMinutes } from './scheduler-timezone';
+import { parseICalendar, parseSchedule, serializeSchedule, toICalendar } from './scheduler-transfer';
 
 // El motor del Scheduler es aritmética de fechas y colocación de eventos: las dos cosas que se
 // rompen en silencio y sin las que ninguna vista se puede confiar. Se prueba aquí, sin DOM.
@@ -405,5 +407,134 @@ describe('arrastre y redimensión', () => {
         // Cualquier cosa que no sea una celda etiquetada no es un objetivo.
         expect(readCellTarget(document.createElement('div'))).toBeNull();
         expect(readCellTarget(null)).toBeNull();
+    });
+});
+
+describe('zonas horarias', () => {
+    // Un instante conocido: 2026-07-01T12:00:00Z, en pleno verano del hemisferio norte.
+    const summer = new Date(Date.UTC(2026, 6, 1, 12));
+    // Y otro en invierno, para que se vea que el offset se pregunta por instante y no una vez.
+    const winter = new Date(Date.UTC(2026, 0, 1, 12));
+
+    it('el offset se pregunta por instante, así que el horario de verano entra solo', () => {
+        expect(zoneOffsetMinutes(summer, 'Europe/Madrid')).toBe(120);
+        expect(zoneOffsetMinutes(winter, 'Europe/Madrid')).toBe(60);
+        expect(zoneOffsetMinutes(summer, 'Asia/Tokyo')).toBe(540);
+        // Tokio no tiene horario de verano: el mismo offset todo el año.
+        expect(zoneOffsetMinutes(winter, 'Asia/Tokyo')).toBe(540);
+    });
+
+    it('una zona que la plataforma no conoce no rompe nada', () => {
+        expect(Number.isNaN(zoneOffsetMinutes(summer, 'Mars/Olympus'))).toBe(true);
+        // Y desplazar con ella devuelve el instante intacto en vez de una fecha inválida.
+        expect(toDisplayTime(summer, 'Mars/Olympus').getTime()).toBe(summer.getTime());
+    });
+
+    it('la fecha de pantalla lee la hora de pared de la zona destino', () => {
+        // La hora LOCAL de la fecha desplazada tiene que ser la que Intl da en la zona destino: eso
+        // es lo que hace que la aritmética local del motor coloque el evento donde toca.
+        for (const zone of ['Asia/Tokyo', 'America/New_York', 'Pacific/Auckland']) {
+            const expected = Number(new Intl.DateTimeFormat('en-US', { timeZone: zone, hour: '2-digit', hour12: false }).format(summer)) % 24;
+            expect(toDisplayTime(summer, zone).getHours()).toBe(expected);
+        }
+    });
+
+    const zones = ['Europe/Madrid', 'Asia/Tokyo', 'America/New_York', 'Pacific/Auckland'];
+
+    it('desplazar y volver es la identidad, incluido el salto de primavera', () => {
+        // El salto adelante y un instante a cada lado de los cambios americano y europeo: ahí el
+        // instante y su fecha de pantalla caen a distinto lado de una frontera, que es donde una
+        // implementación a base de sumar offsets se deja una hora.
+        const instants = [summer, winter, new Date(Date.UTC(2026, 2, 29, 1, 30)), new Date(Date.UTC(2026, 2, 8, 6, 30)), new Date(Date.UTC(2026, 5, 15, 3, 15))];
+
+        for (const zone of zones) {
+            for (const instant of instants) {
+                expect(fromDisplayTime(toDisplayTime(instant, zone), zone).getTime()).toBe(instant.getTime());
+            }
+        }
+    });
+
+    it('en la hora REPETIDA del cambio de otoño la vuelta cae en una de las dos, sin moverse en pantalla', () => {
+        // Las 02:30 del 25 de octubre existen DOS veces en Madrid, y la 01:30 del 1 de noviembre dos
+        // veces en Nueva York: por el reloj de pared no se puede saber cuál de las dos se quería.
+        for (const [zone, instant] of [
+            ['Europe/Madrid', new Date(Date.UTC(2026, 9, 25, 0, 30))],
+            ['America/New_York', new Date(Date.UTC(2026, 10, 1, 5, 30))]
+        ] as const) {
+            const back = fromDisplayTime(toDisplayTime(instant, zone), zone);
+
+            // Cae en una de las dos: la misma o la de una hora después.
+            expect([instant.getTime(), instant.getTime() + 3_600_000]).toContain(back.getTime());
+            // Y la invariante que sí se mantiene siempre: en pantalla no se mueve nada.
+            expect(toDisplayTime(back, zone).getTime()).toBe(toDisplayTime(instant, zone).getTime());
+        }
+    });
+
+    it('sin zona destino las dos conversiones son la identidad, por referencia', () => {
+        expect(toDisplayTime(summer, undefined)).toBe(summer);
+        expect(fromDisplayTime(summer, undefined)).toBe(summer);
+    });
+
+    it('la etiqueta del gutter dice el offset de la zona que se está pintando', () => {
+        expect(zoneLabel(summer, 'Asia/Tokyo')).toBe('GMT+9');
+        expect(zoneLabel(summer, 'Europe/Madrid')).toBe('GMT+2');
+        expect(zoneLabel(summer, 'Asia/Kolkata')).toBe('GMT+5:30');
+        expect(zoneLabel(winter, 'America/New_York')).toBe('GMT-5');
+    });
+});
+
+describe('importar y exportar', () => {
+    const events: SchedulerEvent[] = [
+        { id: 'a', title: 'Stand-up; daily', start: new Date(2026, 8, 8, 9, 30), end: new Date(2026, 8, 8, 9, 45), description: 'Line one\nline two', rrule: 'FREQ=DAILY;COUNT=5', categoryId: 'ops', resourceId: 'crew' },
+        { id: 'b', title: 'Festival', start: new Date(2026, 8, 10), end: new Date(2026, 8, 13), allDay: true }
+    ];
+
+    it('una serie se exporta como UN VEVENT con su regla, no como sus copias', () => {
+        const ics = toICalendar(events, { name: 'Demo' });
+        expect(ics.match(/BEGIN:VEVENT/g)?.length).toBe(2);
+        expect(ics).toContain('RRULE:FREQ=DAILY;COUNT=5');
+        expect(ics).toContain('X-WR-CALNAME:Demo');
+        // Punto y coma y salto de línea son estructurales en ICS: van escapados.
+        expect(ics).toContain('SUMMARY:Stand-up\\; daily');
+        expect(ics).toContain('DESCRIPTION:Line one\\nline two');
+        // El día completo va como VALUE=DATE, que es lo que el formato entiende por un día entero.
+        expect(ics).toContain('DTSTART;VALUE=DATE:20260910');
+    });
+
+    it('las líneas se plegan a 75 octetos, que es lo que muchos parsers exigen', () => {
+        const long = toICalendar([{ id: 'l', title: 'x'.repeat(200), start: new Date(2026, 8, 8, 9) }]);
+        for (const line of long.split('\r\n')) expect(line.length).toBeLessThanOrEqual(75);
+    });
+
+    it('la ida y vuelta conserva lo que el Scheduler sabe pintar', () => {
+        const { events: parsed, name } = parseICalendar(toICalendar(events, { name: 'Demo' }));
+
+        expect(name).toBe('Demo');
+        expect(parsed.length).toBe(2);
+        expect(parsed[0].id).toBe('a');
+        expect(parsed[0].title).toBe('Stand-up; daily');
+        expect(parsed[0].description).toBe('Line one\nline two');
+        expect(parsed[0]['rrule']).toBe('FREQ=DAILY;COUNT=5');
+        expect(parsed[0]['categoryId']).toBe('ops');
+        expect(parsed[0].resourceId).toBe('crew');
+        expect(toDate(parsed[0].start).getTime()).toBe(new Date(2026, 8, 8, 9, 30).getTime());
+        expect(parsed[1].allDay).toBe(true);
+    });
+
+    it('un calendario roto da lo que se pueda leer, no una excepción', () => {
+        const { events: parsed } = parseICalendar('BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nSUMMARY:No start\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nDTSTART:20260908T090000Z\r\nSUMMARY:Fine\r\nEND:VEVENT\r\nEND:VCALENDAR');
+        // El VEVENT sin DTSTART no se puede colocar en ningún sitio y se descarta; el otro entra.
+        expect(parsed.length).toBe(1);
+        expect(parsed[0].title).toBe('Fine');
+    });
+
+    it('el JSON lleva los instantes como ISO y los devuelve como Date', () => {
+        const payload = serializeSchedule(events, { categories: [{ id: 'ops', name: 'Operations' }] });
+        expect(typeof payload.events[0].start).toBe('string');
+        expect(payload.categories?.length).toBe(1);
+
+        const back = parseSchedule(JSON.stringify(payload));
+        expect(back.events[0].start instanceof Date).toBe(true);
+        expect(toDate(back.events[0].start).getTime()).toBe(new Date(2026, 8, 8, 9, 30).getTime());
     });
 });
