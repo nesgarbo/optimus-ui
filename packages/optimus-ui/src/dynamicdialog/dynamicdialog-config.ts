@@ -1,4 +1,4 @@
-import { Binding, Type } from '@angular/core';
+import { Binding, DirectiveWithBindings, Type } from '@angular/core';
 import type { DialogPassThrough } from '@openng/optimus-ui/types/dialog';
 
 /**
@@ -197,10 +197,18 @@ export class DynamicDialogConfig<DataType = any, InputValuesType extends Record<
      */
     unstyled?: boolean;
     /**
-     * An array of Angular Bindings (providers) to pass to the dynamically created component.
+     * Bindings applied to the component loaded inside the Dialog when it is created, built with
+     * `inputBinding`, `outputBinding` or `twoWayBinding`. Composes with `inputValues`, which is
+     * merged in as input bindings after these.
      * @group Props
      */
     bindings?: Binding[];
+    /**
+     * Directives applied to the component loaded inside the Dialog. Each entry is either a directive
+     * type or a `directive()` result carrying its own bindings.
+     * @group Props
+     */
+    directives?: (Type<unknown> | DirectiveWithBindings<unknown>)[];
 }
 
 /**
