@@ -748,16 +748,13 @@ export const style = /*css*/ `
 
     /* La fila es gutter + tarjeta, no una sola caja: el acento pegado al borde del contenedor se
        leía como un borde del panel, y la lista quedaba desalineada respecto al gutter horario de
-       las vistas de día y semana. La separación entre filas la lleva la FILA y cruza el gutter, que
-       es lo que la hace parecer una lista y no tarjetas suspendidas. */
+       las vistas de día y semana.
+       Y ninguna de las dos lleva borde: con una línea bajo la fila y otra al lado del gutter, la
+       agenda se leía como una tabla de celdas vacías. Lo que separa las citas es el aire entre
+       tarjetas, y lo que separa los días es la cabecera pegajosa. */
     .p-scheduler-agenda-row {
         display: grid;
         grid-template-columns: dt('scheduler.agenda.gutter.width') minmax(0, 1fr);
-        border-bottom: 1px solid dt('scheduler.border.color');
-    }
-
-    .p-scheduler-agenda-row-gutter {
-        border-inline-end: 1px solid dt('scheduler.border.color');
     }
 
     .p-scheduler-agenda-event {
