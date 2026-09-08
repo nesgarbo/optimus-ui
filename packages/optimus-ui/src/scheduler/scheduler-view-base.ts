@@ -1,0 +1,227 @@
+import { Directive, EnvironmentInjector, TemplateRef, computed, inject, signal } from '@angular/core';
+import type { SchedulerEvent, SchedulerViewType } from '@openng/optimus-ui/types/scheduler';
+import { SCHEDULER_CELL_CONTEXT, SCHEDULER_EVENT_CONTEXT, type SchedulerCellContext, type SchedulerEventContext } from './scheduler-context';
+import { dayKey, formatTimeRange, isToday, startOfDay, toDate } from './scheduler-date';
+import { SchedulerContextHost } from './scheduler-outlet';
+import { SCHEDULER_DEF_RESOLVER, type SchedulerSlot } from './scheduler-resolver';
+import { SCHEDULER_STATE } from './scheduler-state';
+
+/**
+ * What every view renderer shares: access to the state, template resolution against the definition
+ * registry, and the per-surface context hosts.
+ *
+ * The renderers are internal — an application never places `<p-scheduler-month-view>`; it declares
+ * `<p-scheduler-month>` as a *scope* and the root picks the renderer for the active view. Keeping
+ * the two apart is what lets a page declare definitions for views it is not currently showing.
+ *
+ * @module scheduler-view-base
+ */
+@Directive()
+export abstract class SchedulerViewBase {
+    /** Shared view state. */
+    protected readonly state = inject(SCHEDULER_STATE);
+
+    /** The definition registry, reached through a token so the module graph stays acyclic. */
+    protected readonly content = inject(SCHEDULER_DEF_RESOLVER, { optional: true });
+
+    private readonly envInjector = inject(EnvironmentInjector);
+
+    /** Which view this renderer is drawing, for `data-view` and for template resolution. */
+    abstract readonly view: SchedulerViewType;
+
+    /**
+     * Whether this renderer can show resize handles.
+     *
+     * The month grid and the all-day strip cannot: they have no time axis, so pulling an edge would
+     * be editing a date range, which is a form, not a drag.
+     */
+    protected readonly resizableSurface: boolean = true;
+
+    /**
+     * Index of every event context of the current layout, keyed the same way the surfaces are.
+     * Filled by {@link collectContexts}, which each renderer calls from its layout computed.
+     */
+    protected readonly eventContexts = signal<ReadonlyMap<unknown, SchedulerEventContext>>(new Map());
+
+    /** Index of every cell context of the current layout. */
+    protected readonly cellContexts = signal<ReadonlyMap<unknown, SchedulerCellContext>>(new Map());
+
+    /** Per-event injectors. Built lazily from the template, never from inside a computed. */
+    protected readonly eventHost = new SchedulerContextHost<SchedulerEventContext>(SCHEDULER_EVENT_CONTEXT, this.envInjector, this.eventContexts);
+
+    /** Per-cell injectors. */
+    protected readonly cellHost = new SchedulerContextHost<SchedulerCellContext>(SCHEDULER_CELL_CONTEXT, this.envInjector, this.cellContexts);
+
+    /** The injector a stamped event template should run in. Call from the template. */
+    eventInjector(key: unknown) {
+        return this.eventHost.injectorFor(key);
+    }
+
+    /** The injector a stamped cell template should run in. Call from the template. */
+    cellInjector(key: unknown) {
+        return this.cellHost.injectorFor(key);
+    }
+
+    /** Locale used for every label this renderer formats. */
+    protected readonly locale = computed(() => this.state.locale());
+
+    ngOnDestroy(): void {
+        this.eventHost.destroy();
+        this.cellHost.destroy();
+    }
+
+    /**
+     * The template declared for a slot, or `undefined` to use the renderer's own markup.
+     *
+     * Resolution goes through {@link SchedulerContent.resolve}, so a definition inside
+     * `<p-scheduler-month>` beats one sitting directly in `<p-scheduler-content>`.
+     */
+    protected def(slot: SchedulerSlot): TemplateRef<any> | undefined {
+        return this.content?.resolve(slot, this.view);
+    }
+
+    /**
+     * Builds the context of an event surface and binds it to its injector.
+     *
+     * `keySuffix` exists for the events that are drawn as MORE THAN ONE surface: a month event that
+     * crosses a week boundary is two bars, and with a single key per event id they would share one
+     * context and overwrite each other's `continuesBefore`/`continuesAfter`.
+     */
+    protected bindEvent(event: SchedulerEvent, extra: Partial<SchedulerEventContext> = {}, keySuffix?: string): { key: unknown; context: SchedulerEventContext & { $implicit: SchedulerEventContext } } {
+        const key = keySuffix ? `${event.id}|${keySuffix}` : event.id;
+        const context: SchedulerEventContext = {
+            event,
+            title: this.state.title(event),
+            timeText: this.timeText(event),
+            view: this.view,
+            accentColor: this.state.accentColor(event),
+            category: this.state.category(event),
+            resource: this.state.resource(event),
+            selected: this.state.isSelected(event),
+            focused: this.state.focusedEventId() === event.id,
+            dragging: this.state.draggingEventId() === event.id,
+            resizing: this.state.resizingEventId() === event.id,
+            draggable: this.state.isStartEditable(event),
+            resizable: this.state.isDurationEditable(event) && this.resizableSurface,
+            continuesBefore: false,
+            continuesAfter: false,
+            ...extra
+        };
+        return { key, context: { ...context, $implicit: context, context } as any };
+    }
+
+    /**
+     * Builds the context of a date or time cell.
+     */
+    protected bindCell(date: Date, events: SchedulerEvent[], extra: Partial<SchedulerCellContext> = {}): { key: unknown; context: SchedulerCellContext & { $implicit: SchedulerCellContext } } {
+        const key = extra.resource ? `${dayKey(date)}|${date.getHours()}:${date.getMinutes()}|${extra.resource.id}` : `${dayKey(date)}|${date.getHours()}:${date.getMinutes()}`;
+        const context: SchedulerCellContext = {
+            date,
+            label: this.cellLabel(date),
+            dateKey: dayKey(date),
+            events,
+            count: events.length,
+            today: isToday(date),
+            weekend: date.getDay() === 0 || date.getDay() === 6,
+            otherMonth: false,
+            businessHours: this.state.isBusinessTime(date),
+            blocked: this.state.isBlocked(date, extra.resource?.id),
+            selected: this.state.isDateSelected(date),
+            disabled: false,
+            ...extra
+        };
+        return { key, context: { ...context, $implicit: context, context } as any };
+    }
+
+    /** Label a cell shows by default. Overridden by the views that need something else. */
+    protected cellLabel(date: Date): string {
+        return String(date.getDate());
+    }
+
+    /**
+     * Localised time range of an event, e.g. `9:00 AM - 10:30 AM`. An all-day event has no time to
+     * show.
+     */
+    protected timeText(event: SchedulerEvent): string {
+        if (event.allDay) return this.state.labels().allDay;
+        const start = toDate(event.start);
+        const end = event.end != null ? toDate(event.end) : new Date(start.getTime() + this.state.defaultEventDuration() * 60_000);
+        return formatTimeRange(start, end, this.locale());
+    }
+
+    /** Splits the visible events into the all-day strip and the time grid. */
+    protected partitionEvents(events: SchedulerEvent[]): { allDay: SchedulerEvent[]; timed: SchedulerEvent[] } {
+        const allDay: SchedulerEvent[] = [];
+        const timed: SchedulerEvent[] = [];
+        for (const event of events) {
+            // Un evento marcado allDay, y también el que cubre 24 h o más, van a la banda superior:
+            // dibujar una barra de 24 h en la rejilla horaria tapa todo lo demás del día.
+            const start = toDate(event.start);
+            const end = event.end != null ? toDate(event.end) : start;
+            (event.allDay || end.getTime() - start.getTime() >= 86_400_000 ? allDay : timed).push(event);
+        }
+        return { allDay, timed };
+    }
+
+    /**
+     * Publishes the contexts of a finished layout so the per-surface injectors can look themselves
+     * up, and drops the injectors of the surfaces that are gone.
+     *
+     * Called from `ngAfterViewChecked` and NOT from the layout computed: writing these signals
+     * inside a computed is exactly what Angular forbids.
+     */
+    protected publishContexts(events: Iterable<{ key: unknown; context: any }>, cells: Iterable<{ key: unknown; context: any }>): void {
+        const eventIndex = new Map<unknown, any>();
+        for (const item of events) eventIndex.set(item.key, item.context);
+        const cellIndex = new Map<unknown, any>();
+        for (const item of cells) cellIndex.set(item.key, item.context);
+
+        this.eventContexts.set(eventIndex);
+        this.cellContexts.set(cellIndex);
+        this.eventHost.sweep();
+        this.cellHost.sweep();
+    }
+
+    /** Handles a click on an event surface. */
+    protected onEventClick(originalEvent: MouseEvent, event: SchedulerEvent): void {
+        this.state.handleEventClick(originalEvent, event);
+    }
+
+    /** A press on an event surface, which may turn into a move. */
+    protected onEventPointerDown(originalEvent: PointerEvent, event: SchedulerEvent): void {
+        this.state.drag.startMove(originalEvent, event);
+    }
+
+    /** A press on a resize handle. */
+    protected onResizePointerDown(originalEvent: PointerEvent, event: SchedulerEvent, edge: 'start' | 'end'): void {
+        this.state.drag.startResize(originalEvent, event, edge);
+    }
+
+    /** Handles a click on an empty slot. */
+    protected onSlotClick(originalEvent: MouseEvent, start: Date, end: Date): void {
+        this.state.handleSlotClick(originalEvent, start, end);
+    }
+
+    /** Pointer or focus entering an event surface, which is what opens the event popover. */
+    protected onEventPeek(originalEvent: Event, event: SchedulerEvent): void {
+        this.state.handleEventPeek(originalEvent, event);
+    }
+
+    /** Pointer or focus leaving an event surface. */
+    protected onEventPeekEnd(): void {
+        this.state.handleEventPeekEnd();
+    }
+
+    /** Right click on an event surface. */
+    protected onEventContextMenu(originalEvent: MouseEvent, event: SchedulerEvent): void {
+        this.state.handleContextMenu(originalEvent, { event });
+    }
+
+    /** Right click on a date or time cell. */
+    protected onCellContextMenu(originalEvent: MouseEvent, date: Date, events: SchedulerEvent[] = []): void {
+        this.state.handleContextMenu(originalEvent, { date, events });
+    }
+
+    /** Today's local midnight, recomputed per render pass so the highlight does not go stale. */
+    protected readonly todayKey = signal(dayKey(startOfDay(new Date())));
+}

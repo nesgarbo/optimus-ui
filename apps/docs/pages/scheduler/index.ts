@@ -1,0 +1,175 @@
+import { Component } from '@angular/core';
+import { AppDoc } from '@/components/doc/app.doc';
+import { AccessibilityDoc } from '@/doc/scheduler/accessibility-doc';
+import { AgendaDoc } from '@/doc/scheduler/agenda-doc';
+import { AvailabilityDoc } from '@/doc/scheduler/availability-doc';
+import { BasicDoc } from '@/doc/scheduler/basic-doc';
+import { BusinessHoursDoc } from '@/doc/scheduler/business-hours-doc';
+import { CategoriesDoc } from '@/doc/scheduler/categories-doc';
+import { ControlledDoc } from '@/doc/scheduler/controlled-doc';
+import { DataAttributesDoc } from '@/doc/scheduler/data-attributes-doc';
+import { DayDoc } from '@/doc/scheduler/day-doc';
+import { DefinitionsDoc } from '@/doc/scheduler/definitions-doc';
+import { EventUiDoc } from '@/doc/scheduler/event-ui-doc';
+import { ImportDoc } from '@/doc/scheduler/import-doc';
+import { InteractionDoc } from '@/doc/scheduler/interaction-doc';
+import { LocaleDoc } from '@/doc/scheduler/locale-doc';
+import { MonthDoc } from '@/doc/scheduler/month-doc';
+import { OverlaysDoc } from '@/doc/scheduler/overlays-doc';
+import { PerformanceDoc } from '@/doc/scheduler/performance-doc';
+import { RecurrenceDoc } from '@/doc/scheduler/recurrence-doc';
+import { ResourceTimelineDoc } from '@/doc/scheduler/resource-timeline-doc';
+import { ResourcesDoc } from '@/doc/scheduler/resources-doc';
+import { RtlDoc } from '@/doc/scheduler/rtl-doc';
+import { SelectionDoc } from '@/doc/scheduler/selection-doc';
+import { TimelineDoc } from '@/doc/scheduler/timeline-doc';
+import { ViewsDoc } from '@/doc/scheduler/views-doc';
+import { WeekDoc } from '@/doc/scheduler/week-doc';
+import { YearDoc } from '@/doc/scheduler/year-doc';
+
+@Component({
+    template: `<app-doc
+        docTitle="Angular Scheduler Component - Optimus UI"
+        header="Scheduler"
+        description="Scheduler is a compound scheduling surface with day, week, month, agenda, year and timeline views."
+        [docs]="docs"
+        [apiDocs]="['Scheduler']"
+        themeDocs="scheduler"
+    ></app-doc>`,
+    standalone: true,
+    imports: [AppDoc]
+})
+export class SchedulerDemo {
+    docs = [
+        {
+            id: 'import',
+            label: 'Import',
+            component: ImportDoc
+        },
+        {
+            id: 'basic',
+            label: 'Basic',
+            component: BasicDoc
+        },
+        {
+            id: 'views',
+            label: 'Views',
+            component: ViewsDoc
+        },
+        {
+            id: 'day',
+            label: 'Day',
+            component: DayDoc
+        },
+        {
+            id: 'week',
+            label: 'Week',
+            component: WeekDoc
+        },
+        {
+            id: 'month',
+            label: 'Month',
+            component: MonthDoc
+        },
+        {
+            id: 'agenda',
+            label: 'Agenda',
+            component: AgendaDoc
+        },
+        {
+            id: 'year',
+            label: 'Year',
+            component: YearDoc
+        },
+        {
+            id: 'timeline',
+            label: 'Timeline',
+            component: TimelineDoc
+        },
+        {
+            id: 'resourcetimeline',
+            label: 'Resource Timeline',
+            component: ResourceTimelineDoc
+        },
+        {
+            id: 'resources',
+            label: 'Resources',
+            component: ResourcesDoc
+        },
+        {
+            id: 'businesshours',
+            label: 'Business Hours',
+            component: BusinessHoursDoc
+        },
+        {
+            id: 'availability',
+            label: 'Availability',
+            component: AvailabilityDoc
+        },
+        {
+            id: 'interaction',
+            label: 'Drag and Resize',
+            component: InteractionDoc
+        },
+        {
+            id: 'recurrence',
+            label: 'Recurring Events',
+            component: RecurrenceDoc
+        },
+        {
+            id: 'categories',
+            label: 'Categories',
+            component: CategoriesDoc
+        },
+        {
+            id: 'selection',
+            label: 'Selection',
+            component: SelectionDoc
+        },
+        {
+            id: 'overlays',
+            label: 'Overlays',
+            component: OverlaysDoc
+        },
+        {
+            id: 'definitions',
+            label: 'Definitions',
+            component: DefinitionsDoc
+        },
+        {
+            id: 'eventui',
+            label: 'Event UI',
+            component: EventUiDoc
+        },
+        {
+            id: 'controlled',
+            label: 'Controlled State',
+            component: ControlledDoc
+        },
+        {
+            id: 'locale',
+            label: 'Locale',
+            component: LocaleDoc
+        },
+        {
+            id: 'rtl',
+            label: 'RTL',
+            component: RtlDoc
+        },
+        {
+            id: 'performance',
+            label: 'Performance',
+            component: PerformanceDoc
+        },
+        {
+            id: 'dataattributes',
+            label: 'Data Attributes',
+            component: DataAttributesDoc
+        },
+        {
+            id: 'accessibility',
+            label: 'Accessibility',
+            component: AccessibilityDoc
+        }
+    ];
+}
