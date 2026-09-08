@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, provideZonelessChangeDetection } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inputBinding, provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { DomHandler } from '@openng/optimus-ui/dom';
@@ -793,7 +793,25 @@ describe('DynamicDialog', () => {
             component.loadChildComponent(TestDialogContentComponent);
 
             expect(mockViewContainer.clear).toHaveBeenCalled();
-            expect(mockViewContainer.createComponent).toHaveBeenCalledWith(TestDialogContentComponent);
+            expect(mockViewContainer.createComponent).toHaveBeenCalledWith(TestDialogContentComponent, { bindings: [] });
+        });
+
+        it('should forward the configured bindings to the child component', () => {
+            const bindings = [inputBinding('title', () => 'From binding')];
+            const mockViewContainer = {
+                clear: vi.fn(),
+                createComponent: vi.fn(() => ({
+                    setInput: vi.fn(),
+                    instance: new TestDialogContentComponent(mockDialogRef as unknown as DynamicDialogRef<any>, mockConfig)
+                }))
+            };
+
+            component.insertionPoint = { viewContainerRef: mockViewContainer as any } as any;
+            component.bindings = bindings;
+
+            component.loadChildComponent(TestDialogContentComponent);
+
+            expect(mockViewContainer.createComponent).toHaveBeenCalledWith(TestDialogContentComponent, { bindings });
         });
 
         it('should display header content', async () => {
