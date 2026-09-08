@@ -116,7 +116,12 @@ import { SchedulerViewBase } from './scheduler-view-base';
                                         [attr.data-end-date]="cell.end.getTime()"
                                         [attr.data-col-index]="cell.index"
                                         [style.grid-column-start]="cell.index + 1"
+                                        data-nav-cell=""
+                                        role="button"
+                                        [attr.aria-label]="cell.ariaLabel"
+                                        [attr.tabindex]="$first && lane.key === visibleLanes()[0].key ? 0 : -1"
                                         (click)="onSlotClick($event, cell.start, cell.end)"
+                                        (keydown)="onCellKeydown($event, cell.start, cell.end)"
                                         (contextmenu)="onCellContextMenu($event, cell.start)"
                                     >
                                         @if (timelineCellDef(); as tpl) {
@@ -345,6 +350,7 @@ export class SchedulerTimelineView extends SchedulerViewBase {
                 index,
                 start: slot.start,
                 end: slot.end,
+                ariaLabel: `${slot.start.toLocaleDateString(this.locale(), { weekday: 'long', day: 'numeric', month: 'long' })} ${slot.label}${group.title ? ` · ${group.title}` : ''}`,
                 major: slot.major,
                 today: slot.today,
                 binding: this.bindCell(slot.start, [], { resource: group.resource, label: '' })

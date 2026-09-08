@@ -1,10 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import type { SchedulerEvent } from '@openng/optimus-ui/types/scheduler';
 import { addDays, addMonths, dayKey, daysBetween, formatTimeRange, navigate, startOfWeek, timeSlots, timelineScaleOf, toDate, viewRange } from './scheduler-date';
 import { groupByDay, groupByResource, layoutRows, layoutTimeGrid } from './scheduler-layout';
 import { buildTimelineAxis, placeOnAxis } from './scheduler-timeline-axis';
 import { applyPendingChanges, readCellTarget, snapInstant } from './scheduler-drag';
 import { expandEvents, parseRRule, recurrenceStarts } from './scheduler-recurrence';
+import { moveCellFocus } from './scheduler-keyboard';
 import { fromDisplayTime, toDisplayTime, zoneLabel, zoneOffsetMinutes } from './scheduler-timezone';
 import { parseICalendar, parseSchedule, serializeSchedule, toICalendar } from './scheduler-transfer';
 
@@ -536,5 +537,91 @@ describe('importar y exportar', () => {
         const back = parseSchedule(JSON.stringify(payload));
         expect(back.events[0].start instanceof Date).toBe(true);
         expect(toDate(back.events[0].start).getTime()).toBe(new Date(2026, 8, 8, 9, 30).getTime());
+    });
+});
+
+describe('navegación por celdas', () => {
+    /** Monta una estructura como la que pinta el renderer, con el marcador que lee el navegador. */
+    function grid(html: string): HTMLElement {
+        const root = document.createElement('div');
+
+        root.className = 'p-scheduler-view';
+        root.innerHTML = html;
+        document.body.appendChild(root);
+        return root;
+    }
+
+    const cell = (label: string) => `<div data-nav-cell="" tabindex="-1" aria-label="${label}"></div>`;
+
+    afterEach(() => document.querySelectorAll('.p-scheduler-view').forEach((node) => node.remove()));
+
+    it('en una columna horaria las verticales recorren la columna y las horizontales cambian de columna', () => {
+        const root = grid(`
+            <div class="p-scheduler-time-grid-column">${cell('a1')}${cell('a2')}${cell('a3')}</div>
+            <div class="p-scheduler-time-grid-column">${cell('b1')}${cell('b2')}${cell('b3')}</div>
+        `);
+        const cells = [...root.querySelectorAll<HTMLElement>('[data-nav-cell]')];
+        const at = (label: string) => cells.find((node) => node.getAttribute('aria-label') === label)!;
+
+        expect(moveCellFocus(at('a1'), 'ArrowDown')).toBe(true);
+        expect(document.activeElement?.getAttribute('aria-label')).toBe('a2');
+        // Cambiar de columna conserva la fila, que es lo que hace útil moverse en horizontal.
+        expect(moveCellFocus(at('a2'), 'ArrowRight')).toBe(true);
+        expect(document.activeElement?.getAttribute('aria-label')).toBe('b2');
+    });
+
+    it('en una semana de mes es al contrario, y bajar salta a la semana siguiente', () => {
+        const root = grid(`
+            <div class="p-scheduler-month-week">${cell('w1d1')}${cell('w1d2')}</div>
+            <div class="p-scheduler-month-week">${cell('w2d1')}${cell('w2d2')}</div>
+        `);
+        const cells = [...root.querySelectorAll<HTMLElement>('[data-nav-cell]')];
+        const at = (label: string) => cells.find((node) => node.getAttribute('aria-label') === label)!;
+
+        expect(moveCellFocus(at('w1d1'), 'ArrowRight')).toBe(true);
+        expect(document.activeElement?.getAttribute('aria-label')).toBe('w1d2');
+        expect(moveCellFocus(at('w1d2'), 'ArrowDown')).toBe(true);
+        expect(document.activeElement?.getAttribute('aria-label')).toBe('w2d2');
+    });
+
+    it('el minimes es una rejilla de siete: bajar avanza una semana', () => {
+        const root = grid(`<div class="p-scheduler-mini-month-grid">${Array.from({ length: 14 }, (_, i) => cell(`d${i + 1}`)).join('')}</div>`);
+        const cells = [...root.querySelectorAll<HTMLElement>('[data-nav-cell]')];
+
+        expect(moveCellFocus(cells[2], 'ArrowDown')).toBe(true);
+        expect(document.activeElement?.getAttribute('aria-label')).toBe('d10');
+        // Y el borde del minimes es el borde: ahí abajo empieza otro mes, no la semana siguiente.
+        expect(moveCellFocus(cells[10], 'ArrowDown')).toBe(false);
+    });
+
+    it('un movimiento que se sale de la rejilla NO se consume, para no atrapar el foco en el borde', () => {
+        const root = grid(`<div class="p-scheduler-time-grid-column">${cell('only')}</div>`);
+        const only = root.querySelector<HTMLElement>('[data-nav-cell]')!;
+
+        expect(moveCellFocus(only, 'ArrowUp')).toBe(false);
+        expect(moveCellFocus(only, 'ArrowLeft')).toBe(false);
+        // Y una tecla que no es de movimiento tampoco.
+        expect(moveCellFocus(only, 'a')).toBe(false);
+    });
+
+    it('en RTL las flechas horizontales se invierten', () => {
+        const root = grid(`
+            <div class="p-scheduler-month-week">${cell('d1')}${cell('d2')}</div>
+        `);
+        const cells = [...root.querySelectorAll<HTMLElement>('[data-nav-cell]')];
+
+        expect(moveCellFocus(cells[0], 'ArrowLeft', true)).toBe(true);
+        expect(document.activeElement?.getAttribute('aria-label')).toBe('d2');
+    });
+
+    it('el foco deja una sola parada de tabulación detrás', () => {
+        const root = grid(`<div class="p-scheduler-month-week">${cell('d1')}${cell('d2')}</div>`);
+        const cells = [...root.querySelectorAll<HTMLElement>('[data-nav-cell]')];
+
+        cells[0].setAttribute('tabindex', '0');
+        moveCellFocus(cells[0], 'ArrowRight');
+
+        expect(cells[0].getAttribute('tabindex')).toBe('-1');
+        expect(cells[1].getAttribute('tabindex')).toBe('0');
     });
 });

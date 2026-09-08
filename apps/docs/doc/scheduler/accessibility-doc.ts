@@ -27,8 +27,13 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
             own shortcut pipeline is how the two drift apart.
         </p>
         <p>
-            What is still missing is grid-style arrow navigation between empty cells, so creating an appointment at a specific time without a pointer needs a form of your own — the quick info's edit action, or a dialog. An interface where the only
-            way to reschedule is to drag is an interface some users cannot reschedule in.
+            Empty cells are navigable too. The grid is ONE tab stop — tabbing into a month reaches the grid, not four hundred cells — and from there the arrows walk it: in a time grid up and down move through the hours while left and right change day
+            or resource, in a month left and right move by a day and up and down by a week, and in a mini-month down is the next week. Home and End jump to the ends of the row or column, and Enter or space activates the cell, which is what fires
+            <i>dateClick</i> and starts an appointment. In RTL the horizontal arrows follow the reading direction.
+        </p>
+        <p>
+            An arrow that would leave the grid is deliberately NOT swallowed, so it goes on scrolling the page instead of trapping focus at the edge. Cells announce their date, time and resource, and they are exposed as buttons rather than as an ARIA
+            grid: the time grid's DOM is column-major, and claiming a row-major grid structure would describe it wrongly.
         </p>
         <h3>Direction</h3>
         <p>

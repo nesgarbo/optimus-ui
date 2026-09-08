@@ -70,6 +70,11 @@ import { SchedulerViewBase } from './scheduler-view-base';
                                     [style.--p-scheduler-bar-rows]="day.barRows"
                                     [attr.data-start-date]="day.date.getTime()"
                                     [attr.data-end-date]="day.end.getTime()"
+                                    data-nav-cell=""
+                                    role="button"
+                                    [attr.aria-label]="day.binding.context.label"
+                                    [attr.tabindex]="$first && week.key === panel.weeks[0].key ? 0 : -1"
+                                    (keydown)="onCellKeydown($event, day.date, day.end)"
                                     (click)="onSlotClick($event, day.date, day.end)"
                                     (contextmenu)="onCellContextMenu($event, day.date, day.events)"
                                 >

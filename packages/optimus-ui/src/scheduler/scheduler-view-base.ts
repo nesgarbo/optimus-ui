@@ -3,6 +3,7 @@ import type { SchedulerEvent, SchedulerResource, SchedulerViewType } from '@open
 import { SCHEDULER_CELL_CONTEXT, SCHEDULER_EVENT_CONTEXT, type SchedulerCellContext, type SchedulerEventContext } from './scheduler-context';
 import { dayKey, formatTimeRange, isToday, startOfDay, toDate } from './scheduler-date';
 import { SchedulerContextHost } from './scheduler-outlet';
+import { moveCellFocus } from './scheduler-keyboard';
 import { SCHEDULER_DEF_RESOLVER, type SchedulerSlot } from './scheduler-resolver';
 import { SCHEDULER_STATE } from './scheduler-state';
 
@@ -215,6 +216,25 @@ export abstract class SchedulerViewBase {
     /** Right click on an event surface. */
     protected onEventContextMenu(originalEvent: MouseEvent, event: SchedulerEvent): void {
         this.state.handleContextMenu(originalEvent, { event });
+    }
+
+    /**
+     * Keyboard navigation and activation on an empty cell.
+     *
+     * Arrows walk the grid, Home and End jump to the ends of the row or column, and Enter or space
+     * activates the cell — which is what starts an appointment. A move that would leave the grid is
+     * NOT swallowed, so the arrow keeps scrolling the page instead of trapping focus at the edge.
+     */
+    protected onCellKeydown(originalEvent: KeyboardEvent, start: Date, end: Date): void {
+        const cell = originalEvent.currentTarget as HTMLElement | null;
+
+        if (originalEvent.key === 'Enter' || originalEvent.key === ' ') {
+            originalEvent.preventDefault();
+            this.onSlotClick(originalEvent as unknown as MouseEvent, start, end);
+            return;
+        }
+
+        if (cell && moveCellFocus(cell, originalEvent.key, this.state.rtl())) originalEvent.preventDefault();
     }
 
     /** Activation of a resource row or column header. */

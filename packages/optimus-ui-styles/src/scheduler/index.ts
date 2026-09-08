@@ -463,6 +463,15 @@ export const style = /*css*/ `
         white-space: nowrap;
     }
 
+    /* El anillo de foco de una celda vacía va por DENTRO: una celda de la rejilla horaria mide
+       28px de alto y un outline por fuera lo tapa la celda siguiente. Sin esto, navegar con las
+       flechas mueve un foco invisible, que es peor que no navegar. */
+    [data-nav-cell]:focus-visible {
+        outline: 0;
+        box-shadow: inset 0 0 0 2px dt('scheduler.focus.ring.color');
+        z-index: 1;
+    }
+
     /* ── Huecos de cita ───────────────────────────────────────────────────── */
 
     /* Detrás de los eventos (z-index por debajo, sin puntero salvo el clic) y con el color de

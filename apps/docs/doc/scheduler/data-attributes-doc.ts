@@ -38,7 +38,8 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
             <i>data-end-date</i> as epoch milliseconds (timeline cells add <i>data-col-index</i>). Event surfaces carry <i>data-event-id</i>, <i>data-selected</i>, <i>data-continues-before</i> and <i>data-continues-after</i>, plus
             <i>data-draggable</i>, <i>data-dragging</i> and <i>data-resizing</i> while they are editable or being moved; resource rows carry <i>data-resource-id</i> and <i>data-depth</i>. The root carries <i>data-disabled</i> and <i>data-rtl</i>, and
             a windowed timeline's scroll container carries <i>data-virtual</i>. A grouped view carries <i>data-grouping</i> on its root, a cell inside a blocked interval carries <i>data-blocked</i>, and an appointment slot carries
-            <i>data-display</i> and <i>data-full</i>.
+            <i>data-display</i> and <i>data-full</i>. Every cell the keyboard can reach carries <i>data-nav-cell</i>, which is what the arrow navigation reads to work out the shape of the grid it is in — a custom cell that keeps it keeps keyboard
+            navigation.
         </p>
         <p>
             <i>data-start-date</i> and <i>data-end-date</i> are the two the drag pipeline actually READS: a drop target is resolved from the cell under the pointer, which is how one controller handles the week grid, the month and a timeline whose

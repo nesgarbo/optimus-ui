@@ -99,7 +99,12 @@ import { SchedulerViewBase } from './scheduler-view-base';
                                 [attr.data-resource-id]="column.resource?.id"
                                 [attr.data-start-date]="column.date.getTime()"
                                 [attr.data-end-date]="column.end.getTime()"
+                                data-nav-cell=""
+                                role="button"
+                                [attr.aria-label]="labels().allDay + ' · ' + column.cell.context.label"
+                                [attr.tabindex]="$first ? 0 : -1"
                                 (click)="onSlotClick($event, column.date, column.end)"
+                                (keydown)="onCellKeydown($event, column.date, column.end)"
                             >
                                 @if (allDayCellDef(); as tpl) {
                                     <ng-container *ngTemplateOutlet="tpl; context: column.allDayCell.context; injector: cellInjector(column.allDayCell.key)" />
@@ -155,7 +160,7 @@ import { SchedulerViewBase } from './scheduler-view-base';
                     }
                 </div>
 
-                @for (column of columns(); track column.key) {
+                @for (column of columns(); track column.key; let columnIndex = $index) {
                     <div class="p-scheduler-time-grid-column" data-slot="scheduler-time-grid-column" [attr.data-date]="column.dateKey" [attr.data-resource-id]="column.resource?.id" [attr.data-today]="column.today && dateCount() > 1 ? '' : null">
                         @for (cell of column.cells; track cell.key) {
                             <div
@@ -167,7 +172,12 @@ import { SchedulerViewBase } from './scheduler-view-base';
                                 [attr.data-blocked]="cell.binding.context.blocked ? '' : null"
                                 [attr.data-start-date]="cell.start.getTime()"
                                 [attr.data-end-date]="cell.end.getTime()"
+                                data-nav-cell=""
+                                role="button"
+                                [attr.aria-label]="cell.ariaLabel"
+                                [attr.tabindex]="columnIndex === 0 && $first ? 0 : -1"
                                 (click)="onSlotClick($event, cell.start, cell.end)"
+                                (keydown)="onCellKeydown($event, cell.start, cell.end)"
                                 (contextmenu)="onCellContextMenu($event, cell.start)"
                             >
                                 @if (cellDef(cell.business); as tpl) {
@@ -413,6 +423,9 @@ export class SchedulerTimeGridView extends SchedulerViewBase {
                     start: cellStart,
                     end: cellEnd,
                     label: formatTime(cellStart, this.locale()),
+                    // La celda vacía es enfocable, así que necesita nombre: sin él un lector de
+                    // pantalla anuncia "botón" cuarenta veces por columna.
+                    ariaLabel: `${cellStart.toLocaleDateString(this.locale(), { weekday: 'long', day: 'numeric', month: 'long' })} ${formatTime(cellStart, this.locale())}${resource ? ` · ${resource.name ?? resource.id}` : ''}`,
                     major: slot.major,
                     business: inBusiness,
                     binding: this.bindCell(cellStart, [], { ...cellExtra, label: '' })

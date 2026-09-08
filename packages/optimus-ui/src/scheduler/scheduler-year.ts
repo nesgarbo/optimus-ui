@@ -51,7 +51,10 @@ import { SchedulerViewBase } from './scheduler-view-base';
                                 [attr.data-selected]="day.binding.context.selected ? '' : null"
                                 [attr.data-event-count]="day.count"
                                 [attr.aria-label]="day.label"
+                                data-nav-cell=""
+                                [attr.tabindex]="day.otherMonth ? -1 : null"
                                 [disabled]="day.otherMonth"
+                                (keydown)="onCellKeydown($event, day.date, day.end)"
                                 (click)="openDay(day.date)"
                             >
                                 @if (miniMonthCellDef(); as tpl) {
@@ -111,6 +114,7 @@ export class SchedulerYearView extends SchedulerViewBase {
                     date,
                     otherMonth: date.getMonth() !== monthIndex,
                     weekend: date.getDay() === 0 || date.getDay() === 6,
+                    end: addDays(date, 1),
                     today: isToday(date, this.state.now()),
                     count: dayEvents.length,
                     // El punto lleva el color del primer evento del día, no un acento genérico: a

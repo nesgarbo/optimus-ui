@@ -4,6 +4,7 @@ export * from './scheduler-agenda';
 export * from './scheduler-context';
 export * from './scheduler-date';
 export * from './scheduler-drag';
+export * from './scheduler-keyboard';
 export * from './scheduler-layout';
 export * from './scheduler-month';
 export * from './scheduler-outlet';
