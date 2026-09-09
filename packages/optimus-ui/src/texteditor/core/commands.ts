@@ -130,6 +130,10 @@ export function toggleBlockType(type: NodeType | undefined, attrs: Attrs | null,
 
 /**
  * Toggles a wrapping node - the blockquote - on the current block.
+ *
+ * Inside a list the wrap is not legal, because a list item starts with a paragraph. Rather than
+ * doing nothing, the item is lifted out of the list first: a user asking for a quote wants a quote,
+ * not silence.
  */
 export function toggleWrap(type: NodeType | undefined): Command {
     return (state, dispatch, view) => {
@@ -137,7 +141,15 @@ export function toggleWrap(type: NodeType | undefined): Command {
 
         if (isInNode(state, type)) return lift(state, dispatch);
 
-        return wrapIn(type)(state, dispatch, view);
+        if (wrapIn(type)(state, dispatch, view)) return true;
+
+        const itemType = depthOf(state, state.schema.nodes['checkList']) >= 0 ? state.schema.nodes['checkListItem'] : state.schema.nodes['listItem'];
+
+        if (!itemType || depthOf(state, itemType) < 0 || !view) return false;
+
+        if (!liftListItem(itemType)(view.state, view.dispatch, view)) return false;
+
+        return wrapIn(type)(view.state, view.dispatch, view);
     };
 }
 

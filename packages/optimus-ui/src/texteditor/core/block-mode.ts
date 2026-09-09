@@ -92,7 +92,13 @@ export function blockModePlugin(options: BlockModeOptions): Plugin {
             handleDOMEvents: {
                 mousemove: (view, event) => {
                     const target = (event.target as HTMLElement | null)?.closest?.('[data-block-index]') as HTMLElement | null;
-                    const index = target ? Number(target.getAttribute('data-block-index')) : -1;
+
+                    /* Crossing the gutter the hover bar lives in means the pointer is over the
+                       content but over no block. Keeping the last block is what lets the user reach
+                       the handle at all: clearing here made the bar vanish under the cursor. */
+                    if (!target) return false;
+
+                    const index = Number(target.getAttribute('data-block-index'));
 
                     if (index === hoveredIndex) return false;
 

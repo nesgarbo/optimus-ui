@@ -156,7 +156,9 @@ export function caretAnchorStyle(caret: CaretPosition | null, size = { width: 26
  * @group Function
  */
 export function anchorStyle(anchor: HTMLElement | null, size = { width: 240, height: 280 }): Record<string, string> {
-    if (!anchor) return { display: 'none' };
+    /* Geometry only exists in a browser: on the server there is no layout to measure, and the
+       popover is closed there anyway. */
+    if (!anchor || typeof anchor.getBoundingClientRect !== 'function') return { display: 'none' };
 
     const rect = anchor.getBoundingClientRect();
 

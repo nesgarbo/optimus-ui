@@ -18,8 +18,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 1.75rem;
-    height: 1.75rem;
+    width: 1.5rem;
+    height: 1.5rem;
     padding: 0;
     border: 0 none;
     border-radius: var(--p-texteditor-border-radius);
@@ -44,7 +44,7 @@
 }
 
 .p-text-editor-ui-select {
-    height: 1.75rem;
+    height: 1.5rem;
     padding: 0 0.25rem;
     border: 0 none;
     border-radius: var(--p-texteditor-border-radius);
@@ -58,11 +58,14 @@
     align-items: center;
     justify-content: center;
     position: relative;
-    width: 1.75rem;
-    height: 1.75rem;
+    width: 1.5rem;
+    height: 1.5rem;
     border-radius: var(--p-texteditor-border-radius);
     color: var(--p-texteditor-muted-color);
     cursor: pointer;
+    /* The native colour input carries a UA minimum size that beats `inset: 0`; without clipping it
+       here it spills over the buttons next to it and swallows their clicks. */
+    overflow: hidden;
 }
 
 .p-text-editor-ui-color:hover {
@@ -74,6 +77,14 @@
 .p-text-editor-ui-color input[type='color'] {
     position: absolute;
     inset: 0;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0 none;
+    appearance: none;
     opacity: 0;
     cursor: pointer;
 }

@@ -49,13 +49,18 @@ import { anchorStyle, createSubmenuController, usePopoverKeys } from './textedit
         'data-part': 'block-controls',
         '[attr.data-block-type]': 'blockType()',
         '[hidden]': 'index() < 0',
-        '[style]': 'anchor()'
+        '[style]': 'anchor()',
+        '(mouseenter)': 'root.setBlockControlsHovered(true)',
+        '(mouseleave)': 'root.setBlockControlsHovered(false)'
     }
 })
 export class TextEditorBlockControls extends BaseComponent<TextEditorPartPassThrough> {
     componentName = 'TextEditorBlockControls';
 
-    private readonly root = inject(TextEditorRoot);
+    /**
+     * The editor this bar belongs to.
+     */
+    readonly root = inject(TextEditorRoot);
 
     private unregister?: () => void;
 

@@ -364,7 +364,16 @@ export function extendNodeSpec(spec: NodeSpec, extension: NodeSpec): NodeSpec {
  * @group Function
  */
 export function createTextEditorSchema(pluginNodes: Record<string, NodeSpec> = {}, pluginMarks: Record<string, MarkSpec> = {}): Schema {
-    const nodes: Record<string, NodeSpec> = { ...baseNodes, ...tableSpec };
+    /* prosemirror-tables names its nodes in snake_case; the rest of the schema - and every command
+       that looks a node up by name - is camelCase, so the four table nodes are renamed here. The
+       library itself finds them through `tableRole`, not through the name, so this is safe. */
+    const nodes: Record<string, NodeSpec> = {
+        ...baseNodes,
+        table: { ...tableSpec['table'], content: 'tableRow+' },
+        tableRow: { ...tableSpec['table_row'], content: '(tableCell | tableHeader)*' },
+        tableCell: tableSpec['table_cell'],
+        tableHeader: tableSpec['table_header']
+    };
     const marks: Record<string, MarkSpec> = { ...baseMarks };
 
     for (const [name, spec] of Object.entries(pluginNodes)) {

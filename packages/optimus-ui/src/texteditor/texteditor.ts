@@ -553,6 +553,10 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     private readonly blockMenuRequest = signal<{ index: number; anchor: HTMLElement | null } | null>(null);
 
+    private readonly blockControlsHovered = signal(false);
+
+    private blockHoverTimer: ReturnType<typeof setTimeout> | null = null;
+
     private readonly draggedBlock = signal<number | null>(null);
 
     private readonly dropIndicator = signal<number | null>(null);
@@ -1107,9 +1111,20 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
      */
     onBlockDragEnd(): void {
         const from = this.draggedBlock();
+
+        /* Already applied on drop in the common case; this is the fallback for a drag that ends
+           outside the content, where no drop event ever reaches the editor. */
+        if (from != null) this.applyBlockDrop(from);
+        else this.blockDragEnd.emit();
+    }
+
+    /**
+     * Moves the dragged block to the indicator's position and clears the drag state.
+     */
+    private applyBlockDrop(from: number): void {
         const to = this.dropIndicator();
 
-        if (from != null && to != null) this.moveBlock(from, to);
+        if (to != null) this.moveBlock(from, to);
 
         this.draggedBlock.set(null);
         this.dropIndicator.set(null);
@@ -1451,6 +1466,43 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
     readonly blockMenuAnchor = this.blockMenuRequest.asReadonly();
 
     /**
+     * Tracks the hovered block, and keeps the hover bar up while the pointer is on the bar itself.
+     *
+     * The bar lives outside the block it belongs to, so moving the pointer onto it would otherwise
+     * read as leaving the block - and the handle would disappear under the cursor on the way to it.
+     */
+    private setHoveredBlock(element: HTMLElement | null, index: number): void {
+        if (this.blockHoverTimer) clearTimeout(this.blockHoverTimer);
+
+        if (index >= 0) {
+            this.hoveredBlock.set(index);
+            this.hoveredElement.set(element);
+            this.blockHoverChange.emit({ element, index });
+
+            return;
+        }
+
+        this.blockHoverTimer = setTimeout(() => {
+            if (this.blockControlsHovered() || this.draggedBlock() != null || this.blockMenuRequest()) return;
+
+            this.hoveredBlock.set(-1);
+            this.hoveredElement.set(null);
+            this.blockHoverChange.emit({ element: null, index: -1 });
+        }, 150);
+    }
+
+    /**
+     * Reports whether the pointer is on the hover bar, which keeps it from hiding itself.
+     *
+     * @internal
+     */
+    setBlockControlsHovered(hovered: boolean): void {
+        this.blockControlsHovered.set(hovered);
+
+        if (!hovered) this.setHoveredBlock(null, -1);
+    }
+
+    /**
      * Opens the block handle menu for one block.
      *
      * @internal
@@ -1689,11 +1741,7 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
         if (this.mode() === 'block') {
             plugins.push(
                 blockModePlugin({
-                    onHoverChange: (element, index) => {
-                        this.hoveredBlock.set(index);
-                        this.hoveredElement.set(element);
-                        this.blockHoverChange.emit({ element, index });
-                    },
+                    onHoverChange: (element, index) => this.setHoveredBlock(element, index),
                     dropIndicatorIndex: () => this.dropIndicator(),
                     draggedIndex: () => this.draggedBlock()
                 })
@@ -1878,6 +1926,18 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
     }
 
     private handleDrop(event: DragEvent): boolean {
+        /* A block drag ends here rather than in `dragend`: the drop is the event that carries the
+           position, and relying on dragend alone loses the move when the pointer is released over
+           the content. */
+        const dragged = this.draggedBlock();
+
+        if (dragged != null && this.mode() === 'block') {
+            event.preventDefault();
+            this.applyBlockDrop(dragged);
+
+            return true;
+        }
+
         const files = Array.from(event.dataTransfer?.files ?? []);
 
         if (!files.length) return false;

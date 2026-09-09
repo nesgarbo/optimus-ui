@@ -403,11 +403,11 @@ export const style = /*css*/ `
     }
 
     .p-text-editor-table-add-col {
-        width: 1.25rem;
+        width: 1rem;
     }
 
     .p-text-editor-table-add-row {
-        height: 1.25rem;
+        height: 1rem;
     }
 
     .p-text-editor-body:hover .p-text-editor-table-add {
@@ -415,6 +415,12 @@ export const style = /*css*/ `
     }
 
     /******************** Block mode ********************/
+
+    /* A gutter wide enough for the hover bar: the handles sit beside the block, and without room
+       for them inside the editor they would be clipped by the root's overflow. */
+    .p-text-editor-block-mode .p-text-editor-content {
+        padding-inline-start: 3rem;
+    }
 
     .p-text-editor-block {
         position: relative;
@@ -435,7 +441,7 @@ export const style = /*css*/ `
         transform: translateX(-100%);
         padding-inline-end: 0.25rem;
         color: dt('texteditor.muted.color');
-        z-index: 1;
+        z-index: 1100;
     }
 
     .p-text-editor-block-controls[data-block-type^='heading'] {

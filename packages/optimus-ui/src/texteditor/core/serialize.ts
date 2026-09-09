@@ -45,7 +45,19 @@ function sanitizeElement(element: Element): void {
 
         if (name === 'target' && !safeLinkTarget(value)) element.removeAttribute(attribute.name);
 
-        if (name === 'style' && !isSafeCssValue(value)) element.removeAttribute(attribute.name);
+        /* Declaration by declaration, not the attribute as a whole: the browser normalizes a style
+           attribute with a trailing `;`, and a check meant for values would then reject every style
+           the editor itself wrote. */
+        if (name === 'style') {
+            const safe = value
+                .split(';')
+                .map((declaration) => declaration.trim())
+                .filter(Boolean)
+                .filter((declaration) => isSafeCssValue(declaration.slice(declaration.indexOf(':') + 1)));
+
+            if (safe.length) element.setAttribute('style', safe.join('; '));
+            else element.removeAttribute(attribute.name);
+        }
     }
 }
 
