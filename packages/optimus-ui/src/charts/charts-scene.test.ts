@@ -1,0 +1,378 @@
+import { describe, expect, it } from 'vitest';
+import { computed, signal, type Signal } from '@angular/core';
+import type { AxisScale, BarSeriesProps, BaseAxisProps, ChartTheme, LineSeriesProps, SvgNode } from '@openng/optimus-ui/types/charts';
+import { bandScale, linearScale } from './core/scale';
+import { defaultLightTheme } from './core/palette';
+import { serializeSvgNode } from './core/svg-node';
+import type { ChartContext, SeriesRegistration } from './charts-registry';
+import type { ResolvedSeries, SeriesPoint } from './charts-state';
+import { buildScene } from './render/build-scene';
+import type { DrawContext } from './render/scene';
+import { resolveAxis } from './render/axis';
+
+// The scene is where the engine's numbers become marks. Testing it directly -- with a hand-built
+// context rather than a mounted component -- is what lets these assertions be about geometry
+// instead of about Angular.
+
+const AREA = { x: 40, y: 10, width: 400, height: 200 };
+
+function drawContext(overrides: Partial<DrawContext> = {}): DrawContext {
+    return {
+        area: AREA,
+        scales: new Map<string, AxisScale>([
+            ['x:default', bandScale(['Jan', 'Feb', 'Mar'], { start: AREA.x, end: AREA.x + AREA.width }, 0.2, 0.1)],
+            ['y:default', linearScale(0, 100, { start: AREA.y + AREA.height, end: AREA.y })]
+        ]),
+        theme: defaultLightTheme as ChartTheme,
+        isDark: false,
+        fontFamily: 'system-ui, sans-serif',
+        fontSize: 12,
+        direction: 'ltr',
+        locale: 'en-US',
+        progress: 1,
+        hover: null,
+        hoverEffect: null,
+        isItemVisible: () => true,
+        chartId: 'chart-1',
+        // A fixed width per character keeps the collision assertions deterministic, which a real
+        // font measurement in a headless environment would not be.
+        measureText: (text, fontSize) => text.length * fontSize * 0.6,
+        ...overrides
+    };
+}
+
+function points(values: (number | null)[], categories = ['Jan', 'Feb', 'Mar']): SeriesPoint[] {
+    return values.map((value, i) => ({ category: categories[i] ?? String(i), value, base: 0, dataIndex: i }));
+}
+
+function series(type: ResolvedSeries['type'], props: object, values: (number | null)[], overrides: Partial<ResolvedSeries> = {}): ResolvedSeries {
+    const registration: SeriesRegistration = {
+        id: overrides.id ?? `${type}-1`,
+        type,
+        props: computed(() => props) as never,
+        seriesIndex: signal(overrides.seriesIndex ?? 0)
+    };
+
+    const resolved: ResolvedSeries = {
+        id: registration.id,
+        type,
+        seriesIndex: overrides.seriesIndex ?? 0,
+        points: overrides.points ?? points(values),
+        categories: ['Jan', 'Feb', 'Mar'],
+        xAxisId: 'default',
+        yAxisId: 'default',
+        visible: overrides.visible ?? true,
+        registration
+    };
+
+    return resolved;
+}
+
+function fakeContext(axes: { axis: 'x' | 'y'; id: string; props: BaseAxisProps & { position?: string } }[] = [], features: { type: string; props: object }[] = []): ChartContext {
+    const noop = () => () => {};
+
+    return {
+        renderer: 'svg',
+        chartArea: signal(AREA),
+        width: signal(480),
+        height: signal(220),
+        scales: signal(new Map()),
+        domains: signal(new Map()),
+        xScale: signal(undefined),
+        yScale: signal(undefined),
+        theme: signal(defaultLightTheme as ChartTheme),
+        isDark: signal(false),
+        textColor: signal('#0f172a'),
+        fontFamily: signal('system-ui, sans-serif'),
+        fontSize: signal(12),
+        direction: signal('ltr'),
+        locale: signal('en-US'),
+        progress: signal(1),
+        hover: signal(null),
+        hiddenDatasets: signal(new Set<string>()),
+        hiddenItems: signal(new Map()),
+        registerSeries: noop,
+        registerFeature: noop,
+        registerAxis: noop,
+        reserve: noop,
+        series: signal([]),
+        features: signal(features.map((entry) => ({ type: entry.type, props: computed(() => entry.props) })) as never),
+        axes: signal(axes.map((entry) => ({ axis: entry.axis, id: entry.id, props: computed(() => entry.props) })) as never),
+        feature: ((type: string) => computed(() => features.filter((entry) => entry.type === type).map((entry) => ({ type, props: computed(() => entry.props) }))[0])) as never,
+        isDatasetVisible: () => true,
+        isItemVisible: () => true,
+        toggleDataset: () => {},
+        toggleItems: () => {},
+        setHover: () => {},
+        requestRender: () => {}
+    } as unknown as ChartContext;
+}
+
+/** Flattens a scene into markup, which is the easiest thing to make assertions about. */
+function markupOf(layers: { key: string; nodes: SvgNode[] }[]): string {
+    return layers.map((layer) => layer.nodes.map(serializeSvgNode).join('')).join('');
+}
+
+/** Collects every node in a scene, at any depth. */
+function allNodes(layers: { key: string; nodes: SvgNode[] }[]): SvgNode[] {
+    const out: SvgNode[] = [];
+    const walk = (node: SvgNode) => {
+        out.push(node);
+        for (const child of node.children) {
+            if (typeof child !== 'string') walk(child);
+        }
+    };
+
+    for (const layer of layers) {
+        for (const node of layer.nodes) walk(node);
+    }
+
+    return out;
+}
+
+describe('scene composition', () => {
+    const axes = [
+        { axis: 'x' as const, id: 'default', props: { id: 'default', type: 'category' as const } },
+        { axis: 'y' as const, id: 'default', props: { id: 'default', type: 'linear' as const } }
+    ];
+
+    it('draws an axis, a grid and a line from one pass', () => {
+        const ctx = drawContext();
+        const context = fakeContext(axes);
+        const line = series('line', { data: [{}, {}, {}], categoryXField: 'c', valueYField: 'v' } satisfies LineSeriesProps, [10, 50, 90]);
+
+        const scene = buildScene(context, [line], ctx);
+        const keys = scene.layers.map((layer) => layer.key);
+
+        expect(keys).toContain('grid');
+        expect(keys).toContain('axes');
+        expect(keys).toContain('marks');
+        // Grid under the marks, axes under them too: the z-order is the layer order.
+        expect(keys.indexOf('grid')).toBeLessThan(keys.indexOf('marks'));
+    });
+
+    it('emits a line path that stays inside the plot area', () => {
+        const scene = buildScene(fakeContext(axes), [series('line', { data: [{}, {}, {}] }, [10, 50, 90])], drawContext());
+        const path = allNodes(scene.layers).find((node) => node.tag === 'path' && String(node.attrs['class'] ?? '').includes('p-chart-line'));
+
+        expect(path).toBeDefined();
+
+        const coords = [...String(path!.attrs['d']).matchAll(/(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)/g)].map((m) => [parseFloat(m[1]), parseFloat(m[2])]);
+
+        expect(coords.length).toBeGreaterThan(0);
+
+        for (const [x, y] of coords) {
+            expect(x).toBeGreaterThanOrEqual(AREA.x - 1);
+            expect(x).toBeLessThanOrEqual(AREA.x + AREA.width + 1);
+            expect(y).toBeGreaterThanOrEqual(AREA.y - 1);
+            expect(y).toBeLessThanOrEqual(AREA.y + AREA.height + 1);
+        }
+    });
+
+    it('puts a higher value higher on screen', () => {
+        // The y range is inverted on purpose -- SVG y grows downward -- and getting that backwards
+        // draws every chart upside down, which is why it is asserted rather than assumed.
+        const scene = buildScene(fakeContext(axes), [series('line', { data: [{}, {}, {}] }, [10, 50, 90])], drawContext());
+        const path = allNodes(scene.layers).find((node) => node.tag === 'path' && String(node.attrs['class'] ?? '').includes('p-chart-line'))!;
+        const ys = [...String(path.attrs['d']).matchAll(/-?\d+(?:\.\d+)? (-?\d+(?:\.\d+)?)/g)].map((m) => parseFloat(m[1]));
+
+        expect(ys[0]).toBeGreaterThan(ys[ys.length - 1]);
+    });
+
+    it('omits the fill until fillOpacity asks for one', () => {
+        const line = { data: [{}, {}, {}] } satisfies LineSeriesProps;
+        const withoutFill = buildScene(fakeContext(axes), [series('line', line, [10, 50, 90])], drawContext());
+
+        expect(markupOf(withoutFill.layers)).not.toContain('p-chart-area');
+
+        const withFill = buildScene(fakeContext(axes), [series('line', { ...line, fillOpacity: 0.4 }, [10, 50, 90])], drawContext());
+
+        expect(markupOf(withFill.layers)).toContain('p-chart-area');
+    });
+
+    it('breaks a line at a null instead of bridging it', () => {
+        const scene = buildScene(fakeContext(axes), [series('line', { data: [{}, {}, {}] }, [10, null, 90])], drawContext());
+        const paths = allNodes(scene.layers).filter((node) => node.tag === 'path' && String(node.attrs['class'] ?? '').includes('p-chart-line'));
+
+        // Two runs, not one path straight through the gap.
+        expect(paths).toHaveLength(2);
+    });
+
+    it('bridges the gap when connectNulls asks it to', () => {
+        const scene = buildScene(fakeContext(axes), [series('line', { data: [{}, {}, {}], connectNulls: 'connect' }, [10, null, 90])], drawContext());
+        const paths = allNodes(scene.layers).filter((node) => node.tag === 'path' && String(node.attrs['class'] ?? '').includes('p-chart-line'));
+
+        expect(paths).toHaveLength(1);
+    });
+
+    it('draws bars from the baseline, with a negative bar the other way', () => {
+        const scaled = drawContext({
+            scales: new Map<string, AxisScale>([
+                ['x:default', bandScale(['Jan', 'Feb', 'Mar'], { start: AREA.x, end: AREA.x + AREA.width }, 0.2, 0.1)],
+                ['y:default', linearScale(-50, 100, { start: AREA.y + AREA.height, end: AREA.y })]
+            ])
+        });
+        const scene = buildScene(fakeContext(axes), [series('bar', { data: [{}, {}, {}] } satisfies BarSeriesProps, [50, -30, 90])], scaled);
+        const bars = allNodes(scene.layers).filter((node) => String(node.attrs['data-slot']) === 'chart-bar');
+
+        expect(bars).toHaveLength(3);
+
+        const baseline = scaled.scales.get('y:default')!.scale(0);
+        const tops = bars.map((bar) => [...String(bar.attrs['d']).matchAll(/-?\d+(?:\.\d+)?\s(-?\d+(?:\.\d+)?)/g)].map((m) => parseFloat(m[1])));
+
+        // The positive bars sit above the baseline and the negative one below it.
+        expect(Math.min(...tops[0])).toBeLessThan(baseline);
+        expect(Math.max(...tops[1])).toBeGreaterThan(baseline);
+    });
+
+    it('divides a band between grouped bar series without overlapping them', () => {
+        const first = series('bar', { data: [{}, {}, {}] }, [50, 60, 70], { id: 'bar-a', seriesIndex: 0 });
+        const second = series('bar', { data: [{}, {}, {}] }, [30, 40, 50], { id: 'bar-b', seriesIndex: 1 });
+        const scene = buildScene(fakeContext(axes), [first, second], drawContext());
+        const bars = allNodes(scene.layers).filter((node) => String(node.attrs['data-slot']) === 'chart-bar');
+        const firstJan = bars.find((bar) => bar.attrs['data-series'] === 'bar-a' && bar.attrs['data-index'] === 0)!;
+        const secondJan = bars.find((bar) => bar.attrs['data-series'] === 'bar-b' && bar.attrs['data-index'] === 0)!;
+
+        const xOf = (node: SvgNode) => parseFloat(String(node.attrs['d']).match(/M (-?\d+(?:\.\d+)?)/)![1]);
+
+        // Side by side, which is the documented default for bar series with no ChartStacked.
+        expect(xOf(firstJan)).toBeLessThan(xOf(secondJan));
+    });
+
+    it('skips a hidden series but keeps drawing the rest', () => {
+        const visible = series('line', { data: [{}, {}, {}] }, [10, 50, 90], { id: 'line-a' });
+        const hidden = series('line', { data: [{}, {}, {}] }, [20, 30, 40], { id: 'line-b', visible: false, seriesIndex: 1 });
+        const markup = markupOf(buildScene(fakeContext(axes), [visible, hidden], drawContext()).layers);
+
+        expect(markup).toContain('data-series="line-a"');
+        expect(markup).not.toContain('data-series="line-b"');
+    });
+
+    it('draws nothing at all when the plot area has collapsed', () => {
+        const collapsed = drawContext({ area: { x: 0, y: 0, width: 0, height: 0 } });
+        const scene = buildScene(fakeContext(axes), [series('line', { data: [{}] }, [10])], collapsed);
+
+        expect(scene.layers).toHaveLength(0);
+    });
+
+    it('carries the public data attributes every mark is meant to expose', () => {
+        const scene = buildScene(fakeContext(axes), [series('bar', { data: [{}, {}, {}] }, [50, 60, 70])], drawContext());
+        const bar = allNodes(scene.layers).find((node) => String(node.attrs['data-slot']) === 'chart-bar')!;
+
+        // These are the documented styling and testing hooks, so they are part of the contract
+        // rather than an implementation detail.
+        expect(bar.attrs['data-series']).toBe('bar-1');
+        expect(bar.attrs['data-index']).toBe(0);
+        expect(bar.attrs['data-category']).toBe('Jan');
+    });
+
+    it('registers a gradient definition when a series is filled with one', () => {
+        const gradient = {
+            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+            stops: [
+                { offset: 0, color: '#5daeea' },
+                { offset: 1, color: 'transparent' }
+            ]
+        };
+        const scene = buildScene(fakeContext(axes), [series('line', { data: [{}, {}, {}], color: gradient, fillOpacity: 1 }, [10, 50, 90])], drawContext());
+        const def = scene.defs.find((node) => node.tag === 'linearGradient');
+
+        expect(def).toBeDefined();
+        expect(def!.children).toHaveLength(2);
+        expect(markupOf(scene.layers)).toContain(`url(#${def!.attrs['id']})`);
+    });
+
+    it('grows marks out of the baseline while the entrance animation runs', () => {
+        // Animating the geometry rather than the opacity means every mark on screen mid-animation
+        // is at a real value, rather than a final value shown faintly.
+        const half = drawContext({ progress: 0.5 });
+        const full = drawContext({ progress: 1 });
+        const heightOf = (ctx: DrawContext) => {
+            const scene = buildScene(fakeContext(axes), [series('bar', { data: [{}] }, [100], { points: points([100], ['Jan']) })], ctx);
+            const bar = allNodes(scene.layers).find((node) => String(node.attrs['data-slot']) === 'chart-bar')!;
+            const ys = [...String(bar.attrs['d']).matchAll(/-?\d+(?:\.\d+)?\s(-?\d+(?:\.\d+)?)/g)].map((m) => parseFloat(m[1]));
+
+            return Math.max(...ys) - Math.min(...ys);
+        };
+
+        expect(heightOf(half)).toBeLessThan(heightOf(full));
+        expect(heightOf(half)).toBeGreaterThan(0);
+    });
+});
+
+describe('axis resolution', () => {
+    it('reserves more room for a rotated label than a flat one', () => {
+        const ctx = drawContext();
+        const scale = ctx.scales.get('x:default')!;
+        const flat = resolveAxis(ctx, scale, { tickRotation: 0 }, 'bottom', 'category');
+        const tilted = resolveAxis(ctx, scale, { tickRotation: -45 }, 'bottom', 'category');
+
+        expect(tilted.reservation).toBeGreaterThan(flat.reservation);
+    });
+
+    it('rotates crowded labels rather than dropping them', () => {
+        const crowded = drawContext({
+            scales: new Map<string, AxisScale>([
+                [
+                    'x:default',
+                    bandScale(
+                        Array.from({ length: 40 }, (_, i) => `Category ${i}`),
+                        { start: 0, end: 300 },
+                        0.2,
+                        0.1
+                    )
+                ]
+            ])
+        });
+        const render = resolveAxis(crowded, crowded.scales.get('x:default')!, {}, 'bottom', 'category');
+
+        // Rotation is preferred because a tilted label still says what it says.
+        expect(render.rotation).not.toBe(0);
+    });
+
+    it('keeps every label when autoSkip is switched off', () => {
+        const crowded = drawContext({
+            scales: new Map<string, AxisScale>([
+                [
+                    'x:default',
+                    bandScale(
+                        Array.from({ length: 40 }, (_, i) => `Category ${i}`),
+                        { start: 0, end: 300 },
+                        0.2,
+                        0.1
+                    )
+                ]
+            ])
+        });
+        const skipped = resolveAxis(crowded, crowded.scales.get('x:default')!, {}, 'bottom', 'category');
+        const kept = resolveAxis(crowded, crowded.scales.get('x:default')!, { autoSkip: false }, 'bottom', 'category');
+
+        expect(kept.ticks.length).toBe(40);
+        expect(skipped.ticks.length).toBeLessThan(40);
+    });
+
+    it('reserves nothing for an invisible axis', () => {
+        const ctx = drawContext();
+        const render = resolveAxis(ctx, ctx.scales.get('y:default')!, { visible: false }, 'left', 'linear');
+
+        expect(render.reservation).toBe(0);
+    });
+
+    it('formats a value axis through the locale', () => {
+        const german = resolveAxis(drawContext({ locale: 'de-DE' }), linearScale(0, 3000, { start: 200, end: 0 }), {}, 'left', 'linear');
+        const english = resolveAxis(drawContext({ locale: 'en-US' }), linearScale(0, 3000, { start: 200, end: 0 }), {}, 'left', 'linear');
+
+        // German groups with a dot and does not abbreviate at this magnitude; English abbreviates.
+        expect(german.ticks.map((tick) => tick.label)).toContain('2.000');
+        expect(english.ticks.map((tick) => tick.label)).toContain('2K');
+    });
+
+    it('keeps the thousands separator where a locale does not abbreviate', () => {
+        // German compact renders 5000 as bare '5000', which is no shorter than '5.000' and has lost
+        // the separator, so the plain grouped form has to win.
+        const german = resolveAxis(drawContext({ locale: 'de-DE' }), linearScale(0, 5000, { start: 200, end: 0 }), {}, 'left', 'linear');
+
+        expect(german.ticks.map((tick) => tick.label)).not.toContain('5000');
+        expect(german.ticks.map((tick) => tick.label)).toContain('5.000');
+    });
+});

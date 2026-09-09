@@ -16,6 +16,14 @@ import { sortCategories, stackedDomain, stackSeries, waterfallDomain, waterfallS
 import { niceDomain } from './core/ticks';
 import { type AxisRegistration, type ChartContext, type FeatureRegistration, type ReservationEdge, type SeriesRegistration, scaleKey } from './charts-registry';
 
+/**
+ * An axis' domain, before it is given a pixel range.
+ *
+ * Splitting this out of the scale is what lets an axis measure its own labels and reserve layout
+ * space without needing the plot area that its reservation will go on to determine.
+ */
+export type AxisDomain = { kind: 'category'; categories: string[]; banded: boolean; padding?: number } | { kind: 'value'; type: AxisType; extent: [number, number] };
+
 /** A resolved value of one series at one category. */
 export interface SeriesPoint {
     category: string;
@@ -289,53 +297,76 @@ export function createChartState(options: ChartStateOptions) {
     });
 
     /**
-     * Builds every scale.
+     * Every axis' domain, computed without reference to the plot area.
+     *
+     * Keeping the domain separate from the scale breaks a real circularity: an axis reserves space
+     * for its labels, the reservation sets the plot area, and the area sets the scale. If the
+     * labels could only be known from the scale, that loop would never close. The label *text*
+     * depends only on the domain, so an axis can measure and reserve from this while the scale
+     * -- which is the domain plus a pixel range -- is built afterwards.
      *
      * A category axis takes the union of its series' categories, so two series with different but
      * overlapping categories share one domain instead of one silently winning. A value axis takes
      * the extremes of whatever the stacking left behind, which is why this runs after resolution
      * rather than off the raw props.
      */
-    const scales = computed<Map<string, AxisScale>>(() => {
-        const area = chartArea();
+    const domains = computed<Map<string, AxisDomain>>(() => {
         const series = resolvedSeries().filter((entry) => entry.visible && isCartesian(entry.type));
         const axes = activeAxes();
+        const result = new Map<string, AxisDomain>();
+
+        for (const [key, axis] of axes) {
+            const props = axis.props();
+            const type = (props['type'] as AxisType | undefined) ?? 'category';
+            const bound = series.filter((entry) => (axis.axis === 'x' ? entry.xAxisId : entry.yAxisId) === axis.id);
+
+            if (type === 'category') {
+                const categories = unionCategories(bound.map((entry) => entry.categories));
+                const sort = props['sort'] as 'value-asc' | 'value-desc' | 'label-asc' | 'label-desc' | undefined;
+                const ordered = sort ? sortCategories(categories, (category) => sumAt(bound, category), sort) : categories;
+
+                result.set(key, { kind: 'category', categories: ordered, banded: seriesUsesBands(bound), padding: numberProp(props['chartPaddingMin']) ?? undefined });
+                continue;
+            }
+
+            result.set(key, { kind: 'value', type, extent: valueDomain(bound, props, type) });
+        }
+
+        return result;
+    });
+
+    /** Turns each domain into a scale by giving it the pixel range the layout settled on. */
+    const scales = computed<Map<string, AxisScale>>(() => {
+        const area = chartArea();
         const result = new Map<string, AxisScale>();
 
         if (area.width <= 0 || area.height <= 0) return result;
 
         const rtl = options.direction() === 'rtl';
 
-        for (const [key, axis] of axes) {
-            const props = axis.props();
-            const type = (props['type'] as AxisType | undefined) ?? 'category';
-            const bound = series.filter((entry) => (axis.axis === 'x' ? entry.xAxisId : entry.yAxisId) === axis.id);
-            const isCategoryAxis = type === 'category';
-            const horizontal = axis.axis === 'x';
+        for (const [key, domain] of domains()) {
+            const horizontal = key.startsWith('x:');
 
             // RTL flips the x range rather than the data, so every downstream position, tooltip
             // placement and zoom direction follows the document without its own special case.
             const range = horizontal ? (rtl ? { start: area.x + area.width, end: area.x } : { start: area.x, end: area.x + area.width }) : { start: area.y + area.height, end: area.y };
 
-            if (isCategoryAxis) {
-                const categories = unionCategories(bound.map((entry) => entry.categories));
-                const sort = props['sort'] as 'value-asc' | 'value-desc' | 'label-asc' | 'label-desc' | undefined;
-                const ordered = sort ? sortCategories(categories, (category) => sumAt(bound, category), sort) : categories;
-                const inner = seriesUsesBands(bound) ? 0.2 : 0;
-                const outer = numberProp(props['chartPaddingMin']) ?? (seriesUsesBands(bound) ? 0.1 : 0.05);
+            if (domain.kind === 'category') {
+                const inner = domain.banded ? 0.2 : 0;
+                const outer = domain.padding ?? (domain.banded ? 0.1 : 0.05);
 
-                result.set(key, bandScale(ordered, range, inner, outer));
+                result.set(key, bandScale(domain.categories, range, inner, outer));
                 continue;
             }
 
-            const [min, max] = valueDomain(bound, props, type);
+            const [min, max] = domain.extent;
 
-            if (type === 'time') {
+            if (domain.type === 'time') {
                 result.set(key, timeScale(min, max, range));
                 continue;
             }
 
-            if (type === 'logarithmic') {
+            if (domain.type === 'logarithmic') {
                 result.set(key, logScale(min, max, range));
                 continue;
             }
@@ -549,6 +580,7 @@ export function createChartState(options: ChartStateOptions) {
         width: options.width,
         height: options.height,
         scales,
+        domains,
         xScale,
         yScale,
         theme,
@@ -585,6 +617,7 @@ export function createChartState(options: ChartStateOptions) {
         context,
         layout,
         resolvedSeries,
+        domains,
         /**
          * Writable handles the root keeps to itself: a part reads these through the context, but
          * only the root drives them.

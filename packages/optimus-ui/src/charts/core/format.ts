@@ -125,19 +125,26 @@ export function formatWithPattern(date: Date, pattern: string, locale?: string, 
 /**
  * The default numeric tick format: it abbreviates large magnitudes so an axis reads `1.2M` rather
  * than `1200000`, and keeps small values at full precision.
+ *
+ * Compact notation is used only where the locale actually abbreviates at that magnitude. Not every
+ * locale does: German renders 5000 compactly as `5000`, which is not shorter than the plain form
+ * *and* has lost the thousands separator that `5.000` would have had. Checking whether the compact
+ * output still reads as bare digits catches that, so an axis never trades a grouped number for an
+ * ungrouped one of the same length.
  */
 export function formatNumberTick(value: number, locale?: string, options?: Intl.NumberFormatOptions): string {
     if (options) return numberFormatter(locale, options).format(value);
 
     const magnitude = Math.abs(value);
-
-    if (magnitude >= 1000) {
-        return numberFormatter(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(value);
-    }
-
     // Three significant digits is enough for an axis label, and dropping the trailing zeros keeps
     // 0.5 from rendering as 0.500.
-    return numberFormatter(locale, { maximumFractionDigits: 3 }).format(value);
+    const plain = () => numberFormatter(locale, { maximumFractionDigits: 3 }).format(value);
+
+    if (magnitude < 1000) return plain();
+
+    const compact = numberFormatter(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(value);
+
+    return compact === String(Math.round(value)) ? plain() : compact;
 }
 
 /**

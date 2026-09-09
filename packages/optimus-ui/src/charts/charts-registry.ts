@@ -9,6 +9,7 @@
  */
 import { InjectionToken, type Signal } from '@angular/core';
 import type { AnyFeatureProps, AnySeriesProps, AxisScale, BoxArea, ChartTheme, FeatureType, HoverState, RendererType, SeriesType } from '@openng/optimus-ui/types/charts';
+import type { AxisDomain } from './charts-state';
 
 /** Where a part asks the layout to reserve space. */
 export type ReservationEdge = 'top' | 'right' | 'bottom' | 'left';
@@ -105,6 +106,13 @@ export interface ChartContext {
      * Registered scales, keyed by `${axis}:${id}`.
      */
     scales: Signal<Map<string, AxisScale>>;
+    /**
+     * Each axis' domain, keyed the same way but without a pixel range.
+     *
+     * An axis reads this rather than `scales` to work out how much room its labels need, because
+     * its own reservation is what determines the plot area the scales are built from.
+     */
+    domains: Signal<Map<string, AxisDomain>>;
     /**
      * The x scale of the default axis, which is what most series want.
      */
