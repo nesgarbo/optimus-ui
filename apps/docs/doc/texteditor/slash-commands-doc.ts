@@ -17,7 +17,7 @@ import { BlockControlsUI, SlashMenuUI } from '@/components/texteditor';
             <p>While it is open the editing region becomes an ARIA combobox pointing at the highlighted option, and the arrow keys, Enter and Escape drive the list without moving the caret out of the document.</p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="blocks" mode="block" slashPlaceholder="Type to search" ariaLabel="Slash commands">
+            <p-text-editor-root [(value)]="blocks" mode="block" slashPlaceholder="Type to search" ariaLabel="Slash commands example">
                 <p-text-editor-block-controls>
                     <block-controls-ui />
                 </p-text-editor-block-controls>

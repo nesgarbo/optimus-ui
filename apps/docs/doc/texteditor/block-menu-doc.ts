@@ -16,7 +16,7 @@ import { BlockColorSubmenuUI, BlockControlsUI, BlockMenuUI, BlockTurnIntoSubmenu
             </p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="blocks" mode="block" placeholder="Type something..." ariaLabel="Block menu">
+            <p-text-editor-root [(value)]="blocks" mode="block" placeholder="Type something..." ariaLabel="Block menu example">
                 <p-text-editor-block-controls>
                     <block-controls-ui />
                 </p-text-editor-block-controls>

@@ -336,9 +336,11 @@ export function createTableCellCommands(getView: () => EditorView | null, onDism
             const transaction = view.state.tr;
             const rect = selectedRect(view.state);
 
+            /* Every replacement shifts the positions after it, so each cell is looked up in the
+               transaction's own document rather than in the one the rect was measured from. */
             for (const pos of rect.map.cellsInRect(rect)) {
-                const cellPos = rect.tableStart + pos;
-                const cell = view.state.doc.nodeAt(cellPos);
+                const cellPos = transaction.mapping.map(rect.tableStart + pos);
+                const cell = transaction.doc.nodeAt(cellPos);
                 const empty = cell?.type.createAndFill();
 
                 if (cell && empty) transaction.replaceWith(cellPos + 1, cellPos + cell.nodeSize - 1, empty.content);

@@ -17,7 +17,7 @@ import { ToolbarBoldUI, ToolbarItalicUI, ToolbarStrikethroughUI, ToolbarUnderlin
             <p>The toolbar publishes its height on the root as <i>--p-text-editor-toolbar-height</i>, so the navigator and the block controls offset themselves without coupling to source order.</p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" ariaLabel="Comment">
+            <p-text-editor-root [(value)]="value" ariaLabel="Comment example">
                 <p-text-editor-toolbar>
                     <ng-template pTextEditorToolbarDef let-commands="commands" let-state="state">
                         <div class="flex items-center gap-1 p-2">
@@ -34,7 +34,7 @@ import { ToolbarBoldUI, ToolbarItalicUI, ToolbarStrikethroughUI, ToolbarUnderlin
             <p>A projected component works the same way, and is the shape to reach for when the widget needs its own class.</p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="second" ariaLabel="Comment with widgets">
+            <p-text-editor-root [(value)]="second" ariaLabel="Comment with widgets example">
                 <p-text-editor-toolbar>
                     <div class="p-text-editor-ui-toolbar">
                         <bold-ui />

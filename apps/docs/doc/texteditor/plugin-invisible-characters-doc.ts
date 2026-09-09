@@ -29,7 +29,7 @@ export class PluginInvisibleCharactersDocButtons {
             <p>Toggles markers for spaces and paragraph breaks, which is how a double space or a stray tab becomes visible. Widget decorations again, so the document is untouched.</p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" [plugins]="plugins" ariaLabel="invisibleCharacters plugin">
+            <p-text-editor-root [(value)]="value" [plugins]="plugins" ariaLabel="Invisible characters plugin">
                 <p-text-editor-toolbar>
                     <plugin-invisible-characters-doc-buttons />
                 </p-text-editor-toolbar>

@@ -18,7 +18,7 @@ import { ToolbarUI } from '@/components/texteditor';
             <p>Set <i>name</i> and the root also renders a hidden input carrying the serialized value, so a plain <i>&lt;form&gt;</i> submit includes the content with no extra wiring.</p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [formControl]="body" ariaLabel="Post body">
+            <p-text-editor-root [formControl]="body" ariaLabel="Post body example">
                 <p-text-editor-toolbar>
                     <toolbar-ui />
                 </p-text-editor-toolbar>

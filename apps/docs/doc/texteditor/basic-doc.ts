@@ -18,7 +18,7 @@ import { DEMO_HTML } from './demo-data';
             <p>The editor ships no toolbar of its own. <i>toolbar-ui</i> below is an application widget that reads <i>commands</i> and <i>state</i> from the editor context; the docs keep its source next to these demos.</p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" ariaLabel="Article body">
+            <p-text-editor-root [(value)]="value" ariaLabel="Article body example">
                 <p-text-editor-toolbar>
                     <toolbar-ui />
                 </p-text-editor-toolbar>

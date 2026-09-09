@@ -20,7 +20,7 @@ import { ToolbarBulletListUI, ToolbarOrderedListUI, ToolbarCheckListUI } from '@
             </p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" ariaLabel="Lists">
+            <p-text-editor-root [(value)]="value" ariaLabel="Lists example">
                 <p-text-editor-toolbar>
                     <div class="p-text-editor-ui-toolbar">
                         <bullet-list-ui />

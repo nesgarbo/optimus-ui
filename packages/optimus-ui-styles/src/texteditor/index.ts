@@ -459,11 +459,13 @@ export const style = /*css*/ `
         padding-block-start: 0.25rem;
     }
 
+    /* A real 2px box with negative margins: it is visible to the user and measurable in a test,
+       and the margins keep it from pushing the blocks apart as it moves between them. */
     .p-text-editor-block-drop-indicator {
         height: 2px;
         margin: -1px 0;
-        background: dt('texteditor.accent.color');
         border-radius: 2px;
+        background: dt('texteditor.accent.color');
     }
 
     .p-text-editor-drop-cursor {

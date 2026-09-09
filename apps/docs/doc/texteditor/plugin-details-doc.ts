@@ -32,7 +32,7 @@ export class PluginDetailsDocButtons {
             </p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" [plugins]="plugins" ariaLabel="details plugin">
+            <p-text-editor-root [(value)]="value" [plugins]="plugins" ariaLabel="Details plugin">
                 <p-text-editor-toolbar>
                     <plugin-details-doc-buttons />
                 </p-text-editor-toolbar>

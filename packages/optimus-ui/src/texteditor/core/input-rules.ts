@@ -6,21 +6,25 @@ import type { Plugin } from 'prosemirror-state';
  * Turns `**text**`-style syntax into a mark. The rule fires on the closing delimiter, replaces the
  * matched range with the captured text, and applies the mark to it.
  */
-function markInputRule(pattern: RegExp, type: MarkType, getAttrs?: (match: RegExpMatchArray) => Record<string, unknown>): InputRule {
+function markInputRule(pattern: RegExp, type: MarkType, getAttrs?: (match: RegExpMatchArray) => Record<string, unknown>, prefixLength: (match: RegExpMatchArray) => number = () => 0): InputRule {
     return new InputRule(pattern, (state, match, start, end) => {
         const text = match[match.length - 1];
 
         if (!text) return null;
 
         const transaction = state.tr;
-        const from = start + match[0].indexOf(text);
+        /* The italic patterns match the character before the delimiter, and `start` is the start of
+           the whole match: without the prefix length the rule eats that character, and `indexOf`
+           finds the wrong copy of the text in `t*t*`. */
+        const open = start + prefixLength(match);
+        const from = start + match[0].lastIndexOf(text);
         const to = from + text.length;
 
         if (to < end) transaction.delete(to, end);
 
-        if (from > start) transaction.delete(start, from);
+        if (from > open) transaction.delete(open, from);
 
-        transaction.addMark(start, start + text.length, type.create(getAttrs?.(match) ?? null));
+        transaction.addMark(open, open + text.length, type.create(getAttrs?.(match) ?? null));
         /* Without this the mark stays "on" and the delimiter the user typed next would be bold too. */
         transaction.removeStoredMark(type);
 
@@ -70,9 +74,9 @@ export function markdownInputRules(schema: Schema, defaultHighlightColor: () => 
 
     if (mark('bold')) rules.push(markInputRule(/(?:\*\*)([^*]+)(?:\*\*)$/, mark('bold')!));
 
-    if (mark('italic')) rules.push(markInputRule(/(?:^|[^*])(?:\*)([^*]+)(?:\*)$/, mark('italic')!));
+    if (mark('italic')) rules.push(markInputRule(/(^|[^*])\*([^*]+)\*$/, mark('italic')!, undefined, (match) => match[1].length));
 
-    if (mark('italic')) rules.push(markInputRule(/(?:^|[^_])(?:_)([^_]+)(?:_)$/, mark('italic')!));
+    if (mark('italic')) rules.push(markInputRule(/(^|[^_])_([^_]+)_$/, mark('italic')!, undefined, (match) => match[1].length));
 
     if (mark('strikethrough')) rules.push(markInputRule(/(?:~~)([^~]+)(?:~~)$/, mark('strikethrough')!));
 

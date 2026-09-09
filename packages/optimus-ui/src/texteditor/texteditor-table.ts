@@ -6,7 +6,7 @@ import { createTableControlsCommands } from './core/tables';
 import { TextEditorRoot } from './texteditor';
 import { TABLE_CELL_MENU_CONTEXT, TABLE_COLUMN_MENU_CONTEXT, TABLE_CONTROLS_CONTEXT, TABLE_ROW_MENU_CONTEXT } from './texteditor-contexts';
 import { TextEditorTableCellMenuDef, TextEditorTableCellSubmenuDef, TextEditorTableColumnMenuDef, TextEditorTableColumnSubmenuDef, TextEditorTableControlsDef, TextEditorTableRowMenuDef, TextEditorTableRowSubmenuDef } from './texteditor-defs';
-import { anchorStyle, createSubmenuController, usePopoverKeys } from './texteditor-popover';
+import { anchorStyle, createSubmenuController, useAnchorTick, usePopoverKeys } from './texteditor-popover';
 
 /**
  * The floating add-row and add-column controls pinned to the active table. Renderless: it hands the
@@ -148,7 +148,13 @@ export class TextEditorTableColumnMenu extends BaseComponent<TextEditorPartPassT
     /**
      * Where the menu sits, in viewport coordinates.
      */
-    readonly anchor = computed(() => anchorStyle(this.root.columnMenuAnchor()?.anchor ?? null));
+    private readonly tick = useAnchorTick(this.open);
+
+    readonly anchor = computed(() => {
+        this.tick();
+
+        return anchorStyle(this.root.columnMenuAnchor()?.anchor ?? null);
+    });
 
     /**
      * The slot surface handed to `pTextEditorTableColumnMenuDef`.
@@ -216,7 +222,13 @@ export class TextEditorTableColumnSubmenu extends BaseComponent<TextEditorPartPa
     /**
      * Where the panel sits, alongside the parent menu.
      */
-    readonly anchor = computed(() => anchorStyle(this.menu.submenu.anchorSignal(), { width: 200, height: 200 }));
+    private readonly tick = useAnchorTick(this.open);
+
+    readonly anchor = computed(() => {
+        this.tick();
+
+        return anchorStyle(this.menu.submenu.anchorSignal(), { width: 200, height: 200 });
+    });
 
     /**
      * The slot surface handed to `pTextEditorTableColumnSubmenuDef`.
@@ -311,7 +323,13 @@ export class TextEditorTableRowMenu extends BaseComponent<TextEditorPartPassThro
     /**
      * Where the menu sits, in viewport coordinates.
      */
-    readonly anchor = computed(() => anchorStyle(this.root.rowMenuAnchor()?.anchor ?? null));
+    private readonly tick = useAnchorTick(this.open);
+
+    readonly anchor = computed(() => {
+        this.tick();
+
+        return anchorStyle(this.root.rowMenuAnchor()?.anchor ?? null);
+    });
 
     /**
      * The slot surface handed to `pTextEditorTableRowMenuDef`.
@@ -483,7 +501,13 @@ export class TextEditorTableCellMenu extends BaseComponent<TextEditorPartPassThr
     /**
      * Where the menu sits, in viewport coordinates.
      */
-    readonly anchor = computed(() => anchorStyle(this.root.cellMenuAnchor()?.anchor ?? null));
+    private readonly tick = useAnchorTick(this.open);
+
+    readonly anchor = computed(() => {
+        this.tick();
+
+        return anchorStyle(this.root.cellMenuAnchor()?.anchor ?? null);
+    });
 
     /**
      * The slot surface handed to `pTextEditorTableCellMenuDef`.

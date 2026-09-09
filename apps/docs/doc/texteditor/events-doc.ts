@@ -18,7 +18,7 @@ import { ToolbarUI } from '@/components/texteditor';
         </app-docsectiontext>
         <div class="card flex flex-col gap-3 md:flex-row">
             <div class="flex-1">
-                <p-text-editor-root #editor [(value)]="value" ariaLabel="Events" (editorCreate)="push('create')" (selectionUpdate)="push('selection-update')" (editorFocus)="push('focus')" (editorBlur)="push('blur')">
+                <p-text-editor-root #editor [(value)]="value" ariaLabel="Events example" (editorCreate)="push('create')" (selectionUpdate)="push('selection-update')" (editorFocus)="push('focus')" (editorBlur)="push('blur')">
                     <p-text-editor-toolbar>
                         <toolbar-ui />
                     </p-text-editor-toolbar>

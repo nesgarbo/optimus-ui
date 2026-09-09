@@ -17,7 +17,7 @@ import { ToolbarLinkUI } from '@/components/texteditor';
             <p><i>state.link</i> says whether the cursor sits inside a link and <i>state.linkUrl</i> carries its href. Unsafe schemes are rejected on the way in: an unsafe href drops the link and keeps the text.</p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" ariaLabel="Links">
+            <p-text-editor-root [(value)]="value" ariaLabel="Links example">
                 <p-text-editor-toolbar>
                     <div class="p-text-editor-ui-toolbar">
                         <link-ui />

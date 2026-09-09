@@ -38,7 +38,7 @@ export class PluginEmojiDocButtons {
             <p>Converts <i>:shortcode:</i> to an emoji as it is typed, and exposes <i>insert</i> and <i>list</i> commands so a picker can be built on the same map. The map is an option, passed as a <i>[plugin, options]</i> tuple.</p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" [plugins]="plugins" ariaLabel="emoji plugin">
+            <p-text-editor-root [(value)]="value" [plugins]="plugins" ariaLabel="Emoji plugin">
                 <p-text-editor-toolbar>
                     <plugin-emoji-doc-buttons />
                 </p-text-editor-toolbar>

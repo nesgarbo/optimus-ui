@@ -16,7 +16,7 @@ import { ToolbarStrikethroughUI } from '@/components/texteditor';
             </p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" ariaLabel="Strikethrough">
+            <p-text-editor-root [(value)]="value" ariaLabel="Strikethrough example">
                 <p-text-editor-toolbar>
                     <div class="p-text-editor-ui-toolbar">
                         <strikethrough-ui />

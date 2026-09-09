@@ -29,7 +29,7 @@ export class PluginFocusDocButtons {
             <p>Dims every block except the one the caret is in. The dimming is a decoration, so it never reaches the value: focus mode is a view concern.</p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" [plugins]="plugins" ariaLabel="focus plugin">
+            <p-text-editor-root [(value)]="value" [plugins]="plugins" ariaLabel="Focus plugin">
                 <p-text-editor-toolbar>
                     <plugin-focus-doc-buttons />
                 </p-text-editor-toolbar>

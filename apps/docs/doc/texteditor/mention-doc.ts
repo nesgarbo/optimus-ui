@@ -18,7 +18,7 @@ import { MENTION_USERS } from './demo-data';
             <p>The menu is generic over the item type, so a projected widget that injects <i>MENTION_MENU_CONTEXT</i> with a type argument gets typed items and a typed <i>commands.select(item)</i> back.</p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" ariaLabel="Mentions">
+            <p-text-editor-root [(value)]="value" ariaLabel="Mentions example">
                 <p-text-editor-mention-menu [handler]="mentionHandler" filterField="name" [template]="mentionTemplate">
                     <mention-list-ui />
                 </p-text-editor-mention-menu>

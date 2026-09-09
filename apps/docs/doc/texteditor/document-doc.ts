@@ -18,7 +18,7 @@ import { demoUploadHandler } from './demo-data';
             <p>Use the named sizes from <i>TEXT_EDITOR_FILE_SIZE</i> rather than a seven-digit literal.</p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" ariaLabel="Documents">
+            <p-text-editor-root [(value)]="value" ariaLabel="Documents example">
                 <p-text-editor-toolbar>
                     <div class="p-text-editor-ui-toolbar">
                         <document-upload-ui />

@@ -22,7 +22,7 @@ import { demoUploadHandler } from './demo-data';
             </p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" ariaLabel="Images">
+            <p-text-editor-root [(value)]="value" ariaLabel="Images example">
                 <p-text-editor-toolbar>
                     <div class="p-text-editor-ui-toolbar">
                         <image-insert-ui />

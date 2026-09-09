@@ -13,7 +13,7 @@ import { ToolbarItalicUI } from '@/components/texteditor';
             <p><i>commands.italic()</i> toggles italic on the current selection, with <i>state.italic</i> as its pressed state and <i>Ctrl/Cmd + I</i> as its shortcut.</p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" ariaLabel="Italic">
+            <p-text-editor-root [(value)]="value" ariaLabel="Italic example">
                 <p-text-editor-toolbar>
                     <div class="p-text-editor-ui-toolbar">
                         <italic-ui />

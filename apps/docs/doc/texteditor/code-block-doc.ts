@@ -16,7 +16,7 @@ import { ToolbarCodeBlockUI } from '@/components/texteditor';
             </p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" ariaLabel="Code block">
+            <p-text-editor-root [(value)]="value" ariaLabel="Code block example">
                 <p-text-editor-toolbar>
                     <div class="p-text-editor-ui-toolbar">
                         <code-block-ui />

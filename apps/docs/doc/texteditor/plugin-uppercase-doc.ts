@@ -29,7 +29,7 @@ export class PluginUppercaseDocButtons {
             <p>The minimal plugin: one command, no ProseMirror access. It reads the selection with <i>getSelectedText()</i> and writes it back with <i>replaceSelection()</i>, and the command lands under <i>pluginCommands.uppercase</i>.</p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" [plugins]="plugins" ariaLabel="uppercase plugin">
+            <p-text-editor-root [(value)]="value" [plugins]="plugins" ariaLabel="Uppercase plugin">
                 <p-text-editor-toolbar>
                     <plugin-uppercase-doc-buttons />
                 </p-text-editor-toolbar>

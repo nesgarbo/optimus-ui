@@ -6,7 +6,7 @@ import { liftListItem, sinkListItem, splitListItem } from 'prosemirror-schema-li
 import type { Command, Plugin } from 'prosemirror-state';
 import { TextSelection } from 'prosemirror-state';
 import { CellSelection, goToNextCell, isInTable } from 'prosemirror-tables';
-import { setTextAlign, toggleBlockType, toggleList, toggleWrap } from './commands';
+import { setTextAlign, setTextStyle, toggleBlockType, toggleList, toggleWrap } from './commands';
 
 /**
  * Runs the first command that applies. Used where one key has to serve two structures - Tab moves
@@ -78,10 +78,14 @@ const clearSelectedCells: Command = (state, dispatch) => {
 
     const transaction = state.tr;
 
+    /* Positions come from the state document and each replacement moves the ones after it, so both
+       boundaries are mapped through the transaction before they are used. */
     state.selection.forEachCell((cell, pos) => {
         const empty = cell.type.createAndFill();
 
-        if (empty) transaction.replaceWith(pos + 1, pos + cell.nodeSize - 1, empty.content);
+        if (!empty) return;
+
+        transaction.replaceWith(transaction.mapping.map(pos + 1), transaction.mapping.map(pos + cell.nodeSize - 1), empty.content);
     });
 
     dispatch?.(transaction);
@@ -133,7 +137,9 @@ export function textEditorKeymap(schema: Schema, defaultHighlightColor: () => st
             const type = marks['textStyle'];
             const active = type.isInSet(state.storedMarks || state.selection.$from.marks())?.attrs['backgroundColor'];
 
-            return toggleMark(type, { backgroundColor: active ? null : defaultHighlightColor() })(state, dispatch, view);
+            /* The same path the toolbar's highlight takes: toggleMark would replace the whole text
+               style and take the colour, family and size with it. */
+            return setTextStyle({ backgroundColor: active ? null : defaultHighlightColor() })(state, dispatch, view);
         };
 
     for (const level of [1, 2, 3, 4, 5, 6]) {

@@ -16,7 +16,7 @@ import { ContextToolbarMoreUI, ContextToolbarUI, ToolbarUI } from '@/components/
             </p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" ariaLabel="Article body">
+            <p-text-editor-root [(value)]="value" ariaLabel="Article body example">
                 <p-text-editor-toolbar>
                     <toolbar-ui />
                 </p-text-editor-toolbar>

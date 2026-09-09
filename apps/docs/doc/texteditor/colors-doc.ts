@@ -17,7 +17,7 @@ import { ToolbarForegroundColorUI, ToolbarBackgroundColorUI } from '@/components
             <p>Both round-trip through HTML, and the values are validated on the way in and on the way out: a pasted span cannot smuggle a <i>url(...)</i> into the document.</p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" ariaLabel="Colors">
+            <p-text-editor-root [(value)]="value" ariaLabel="Colors example">
                 <p-text-editor-toolbar>
                     <div class="p-text-editor-ui-toolbar">
                         <foreground-color-ui />

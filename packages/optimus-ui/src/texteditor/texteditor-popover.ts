@@ -7,7 +7,22 @@ import type { CaretPosition, TextEditorSubmenu } from '@openng/optimus-ui/types/
  * menus are menus; both are navigated the same way, so both selectors are collected.
  */
 function entriesOf(host: HTMLElement): HTMLElement[] {
-    return Array.from(host.querySelectorAll<HTMLElement>('[role="option"], [role="menuitem"]')).filter((entry) => !entry.hasAttribute('disabled'));
+    return Array.from(host.querySelectorAll<HTMLElement>('[role="option"], [role="menuitem"]')).filter(
+        (entry) =>
+            !entry.hasAttribute('disabled') &&
+            entry.getAttribute('aria-disabled') !== 'true' &&
+            /* A submenu is projected inside its parent menu, so the parent's own query would
+               otherwise collect the child's entries as if they were its own. */
+            entry.closest('[data-scope="texteditor"]') === host
+    );
+}
+
+/**
+ * Whether another open popover is nested inside this one. The innermost surface owns the keyboard:
+ * without this, one Escape closes both halves of a menu and one Enter activates two entries.
+ */
+function hasOpenChild(host: HTMLElement): boolean {
+    return Array.from(host.querySelectorAll<HTMLElement>('[data-scope="texteditor"][data-part$="submenu"]')).some((child) => !child.hasAttribute('hidden'));
 }
 
 /**
@@ -71,7 +86,7 @@ export function usePopoverKeys(options: PopoverKeysOptions): void {
     };
 
     const onKeyDown = (event: KeyboardEvent) => {
-        if (!options.open()) return;
+        if (!options.open() || hasOpenChild(host.nativeElement)) return;
 
         if (event.key === 'Escape') {
             event.preventDefault();
@@ -116,6 +131,10 @@ export function usePopoverKeys(options: PopoverKeysOptions): void {
         const onPointerDown = (event: Event) => {
             if (host.nativeElement.contains(event.target as Node)) return;
 
+            /* A click inside a submenu is a click inside its parent as far as the DOM is concerned,
+               but not when the submenu is teleported: check both. */
+            if (Array.from(host.nativeElement.querySelectorAll<HTMLElement>('[data-scope="texteditor"]')).some((child) => child.contains(event.target as Node))) return;
+
             options.onDismiss();
         };
 
@@ -127,6 +146,36 @@ export function usePopoverKeys(options: PopoverKeysOptions): void {
             document.removeEventListener('keydown', onKeyDown, true);
         });
     });
+}
+
+/**
+ * A counter that ticks while `open` is true and the page scrolls or resizes.
+ *
+ * Anchored surfaces are positioned in viewport coordinates, and geometry is not a signal: without
+ * this, a popover stays where it was opened while the element it belongs to scrolls away.
+ *
+ * @group Function
+ */
+export function useAnchorTick(open: Signal<boolean>): Signal<number> {
+    const document = inject(DOCUMENT);
+    const tick = signal(0);
+
+    effect((onCleanup) => {
+        if (!open()) return;
+
+        const bump = () => tick.update((value) => value + 1);
+        const view = document.defaultView;
+
+        view?.addEventListener('scroll', bump, { capture: true, passive: true });
+        view?.addEventListener('resize', bump, { passive: true });
+
+        onCleanup(() => {
+            view?.removeEventListener('scroll', bump, { capture: true });
+            view?.removeEventListener('resize', bump);
+        });
+    });
+
+    return tick.asReadonly();
 }
 
 /**

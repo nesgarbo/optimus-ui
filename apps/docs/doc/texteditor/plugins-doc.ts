@@ -58,7 +58,7 @@ export class PluginButtons {
             </p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" [plugins]="plugins" ariaLabel="Plugins">
+            <p-text-editor-root [(value)]="value" [plugins]="plugins" ariaLabel="Plugins example">
                 <p-text-editor-toolbar>
                     <plugin-buttons />
                 </p-text-editor-toolbar>

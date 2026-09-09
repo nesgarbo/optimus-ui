@@ -13,7 +13,7 @@ import { ToolbarSubscriptUI } from '@/components/texteditor';
             <p><i>commands.subscript()</i> toggles subscript on the current selection and <i>state.subscript</i> reflects it. Subscript and superscript exclude each other, so applying one clears the other.</p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" ariaLabel="Subscript">
+            <p-text-editor-root [(value)]="value" ariaLabel="Subscript example">
                 <p-text-editor-toolbar>
                     <div class="p-text-editor-ui-toolbar">
                         <subscript-ui />

@@ -14,7 +14,7 @@ import { ToolbarBoldUI } from '@/components/texteditor';
             <p>With a collapsed cursor the command sets a stored mark, so the button lights up before anything is typed and the next characters come out bold.</p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" ariaLabel="Bold">
+            <p-text-editor-root [(value)]="value" ariaLabel="Bold example">
                 <p-text-editor-toolbar>
                     <div class="p-text-editor-ui-toolbar">
                         <bold-ui />

@@ -18,7 +18,7 @@ import { DEMO_OUTLINE } from './demo-data';
             <p>Render the entries as <i>&lt;button role="menuitem"&gt;</i> so the popover's arrow-key navigation picks them up.</p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" navigator ariaLabel="Document with an outline">
+            <p-text-editor-root [(value)]="value" navigator ariaLabel="Document with an outline example">
                 <p-text-editor-toolbar>
                     <toolbar-ui />
                 </p-text-editor-toolbar>

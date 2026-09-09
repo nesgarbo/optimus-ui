@@ -5,7 +5,7 @@ import type { TextEditorPartPassThrough } from '@openng/optimus-ui/types/textedi
 import { TextEditorRoot } from './texteditor';
 import { NAVIGATOR_CONTEXT } from './texteditor-contexts';
 import { TextEditorNavigatorMenuDef, TextEditorNavigatorTriggerDef } from './texteditor-defs';
-import { anchorStyle, usePopoverKeys } from './texteditor-popover';
+import { anchorStyle, useAnchorTick, usePopoverKeys } from './texteditor-popover';
 
 /**
  * The heading-outline minimap. Renderless itself: mounting it turns heading tracking on and hands
@@ -236,7 +236,13 @@ export class TextEditorNavigatorMenu extends BaseComponent<TextEditorPartPassThr
     /**
      * Where the popover sits, next to the rail.
      */
-    readonly anchor = computed(() => anchorStyle(this.navigator.triggerEl(), { width: 240, height: 320 }));
+    private readonly tick = useAnchorTick(this.navigator.menuOpen);
+
+    readonly anchor = computed(() => {
+        this.tick();
+
+        return anchorStyle(this.navigator.triggerEl(), { width: 240, height: 320 });
+    });
 
     /**
      * The slot surface handed to `pTextEditorNavigatorMenuDef`.

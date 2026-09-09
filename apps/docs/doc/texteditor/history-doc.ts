@@ -17,7 +17,7 @@ import { ToolbarRedoUI, ToolbarUndoUI } from '@/components/texteditor';
             <p>Values written in from the outside are applied without adding a history entry, so an external update cannot be undone into a state the application never had.</p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" ariaLabel="History">
+            <p-text-editor-root [(value)]="value" ariaLabel="History example">
                 <p-text-editor-toolbar>
                     <div class="p-text-editor-ui-toolbar">
                         <undo-ui />

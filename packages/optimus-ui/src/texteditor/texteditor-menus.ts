@@ -5,7 +5,7 @@ import type { TextEditorMentionHandler, TextEditorMentionTemplate, TextEditorPar
 import { TextEditorRoot } from './texteditor';
 import { MENTION_MENU_CONTEXT, SLASH_MENU_CONTEXT } from './texteditor-contexts';
 import { TextEditorMentionMenuDef, TextEditorSlashMenuDef } from './texteditor-defs';
-import { caretAnchorStyle, usePopoverKeys } from './texteditor-popover';
+import { caretAnchorStyle, useAnchorTick, usePopoverKeys } from './texteditor-popover';
 
 /**
  * The slash-command palette, opened by typing `/`.
@@ -87,7 +87,7 @@ export class TextEditorSlashMenu extends BaseComponent<TextEditorPartPassThrough
     /**
      * The insertion command set.
      */
-    readonly commands = computed(() => this.root.getSlashMenuCommands(this.root.hoveredBlockIndex(), () => this.dismiss()));
+    readonly commands = computed(() => this.root.getSlashMenuCommands(this.root.typeaheadBlockIndex(), () => this.dismiss()));
 
     /**
      * Where the palette sits, in viewport coordinates.

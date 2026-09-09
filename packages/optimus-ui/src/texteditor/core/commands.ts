@@ -88,28 +88,33 @@ export function toggleList(listType: NodeType | undefined, itemType: NodeType | 
     return (state, dispatch, view) => {
         if (!listType || !itemType) return false;
 
-        const activeDepth = depthOf(state, listType);
-
-        if (activeDepth >= 0) return liftListItem(itemType)(state, dispatch, view);
+        if (depthOf(state, listType) >= 0) return liftListItem(itemType)(state, dispatch, view);
 
         const otherLists = [state.schema.nodes['bulletList'], state.schema.nodes['orderedList'], state.schema.nodes['checkList']].filter((type) => type && type !== listType);
         const insideOther = otherLists.some((type) => depthOf(state, type) >= 0);
 
-        if (insideOther) {
-            /* Converting between list types: lift out of the current list first, then wrap in the
-               new one, so nested items keep their nesting instead of collapsing. */
-            const otherItem = depthOf(state, state.schema.nodes['checkList']) >= 0 ? state.schema.nodes['checkListItem'] : state.schema.nodes['listItem'];
-            let lifted = false;
+        if (!insideOther) return wrapInList(listType)(state, dispatch, view);
 
-            liftListItem(otherItem)(state, (transaction) => {
-                lifted = true;
-                view?.dispatch(transaction);
-            });
+        /* Converting between list types is a lift followed by a wrap, and the two have to travel in
+           ONE transaction: two of them are two undo steps, and the first one alone leaves a list
+           the user never asked for. Probing (no dispatch) must not touch the document either. */
+        const otherItem = depthOf(state, state.schema.nodes['checkList']) >= 0 ? state.schema.nodes['checkListItem'] : state.schema.nodes['listItem'];
+        let lifted: Transaction | null = null;
 
-            if (lifted && view) return wrapInList(listType)(view.state, view.dispatch, view);
-        }
+        if (!liftListItem(otherItem)(state, (transaction) => (lifted = transaction))) return false;
 
-        return wrapInList(listType)(state, dispatch, view);
+        const liftedState = state.apply(lifted!);
+
+        return wrapInList(listType)(liftedState, (transaction) => {
+            const merged = state.tr;
+
+            for (const step of lifted!.steps) merged.step(step);
+
+            for (const step of transaction.steps) merged.step(step);
+
+            merged.setSelection(transaction.selection.map(merged.doc, merged.mapping.invert()));
+            dispatch?.(merged.scrollIntoView());
+        });
     };
 }
 
@@ -145,11 +150,24 @@ export function toggleWrap(type: NodeType | undefined): Command {
 
         const itemType = depthOf(state, state.schema.nodes['checkList']) >= 0 ? state.schema.nodes['checkListItem'] : state.schema.nodes['listItem'];
 
-        if (!itemType || depthOf(state, itemType) < 0 || !view) return false;
+        if (!itemType || depthOf(state, itemType) < 0) return false;
 
-        if (!liftListItem(itemType)(view.state, view.dispatch, view)) return false;
+        /* Same shape as the list conversion: lift out of the item and wrap, in one transaction. */
+        let lifted: Transaction | null = null;
 
-        return wrapIn(type)(view.state, view.dispatch, view);
+        if (!liftListItem(itemType)(state, (transaction) => (lifted = transaction))) return false;
+
+        const liftedState = state.apply(lifted!);
+
+        return wrapIn(type)(liftedState, (transaction) => {
+            const merged = state.tr;
+
+            for (const step of lifted!.steps) merged.step(step);
+
+            for (const step of transaction.steps) merged.step(step);
+
+            dispatch?.(merged.scrollIntoView());
+        });
     };
 }
 

@@ -5,7 +5,7 @@ import type { TextEditorPartPassThrough } from '@openng/optimus-ui/types/textedi
 import { TextEditorRoot } from './texteditor';
 import { BLOCK_CONTROLS_CONTEXT, BLOCK_MENU_CONTEXT } from './texteditor-contexts';
 import { TextEditorBlockControlsDef, TextEditorBlockMenuDef, TextEditorBlockSubmenuDef } from './texteditor-defs';
-import { anchorStyle, createSubmenuController, usePopoverKeys } from './texteditor-popover';
+import { anchorStyle, createSubmenuController, useAnchorTick, usePopoverKeys } from './texteditor-popover';
 
 /**
  * The block-mode hover bar. It teleports next to the block under the pointer and hands the host the
@@ -85,7 +85,11 @@ export class TextEditorBlockControls extends BaseComponent<TextEditorPartPassThr
     /**
      * Where the bar sits: pinned to the inline start of the hovered block, in viewport coordinates.
      */
+    private readonly tick = useAnchorTick(computed(() => this.index() >= 0));
+
     readonly anchor = computed(() => {
+        this.tick();
+
         const element = this.root.hoveredBlockElement();
 
         if (!element) return { display: 'none' };
@@ -240,7 +244,13 @@ export class TextEditorBlockMenu extends BaseComponent<TextEditorPartPassThrough
     /**
      * Where the menu sits, in viewport coordinates.
      */
-    readonly anchor = computed(() => anchorStyle(this.root.blockMenuAnchor()?.anchor ?? null));
+    private readonly tick = useAnchorTick(this.open);
+
+    readonly anchor = computed(() => {
+        this.tick();
+
+        return anchorStyle(this.root.blockMenuAnchor()?.anchor ?? null);
+    });
 
     /**
      * The slot surface handed to `pTextEditorBlockMenuDef`.
@@ -323,7 +333,13 @@ export class TextEditorBlockSubmenu extends BaseComponent<TextEditorPartPassThro
     /**
      * Where the panel sits, alongside the parent menu.
      */
-    readonly anchor = computed(() => anchorStyle(this.menu.submenu.anchorSignal(), { width: 220, height: 240 }));
+    private readonly tick = useAnchorTick(this.open);
+
+    readonly anchor = computed(() => {
+        this.tick();
+
+        return anchorStyle(this.menu.submenu.anchorSignal(), { width: 220, height: 240 });
+    });
 
     /**
      * The slot surface handed to `pTextEditorBlockSubmenuDef`.

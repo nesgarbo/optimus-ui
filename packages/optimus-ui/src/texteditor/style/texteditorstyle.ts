@@ -92,7 +92,15 @@ export enum TextEditorClasses {
     /** Class name of the image upload placeholder element */
     imageUploadPlaceholder = 'p-text-editor-image-upload-placeholder',
     /** Class name of the document upload placeholder element */
-    documentUploadPlaceholder = 'p-text-editor-document-upload-placeholder'
+    documentUploadPlaceholder = 'p-text-editor-document-upload-placeholder',
+    /** Class name of an upload overlay element */
+    upload = 'p-text-editor-upload',
+    /** Class name of an upload dropzone element */
+    uploadDropzone = 'p-text-editor-upload-dropzone',
+    /** Class name of an upload progress element */
+    uploadProgress = 'p-text-editor-upload-progress',
+    /** Class name of the hidden native file input element */
+    fileInput = 'p-text-editor-file-input'
 }
 
 export interface TextEditorStyle extends BaseStyle {}

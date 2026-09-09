@@ -13,7 +13,7 @@ import { ToolbarCodeUI } from '@/components/texteditor';
             <p><i>commands.code()</i> toggles inline code on the current selection, with <i>state.code</i> as its pressed state. The mark excludes every other inline format, so code spans stay literal.</p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" ariaLabel="Inline code">
+            <p-text-editor-root [(value)]="value" ariaLabel="Inline code example">
                 <p-text-editor-toolbar>
                     <div class="p-text-editor-ui-toolbar">
                         <code-ui />

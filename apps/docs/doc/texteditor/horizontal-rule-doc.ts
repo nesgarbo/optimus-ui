@@ -13,7 +13,7 @@ import { ToolbarHorizontalRuleUI } from '@/components/texteditor';
             <p><i>commands.insertHorizontalRule()</i> inserts a rule at the cursor. It carries no state flag, so the button needs no pressed binding, and <i>---</i> at the start of a line inserts one when markdown is enabled.</p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" ariaLabel="Horizontal rule">
+            <p-text-editor-root [(value)]="value" ariaLabel="Horizontal rule example">
                 <p-text-editor-toolbar>
                     <div class="p-text-editor-ui-toolbar">
                         <horizontal-rule-ui />

@@ -17,7 +17,7 @@ import { ToolbarHeadingUI } from '@/components/texteditor';
             <p><i>Ctrl/Cmd + Shift + 1</i> to <i>6</i> apply the levels from the keyboard, and the headings are what the navigator's outline is built from.</p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" ariaLabel="Headings">
+            <p-text-editor-root [(value)]="value" ariaLabel="Headings example">
                 <p-text-editor-toolbar>
                     <div class="p-text-editor-ui-toolbar">
                         <heading-ui />

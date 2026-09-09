@@ -13,7 +13,7 @@ import { ToolbarUnderlineUI } from '@/components/texteditor';
             <p><i>commands.underline()</i> toggles underline on the current selection, with <i>state.underline</i> as its pressed state and <i>Ctrl/Cmd + U</i> as its shortcut.</p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" ariaLabel="Underline">
+            <p-text-editor-root [(value)]="value" ariaLabel="Underline example">
                 <p-text-editor-toolbar>
                     <div class="p-text-editor-ui-toolbar">
                         <underline-ui />

@@ -565,11 +565,13 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     private readonly mentionItems = signal<unknown[]>([]);
 
+    private readonly typeaheadBlock = signal(-1);
+
     private readonly overlayRect = signal<TableOverlayRect | null>(null);
 
     private readonly contextCaret = signal<CaretPosition | null>(null);
 
-    private contextRange: string | null = null;
+    private readonly contextRangeKey = signal<string | null>(null);
 
     private readonly tableState = signal<TableActiveState | null>(null);
 
@@ -758,6 +760,13 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
     }
 
     onDestroy(): void {
+        /* Both timers outlive the component otherwise, and both write signals when they fire. */
+        if (this.valueChangeTimer) clearTimeout(this.valueChangeTimer);
+
+        if (this.blockHoverTimer) clearTimeout(this.blockHoverTimer);
+
+        this.valueChangeTimer = null;
+        this.blockHoverTimer = null;
         this.destroyView();
     }
 
@@ -1159,10 +1168,14 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
      */
     onBlockDragStart(index: number, event: DragEvent): void {
         this.draggedBlock.set(index);
+        this.dropIndicator.set(null);
+        /* An empty payload makes some browsers cancel the drag before it starts, and the index is
+           the only thing a drop needs to know. */
         event.dataTransfer?.setData('text/plain', String(index));
 
         if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
 
+        this.refreshDecorations();
         this.blockDragStart.emit(index);
     }
 
@@ -1183,13 +1196,15 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
     /**
      * Moves the dragged block to the indicator's position and clears the drag state.
      */
-    private applyBlockDrop(from: number): void {
-        const to = this.dropIndicator();
-
-        if (to != null) this.moveBlock(from, to);
+    private applyBlockDrop(from: number, clientY?: number): void {
+        const to = this.dropIndicator() ?? (clientY != null ? this.dropIndexAt(clientY) : null);
 
         this.draggedBlock.set(null);
         this.dropIndicator.set(null);
+
+        if (to != null) this.moveBlock(from, to);
+        else this.refreshDecorations();
+
         this.blockDragEnd.emit();
     }
 
@@ -1215,14 +1230,15 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
      */
     getSlashMenuCommands(blockIndex: number, onDismiss: () => void): TextEditorSlashMenuCommands {
         const withClear = (action: () => void) => () => {
-            if (this.view) clearTypeahead(this.view);
+            if (this.view) {
+                clearTypeahead(this.view);
+                this.focusBlock(blockIndex);
+            }
 
             action();
             onDismiss();
         };
         const commands = this.commands();
-
-        void blockIndex;
 
         return {
             text: withClear(() => commands.paragraph()),
@@ -1237,6 +1253,26 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
             uploadImages: withClear(() => commands.uploadImages()),
             uploadDocuments: withClear(() => commands.uploadDocuments())
         };
+    }
+
+    /**
+     * Puts the caret inside a top-level block, so a command picked from a menu acts on the block the
+     * menu belongs to even when the selection drifted while the menu was open.
+     */
+    private focusBlock(index: number): void {
+        if (!this.view || index < 0 || index >= this.view.state.doc.childCount) return;
+
+        let pos = 0;
+
+        this.view.state.doc.forEach((node, offset, childIndex) => {
+            if (childIndex === index) pos = offset;
+        });
+
+        const node = this.view.state.doc.child(index);
+
+        if (!node.isTextblock && node.type.name !== 'blockquote') return;
+
+        this.view.dispatch(this.view.state.tr.setSelection(TextSelection.near(this.view.state.doc.resolve(pos + 1))));
     }
 
     /**
@@ -1564,6 +1600,13 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
     readonly typeaheadState = this.typeahead.asReadonly();
 
     /**
+     * Index of the block the open type-ahead was triggered in.
+     *
+     * @internal
+     */
+    readonly typeaheadBlockIndex = this.typeaheadBlock.asReadonly();
+
+    /**
      * Candidates resolved for the open mention.
      *
      * @internal
@@ -1659,6 +1702,15 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
      * @internal
      */
     readonly contextToolbarPosition = this.contextCaret.asReadonly();
+
+    /**
+     * Identifies the selection the floating toolbar belongs to, so a widget can remember that the
+     * user dismissed it for THIS selection without depending on the caret object staying the same -
+     * it is re-measured whenever the page scrolls.
+     *
+     * @internal
+     */
+    readonly contextSelectionKey = this.contextRangeKey.asReadonly();
 
     /**
      * Row and column geometry of the active table, read by the overlay and the table menus.
@@ -1818,6 +1870,9 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
             }
         });
 
+        this.document.defaultView?.addEventListener('scroll', this.onViewportChange, { capture: true, passive: true });
+        this.document.defaultView?.addEventListener('resize', this.onViewportChange, { passive: true });
+
         this.pluginCleanups = installPlugins(registrations, {
             getSelectedText: () => this.getSelectedText(),
             replaceSelection: (content, asHtml) => this.replaceSelection(content, asHtml),
@@ -1835,6 +1890,9 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
     }
 
     private destroyView(): void {
+        this.document.defaultView?.removeEventListener('scroll', this.onViewportChange, { capture: true } as EventListenerOptions);
+        this.document.defaultView?.removeEventListener('resize', this.onViewportChange);
+
         for (const cleanup of this.pluginCleanups) cleanup();
 
         this.pluginCleanups = [];
@@ -1931,12 +1989,12 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
         const range = next.selection.empty ? null : `${next.selection.from}-${next.selection.to}`;
 
         if (docChanged || !range) {
-            this.contextRange = null;
+            this.contextRangeKey.set(null);
             this.contextCaret.set(null);
-        } else if (this.view && this.contextRange !== range) {
+        } else if (this.view && this.contextRangeKey() !== range) {
             const caret = caretPositionAt(this.view, next.selection.from);
 
-            this.contextRange = range;
+            this.contextRangeKey.set(range);
             this.contextCaret.set(caret);
 
             if (this.hasPart('context-toolbar')) this.contextToolbarRequest.emit(caret);
@@ -2012,6 +2070,10 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     private onTypeaheadUpdate(trigger: 'slash' | 'mention', active: boolean, text: string, position: CaretPosition | null): void {
         this.typeahead.set({ trigger: active ? trigger : null, active, text, position });
+        /* The block the trigger was typed in, remembered while the menu is open: a command picked
+           from the palette belongs to that block, not to whichever one the pointer happens to be
+           hovering when the user presses Enter. */
+        this.typeaheadBlock.set(active && this.view ? this.view.state.selection.$from.index(0) : -1);
 
         if (trigger === 'slash') {
             this.slashMenuRequest.emit({ active, text, position });
@@ -2069,16 +2131,45 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
         event.preventDefault();
 
-        const target = (event.target as HTMLElement | null)?.closest?.('[data-block-index]') as HTMLElement | null;
+        if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
 
-        if (!target) return false;
+        const index = this.dropIndexAt(event.clientY);
 
-        const rect = target.getBoundingClientRect();
-        const index = Number(target.getAttribute('data-block-index'));
-
-        this.dropIndicator.set(event.clientY > rect.top + rect.height / 2 ? index + 1 : index);
+        if (index !== this.dropIndicator()) {
+            this.dropIndicator.set(index);
+            /* The indicator is a decoration, and a decoration only redraws when the view updates:
+               without this the line never appears and the drag looks like it is doing nothing. */
+            this.refreshDecorations();
+        }
 
         return true;
+    }
+
+    /**
+     * Which boundary the pointer is closest to, in block indexes.
+     *
+     * Measured against every block rather than against the block under the pointer: the gaps
+     * between blocks, the gutter the hover bar lives in and the empty space under the last block
+     * are all places a user drops on, and none of them is inside a block.
+     */
+    private dropIndexAt(clientY: number): number {
+        const blocks = Array.from(this.getEditorElement()?.querySelectorAll<HTMLElement>(':scope > [data-block-index]') ?? []);
+
+        for (const block of blocks) {
+            const rect = block.getBoundingClientRect();
+
+            if (clientY < rect.top + rect.height / 2) return Number(block.getAttribute('data-block-index'));
+        }
+
+        return blocks.length;
+    }
+
+    /**
+     * Redraws the decorations without touching the document, for the drag state the block plugin
+     * reads straight off the signals.
+     */
+    private refreshDecorations(): void {
+        this.view?.setProps({});
     }
 
     private handleDrop(event: DragEvent): boolean {
@@ -2089,7 +2180,7 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
         if (dragged != null && this.mode() === 'block') {
             event.preventDefault();
-            this.applyBlockDrop(dragged);
+            this.applyBlockDrop(dragged, event.clientY);
 
             return true;
         }
@@ -2143,6 +2234,22 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
         this.view.dispatch(transaction);
     }
+
+    /**
+     * Re-measures the caret the floating surfaces are anchored to. Their coordinates are viewport
+     * coordinates, and scrolling moves the text under a popover that would otherwise stay put.
+     */
+    private readonly onViewportChange = (): void => {
+        if (!this.view) return;
+
+        const from = this.view.state.selection.from;
+
+        if (this.contextCaret()) this.contextCaret.set(caretPositionAt(this.view, from));
+
+        const typeahead = this.typeahead();
+
+        if (typeahead.active) this.typeahead.set({ ...typeahead, position: caretPositionAt(this.view, from) });
+    };
 
     private printDocument(): void {
         printHtml(this.getHTML(), this.document);

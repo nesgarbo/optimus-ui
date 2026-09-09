@@ -2,11 +2,11 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject } from '@
 import { CONTEXT_TOOLBAR_CONTEXT } from '@openng/optimus-ui/texteditor';
 import {
     ToolbarBackgroundColorUI,
-    ToolbarClearFormatUI,
     ToolbarBlockquoteUI,
     ToolbarBoldUI,
     ToolbarBulletListUI,
     ToolbarCheckListUI,
+    ToolbarClearFormatUI,
     ToolbarCodeBlockUI,
     ToolbarCodeUI,
     ToolbarDocumentUploadUI,
@@ -53,7 +53,6 @@ import {
         ToolbarOrderedListUI,
         ToolbarCheckListUI,
         ToolbarCodeUI,
-        ToolbarCodeBlockUI,
         ToolbarBlockquoteUI,
         ToolbarHighlightUI,
         ToolbarClearFormatUI,

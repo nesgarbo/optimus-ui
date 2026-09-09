@@ -84,9 +84,15 @@ export function installPlugins(registrations: TextEditorPluginRegistration[], de
             onUnmounted: (fn) => cleanups.push(fn)
         };
 
-        const exposed = plugin.install(context) || undefined;
+        try {
+            const exposed = plugin.install(context) || undefined;
 
-        if (exposed && exposed.commands) commands[plugin.name] = exposed.commands;
+            if (exposed && exposed.commands) commands[plugin.name] = exposed.commands;
+        } catch (error) {
+            /* One plugin throwing must not take the editor - or the cleanups the plugins before it
+               already registered - down with it. */
+            console.error(`[optimus-ui] TextEditor plugin "${plugin.name}" failed to install.`, error);
+        }
     }
 
     deps.setCommands(commands);

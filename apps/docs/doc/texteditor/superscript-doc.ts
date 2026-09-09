@@ -13,7 +13,7 @@ import { ToolbarSuperscriptUI } from '@/components/texteditor';
             <p><i>commands.superscript()</i> toggles superscript on the current selection, with <i>state.superscript</i> as its pressed state.</p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" ariaLabel="Superscript">
+            <p-text-editor-root [(value)]="value" ariaLabel="Superscript example">
                 <p-text-editor-toolbar>
                     <div class="p-text-editor-ui-toolbar">
                         <superscript-ui />

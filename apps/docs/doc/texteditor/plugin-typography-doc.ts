@@ -32,7 +32,7 @@ export class PluginTypographyDocButtons {
             </p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" [plugins]="plugins" ariaLabel="typography plugin">
+            <p-text-editor-root [(value)]="value" [plugins]="plugins" ariaLabel="Typography plugin">
                 <p-text-editor-toolbar>
                     <plugin-typography-doc-buttons />
                 </p-text-editor-toolbar>

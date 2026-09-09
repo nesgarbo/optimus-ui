@@ -1,11 +1,11 @@
 import { NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, contentChild, inject, input, signal } from '@angular/core';
 import { BaseComponent } from '@openng/optimus-ui/basecomponent';
-import type { CaretPosition, TextEditorPartPassThrough } from '@openng/optimus-ui/types/texteditor';
+import type { TextEditorPartPassThrough } from '@openng/optimus-ui/types/texteditor';
 import { TextEditorRoot } from './texteditor';
 import { CONTEXT_TOOLBAR_CONTEXT } from './texteditor-contexts';
 import { TextEditorContextToolbarDef, TextEditorContextToolbarMoreDef, TextEditorToolbarDef } from './texteditor-defs';
-import { anchorStyle, caretAnchorStyle, usePopoverKeys } from './texteditor-popover';
+import { anchorStyle, caretAnchorStyle, useAnchorTick, usePopoverKeys } from './texteditor-popover';
 
 /**
  * The static toolbar surface: a persistent `role="toolbar"` region above the content that the host
@@ -140,7 +140,7 @@ export class TextEditorContextToolbar extends BaseComponent<TextEditorPartPassTh
 
     private unregister?: () => void;
 
-    private readonly dismissedFor = signal<CaretPosition | null>(null);
+    private readonly dismissedFor = signal<string | null>(null);
 
     private readonly more = signal(false);
 
@@ -188,7 +188,7 @@ export class TextEditorContextToolbar extends BaseComponent<TextEditorPartPassTh
     readonly open = computed(() => {
         const caret = this.root.contextToolbarPosition();
 
-        return !!caret && caret !== this.dismissedFor();
+        return !!caret && this.root.contextSelectionKey() !== this.dismissedFor();
     });
 
     /**
@@ -249,7 +249,7 @@ export class TextEditorContextToolbar extends BaseComponent<TextEditorPartPassTh
      */
     dismiss(): void {
         this.more.set(false);
-        this.dismissedFor.set(this.root.contextToolbarPosition());
+        this.dismissedFor.set(this.root.contextSelectionKey());
     }
 }
 
@@ -293,7 +293,13 @@ export class TextEditorContextToolbarMore extends BaseComponent<TextEditorPartPa
     /**
      * Where the panel sits, in viewport coordinates.
      */
-    readonly anchor = computed(() => anchorStyle(this.toolbar.moreTrigger(), { width: 220, height: 240 }));
+    private readonly tick = useAnchorTick(this.toolbar.moreActive);
+
+    readonly anchor = computed(() => {
+        this.tick();
+
+        return anchorStyle(this.toolbar.moreTrigger(), { width: 220, height: 240 });
+    });
 
     /**
      * The slot surface handed to `pTextEditorContextToolbarMoreDef`.
