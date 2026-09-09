@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { SchedulerCategory, SchedulerEvent, SchedulerViewType } from '@openng/optimus-ui/types/scheduler';
+import { Scheduler } from './scheduler';
 import { SchedulerModule } from './scheduler.module';
 
 // The compound tree is mounted EXACTLY as a consumer writes it: root -> header -> content -> scope,
@@ -399,6 +400,49 @@ describe('Scheduler', () => {
         const gutter = text('.p-scheduler-time-gutter-slot').filter(Boolean).join(' ');
         // 24h no lleva meridiem en ninguna parte de la reticula.
         expect(gutter).not.toMatch(/[AP]M/i);
+    });
+
+    it('print() isolates the schedule and puts the page back afterwards', async () => {
+        const scheduler = fixture.debugElement.query(By.directive(Scheduler)).componentInstance as Scheduler;
+        // window.print abre un dialogo del navegador: se sustituye para que el test no se cuelgue.
+        const original = window.print;
+        let printed = 0;
+
+        window.print = () => {
+            printed++;
+
+            // Mientras el dialogo esta abierto: el documento marcado —lo que deja al CSS apagar a los
+            // hermanos— y una COPIA colgada de body, que es lo unico que se imprime.
+            expect(document.documentElement.hasAttribute('data-p-scheduler-printing')).toBe(true);
+
+            const container = document.getElementById('p-scheduler-print-root');
+
+            expect(container?.parentElement).toBe(document.body);
+
+            const copy = container?.querySelector('.p-scheduler[data-printing]') as HTMLElement | null;
+
+            expect(copy).toBeTruthy();
+            expect(copy?.getAttribute('data-print-color')).toBe('false');
+            expect(copy?.getAttribute('data-print-scale')).toBe('fit');
+            // Y el componente vivo se queda como estaba: lo que se imprime no es el que se ve.
+            expect(document.querySelectorAll('.p-scheduler[data-printing]').length).toBe(1);
+        };
+
+        try {
+            scheduler.print({ color: false, layout: { orientation: 'landscape', scale: 'fit' } });
+        } finally {
+            window.print = original;
+        }
+
+        expect(printed).toBe(1);
+
+        window.dispatchEvent(new Event('afterprint'));
+        await fixture.whenStable();
+
+        // Y al cerrarlo no queda nada puesto: una pagina en estado de impresion es una pagina rota.
+        expect(document.documentElement.hasAttribute('data-p-scheduler-printing')).toBe(false);
+        expect(document.getElementById('p-scheduler-print-root')).toBeNull();
+        expect(document.getElementById('p-scheduler-print-page')).toBeNull();
     });
 
     it('a click on an event selects it', async () => {

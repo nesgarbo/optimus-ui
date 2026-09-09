@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, ViewEncapsulation, booleanAttribute, computed, effect, inject, input, model, numberAttribute, output, signal } from '@angular/core';
+import { ApplicationRef, ChangeDetectionStrategy, Component, DestroyRef, ViewEncapsulation, booleanAttribute, computed, effect, inject, input, model, numberAttribute, output, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { TranslationKeys } from '@openng/optimus-ui/api';
 import { BaseComponent, PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { Bind } from '@openng/optimus-ui/bind';
@@ -15,6 +16,7 @@ import type {
     SchedulerEventClickEvent,
     SchedulerHorizontalResourceColumnMode,
     SchedulerPassThrough,
+    SchedulerPrintOptions,
     SchedulerRangeChangeEvent,
     SchedulerRecurrenceEditEvent,
     SchedulerRecurrenceEditOptions,
@@ -67,9 +69,92 @@ export class Scheduler extends BaseComponent<SchedulerPassThrough> {
 
     private readonly bindDirectiveInstance = inject(Bind, { self: true });
 
+    private readonly appRef = inject(ApplicationRef);
+
     onAfterViewChecked(): void {
         this.bindDirectiveInstance.setAttrs(this.ptms(['host', 'root']));
     }
+
+    /**
+     * Prints THIS schedule, and not the page it happens to be on.
+     *
+     * `window.print()` prints the document, which for a Scheduler inside an application means the
+     * navigation, the sidebar and whatever else is on screen, with the schedule somewhere in the
+     * middle of it. This marks the document as printing a schedule, which is what lets the
+     * stylesheet blank everything else for the duration and put this component at the top of the
+     * sheet, and undoes it all afterwards — including when the user cancels the dialog, because a
+     * page left in its print state is a broken page.
+     *
+     * The scroll containers are already unrolled by the print block, so what comes out is the whole
+     * range and not the visible window.
+     */
+    print(options: SchedulerPrintOptions = {}): void {
+        const host = this.el?.nativeElement as HTMLElement | undefined;
+
+        if (!isPlatformBrowser(this.platformId) || !host || typeof window.print !== 'function') return;
+
+        const doc = host.ownerDocument;
+        const { color = true, layout = {}, pageChrome } = options;
+        const { orientation = 'auto', scale = 'standard' } = layout;
+
+        // La cabecera de impresion tiene que estar YA pintada cuando se copia el arbol, y con
+        // deteccion sin zonas eso no pasa por si solo: se fuerza una pasada antes de clonar.
+        this.printChrome.set(pageChrome === false ? null : (pageChrome ?? {}));
+        this.appRef.tick();
+
+        // Se imprime una COPIA en un contenedor propio, y el resto de la pagina sale del flujo con
+        // display: none. Con visibility el contenido se oculta pero el hueco se queda, asi que el
+        // documento sigue midiendo lo que media —cincuenta hojas en blanco detras del horario—; y
+        // mover el elemento vivo le cambiaria el tamano a un componente que esta midiendose. Una
+        // copia estatica no tiene ninguno de los dos problemas.
+        const container = doc.createElement('div');
+        const copy = host.cloneNode(true) as HTMLElement;
+
+        container.id = 'p-scheduler-print-root';
+        copy.setAttribute('data-printing', '');
+        copy.setAttribute('data-print-color', color ? 'true' : 'false');
+        copy.setAttribute('data-print-scale', scale);
+        if (pageChrome === false) copy.setAttribute('data-print-chrome', 'false');
+
+        // `fit` se calcula, no se adivina: lo que hay que encoger es el ancho REAL del eje contra el
+        // ancho util de la hoja, y ese ancho util es lo unico que el navegador no cuenta. Se toma A4
+        // a 96dpi menos margenes, que es el papel de casi todo el mundo y falla por poco en Letter.
+        if (scale === 'fit') {
+            const printable = orientation === 'landscape' ? 1000 : 700;
+            const needed = Math.max(host.scrollWidth, 1);
+
+            if (needed > printable) copy.style.zoom = String(Math.max(printable / needed, 0.4));
+        }
+
+        container.appendChild(copy);
+        doc.getElementById('p-scheduler-print-root')?.remove();
+        doc.body.appendChild(container);
+        doc.documentElement.setAttribute('data-p-scheduler-printing', '');
+
+        const page = orientation === 'auto' ? null : doc.createElement('style');
+
+        if (page) {
+            page.id = 'p-scheduler-print-page';
+            page.textContent = `@page { size: ${orientation}; }`;
+            doc.head.appendChild(page);
+        }
+
+        const cleanup = () => {
+            container.remove();
+            doc.documentElement.removeAttribute('data-p-scheduler-printing');
+            this.printChrome.set(null);
+            page?.remove();
+            window.removeEventListener('afterprint', cleanup);
+        };
+
+        window.addEventListener('afterprint', cleanup);
+        window.print();
+        // Safari no siempre emite afterprint: el respaldo garantiza que la pagina vuelve a la vida.
+        setTimeout(cleanup, 1000);
+    }
+
+    /** @internal What the printed header should carry while a print is running. */
+    readonly printChrome = signal<{ generatedAt?: boolean; timezone?: boolean; filters?: string[] } | null>(null);
 
     /**
      * The appointments to show. The Scheduler never mutates this array: it emits requests and the

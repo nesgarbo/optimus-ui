@@ -356,6 +356,55 @@ export interface SchedulerTimeFormatOptions {
 }
 
 /**
+ * What a printed schedule looks like, passed to `Scheduler.print()`.
+ *
+ * @group Interface
+ */
+export interface SchedulerPrintOptions {
+    /**
+     * Whether the category and event colours are printed.
+     *
+     * On by default, and it matters more than it sounds: without the colours a browser prints every
+     * event white and they all become the same event.
+     * @defaultValue true
+     */
+    color?: boolean;
+    /**
+     * How the sheet is laid out.
+     */
+    layout?: {
+        /**
+         * Page orientation. `auto` leaves it to the browser's dialog.
+         * @defaultValue auto
+         */
+        orientation?: 'auto' | 'portrait' | 'landscape';
+        /**
+         * How the schedule is sized to the page. `standard` prints it as it stands, `compact` prints
+         * it at the compact density, and `fit` shrinks it until its full width lands on the sheet —
+         * which is the only one that can get a week of resource columns onto one page.
+         * @defaultValue standard
+         */
+        scale?: 'standard' | 'compact' | 'fit';
+    };
+    /**
+     * What the printed header carries, when `p-scheduler-print-header` is in the tree.
+     *
+     * `false` leaves it out. The default prints the range title, and the fields below are the extras
+     * a handoff tends to need.
+     */
+    pageChrome?:
+        | false
+        | {
+              /** Whether the moment it was printed is stamped on it. */
+              generatedAt?: boolean;
+              /** Whether the timezone the schedule is drawn in is named. */
+              timezone?: boolean;
+              /** Anything else worth stating on the sheet: the filters behind it, a site, an owner. */
+              filters?: string[];
+          };
+}
+
+/**
  * How dense the chrome is drawn.
  *
  * Not a font size: it changes the paddings and the row heights, which is what decides how many rows

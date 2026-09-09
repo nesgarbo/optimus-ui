@@ -1,7 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, viewChild } from '@angular/core';
 import { AppCode } from '@/components/doc/app.code';
 import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
-import { SchedulerModule, parseICalendar, serializeSchedule, toICalendar } from '@openng/optimus-ui/scheduler';
+import { Scheduler, SchedulerModule, parseICalendar, serializeSchedule, toICalendar } from '@openng/optimus-ui/scheduler';
 import type { SchedulerEvent } from '@openng/optimus-ui/types/scheduler';
 import { DEMO_CATEGORIES, DEMO_DATE, DEMO_RECURRING_EVENTS } from './demo-data';
 
@@ -22,8 +22,16 @@ import { DEMO_CATEGORIES, DEMO_DATE, DEMO_RECURRING_EVENTS } from './demo-data';
             </p>
             <p><i>serializeSchedule</i> and <i>parseSchedule</i> are the JSON pair for your own storage: instants become ISO strings, because a <i>Date</i> does not survive <i>JSON.stringify</i> in a form anything can read back reliably.</p>
             <p>
-                For printing there is nothing to call. The stylesheet has a <i>&#64;media print</i> block that unrolls the scroll containers, drops the sticky headers and the controls, keeps a week row or an agenda day from splitting across pages,
-                and forces the category colours to print — without that last one the browser prints every event white and they all become the same event. <i>window.print()</i> is enough.
+                Printing goes through the Scheduler's own <i>print()</i> and not through <i>window.print()</i>, because the browser prints the DOCUMENT: the navigation, the sidebar and whatever else is on screen, with the schedule somewhere in the
+                middle. <i>print()</i> marks the document as printing a schedule, which blanks everything else for the duration and puts this component at the top of the sheet, and undoes it afterwards — including when the dialog is cancelled.
+            </p>
+            <p>
+                The stylesheet does the rest: it unrolls the scroll containers so the whole range prints rather than the visible window, drops the sticky headers and the controls, keeps a week row or an agenda day from splitting across pages, and
+                forces the category colours, because without them a browser prints every event white and they all become the same event.
+            </p>
+            <p>
+                <i>print()</i> takes what a handoff tends to need: <i>color</i> to print in grey on purpose, <i>layout.orientation</i>, and <i>layout.scale</i> — <i>fit</i> shrinks the schedule until its full width lands on the sheet, which is the
+                only way a week of resource columns gets onto one page. <i>pageChrome</i> fills in <i>p-scheduler-print-header</i>, which is invisible on screen and is what stops a printed sheet from being a grid with nothing saying what it is.
             </p>
         </app-docsectiontext>
         <div class="card">
@@ -32,8 +40,10 @@ import { DEMO_CATEGORIES, DEMO_DATE, DEMO_RECURRING_EVENTS } from './demo-data';
                 <button type="button" class="px-2 py-1 text-sm rounded border" (click)="roundTrip()">Round-trip it back</button>
                 <button type="button" class="px-2 py-1 text-sm rounded border" (click)="exportJson()">Export JSON</button>
                 <button type="button" class="px-2 py-1 text-sm rounded border" (click)="print()">Print</button>
+                <button type="button" class="px-2 py-1 text-sm rounded border" (click)="printFitted()">Print fitted, no colour</button>
             </div>
-            <p-scheduler-root locale="en-US" view="week" [events]="events()" [categories]="categories" categoryField="categoryId" [date]="date" [dayStartHour]="8" [dayEndHour]="19">
+            <p-scheduler-root #scheduler locale="en-US" view="week" [events]="events()" [categories]="categories" categoryField="categoryId" [date]="date" [dayStartHour]="8" [dayEndHour]="19">
+                <p-scheduler-print-header />
                 <p-scheduler-header>
                     <p-scheduler-navigation />
                     <p-scheduler-title />
@@ -58,6 +68,9 @@ export class TransferDoc {
 
     date = DEMO_DATE;
 
+    /** The root itself, because print() is a method on the component and not an input. */
+    scheduler = viewChild.required(Scheduler);
+
     output = signal('');
 
     exportIcs(): void {
@@ -76,7 +89,12 @@ export class TransferDoc {
         this.output.set(JSON.stringify(serializeSchedule(this.events(), { categories: this.categories }), null, 2));
     }
 
+    /** The component's own print, so the sheet carries the schedule and not the documentation site. */
     print(): void {
-        window.print();
+        this.scheduler().print({ pageChrome: { generatedAt: true, timezone: true, filters: ['Every category'] } });
+    }
+
+    printFitted(): void {
+        this.scheduler().print({ color: false, layout: { orientation: 'landscape', scale: 'fit' }, pageChrome: { generatedAt: true } });
     }
 }

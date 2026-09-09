@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject } from '@angular/core';
+import { PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { SCHEDULER_STATE } from './scheduler-state';
 import { SCHEDULER_CATEGORY_LEGEND_CONTEXT, SCHEDULER_HEADER_CONTEXT, SCHEDULER_SELECTION_TOOLBAR_CONTEXT, injectSchedulerHeaderContext } from './scheduler-context';
 import type { SchedulerViewType } from '@openng/optimus-ui/types/scheduler';
@@ -555,6 +556,53 @@ export class SchedulerCategoryLegend {
         toggle: (id: string | number) => this.state.toggleCategory(id),
         clear: () => this.state.clearCategoryFilter()
     }));
+}
+
+/**
+ * Header of a printed schedule.
+ *
+ * It exists because a sheet of paper has no chrome: the range the schedule covers is on screen in
+ * `p-scheduler-title`, and once the controls are gone the print has nothing saying what it is or
+ * when it was taken. Invisible on screen, so a page can leave it in the tree permanently.
+ *
+ * What it carries beyond the title comes from the options passed to `print()`, which is where a page
+ * decides whether a handoff needs a timestamp, the timezone or the filters behind it.
+ *
+ * @group Components
+ */
+@Component({
+    selector: 'p-scheduler-print-header',
+    standalone: true,
+    template: `
+        <ng-content>
+            <div class="p-scheduler-print-title">{{ state.rangeTitle() }}</div>
+            @if (details().length) {
+                <div class="p-scheduler-print-meta">
+                    @for (detail of details(); track detail) {
+                        <span class="p-scheduler-print-meta-item">{{ detail }}</span>
+                    }
+                </div>
+            }
+        </ng-content>
+    `,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    encapsulation: ViewEncapsulation.None,
+    host: { class: 'p-scheduler-print-header', 'data-slot': 'scheduler-print-header' }
+})
+export class SchedulerPrintHeader {
+    /** @internal */
+    readonly state = inject(SCHEDULER_STATE);
+
+    private readonly root = inject(PARENT_INSTANCE, { optional: true }) as { printChrome?: () => { generatedAt?: boolean; timezone?: boolean; filters?: string[] } | null } | null;
+
+    /** The extras the sheet carries under the title. */
+    readonly details = computed(() => {
+        const chrome = this.root?.printChrome?.() ?? null;
+
+        if (!chrome) return [];
+
+        return [...(chrome.generatedAt ? [new Date().toLocaleString(this.state.locale())] : []), ...(chrome.timezone ? [this.state.timeZoneLabel()] : []), ...(chrome.filters ?? [])];
+    });
 }
 
 /**

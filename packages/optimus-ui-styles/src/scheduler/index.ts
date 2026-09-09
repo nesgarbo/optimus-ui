@@ -1447,6 +1447,12 @@ export const style = /*css*/ `
         color: inherit;
     }
 
+    /* La cabecera de impresion no se ve en pantalla: la hoja necesita un titulo porque no lleva el
+       header del componente, y la pantalla ya lo tiene. */
+    .p-scheduler-print-header {
+        display: none;
+    }
+
     /* ── Density and lane sizing ──────────────────────────────────────────── */
 
     /* compact does not change the type, it changes the HEIGHTS, which is what decides how many rows
@@ -1540,6 +1546,48 @@ export const style = /*css*/ `
        window is, on paper, all of the content at once. Without this you print the visible slice and
        nothing else, which is the classic failure of printing a calendar. */
     @media print {
+        /* Imprimir ESTE horario y no la pagina que lo contiene. El resto sale del FLUJO con display:
+           none y no con visibility: ocultar sin quitar el hueco deja el documento midiendo lo que
+           media, o sea cincuenta hojas en blanco detras del horario. Lo que se imprime es una copia
+           que print() cuelga de body, precisamente para que baste con apagar a sus hermanos. */
+        html[data-p-scheduler-printing] body > *:not(#p-scheduler-print-root) {
+            display: none !important;
+        }
+
+        html[data-p-scheduler-printing] #p-scheduler-print-root {
+            display: block;
+            margin: 0;
+        }
+
+        /* Sin color el navegador imprime los rellenos en blanco, que es lo que convierte cuarenta
+           citas distintas en cuarenta citas iguales. Se puede pedir en gris a proposito. */
+        .p-scheduler[data-print-color='false'] .p-scheduler-time-grid-event,
+        .p-scheduler[data-print-color='false'] .p-scheduler-all-day-event,
+        .p-scheduler[data-print-color='false'] .p-scheduler-month-event,
+        .p-scheduler[data-print-color='false'] .p-scheduler-timeline-event,
+        .p-scheduler[data-print-color='false'] .p-scheduler-agenda-event {
+            background: transparent;
+            border: 1px solid dt('scheduler.border.color');
+            color: dt('scheduler.color');
+        }
+
+        .p-scheduler[data-print-color='false'] .p-scheduler-event-dot,
+        .p-scheduler[data-print-color='false'] .p-scheduler-resource-dot {
+            display: none;
+        }
+
+        /* La cabecera impresa solo existe en papel: en pantalla el titulo ya esta en el header. */
+        .p-scheduler-print-header {
+            display: block;
+            margin-block-end: 0.75rem;
+            padding-block-end: 0.5rem;
+            border-bottom: 1px solid dt('scheduler.border.color');
+        }
+
+        .p-scheduler[data-print-chrome='false'] .p-scheduler-print-header {
+            display: none;
+        }
+
         .p-scheduler {
             border: 0;
             block-size: auto !important;
