@@ -22,6 +22,7 @@ import { ChartRootBase } from './chart-root-base';
 import { CHART_CONTEXT } from './charts-registry';
 import { canvasOverlaySurface, createOverlayRegistry } from './charts-plugins';
 import { buildDrawContext, buildScene, isClipped } from './render/build-scene';
+import { hitTest } from './render/hit-test';
 import { ChartsStyle } from './style/chartsstyle';
 
 /**
@@ -211,7 +212,7 @@ export class ChartCanvas extends ChartRootBase {
      * Resolves the point under the pointer.
      *
      * Canvas has no elements to hit, so this is the only way to know what the pointer is over --
-     * and it is the same computation the SVG root does, which is why hover behaves identically in
+     * and it is the same computation the SVG root runs, which is why hover behaves identically in
      * both.
      */
     private handlePointer(event: PointerEvent): void {
@@ -220,55 +221,14 @@ export class ChartCanvas extends ChartRootBase {
         if (!element) return;
 
         const rect = element.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        const area = this.context.chartArea();
-
-        if (x < area.x || x > area.x + area.width || y < area.y || y > area.y + area.height) {
-            if (this.context.hover()) {
-                this.context.setHover(null);
-                this.publishHover(null);
-            }
-
-            return;
-        }
-
-        const xScale = this.context.xScale();
-
-        if (!xScale) return;
-
-        let best: { datasetId: string; index: number; x: number; y: number } | null = null;
-        let bestDistance = Infinity;
-
-        for (const series of this.chartState.resolvedSeries()) {
-            if (!series.visible) continue;
-
-            const yScale = this.context.scales().get(`y:${series.yAxisId}`) ?? this.context.yScale();
-
-            for (const point of series.points) {
-                if (point.value == null || !this.context.isItemVisible(series.id, point.dataIndex)) continue;
-
-                const px = xScale.scale(point.category);
-
-                if (!Number.isFinite(px)) continue;
-
-                const distance = Math.abs(px - x);
-
-                if (distance < bestDistance) {
-                    const py = yScale && yScale.type !== 'band' ? yScale.scale(point.value) : y;
-
-                    bestDistance = distance;
-                    best = { datasetId: series.id, index: point.dataIndex, x: px, y: Number.isFinite(py) ? py : y };
-                }
-            }
-        }
-
+        const drawContext = buildDrawContext(this.context, this.chartId, this.measureText, this.seriesColor);
+        const hit = hitTest(this.context, this.chartState.resolvedSeries(), drawContext, event.clientX - rect.left, event.clientY - rect.top);
         const current = this.context.hover();
 
-        if (best?.datasetId === current?.datasetId && best?.index === current?.index) return;
+        if (hit?.datasetId === current?.datasetId && hit?.index === current?.index) return;
 
-        this.context.setHover(best);
-        this.publishHover(best);
+        this.context.setHover(hit);
+        this.publishHover(hit);
     }
 
     getElement(): HTMLCanvasElement | null {

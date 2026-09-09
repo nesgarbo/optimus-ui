@@ -26,6 +26,7 @@ import { ChartHover } from './features/chart-hover';
 import { ChartBar } from './series/chart-bar';
 import { ChartOverlap, ChartRange, ChartStacked, ChartWaterfall } from './series/chart-groups';
 import { ChartLine } from './series/chart-line';
+import { ChartPie } from './series/chart-pie';
 
 /**
  * Every chart part in one import.
@@ -42,6 +43,7 @@ const PARTS = [
     ChartGroup,
     ChartLine,
     ChartBar,
+    ChartPie,
     ChartStacked,
     ChartWaterfall,
     ChartOverlap,

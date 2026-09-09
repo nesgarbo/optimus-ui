@@ -479,7 +479,9 @@ abstract class ChartAxisBase {
         if (!this.context) return;
 
         const removeAxis = this.context.registerAxis({ id: this.id(), axis: this.axis, props: this.props as never });
-        const releaseSpace = this.context.reserve(this.positionValue() as 'top' | 'right' | 'bottom' | 'left', this.reservation);
+        // The edge is read through a computed rather than captured here: `position` is an input, and
+        // an input read during construction is still its default.
+        const releaseSpace = this.context.reserve(computed(() => ({ edge: this.positionValue() as 'top' | 'right' | 'bottom' | 'left', size: this.reservation() })));
 
         this.destroyRef.onDestroy(() => {
             removeAxis();

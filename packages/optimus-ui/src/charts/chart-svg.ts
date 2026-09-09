@@ -18,6 +18,7 @@ import { ChartRootBase } from './chart-root-base';
 import { CHART_CONTEXT } from './charts-registry';
 import { createOverlayRegistry, svgOverlaySurface } from './charts-plugins';
 import { buildDrawContext, buildScene, clipRefFor, isClipped } from './render/build-scene';
+import { hitTest } from './render/hit-test';
 import { ChartsStyle } from './style/chartsstyle';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -235,10 +236,8 @@ export class ChartSvg extends ChartRootBase {
     /**
      * Resolves the point under the pointer.
      *
-     * Hit-testing goes through the resolved geometry rather than through the DOM, because the
-     * nearest mark is often not the one under the cursor: a line chart wants the nearest point on
-     * the x axis so the tooltip follows the series even between vertices, which no `elementFromPoint`
-     * can tell you.
+     * Shared with the Canvas root rather than reimplemented, so hover behaves identically in the
+     * two renderers instead of merely similarly.
      */
     private handlePointer(event: PointerEvent): void {
         const element = this.containerElement();
@@ -246,63 +245,14 @@ export class ChartSvg extends ChartRootBase {
         if (!element) return;
 
         const rect = element.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        const area = this.context.chartArea();
-
-        if (x < area.x || x > area.x + area.width || y < area.y || y > area.y + area.height) {
-            if (this.context.hover()) {
-                this.context.setHover(null);
-                this.publishHover(null);
-            }
-
-            return;
-        }
-
-        const hit = this.hitTest(x, y);
+        const drawContext = buildDrawContext(this.context, this.chartId, this.measureText, this.seriesColor);
+        const hit = hitTest(this.context, this.chartState.resolvedSeries(), drawContext, event.clientX - rect.left, event.clientY - rect.top);
         const current = this.context.hover();
 
         if (hit?.datasetId === current?.datasetId && hit?.index === current?.index) return;
 
         this.context.setHover(hit);
         this.publishHover(hit);
-    }
-
-    /** Finds the nearest mark to a pointer position. */
-    private hitTest(x: number, y: number): { datasetId: string; index: number; x: number; y: number } | null {
-        const xScale = this.context.xScale();
-
-        if (!xScale) return null;
-
-        let best: { datasetId: string; index: number; x: number; y: number } | null = null;
-        let bestDistance = Infinity;
-
-        for (const series of this.chartState.resolvedSeries()) {
-            if (!series.visible) continue;
-
-            const yScale = this.context.scales().get(`y:${series.yAxisId}`) ?? this.context.yScale();
-
-            for (const point of series.points) {
-                if (point.value == null || !this.context.isItemVisible(series.id, point.dataIndex)) continue;
-
-                const px = xScale.scale(point.category);
-                const py = yScale && yScale.type !== 'band' ? yScale.scale(point.value) : y;
-
-                if (!Number.isFinite(px)) continue;
-
-                // Distance is measured along x only for the cartesian families, which is what makes
-                // a tooltip snap to the category the cursor is over rather than to whichever series
-                // happens to pass closest to the cursor's height.
-                const distance = Math.abs(px - x);
-
-                if (distance < bestDistance) {
-                    bestDistance = distance;
-                    best = { datasetId: series.id, index: point.dataIndex, x: px, y: Number.isFinite(py) ? py : y };
-                }
-            }
-        }
-
-        return best;
     }
 
     getElement(): SVGSVGElement | null {

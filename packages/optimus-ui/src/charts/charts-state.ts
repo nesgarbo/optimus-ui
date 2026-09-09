@@ -14,7 +14,7 @@ import { resolveTheme } from './core/palette';
 import { bandScale, linearScale, logScale, timeScale, toNumber, unionCategories } from './core/scale';
 import { sortCategories, stackedDomain, stackSeries, waterfallDomain, waterfallSteps, type StackInput } from './core/stack';
 import { niceDomain } from './core/ticks';
-import { type AxisRegistration, type ChartContext, type FeatureRegistration, type ReservationEdge, type SeriesRegistration, scaleKey } from './charts-registry';
+import { type AxisRegistration, type ChartContext, type FeatureRegistration, type LayoutReservation, type SeriesRegistration, scaleKey } from './charts-registry';
 
 /**
  * An axis' domain, before it is given a pixel range.
@@ -127,7 +127,7 @@ export function createChartState(options: ChartStateOptions) {
     const seriesRegistry = signal<readonly SeriesRegistration[]>([]);
     const featureRegistry = signal<readonly FeatureRegistration[]>([]);
     const axisRegistry = signal<readonly AxisRegistration[]>([]);
-    const reservations = signal<readonly { edge: ReservationEdge; size: Signal<number> }[]>([]);
+    const reservations = signal<readonly Signal<LayoutReservation>[]>([]);
 
     const hover = signal<HoverState | null>(null);
     const hiddenDatasets = signal<ReadonlySet<string>>(new Set());
@@ -141,7 +141,11 @@ export function createChartState(options: ChartStateOptions) {
     /* --- Layout ------------------------------------------------------------------------------- */
 
     const layout = computed(() => {
-        const edges: EdgeReservation[] = reservations().map((entry) => ({ position: entry.edge, size: entry.size() }));
+        const edges: EdgeReservation[] = reservations().map((entry) => {
+            const claim = entry();
+
+            return { position: claim.edge, size: claim.size };
+        });
 
         return computeLayout({ width: options.width(), height: options.height(), reservations: edges });
     });
@@ -597,12 +601,10 @@ export function createChartState(options: ChartStateOptions) {
         };
     }
 
-    function reserve(edge: ReservationEdge, size: Signal<number>): () => void {
-        const entry = { edge, size };
+    function reserve(reservation: Signal<LayoutReservation>): () => void {
+        reservations.update((list) => [...list, reservation]);
 
-        reservations.update((list) => [...list, entry]);
-
-        return () => reservations.update((list) => list.filter((item) => item !== entry));
+        return () => reservations.update((list) => list.filter((item) => item !== reservation));
     }
 
     const featureCache = new Map<string, Signal<FeatureRegistration | undefined>>();

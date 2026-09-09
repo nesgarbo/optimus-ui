@@ -7,6 +7,8 @@ import { BarDoc } from '@/doc/charts/bar-doc';
 import { BasicDoc } from '@/doc/charts/basic-doc';
 import { CanvasDoc } from '@/doc/charts/canvas-doc';
 import { CurveDoc } from '@/doc/charts/curve-doc';
+import { DonutDoc } from '@/doc/charts/donut-doc';
+import { GaugeDoc } from '@/doc/charts/gauge-doc';
 import { GradientDoc } from '@/doc/charts/gradient-doc';
 import { GroupedDoc } from '@/doc/charts/grouped-doc';
 import { HorizontalDoc } from '@/doc/charts/horizontal-doc';
@@ -14,7 +16,9 @@ import { ImportDoc } from '@/doc/charts/import-doc';
 import { LegendDoc } from '@/doc/charts/legend-doc';
 import { LocaleDoc } from '@/doc/charts/locale-doc';
 import { MarkersDoc } from '@/doc/charts/markers-doc';
+import { NightingaleDoc } from '@/doc/charts/nightingale-doc';
 import { NullsDoc } from '@/doc/charts/nulls-doc';
+import { PieDoc } from '@/doc/charts/pie-doc';
 import { RangeDoc } from '@/doc/charts/range-doc';
 import { RtlDoc } from '@/doc/charts/rtl-doc';
 import { StackedDoc } from '@/doc/charts/stacked-doc';
@@ -105,6 +109,26 @@ export class ChartsDemo {
             id: 'waterfall',
             label: 'Waterfall',
             component: WaterfallDoc
+        },
+        {
+            id: 'pie',
+            label: 'Pie',
+            component: PieDoc
+        },
+        {
+            id: 'donut',
+            label: 'Donut',
+            component: DonutDoc
+        },
+        {
+            id: 'gauge',
+            label: 'Gauge',
+            component: GaugeDoc
+        },
+        {
+            id: 'nightingale',
+            label: 'Nightingale',
+            component: NightingaleDoc
         },
         {
             id: 'axes',

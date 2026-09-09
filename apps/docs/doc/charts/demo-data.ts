@@ -121,3 +121,30 @@ export const TEMPERATURES = [
     { month: 'Nov', high: 13, low: 4 },
     { month: 'Dec', high: 9, low: 0 }
 ];
+
+/** Traffic sources, for the pie and donut demos. */
+export const TRAFFIC = [
+    { source: 'Organic', sessions: 4200 },
+    { source: 'Direct', sessions: 2800 },
+    { source: 'Referral', sessions: 1600 },
+    { source: 'Social', sessions: 1100 },
+    { source: 'Email', sessions: 700 }
+];
+
+/** A single completion figure, for the gauge demo. */
+export const COMPLETION = [
+    { state: 'Complete', share: 68 },
+    { state: 'Remaining', share: 32 }
+];
+
+/** Rose-chart data, where the radius carries the magnitude as well as the angle. */
+export const WIND = [
+    { direction: 'N', strength: 42 },
+    { direction: 'NE', strength: 28 },
+    { direction: 'E', strength: 65 },
+    { direction: 'SE', strength: 34 },
+    { direction: 'S', strength: 51 },
+    { direction: 'SW', strength: 22 },
+    { direction: 'W', strength: 78 },
+    { direction: 'NW', strength: 39 }
+];

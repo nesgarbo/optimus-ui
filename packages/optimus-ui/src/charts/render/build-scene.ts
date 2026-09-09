@@ -5,14 +5,15 @@
  * roots call it, so there is exactly one answer to "what does this chart look like" and the
  * renderers only differ in how they put it on screen.
  */
-import type { AxisPosition, AxisType, BarSeriesProps, BaseAxisProps, ChartHoverProps, ChartTooltipProps, ColorValue, CrosshairConfig, LineSeriesProps, SvgNode } from '@openng/optimus-ui/types/charts';
+import type { AxisPosition, AxisType, BarSeriesProps, BaseAxisProps, ChartHoverProps, ChartTooltipProps, ColorValue, CrosshairConfig, LineSeriesProps, PieSeriesProps, SvgNode } from '@openng/optimus-ui/types/charts';
 import { isGradient, isLinearGradient } from '../core/color';
 import type { ChartContext } from '../charts-registry';
 import type { ResolvedSeries } from '../charts-state';
-import { isCartesian } from '../charts-state';
+import { isCartesian, isRadial } from '../charts-state';
 import { axisOfPosition, defaultPosition, paintAxis, paintGrid, resolveAxis, type AxisRender } from './axis';
 import { bandSlotFor, groupedBars, paintBarSeries, shouldGroup } from './series-bar';
 import { paintLineSeries } from './series-line';
+import { paintPieSeries, pieFrame, type PieFrame } from './series-pie';
 import { createScene, plotClip, plotClipRef, type DrawContext, type SceneLayer } from './scene';
 
 /** What a built scene carries back to the root. */
@@ -78,7 +79,12 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
 
     /* --- Axes and grid ------------------------------------------------------------------------ */
 
-    for (const registration of context.axes()) {
+    // A chart whose only series are radial has no cartesian axes to draw. Skipping them here rather
+    // than letting them render empty is what stops a pie chart growing a stray x axis when someone
+    // leaves a <p-chart-x-axis /> in the template.
+    const cartesian = series.some((entry) => entry.visible && isCartesian(entry.type));
+
+    for (const registration of cartesian ? context.axes() : []) {
         const props = registration.props() as BaseAxisProps & { position?: AxisPosition };
         const scale = drawContext.scales.get(`${registration.axis}:${registration.id}`);
 
@@ -102,6 +108,8 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
 
     const grouped = shouldGroup(series);
     const groupMembers = grouped ? groupedBars(series) : [];
+    const rings = radialRings(series);
+    const frame = pieFrame(drawContext);
 
     for (const entry of series) {
         if (!entry.visible || entry.points.length === 0) continue;
@@ -119,6 +127,14 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
                 const slot = bandSlotFor(bandwidth, groupMembers.length || 1, position < 0 ? 0 : position, props, grouped && position >= 0);
 
                 scene.add('marks', ...paintBarSeries(drawContext, entry, props, slot, horizontal));
+                break;
+            }
+            case 'pie':
+            case 'donut':
+            case 'pie3d': {
+                const props = entry.registration.props() as PieSeriesProps;
+
+                scene.add('marks', ...paintPieSeries(drawContext, entry, props, ringFrameFor(frame, entry, rings, props)));
                 break;
             }
             default:
@@ -199,6 +215,36 @@ function gradientDefFor(series: ResolvedSeries): SvgNode | null {
     const { cx, cy, r } = color.radialGradient;
 
     return { tag: 'radialGradient', attrs: { id, cx, cy, r }, children: stops };
+}
+
+/**
+ * The radial series that share a centre as concentric rings.
+ *
+ * Stacked pies are rings rather than overlapping discs, so each one needs its own slice of the
+ * radius. Only the stacked ones are collected: several unstacked pies in one chart legitimately
+ * overlap, and re-arranging them into rings would be inventing a layout the author did not ask for.
+ */
+function radialRings(series: readonly ResolvedSeries[]): ResolvedSeries[] {
+    return series.filter((entry) => entry.visible && isRadial(entry.type) && entry.registration.stackId != null);
+}
+
+/**
+ * Narrows the full circle down to one ring's band.
+ *
+ * The series' own `innerRadius` and `outerRadius` are ratios of whatever band it is given, so a
+ * donut inside a stack keeps its hole proportionally rather than punching through the ring inside
+ * it.
+ */
+function ringFrameFor(frame: PieFrame, entry: ResolvedSeries, rings: readonly ResolvedSeries[], props: PieSeriesProps): PieFrame {
+    const index = rings.indexOf(entry);
+
+    if (index < 0 || rings.length <= 1) return frame;
+
+    const band = frame.radius / rings.length;
+    // Order 0 is the innermost ring, matching the documented stacking order.
+    const outer = band * (index + 1);
+
+    return { center: frame.center, radius: outer };
 }
 
 /** The layers whose contents are clipped to the plot area. */

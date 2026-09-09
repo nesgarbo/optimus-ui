@@ -14,6 +14,19 @@ import type { AxisDomain } from './charts-state';
 /** Where a part asks the layout to reserve space. */
 export type ReservationEdge = 'top' | 'right' | 'bottom' | 'left';
 
+/**
+ * A part's claim on the layout.
+ *
+ * Both the edge and the size are read from a signal. The edge has to be reactive rather than fixed
+ * at registration: a part registers in its constructor, and Angular has not populated its inputs by
+ * then, so a `position` read there would always be the default -- which silently reserved space on
+ * the wrong side of the chart.
+ */
+export interface LayoutReservation {
+    edge: ReservationEdge;
+    size: number;
+}
+
 /** One registered series. */
 export interface SeriesRegistration<P extends AnySeriesProps = AnySeriesProps> {
     /**
@@ -178,9 +191,9 @@ export interface ChartContext {
      */
     registerAxis: (registration: AxisRegistration) => () => void;
     /**
-     * Reserves layout space on an edge and returns the function that releases it.
+     * Reserves layout space and returns the function that releases it.
      */
-    reserve: (edge: ReservationEdge, size: Signal<number>) => () => void;
+    reserve: (reservation: Signal<LayoutReservation>) => () => void;
     /**
      * The registered series, in render order.
      */

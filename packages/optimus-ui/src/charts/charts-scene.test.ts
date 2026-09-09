@@ -415,6 +415,82 @@ describe('scene composition', () => {
     });
 });
 
+describe('radial series', () => {
+    const noAxes: { axis: 'x' | 'y'; id: string; props: BaseAxisProps & { position?: string } }[] = [];
+
+    function pie(props: object, values: number[], labels: string[]): ResolvedSeries {
+        const registration: SeriesRegistration = { id: 'pie-1', type: 'pie', props: computed(() => props) as never, seriesIndex: signal(0) };
+
+        return {
+            id: 'pie-1',
+            type: 'pie',
+            seriesIndex: 0,
+            points: values.map((value, i) => ({ category: labels[i], value, base: 0, dataIndex: i })),
+            categories: labels,
+            xAxisId: 'default',
+            yAxisId: 'default',
+            categoryAxis: 'x',
+            visible: true,
+            registration
+        };
+    }
+
+    const labels = ['a', 'b', 'c', 'd'];
+    const data = labels.map((label, i) => ({ label, value: [40, 30, 20, 10][i], radius: [10, 20, 30, 40][i] }));
+
+    it('sweeps a full circle from the slice values', () => {
+        const scene = buildScene(fakeContext(noAxes), [pie({ data, valueField: 'value', categoryField: 'label' }, [40, 30, 20, 10], labels)], drawContext());
+        const slices = allNodes(scene.layers).filter((node) => String(node.attrs['data-slot']) === 'chart-slice');
+
+        expect(slices).toHaveLength(4);
+        expect(markupOf(scene.layers)).not.toContain('NaN');
+    });
+
+    it('gives each slice its own colour rather than the series colour', () => {
+        // A pie is one series whose slices are the categories, so the palette varies per slice.
+        const scene = buildScene(fakeContext(noAxes), [pie({ data, valueField: 'value', categoryField: 'label' }, [40, 30, 20, 10], labels)], drawContext());
+        const fills = allNodes(scene.layers)
+            .filter((node) => String(node.attrs['data-slot']) === 'chart-slice')
+            .map((node) => node.attrs['fill']);
+
+        expect(new Set(fills).size).toBe(4);
+    });
+
+    it('takes the magnitude of a negative value instead of subtracting it', () => {
+        // A negative share has no meaning in a part-to-whole chart, and letting it subtract would
+        // distort every other slice.
+        const mixed = labels.map((label, i) => ({ label, value: [40, -30, 20, 10][i] }));
+        const scene = buildScene(fakeContext(noAxes), [pie({ data: mixed, valueField: 'value', categoryField: 'label' }, [40, -30, 20, 10], labels)], drawContext());
+
+        expect(allNodes(scene.layers).filter((node) => String(node.attrs['data-slot']) === 'chart-slice')).toHaveLength(4);
+    });
+
+    it('scales a nightingale radius against the radius values, not the angle values', () => {
+        // The bug this guards: a rose chart has equal angles, so scaling against those made every
+        // slice reach the outer edge and the radius encoding vanished.
+        const equalAngles = labels.map((label, i) => ({ label, value: 1, radius: [10, 20, 30, 40][i] }));
+        const scene = buildScene(fakeContext(noAxes), [pie({ data: equalAngles, valueField: 'value', categoryField: 'label', sliceRadiusValue: 'radius' }, [1, 1, 1, 1], labels)], drawContext());
+        const radii = allNodes(scene.layers)
+            .filter((node) => String(node.attrs['data-slot']) === 'chart-slice')
+            .map((node) => parseFloat(String(node.attrs['d']).match(/A ([\d.]+)/)![1]));
+
+        expect(new Set(radii.map((r) => Math.round(r))).size).toBe(4);
+        // The largest radius value reaches the outer edge, and the rest are read against it.
+        expect(Math.max(...radii)).toBeGreaterThan(Math.min(...radii) * 3);
+    });
+
+    it('draws no cartesian axis on a radial-only chart', () => {
+        // A stray <p-chart-x-axis /> left in a pie template should not grow an axis.
+        const axesPresent = [
+            { axis: 'x' as const, id: 'default', props: { id: 'default' } },
+            { axis: 'y' as const, id: 'default', props: { id: 'default' } }
+        ];
+        const scene = buildScene(fakeContext(axesPresent), [pie({ data, valueField: 'value', categoryField: 'label' }, [40, 30, 20, 10], labels)], drawContext());
+
+        expect(scene.layers.map((layer) => layer.key)).not.toContain('axes');
+    });
+});
+
 describe('axis resolution', () => {
     it('reserves more room for a rotated label than a flat one', () => {
         const ctx = drawContext();

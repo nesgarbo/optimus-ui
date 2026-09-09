@@ -94,16 +94,23 @@ export function projectSlices(ctx: DrawContext, series: ResolvedSeries, props: P
     const midRadius = (outerRadius + innerRadius) / 2 || outerRadius;
     const gapAngle = spacing > 0 && midRadius > 0 ? Math.min((spacing / (2 * Math.PI * midRadius)) * 360, sweep / ordered.length / 2) : 0;
 
+    // The radius values are resolved up front because each one is scaled against the largest of
+    // *them*. Scaling against the angle values instead was a real bug: on a rose chart the angles
+    // are all equal, so every slice came out at the full radius and the encoding disappeared.
+    const radiusValues =
+        props.sliceRadiusValue == null ? null : ordered.map((entry) => resolveScalarAccessor(props.sliceRadiusValue, itemContext(entry.datum, entry.dataIndex, series.seriesIndex, series.id, entry.value, entry.label)) as number | undefined);
+    const maxRadiusValue = radiusValues ? Math.max(...radiusValues.filter((value): value is number => typeof value === 'number' && Number.isFinite(value)), 0) : 0;
+
     const slices: SliceGeometry[] = [];
     let cursor = startAngle;
 
-    for (const entry of ordered) {
+    for (const [position, entry] of ordered.entries()) {
         const fraction = entry.value / total;
         // Progress sweeps the pie open rather than fading it in, so a partially drawn pie shows a
         // real fraction of the data instead of the whole thing at low opacity.
         const span = fraction * sweep * ctx.progress;
         const context: ItemContext<unknown> = itemContext(entry.datum, entry.dataIndex, series.seriesIndex, series.id, entry.value, entry.label);
-        const sliceRadius = props.sliceRadiusValue != null ? (resolveScalarAccessor(props.sliceRadiusValue, context) as number | undefined) : undefined;
+        const sliceRadius = radiusValues?.[position];
         const hovered = isHovered(ctx, series.id, entry.dataIndex);
         const explode = (resolveScalarAccessor(props.offset, context, 0) as number) ?? 0;
         const hoverOffset = hovered && ctx.hoverEffect?.offset ? ctx.hoverEffect.offset : 0;
@@ -117,7 +124,7 @@ export function projectSlices(ctx: DrawContext, series: ResolvedSeries, props: P
             innerRadius,
             // A nightingale scales each slice's radius by its own value, which is what encodes the
             // magnitude in the radius as well as in the angle.
-            outerRadius: sliceRadius != null ? scaleSliceRadius(sliceRadius, ordered, outerRadius, innerRadius) : outerRadius,
+            outerRadius: sliceRadius != null ? scaleSliceRadius(sliceRadius, maxRadiusValue, outerRadius, innerRadius) : outerRadius,
             dataIndex: entry.dataIndex,
             offset: explode + hoverOffset
         });
@@ -140,13 +147,16 @@ function sortBySlice<T extends { label: string; value: number }>(entries: T[], o
     return labels.map((label) => byLabel.get(label)!).filter(Boolean);
 }
 
-/** Maps a nightingale radius value onto the available radial band. */
-function scaleSliceRadius(value: number, entries: readonly { value: number }[], outerRadius: number, innerRadius: number): number {
-    const max = Math.max(...entries.map((entry) => entry.value), value);
+/**
+ * Maps a nightingale radius value onto the available radial band.
+ *
+ * Scaled against the largest radius value in the series, so the biggest slice reaches the outer
+ * edge and the rest are read against it.
+ */
+function scaleSliceRadius(value: number, maxValue: number, outerRadius: number, innerRadius: number): number {
+    if (maxValue <= 0) return outerRadius;
 
-    if (max <= 0) return outerRadius;
-
-    return innerRadius + (outerRadius - innerRadius) * Math.min(Math.max(value / max, 0), 1);
+    return innerRadius + (outerRadius - innerRadius) * Math.min(Math.max(value / maxValue, 0), 1);
 }
 
 /** Paints a pie, donut, gauge or nightingale series. */

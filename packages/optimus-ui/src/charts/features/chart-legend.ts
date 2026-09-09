@@ -5,7 +5,7 @@
  * focusable, clickable and selectable, and a legend painted into a canvas would have none of those.
  * That is also why it lives in the overlay layer rather than in the scene.
  */
-import { ChangeDetectionStrategy, Component, DestroyRef, TemplateRef, ViewEncapsulation, booleanAttribute, computed, contentChild, inject, input, numberAttribute, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, ViewEncapsulation, booleanAttribute, computed, contentChild, effect, inject, input, numberAttribute, signal, viewChild } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import type { Alignment, ChartLegendProps, LegendClickContext, LegendItemRenderContext, Position } from '@openng/optimus-ui/types/charts';
 import { isGradient } from '../core/color';
@@ -36,7 +36,7 @@ interface LegendRow {
     standalone: true,
     imports: [NgTemplateOutlet],
     template: `
-        <div [class]="rootClass()" [style]="rootStyle()" role="list" [attr.data-slot]="'chart-legend'">
+        <div #root [class]="rootClass()" [style]="rootStyle()" role="list" [attr.data-slot]="'chart-legend'">
             @for (row of rows(); track row.key) {
                 @if (itemTemplate()) {
                     <ng-container [ngTemplateOutlet]="itemTemplate()!" [ngTemplateOutletContext]="{ $implicit: contextFor(row), ctx: contextFor(row) }" />
@@ -82,6 +82,18 @@ export class ChartLegend {
     private readonly destroyRef = inject(DestroyRef);
 
     protected readonly hovered = signal<string | null>(null);
+
+    private readonly root = viewChild<ElementRef<HTMLElement>>('root');
+
+    /**
+     * The legend's own measured size.
+     *
+     * The reservation is the legend's actual size capped at the maximum, not the maximum itself:
+     * reserving 150px for a legend that needs 57 hands a third of the chart to empty space. There
+     * is no feedback loop in measuring it, because the legend's size follows its content and the
+     * font, never the plot area it is reserving against.
+     */
+    private readonly measured = signal({ width: 0, height: 0 });
 
     /** A projected template that replaces each row. */
     readonly itemDef = contentChild(ChartLegendItemDef);
@@ -399,22 +411,57 @@ export class ChartLegend {
     }
 
     constructor() {
+        effect((onCleanup) => {
+            const element = this.root()?.nativeElement;
+
+            if (!element || typeof ResizeObserver === 'undefined') return;
+
+            const observer = new ResizeObserver((entries) => {
+                const box = entries[0]?.contentRect;
+
+                if (!box) return;
+
+                const current = this.measured();
+
+                // Sub-pixel noise would otherwise re-run layout on every scroll.
+                if (Math.abs(current.width - box.width) < 0.5 && Math.abs(current.height - box.height) < 0.5) return;
+
+                this.measured.set({ width: box.width, height: box.height });
+            });
+
+            observer.observe(element);
+            this.measured.set({ width: element.offsetWidth, height: element.offsetHeight });
+
+            onCleanup(() => observer.disconnect());
+        });
+
         if (!this.context) return;
 
         const removeFeature = this.context.registerFeature({ type: 'legend', props: this.props });
         // The legend reserves a fixed band rather than measuring itself, so the plot area does not
         // resize every time a series is toggled and the labels change width.
         const releaseSpace = this.context.reserve(
-            this.position(),
             computed(() => {
-                const vertical = this.position() === 'left' || this.position() === 'right';
+                const position = this.position();
+                const vertical = position === 'left' || position === 'right';
                 const gap = 8;
+                const box = this.measured();
 
-                if (vertical) return (this.width() ?? this.maxWidth()) + gap;
+                // An explicit width or height wins outright -- that is what it is for: locking the
+                // band so the plot does not shift as items are toggled. Otherwise the legend takes
+                // what it measured, capped at the maximum, and falls back to the maximum only until
+                // it has been measured at all.
+                if (vertical) {
+                    const explicit = this.width();
+                    const size = explicit ?? (box.width > 0 ? Math.min(box.width, this.maxWidth()) : this.maxWidth());
 
-                const rowHeight = (this.fontSize() ?? this.context!.fontSize()) * 1.6 + this.itemGap();
+                    return { edge: position, size: size + gap };
+                }
 
-                return (this.height() ?? Math.min(rowHeight, this.maxHeight())) + gap;
+                const explicit = this.height();
+                const size = explicit ?? (box.height > 0 ? Math.min(box.height, this.maxHeight()) : this.maxHeight());
+
+                return { edge: position, size: size + gap };
             })
         );
 
