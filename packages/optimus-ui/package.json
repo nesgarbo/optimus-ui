@@ -89,7 +89,7 @@
         "@angular/forms": "catalog:angular22",
         "@angular/platform-browser": "catalog:angular22",
         "@angular/router": "catalog:angular22",
-        "rxjs": "^6.0.0 || ^7.8.1",
+        "chart.js": "^4.0.0",
         "prosemirror-commands": "^1.7.2",
         "prosemirror-dropcursor": "^1.8.3",
         "prosemirror-gapcursor": "^1.4.1",
@@ -101,7 +101,8 @@
         "prosemirror-state": "^1.4.4",
         "prosemirror-tables": "^1.8.5",
         "prosemirror-transform": "^1.12.1",
-        "prosemirror-view": "^1.42.3"
+        "prosemirror-view": "^1.42.3",
+        "rxjs": "^6.0.0 || ^7.8.1"
     },
     "dependencies": {
         "@openng/optimus-ui-motion": "workspace:*",
@@ -110,6 +111,9 @@
         "@openng/optimus-ui-utils": "workspace:*"
     },
     "peerDependenciesMeta": {
+        "chart.js": {
+            "optional": true
+        },
         "prosemirror-commands": {
             "optional": true
         },
