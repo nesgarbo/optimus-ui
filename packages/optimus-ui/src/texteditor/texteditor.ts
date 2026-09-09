@@ -1785,6 +1785,18 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
     }
 
     /**
+     * Whether the editor is rendered right to left, read from the document rather than from an
+     * input: direction is inherited, and an editor inside an RTL page is RTL.
+     *
+     * @internal
+     */
+    isRtl(): boolean {
+        if (!isPlatformBrowser(this.platformId)) return false;
+
+        return this.document.defaultView?.getComputedStyle(this.el.nativeElement).direction === 'rtl';
+    }
+
+    /**
      * Whether the editor accepts edits.
      *
      * @internal
@@ -1932,7 +1944,11 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
         ];
 
         if (schema.nodes['table']) {
-            plugins.push(columnResizing({ cellMinWidth: this.minTableColumnWidth(), defaultCellMinWidth: this.defaultTableColumnWidth() }), tableEditing({ allowTableNodeSelection: true }));
+            plugins.push(tableEditing({ allowTableNodeSelection: true }));
+
+            /* Drag-to-resize is left out under RTL: the handle drags from the wrong edge there.
+               Widths set programmatically or imported from HTML still render. */
+            if (!this.isRtl()) plugins.push(columnResizing({ cellMinWidth: this.minTableColumnWidth(), defaultCellMinWidth: this.defaultTableColumnWidth() }));
         }
 
         if (this.mode() === 'block') {

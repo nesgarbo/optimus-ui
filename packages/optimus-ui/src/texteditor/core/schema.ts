@@ -394,5 +394,24 @@ export function createTextEditorSchema(pluginNodes: Record<string, NodeSpec> = {
         marks[name] = spec;
     }
 
+    /* A header cell without a scope is a header a screen reader cannot associate with its column,
+       and prosemirror-tables does not write one. */
+    const header = nodes['tableHeader'];
+    const headerToDOM = header?.toDOM;
+
+    if (header && headerToDOM) {
+        nodes['tableHeader'] = {
+            ...header,
+            toDOM: (node) => {
+                const rendered = headerToDOM(node) as [string, Record<string, string>, ...unknown[]];
+                const attrs = typeof rendered[1] === 'object' && rendered[1] !== null && !Array.isArray(rendered[1]) ? { ...rendered[1] } : {};
+
+                attrs['scope'] = attrs['scope'] ?? 'col';
+
+                return [rendered[0], attrs, ...rendered.slice(2)] as never;
+            }
+        };
+    }
+
     return new Schema({ nodes, marks });
 }
