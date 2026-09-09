@@ -581,6 +581,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     private readonly documentUploads = signal<UploadSlotEntry[]>([]);
 
+    private readonly openUploads = signal<Record<TextEditorUploadKind, boolean>>({ image: false, document: false });
+
     private pickerKind: TextEditorUploadKind = 'image';
 
     /**
@@ -613,6 +615,7 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
         },
         onComplete: () => {
             this.removePlaceholder('imageUploadPlaceholder');
+            this.setUploadOpen('image', false);
             this.imageUploadComplete.emit();
             this.uploadOptions.image?.onComplete();
         }
@@ -635,6 +638,7 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
         },
         onComplete: () => {
             this.removePlaceholder('documentUploadPlaceholder');
+            this.setUploadOpen('document', false);
             this.documentUploadComplete.emit();
             this.uploadOptions.document?.onComplete();
         }
@@ -818,6 +822,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Returns the live ProseMirror EditorView, or null before mount.
+     *
+     * @group Method
      */
     getView(): EditorView | null {
         return this.view;
@@ -825,6 +831,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Returns the current ProseMirror EditorState, or null before mount.
+     *
+     * @group Method
      */
     getState(): EditorState | null {
         return this.view?.state ?? null;
@@ -832,6 +840,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Returns the editor's content DOM element, or null before mount.
+     *
+     * @group Method
      */
     getEditorElement(): HTMLElement | null {
         return (this.view?.dom as HTMLElement | undefined) ?? null;
@@ -839,6 +849,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Returns the full set of imperative editing commands.
+     *
+     * @group Method
      */
     getCommands(): TextEditorCommands {
         return this.commands();
@@ -846,6 +858,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Serializes the current document to HTML.
+     *
+     * @group Method
      */
     getHTML(): string {
         if (!this.view || !this.schema) return typeof this.value() === 'string' ? (this.value() as string) : '';
@@ -855,6 +869,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * The ProseMirror document as JSON (loss-less).
+     *
+     * @group Method
      */
     getJSON(): unknown {
         return this.view?.state.doc.toJSON() ?? { type: 'doc', content: [] };
@@ -862,6 +878,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Serializes as the array-of-block-HTML representation used by block mode.
+     *
+     * @group Method
      */
     getBlocks(): string[] {
         if (!this.view || !this.schema) return Array.isArray(this.value()) ? (this.value() as string[]) : [];
@@ -871,6 +889,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Plain-text projection of the document.
+     *
+     * @group Method
      */
     getText(): string {
         return this.view ? serializeText(this.view.state.doc) : '';
@@ -878,6 +898,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Markdown projection of the document.
+     *
+     * @group Method
      */
     getMarkdown(): string {
         return this.view ? serializeMarkdown(this.view.state.doc) : '';
@@ -885,6 +907,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Returns the plain text of the current selection.
+     *
+     * @group Method
      */
     getSelectedText(): string {
         if (!this.view) return '';
@@ -896,6 +920,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Replaces the editor content with the given value.
+     *
+     * @group Method
      */
     setValue(value: TextEditorValue): void {
         this.applyValue(value);
@@ -903,6 +929,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Replaces the current selection with the given content, optionally interpreted as HTML.
+     *
+     * @group Method
      */
     replaceSelection(content: string, asHtml = false): void {
         if (!this.view || !this.schema) return;
@@ -922,6 +950,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Runs a ProseMirror command against the editor; returns whether it applied.
+     *
+     * @group Method
      */
     runCommand(command: Command): boolean {
         if (!this.view) return false;
@@ -931,6 +961,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Attaches a ProseMirror plugin to the live editor; returns a remover function.
+     *
+     * @group Method
      */
     registerProseMirrorPlugin(plugin: Plugin): () => void {
         if (!this.view) return () => undefined;
@@ -948,6 +980,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Re-applies the ProseMirror `editable` predicate after `disabled` or `readonly` changed.
+     *
+     * @group Method
      */
     refreshEditable(): void {
         this.view?.setProps({ editable: () => this.isEditable() });
@@ -955,6 +989,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Adds or removes the markdown input-rules plugin live after the `markdown` input changed.
+     *
+     * @group Method
      */
     refreshMarkdown(): void {
         if (!this.view || !this.schema) return;
@@ -975,6 +1011,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
     /**
      * Visually preserves the current selection while focus moves to external UI, such as a colour
      * input in the toolbar.
+     *
+     * @group Method
      */
     preserveSelection(): void {
         this.getEditorElement()?.classList.add('p-text-editor-selection-preserved');
@@ -982,6 +1020,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Points the editor's `aria-activedescendant` at the active option of an open type-ahead menu.
+     *
+     * @group Method
      */
     setComboboxActiveDescendant(id: string | null): void {
         const element = this.getEditorElement();
@@ -1007,6 +1047,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Returns all headings in the document, used by the navigator minimap.
+     *
+     * @group Method
      */
     getDocumentHeadings(): TextEditorHeadingEntry[] {
         return this.view ? collectHeadings(this.view.state.doc) : [];
@@ -1014,6 +1056,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Scrolls the heading at the given position into view.
+     *
+     * @group Method
      */
     scrollToHeading(pos: number, headings: TextEditorHeadingEntry[] = this.headingEntries()): void {
         if (!this.view) return;
@@ -1026,6 +1070,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Moves focus to the heading at the given document position.
+     *
+     * @group Method
      */
     focusHeading(pos: number): void {
         if (!this.view) return;
@@ -1036,6 +1082,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Recomputes which heading is currently active based on scroll position.
+     *
+     * @group Method
      */
     updateActiveHeading(headings: TextEditorHeadingEntry[] = this.headingEntries()): void {
         if (!this.view || !headings.length) return;
@@ -1057,6 +1105,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Internal handler invoked on navigator scroll to sync the active heading.
+     *
+     * @group Method
      */
     onNavigatorScroll(headings: TextEditorHeadingEntry[] = this.headingEntries()): void {
         this.updateActiveHeading(headings);
@@ -1075,6 +1125,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Returns the block type name at the given index (block mode).
+     *
+     * @group Method
      */
     getBlockType(index: number): string {
         return this.view ? blockTypeAt(this.view, index) : 'text';
@@ -1082,6 +1134,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Inserts a new empty block immediately after the block at the given index (block mode).
+     *
+     * @group Method
      */
     addBlockAfter(index: number): void {
         if (this.view) addBlockAfter(this.view, index);
@@ -1089,6 +1143,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Moves a block from one index to another, reordering the document (block mode).
+     *
+     * @group Method
      */
     moveBlock(fromIndex: number, toIndex: number): void {
         if (this.view) moveBlock(this.view, fromIndex, toIndex);
@@ -1096,6 +1152,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Internal handler invoked when a block drag starts (block mode).
+     *
+     * @group Method
      */
     onBlockDragStart(index: number, event: DragEvent): void {
         this.draggedBlock.set(index);
@@ -1108,6 +1166,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Internal handler invoked when a block drag ends (block mode).
+     *
+     * @group Method
      */
     onBlockDragEnd(): void {
         const from = this.draggedBlock();
@@ -1133,6 +1193,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Returns the command set for the block handle menu at the given block index (block mode).
+     *
+     * @group Method
      */
     getBlockMenuCommands(blockIndex: number, onDismiss: () => void): TextEditorBlockMenuCommands {
         return createBlockMenuCommands(
@@ -1146,6 +1208,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Returns the command set for the slash menu at the given block index.
+     *
+     * @group Method
      */
     getSlashMenuCommands(blockIndex: number, onDismiss: () => void): TextEditorSlashMenuCommands {
         const withClear = (action: () => void) => () => {
@@ -1175,6 +1239,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Returns the command set for the mention popup.
+     *
+     * @group Method
      */
     getMentionCommands(onDismiss: () => void, options: { filterField: string; template: (data: unknown) => string }): TextEditorMentionCommands {
         return {
@@ -1200,6 +1266,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Filters mention items by the given field and filter text.
+     *
+     * @group Method
      */
     getFilteredMentionItems(items: unknown[], filterField: string, filterText: string): unknown[] {
         const query = (filterText ?? '').toLowerCase();
@@ -1217,6 +1285,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Returns the active table state when the cursor is inside a table, or null otherwise.
+     *
+     * @group Method
      */
     getTableActiveState(): TableActiveState | null {
         return this.view ? tableActiveState(this.view) : null;
@@ -1224,6 +1294,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Returns the geometry used to position the table editing overlay, or null when not in a table.
+     *
+     * @group Method
      */
     getTableOverlayRect(): TableOverlayRect | null {
         return this.overlayRect();
@@ -1231,6 +1303,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Recomputes and emits the table overlay rect.
+     *
+     * @group Method
      */
     updateTableOverlayRect(): void {
         const rect = this.view ? tableOverlayRect(this.view) : null;
@@ -1241,6 +1315,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Returns true when more than one table cell is currently selected.
+     *
+     * @group Method
      */
     getIsMultiCellSelected(): boolean {
         return this.view ? isMultiCellSelected(this.view.state) : false;
@@ -1248,6 +1324,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Returns true when the active cell is a merged cell.
+     *
+     * @group Method
      */
     getIsCellMerged(): boolean {
         return this.view ? isCellMerged(this.view.state) : false;
@@ -1255,6 +1333,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Returns the command set for the active table column.
+     *
+     * @group Method
      */
     getTableColumnCommands(colIndex: number, onDismiss: () => void): TextEditorTableColumnCommands {
         return createTableColumnCommands(
@@ -1266,6 +1346,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Returns the command set for the active table row.
+     *
+     * @group Method
      */
     getTableRowCommands(rowIndex: number, onDismiss: () => void): TextEditorTableRowCommands {
         return createTableRowCommands(
@@ -1277,6 +1359,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Returns the command set for the active table cell (or multi-cell selection).
+     *
+     * @group Method
      */
     getTableCellCommands(onDismiss: () => void): TextEditorTableCellCommands {
         return createTableCellCommands(() => this.view, onDismiss);
@@ -1284,6 +1368,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Adds a row to the given table element at the current cursor position.
+     *
+     * @group Method
      */
     onTableAddRow(table: HTMLTableElement): void {
         void table;
@@ -1292,6 +1378,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Adds a column to the given table element at the current cursor position.
+     *
+     * @group Method
      */
     onTableAddColumn(table: HTMLTableElement): void {
         void table;
@@ -1302,6 +1390,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Filters out files that fail image validation, returning the accepted ones.
+     *
+     * @group Method
      */
     validateImageFiles(files: File[]): File[] {
         const options = this.uploadOptions.image;
@@ -1321,6 +1411,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Filters out files that fail document validation, returning the accepted ones.
+     *
+     * @group Method
      */
     validateDocumentFiles(files: File[]): File[] {
         const options = this.uploadOptions.document;
@@ -1340,6 +1432,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Starts uploading the given image files and inserts an upload placeholder.
+     *
+     * @group Method
      */
     startImageUploads(files: File[]): void {
         const accepted = this.validateImageFiles(files);
@@ -1353,6 +1447,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Starts uploading the given document files and inserts an upload placeholder.
+     *
+     * @group Method
      */
     startDocumentUploads(files: File[]): void {
         const accepted = this.validateDocumentFiles(files);
@@ -1366,18 +1462,24 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /**
      * Cancels any in-progress image uploads and clears the upload UI.
+     *
+     * @group Method
      */
     dismissImageUpload(): void {
         this.imageQueue.dismiss();
         this.removePlaceholder('imageUploadPlaceholder');
+        this.setUploadOpen('image', false);
     }
 
     /**
      * Cancels any in-progress document uploads and clears the upload UI.
+     *
+     * @group Method
      */
     dismissDocumentUpload(): void {
         this.documentQueue.dismiss();
         this.removePlaceholder('documentUploadPlaceholder');
+        this.setUploadOpen('document', false);
     }
 
     /**
@@ -1387,6 +1489,25 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
      */
     uploadEntries(kind: TextEditorUploadKind) {
         return kind === 'image' ? this.imageUploads : this.documentUploads;
+    }
+
+    /**
+     * Whether one overlay is open. The overlays are opened by a command or by a drop, not by being
+     * mounted: a dropzone permanently on screen would take a third of the editor with it.
+     *
+     * @internal
+     */
+    isUploadOpen(kind: TextEditorUploadKind): boolean {
+        return this.openUploads()[kind];
+    }
+
+    /**
+     * Opens or closes one overlay.
+     *
+     * @internal
+     */
+    setUploadOpen(kind: TextEditorUploadKind, open: boolean): void {
+        this.openUploads.update((state) => ({ ...state, [kind]: open }));
     }
 
     /**
@@ -1403,10 +1524,13 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
         if (kind === 'image') this.imageUploadRequest.emit();
         else this.documentUploadRequest.emit();
 
-        /* The picker opens only when the host has not mounted an upload overlay: with a dropzone on
-           screen the overlay owns the interaction, and opening a native dialog on top of it would
-           fight the UI the application chose. */
-        if (this.hasPart(kind === 'image' ? 'image-upload' : 'document-upload')) return;
+        /* The native picker is the fallback: with an overlay mounted, the application owns the
+           interaction, and opening a system dialog on top of it would fight the UI it chose. */
+        if (this.hasPart(kind === 'image' ? 'image-upload' : 'document-upload')) {
+            this.setUploadOpen(kind, true);
+
+            return;
+        }
 
         this.filePicker()?.nativeElement.click();
     }
@@ -1653,6 +1777,16 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
             },
             nodeViews: {
                 checkListItem: (node, view, getPos) => new CheckListItemView(node, view, getPos)
+            },
+            /* Copying out of the editor puts markdown on the clipboard, through the same serializer
+               `getMarkdown()` uses, so a document pasted into a markdown field keeps its structure
+               instead of arriving as one flat line. */
+            clipboardTextSerializer: (slice) => {
+                try {
+                    return serializeMarkdown(schema.topNodeType.create(null, slice.content));
+                } catch {
+                    return slice.content.textBetween(0, slice.content.size, '\n\n');
+                }
             },
             handleDOMEvents: {
                 focus: () => {
@@ -1947,9 +2081,15 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
         const images = files.filter((file) => file.type.startsWith('image/'));
         const documents = files.filter((file) => !file.type.startsWith('image/'));
 
-        if (images.length) this.startImageUploads(images);
+        if (images.length) {
+            this.setUploadOpen('image', true);
+            this.startImageUploads(images);
+        }
 
-        if (documents.length) this.startDocumentUploads(documents);
+        if (documents.length) {
+            this.setUploadOpen('document', true);
+            this.startDocumentUploads(documents);
+        }
 
         return true;
     }

@@ -81,6 +81,12 @@ export abstract class TextEditorUploadBase extends BaseComponent<TextEditorPartP
     readonly uploading = computed(() => this.uploads().length > 0);
 
     /**
+     * Whether the overlay is on screen: opened by `commands.uploadImages()` / `uploadDocuments()`,
+     * by a drop on the content, or by an upload already running.
+     */
+    readonly open = computed(() => this.root.isUploadOpen(this.kind) || this.uploading());
+
+    /**
      * File types the native picker accepts.
      */
     readonly acceptTypes = computed(() => this.accept() ?? this.allowedTypes() ?? (this.kind === 'image' ? this.root.allowedImageTypes() : this.root.allowedDocumentTypes()));
@@ -170,10 +176,12 @@ export abstract class TextEditorUploadBase extends BaseComponent<TextEditorPartP
     standalone: true,
     imports: [NgTemplateOutlet],
     template: `
-        @if (imageUploadDef(); as def) {
-            <ng-container *ngTemplateOutlet="def.template; context: slotContext()" />
+        @if (open()) {
+            @if (imageUploadDef(); as def) {
+                <ng-container *ngTemplateOutlet="def.template; context: slotContext()" />
+            }
+            <ng-content />
         }
-        <ng-content />
         <input #picker type="file" multiple class="p-text-editor-file-input" [attr.accept]="acceptTypes()" (change)="onPicked($event)" />
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -215,10 +223,12 @@ export class TextEditorImageUpload extends TextEditorUploadBase {
     standalone: true,
     imports: [NgTemplateOutlet],
     template: `
-        @if (documentUploadDef(); as def) {
-            <ng-container *ngTemplateOutlet="def.template; context: slotContext()" />
+        @if (open()) {
+            @if (documentUploadDef(); as def) {
+                <ng-container *ngTemplateOutlet="def.template; context: slotContext()" />
+            }
+            <ng-content />
         }
-        <ng-content />
         <input #picker type="file" multiple class="p-text-editor-file-input" [attr.accept]="acceptTypes()" (change)="onPicked($event)" />
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,
