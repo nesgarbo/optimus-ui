@@ -48,7 +48,7 @@ import { textEditorKeymap } from './core/keymap';
 import { placeholderPlugin } from './core/placeholder';
 import { printHtml } from './core/print';
 import { createTextEditorSchema } from './core/schema';
-import { parseBlocks, parseHtml, serializeBlocks, serializeHtml, serializeMarkdown, serializeText } from './core/serialize';
+import { parseBlocks, parseHtml, parseHtmlSlice, serializeBlocks, serializeHtml, serializeMarkdown, serializeText } from './core/serialize';
 import { createTableCellCommands, createTableColumnCommands, createTableControlsCommands, createTableRowCommands, isCellMerged, isMultiCellSelected, tableActiveState, tableOverlayRect } from './core/tables';
 import { TypeaheadState, caretPositionAt, clearTypeahead, dismissTypeahead, typeaheadPlugin } from './core/typeahead';
 import { DEFAULT_DOCUMENT_TYPES, DEFAULT_IMAGE_TYPES, TEXT_EDITOR_FILE_SIZE, UploadQueue, validateFiles } from './core/uploads';
@@ -596,6 +596,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     private valueChangeTimer: ReturnType<typeof setTimeout> | null = null;
 
+    private mentionRequestId = 0;
+
     private pluginCleanups: Array<() => void> = [];
 
     private readonly imageQueue = new UploadQueue({
@@ -943,9 +945,7 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
             return;
         }
 
-        const parsed = parseHtml(this.schema, content, this.document);
-
-        this.view.dispatch(state.tr.replaceSelectionWith(parsed, false).scrollIntoView());
+        this.view.dispatch(state.tr.replaceSelection(parseHtmlSlice(this.schema, content, this.document)).scrollIntoView());
     }
 
     /**
@@ -2004,6 +2004,7 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
         }
 
         if (!active) {
+            this.mentionRequestId++;
             this.mentionItems.set([]);
             this.mentionRequest.emit({ active, text, items: [], position });
 
@@ -2012,8 +2013,13 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
         const handler = this.mentionOptions?.handler() ?? this.mentionHandler();
         const filterField = this.mentionOptions?.filterField() ?? this.mentionFilterField();
+        /* An async handler can answer out of order, and a slow earlier query would then overwrite
+           the candidates for what the user is typing now. */
+        const requestId = ++this.mentionRequestId;
 
         void Promise.resolve(handler?.(text) ?? []).then((items) => {
+            if (requestId !== this.mentionRequestId) return;
+
             const filtered = this.getFilteredMentionItems(items, filterField, text);
 
             this.mentionItems.set(filtered);

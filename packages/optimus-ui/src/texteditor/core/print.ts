@@ -29,8 +29,11 @@ export function printHtml(html: string, document: Document, title?: string): voi
         .map((node) => node.outerHTML)
         .join('');
 
+    /* The title is host-supplied text, not markup: escaped so a stray `<` cannot close the head. */
+    const safeTitle = (title ?? document.title).replace(/[&<>]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[character] as string);
+
     frameDocument.open();
-    frameDocument.write(`<!doctype html><html><head><meta charset="utf-8"><title>${title ?? document.title}</title>${styles}</head><body><div class="p-text-editor-content">${html}</div></body></html>`);
+    frameDocument.write(`<!doctype html><html><head><meta charset="utf-8"><title>${safeTitle}</title>${styles}</head><body><div class="p-text-editor-content">${html}</div></body></html>`);
     frameDocument.close();
 
     const print = () => {

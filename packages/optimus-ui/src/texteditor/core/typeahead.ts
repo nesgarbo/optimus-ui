@@ -28,9 +28,13 @@ export interface TypeaheadState {
      * Text typed after the trigger.
      */
     text: string;
+    /**
+     * Position of a trigger the user dismissed, so it does not reopen on the next keystroke.
+     */
+    dismissedAt: number | null;
 }
 
-const INACTIVE: TypeaheadState = { active: false, trigger: null, from: 0, text: '' };
+const INACTIVE: TypeaheadState = { active: false, trigger: null, from: 0, text: '', dismissedAt: null };
 
 export const typeaheadPluginKey = new PluginKey<TypeaheadState>('optimusTextEditorTypeahead');
 
@@ -117,13 +121,12 @@ export function typeaheadPlugin(options: TypeaheadOptions): Plugin<TypeaheadStat
 
                 if (!enabled.slash && !enabled.mention) return INACTIVE;
 
-                const dismissed = transaction.getMeta(typeaheadPluginKey);
-
-                if (dismissed === 'dismiss') return INACTIVE;
-
+                /* A dismissal outlives the transaction that carried it: Escape closes the menu for
+                   that trigger, and it must not spring back open on the next character typed. */
+                const dismissedAt = transaction.getMeta(typeaheadPluginKey) === 'dismiss' ? (previous.active ? previous.from : (previous.dismissedAt ?? null)) : previous.dismissedAt != null ? transaction.mapping.map(previous.dismissedAt) : null;
                 const { selection } = newState;
 
-                if (!selection.empty) return INACTIVE;
+                if (!selection.empty) return { ...INACTIVE, dismissedAt };
 
                 const { $from } = selection;
                 const textBefore = $from.parent.textBetween(0, $from.parentOffset, undefined, '\ufffc');
@@ -131,7 +134,11 @@ export function typeaheadPlugin(options: TypeaheadOptions): Plugin<TypeaheadStat
 
                 if (!match) return INACTIVE;
 
-                return { active: true, trigger: match.trigger, from: $from.start() + match.start, text: match.query };
+                const from = $from.start() + match.start;
+
+                if (dismissedAt === from) return { ...INACTIVE, dismissedAt };
+
+                return { active: true, trigger: match.trigger, from, text: match.query, dismissedAt: null };
             }
         },
         props: {

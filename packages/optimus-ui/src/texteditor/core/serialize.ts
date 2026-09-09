@@ -1,4 +1,4 @@
-import { DOMParser as ProseMirrorDOMParser, DOMSerializer, Node as ProseMirrorNode, Schema } from 'prosemirror-model';
+import { DOMParser as ProseMirrorDOMParser, DOMSerializer, Node as ProseMirrorNode, Schema, Slice } from 'prosemirror-model';
 import { isSafeCssValue, isSafeImageSrc, isSafeLinkHref, parseInertHtml, safeLinkTarget } from './sanitize';
 
 /**
@@ -11,6 +11,18 @@ export function parseHtml(schema: Schema, html: string, document: Document): Pro
     const fragment = parseInertHtml(html ?? '', document);
 
     return ProseMirrorDOMParser.fromSchema(schema).parse(fragment, { preserveWhitespace: false });
+}
+
+/**
+ * Parses untrusted HTML into a slice, which is what an insertion at the cursor needs: parsing to a
+ * document and replacing with it would split the paragraph the caret sits in.
+ *
+ * @group Function
+ */
+export function parseHtmlSlice(schema: Schema, html: string, document: Document): Slice {
+    const fragment = parseInertHtml(html ?? '', document);
+
+    return ProseMirrorDOMParser.fromSchema(schema).parseSlice(fragment, { preserveWhitespace: false });
 }
 
 /**
@@ -185,7 +197,8 @@ function tableMarkdown(node: ProseMirrorNode): string {
     node.forEach((row) => {
         const cells: string[] = [];
 
-        row.forEach((cell) => cells.push(serializeText(cell).replace(/\n+/g, ' ').trim()));
+        // A pipe inside a cell would end the column early, so it is escaped rather than emitted raw.
+        row.forEach((cell) => cells.push(serializeText(cell).replace(/\n+/g, ' ').replace(/\|/g, '\\|').trim()));
         rows.push(cells);
     });
 

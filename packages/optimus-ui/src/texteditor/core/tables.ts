@@ -141,11 +141,28 @@ function dispatchTable(view: EditorView | null, command: Command): void {
 }
 
 /**
+ * Whether every row holds one cell per column. Reordering and duplicating work on the row's children
+ * directly, and a merged cell makes that indexing wrong - the safe answer there is to do nothing
+ * rather than to build a broken table.
+ */
+function isRectangular(rect: ReturnType<typeof selectedRect>): boolean {
+    let rectangular = true;
+
+    rect.table.forEach((row) => {
+        if (row.childCount !== rect.map.width) rectangular = false;
+    });
+
+    return rectangular;
+}
+
+/**
  * Moves a row or a column one step in the given direction by deleting it and re-inserting it on the
  * other side of its neighbour, which is the only reorder prosemirror-tables leaves room for.
  */
 function moveLine(view: EditorView, kind: 'row' | 'column', delta: number): void {
     const rect = selectedRect(view.state);
+
+    if (!isRectangular(rect)) return;
     const table: ProseMirrorNode = rect.table;
     const transaction = view.state.tr;
 
@@ -189,6 +206,8 @@ function moveLine(view: EditorView, kind: 'row' | 'column', delta: number): void
  */
 function duplicateLine(view: EditorView, kind: 'row' | 'column'): void {
     const rect = selectedRect(view.state);
+
+    if (!isRectangular(rect)) return;
     const table: ProseMirrorNode = rect.table;
     const transaction = view.state.tr;
 

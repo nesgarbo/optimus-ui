@@ -74,7 +74,13 @@ export class TextEditorBlockControls extends BaseComponent<TextEditorPartPassThr
     /**
      * Type of the hovered block, such as `text` or `heading:2`.
      */
-    readonly blockType = computed(() => (this.index() < 0 ? 'text' : this.root.getBlockType(this.index())));
+    readonly blockType = computed(() => {
+        /* The type comes from the live document, which is not a signal: reading the format state
+           here is what re-runs this after a Turn Into. */
+        this.root.state();
+
+        return this.index() < 0 ? 'text' : this.root.getBlockType(this.index());
+    });
 
     /**
      * Where the bar sits: pinned to the inline start of the hovered block, in viewport coordinates.
@@ -215,7 +221,11 @@ export class TextEditorBlockMenu extends BaseComponent<TextEditorPartPassThrough
     /**
      * Type of that block.
      */
-    readonly blockType = computed(() => (this.blockIndex() < 0 ? 'text' : this.root.getBlockType(this.blockIndex())));
+    readonly blockType = computed(() => {
+        this.root.state();
+
+        return this.blockIndex() < 0 ? 'text' : this.root.getBlockType(this.blockIndex());
+    });
 
     /**
      * The formatting snapshot at the current selection.

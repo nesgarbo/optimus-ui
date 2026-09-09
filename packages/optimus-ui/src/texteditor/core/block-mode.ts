@@ -123,6 +123,11 @@ export function blockModePlugin(options: BlockModeOptions): Plugin {
 
                 const { selection, doc } = view.state;
                 const $from = selection.$from;
+
+                /* A gap cursor between blocks has no block of its own, and its index can sit one
+                   past the last child; either one turns the lookup below into a throw. */
+                if ($from.depth === 0 || $from.index(0) >= doc.childCount) return false;
+
                 const blockStart = $from.before(1);
                 const block = doc.child($from.index(0));
                 const blockEnd = blockStart + block.nodeSize;
@@ -200,14 +205,23 @@ export function addBlockAfter(view: EditorView, index: number): void {
  * Puts the selection inside the given block, so a command dispatched from the block menu acts on
  * that block and not on wherever the caret happened to be.
  */
-function selectBlock(view: EditorView, index: number): boolean {
+function selectBlock(view: EditorView, index: number, whole = false): boolean {
     const positions = blockPositionsOf(view.state.doc);
 
     if (index < 0 || index >= positions.length) return false;
 
     const pos = positions[index];
     const node = view.state.doc.child(index);
-    const selection = node.isTextblock ? TextSelection.near(view.state.doc.resolve(pos + 1)) : NodeSelection.create(view.state.doc, pos);
+
+    if (!node.isTextblock) {
+        view.dispatch(view.state.tr.setSelection(NodeSelection.create(view.state.doc, pos)));
+
+        return true;
+    }
+
+    /* Colours act on a selection, so a command that recolours the block has to select its text
+       first: with a caret the mark would only be stored for the next character typed. */
+    const selection = whole && node.content.size ? TextSelection.create(view.state.doc, pos + 1, pos + node.nodeSize - 1) : TextSelection.near(view.state.doc.resolve(pos + 1));
 
     view.dispatch(view.state.tr.setSelection(selection));
 
@@ -221,16 +235,18 @@ function selectBlock(view: EditorView, index: number): boolean {
  * @group Function
  */
 export function createBlockMenuCommands(getView: () => EditorView | null, blockIndex: () => number, onDismiss: () => void): TextEditorBlockMenuCommands {
-    const withBlock = (action: (view: EditorView, index: number) => void) => () => {
-        const view = getView();
-        const index = blockIndex();
+    const withBlock =
+        (action: (view: EditorView, index: number) => void, whole = false) =>
+        () => {
+            const view = getView();
+            const index = blockIndex();
 
-        if (!view || !selectBlock(view, index)) return;
+            if (!view || !selectBlock(view, index, whole)) return;
 
-        action(view, index);
-        onDismiss();
-        view.focus();
-    };
+            action(view, index);
+            onDismiss();
+            view.focus();
+        };
 
     const convert = (run: (view: EditorView) => void) => withBlock((view) => run(view));
 
@@ -252,8 +268,8 @@ export function createBlockMenuCommands(getView: () => EditorView | null, blockI
 
             view.dispatch(view.state.tr.delete(positions[index], positions[index] + node.nodeSize));
         }),
-        foregroundColor: (color: string) => convert((view) => setTextStyle({ color: color || null })(view.state, view.dispatch))(),
-        backgroundColor: (color: string) => convert((view) => setTextStyle({ backgroundColor: color || null })(view.state, view.dispatch))(),
+        foregroundColor: (color: string) => withBlock((view) => setTextStyle({ color: color || null })(view.state, view.dispatch), true)(),
+        backgroundColor: (color: string) => withBlock((view) => setTextStyle({ backgroundColor: color || null })(view.state, view.dispatch), true)(),
         turnInto: {
             text: convert((view) => toggleBlockType(view.state.schema.nodes['paragraph'], null, view.state.schema.nodes['paragraph'])(view.state, view.dispatch, view)),
             heading1: convert((view) => toggleBlockType(view.state.schema.nodes['heading'], { level: 1 }, view.state.schema.nodes['paragraph'])(view.state, view.dispatch, view)),

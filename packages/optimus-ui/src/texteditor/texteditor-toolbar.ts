@@ -1,7 +1,7 @@
 import { NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, contentChild, inject, input, signal } from '@angular/core';
 import { BaseComponent } from '@openng/optimus-ui/basecomponent';
-import type { TextEditorPartPassThrough } from '@openng/optimus-ui/types/texteditor';
+import type { CaretPosition, TextEditorPartPassThrough } from '@openng/optimus-ui/types/texteditor';
 import { TextEditorRoot } from './texteditor';
 import { CONTEXT_TOOLBAR_CONTEXT } from './texteditor-contexts';
 import { TextEditorContextToolbarDef, TextEditorContextToolbarMoreDef, TextEditorToolbarDef } from './texteditor-defs';
@@ -140,7 +140,7 @@ export class TextEditorContextToolbar extends BaseComponent<TextEditorPartPassTh
 
     private unregister?: () => void;
 
-    private readonly dismissed = signal(false);
+    private readonly dismissedFor = signal<CaretPosition | null>(null);
 
     private readonly more = signal(false);
 
@@ -183,7 +183,13 @@ export class TextEditorContextToolbar extends BaseComponent<TextEditorPartPassTh
     /**
      * Whether the toolbar is on screen.
      */
-    readonly open = computed(() => !!this.root.contextToolbarPosition() && !this.dismissed());
+    /* Dismissal is remembered against the caret it was dismissed for, so Escape hides the toolbar
+       for this selection and the next selection brings it back. */
+    readonly open = computed(() => {
+        const caret = this.root.contextToolbarPosition();
+
+        return !!caret && caret !== this.dismissedFor();
+    });
 
     /**
      * Where the toolbar sits, in viewport coordinates.
@@ -243,8 +249,7 @@ export class TextEditorContextToolbar extends BaseComponent<TextEditorPartPassTh
      */
     dismiss(): void {
         this.more.set(false);
-        this.dismissed.set(true);
-        queueMicrotask(() => this.dismissed.set(false));
+        this.dismissedFor.set(this.root.contextToolbarPosition());
     }
 }
 

@@ -163,7 +163,7 @@ export function setTextAlign(alignment: string | null): Command {
         let transaction: Transaction | null = null;
 
         state.doc.nodesBetween(from, to, (node, pos) => {
-            if (!node.isTextblock || !('textAlign' in node.type.spec.attrs!)) return;
+            if (!node.isTextblock || !('textAlign' in (node.type.spec.attrs ?? {}))) return;
 
             const next = node.attrs['textAlign'] === alignment ? null : alignment;
 
@@ -235,27 +235,30 @@ function linkRange(state: EditorState, type: MarkType): { from: number; to: numb
 
     if (!mark) return null;
 
+    /* The whole run, not the text node under the caret: a link whose middle word is bold is three
+       text nodes, and unlinking only one of them leaves half a link behind. */
     const parentStart = $from.start();
-    let start = $from.pos;
-    let end = $from.pos;
+    const children: { start: number; end: number; linked: boolean }[] = [];
 
     $from.parent.forEach((child, offset) => {
         const childStart = parentStart + offset;
-        const childEnd = childStart + child.nodeSize;
+        const childMark = type.isInSet(child.marks);
 
-        if (childEnd < $from.pos || childStart > $from.pos) {
-            if (!type.isInSet(child.marks)) return;
-        }
-
-        if (!type.isInSet(child.marks)) return;
-
-        if (childStart <= $from.pos && childEnd >= $from.pos) {
-            start = childStart;
-            end = childEnd;
-        }
+        children.push({ start: childStart, end: childStart + child.nodeSize, linked: !!childMark && childMark.attrs['href'] === mark.attrs['href'] });
     });
 
-    return { from: start, to: end };
+    const index = children.findIndex((child) => child.linked && child.start <= $from.pos && $from.pos <= child.end);
+
+    if (index === -1) return null;
+
+    let first = index;
+    let last = index;
+
+    while (first > 0 && children[first - 1].linked) first--;
+
+    while (last < children.length - 1 && children[last + 1].linked) last++;
+
+    return { from: children[first].start, to: children[last].end };
 }
 
 /**

@@ -138,6 +138,8 @@ export class UploadQueue {
 
     private sequence = 0;
 
+    private completed = false;
+
     constructor(private readonly options: UploadQueueOptions) {}
 
     /**
@@ -173,12 +175,14 @@ export class UploadQueue {
             };
 
             this.entries = [...this.entries, entry];
+            this.completed = false;
             this.emit();
 
             handler(file, { onProgress: (percent) => this.patch(id, { progress: Math.max(0, Math.min(100, percent)) }), signal: controller.signal })
                 .then((url) => {
                     if (controller.signal.aborted) return;
 
+                    this.completed = true;
                     this.patch(id, { progress: 100, status: 'complete' });
                     this.options.onUploaded(file, url);
                 })
@@ -201,6 +205,7 @@ export class UploadQueue {
         }
 
         this.entries = [];
+        this.completed = false;
         this.emit();
     }
 
@@ -218,9 +223,15 @@ export class UploadQueue {
 
         if (this.entries.some((entry) => entry.status === 'error')) return;
 
+        const completed = this.completed;
+
         this.entries = [];
+        this.completed = false;
         this.emit();
-        this.options.onComplete();
+
+        /* A queue that was cancelled never completed: telling the host every upload finished would
+           have it act on files that never arrived. */
+        if (completed) this.options.onComplete();
     }
 
     private emit(): void {

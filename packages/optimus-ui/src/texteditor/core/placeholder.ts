@@ -46,7 +46,9 @@ export function placeholderPlugin(options: PlaceholderOptions): Plugin {
                 const decorations: Decoration[] = [];
                 const { doc, selection } = state;
                 const documentIsEmpty = doc.childCount === 1 && isEmptyTextblock(doc.firstChild!);
-                const cursorBlockStart = selection.empty ? selection.$from.before(selection.$from.depth) : -1;
+                /* A gap cursor sits at depth 0 - between two block nodes - where there is no block
+                   to take the start of, and asking for one throws. */
+                const cursorBlockStart = selection.empty && selection.$from.depth > 0 ? selection.$from.before(selection.$from.depth) : -1;
 
                 doc.descendants((node, pos) => {
                     if (!node.isTextblock) return true;
@@ -76,7 +78,7 @@ export function placeholderPlugin(options: PlaceholderOptions): Plugin {
 
                 const slashText = options.slashPlaceholder();
 
-                if (slashText && selection.empty) {
+                if (slashText && selection.empty && selection.$from.depth > 0) {
                     const block = selection.$from.parent;
 
                     if (block.isTextblock && block.textContent === '/') {
