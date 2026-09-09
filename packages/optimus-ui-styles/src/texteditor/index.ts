@@ -382,6 +382,16 @@ export const style = /*css*/ `
         pointer-events: auto;
     }
 
+    /* The column and row triggers are the same dot in different places; both classes exist because
+       a theme has to be able to reach one without the other. */
+    .p-text-editor-table-trigger-col {
+        transform: translateX(0);
+    }
+
+    .p-text-editor-table-trigger-row {
+        transform: translateY(0);
+    }
+
     .p-text-editor-table-trigger-cell {
         width: 0.625rem;
         height: 0.625rem;

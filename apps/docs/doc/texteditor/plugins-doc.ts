@@ -52,6 +52,10 @@ export class PluginButtons {
                 A <i>[plugin, options]</i> tuple passes configuration, and the optional third argument contributes nodes and marks to the per-instance schema or ProseMirror plugins to the initial state. The plugin set is frozen when the editor state
                 is built, so every plugin has to be present on the initial render.
             </p>
+            <p>
+                The sections that follow are the plugins the docs ship: uppercase, typography, emoji, character count, focus, invisible characters and details. Plugins that depend on a third-party service - an AI rewrite, a translation API, a syntax
+                highlighter - are written exactly the same way; they are left out of the docs because a demo of one is a demo of somebody's API key.
+            </p>
         </app-docsectiontext>
         <div class="card">
             <p-text-editor-root [(value)]="value" [plugins]="plugins" ariaLabel="Plugins">
