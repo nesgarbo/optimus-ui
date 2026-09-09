@@ -116,32 +116,44 @@ export function toDisplayTime(date: Date, timeZone: string | undefined): Date {
 }
 
 /**
- * The reverse: a rendered date back to the instant it stands for.
+ * The reverse: which instant reads like this wall clock over there.
  *
- * Its local wall clock IS the target zone's wall clock, so the question is "which instant reads like
- * this over there". Treat the fields as UTC, ask the zone for its offset around that point, and
- * correct once — an offset changes by an hour, so one pass converges.
+ * A total function with a stated rule, not a best guess. The fields are treated as UTC, the zone is
+ * probed on both sides of the point for the offsets that could apply, and every candidate is checked
+ * by formatting it back:
  *
- * Two wall clocks have no single right answer, and no implementation can fix that:
+ * - normally exactly one candidate matches, and it is the answer;
+ * - the hour a fall-back REPEATS has two, and the EARLIEST is returned — the same wall clock
+ *   deterministically means the first occurrence, every time;
+ * - the hour a spring-forward SKIPS has none, because that wall clock never happens in the zone, and
+ *   the instant just after the gap is returned, which is what every calendar does with it.
  *
- * - the hour a spring-forward SKIPS never happens in the zone, and resolves to the instant just
- *   after the gap;
- * - the hour a fall-back REPEATS happens twice, and resolves to whichever of the two the probe
- *   offset selects — deterministic, but not knowable from the wall clock alone.
- *
- * So the round trip is an identity everywhere except inside a repeated hour, where it may land on
- * the other instant that reads the same over there. The invariant that always holds is the useful
- * one: the result renders identically to the input, so nothing moves on screen.
+ * The repeated hour is the one case where `instant → wall clock → instant` cannot be an identity for
+ * the second occurrence: two instants share one wall clock, and a wall clock is all this is given.
+ * Callers that hold the original instant should not ask — {@link SchedulerState} keeps it and uses
+ * it for any endpoint the user did not move, so the ambiguity never reaches an application.
  */
 export function fromDisplayTime(date: Date, timeZone: string | undefined): Date {
     if (!timeZone || !formatterFor(timeZone)) return date;
 
     const asUtc = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds());
-    const guessOffset = zoneOffsetMinutes(new Date(asUtc), timeZone);
-    const guess = new Date(asUtc - guessOffset * MINUTE_MS);
-    const actualOffset = zoneOffsetMinutes(guess, timeZone);
 
-    return actualOffset === guessOffset ? guess : new Date(asUtc - actualOffset * MINUTE_MS);
+    // Se sondea a ±14 h además del propio punto porque el desplazamiento de una zona llega a 14 h y
+    // el offset que se busca es el que rige en el instante RESULTADO, no en el sondeo.
+    const probes = [asUtc, asUtc - 14 * 60 * MINUTE_MS, asUtc + 14 * 60 * MINUTE_MS];
+    const offsets = [...new Set(probes.map((probe) => zoneOffsetMinutes(new Date(probe), timeZone)).filter((offset) => !Number.isNaN(offset)))];
+
+    const matches = offsets
+        .map((offset) => new Date(asUtc - offset * MINUTE_MS))
+        .filter((candidate) => zoneOffsetMinutes(candidate, timeZone) === Math.round((asUtc - candidate.getTime()) / MINUTE_MS))
+        .sort((a, b) => a.getTime() - b.getTime());
+
+    if (matches.length) return matches[0];
+
+    // Hueco del salto de primavera: ningún candidato existe en la zona. El offset POSTERIOR al salto
+    // pone el resultado justo después del hueco.
+    const after = Math.min(...offsets);
+    return new Date(asUtc - after * MINUTE_MS);
 }
 
 /**

@@ -512,6 +512,9 @@ export class Scheduler extends BaseComponent<SchedulerPassThrough> {
         more: '+{0} more',
         resources: 'Resources',
         unassigned: 'Unassigned',
+        edit: 'Edit',
+        delete: 'Delete',
+        close: 'Close',
         views: {
             day: 'Day',
             week: 'Week',

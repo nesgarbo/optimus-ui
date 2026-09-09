@@ -483,10 +483,33 @@ export class SchedulerTimelineView extends SchedulerViewBase {
         const range = this.state.range();
         const key = `${this.viewType()}|${range.start.getTime()}|${range.end.getTime()}`;
         if (this.scrolledKey === key) return;
-        this.scrolledKey = key;
+
+        const index = axis.slots.findIndex((slot) => slot.today);
+        if (index < 0) {
+            // Hoy no está en el rango: no hay nada que buscar, y darlo por hecho evita repetir la
+            // búsqueda en cada pasada de detección de cambios.
+            this.scrolledKey = key;
+            return;
+        }
 
         const target = host.querySelector('.p-scheduler-timeline-header-cell[data-today]');
-        target?.scrollIntoView({ block: 'nearest', inline: 'start' });
+        if (target) {
+            target.scrollIntoView({ block: 'nearest', inline: 'start' });
+            this.scrolledKey = key;
+            return;
+        }
+
+        // La columna de hoy no está montada, que es justo lo que pasa cuando la ventana virtual está
+        // en otra parte del eje: buscarla en el DOM no puede encontrarla y reintentar tampoco
+        // movería la ventana. Se salta por índice, que es información que el eje ya tiene.
+        const width = this.columnWidth();
+        if (!width) return;
+
+        // En RTL el desplazamiento va en negativo en los navegadores que siguen la especificación,
+        // así que la distancia se mide desde el inicio de la línea y se le pone el signo al final.
+        const distance = index * width;
+        host.scrollLeft = this.state.rtl() ? -distance : distance;
+        this.scrolledKey = key;
     }
 }
 

@@ -84,7 +84,7 @@ export function parseRRule(value: string | undefined | null): SchedulerRecurrenc
         // Un INTERVAL de 0 o negativo haría que el expansor no avanzara nunca: se normaliza a 1.
         interval: Number.isFinite(interval) && interval > 0 ? Math.floor(interval) : 1,
         count: Number.isFinite(count) && count > 0 ? Math.floor(count) : undefined,
-        until: parseRRuleDate(parts.get('UNTIL')),
+        until: inclusiveUntil(parts.get('UNTIL')),
         byDay: parts
             .get('BYDAY')
             ?.split(',')
@@ -95,6 +95,21 @@ export function parseRRule(value: string | undefined | null): SchedulerRecurrenc
         byMonthDay: numbers(parts.get('BYMONTHDAY')),
         byMonth: numbers(parts.get('BYMONTH'))
     };
+}
+
+/**
+ * `UNTIL` as the last instant it allows.
+ *
+ * RFC 5545 wants `UNTIL` to match the value type of `DTSTART`, but plenty of exports write a bare
+ * date next to a timed start. Read literally that is local midnight, which silently drops every
+ * occurrence on the last day — so a date-only value is taken as the END of its day, which is what
+ * "until the 10th" means to whoever wrote it.
+ */
+function inclusiveUntil(value: string | undefined): Date | undefined {
+    const parsed = parseRRuleDate(value);
+    if (!parsed || !value || /T/i.test(value)) return parsed;
+
+    return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate(), 23, 59, 59, 999);
 }
 
 /**

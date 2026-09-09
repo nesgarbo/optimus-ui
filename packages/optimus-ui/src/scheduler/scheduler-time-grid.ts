@@ -445,8 +445,8 @@ export class SchedulerTimeGridView extends SchedulerViewBase {
                 today: isToday(date, this.state.now()),
                 weekend: date.getDay() === 0 || date.getDay() === 6,
                 weekdayLabel: date.toLocaleDateString(this.locale(), { weekday: 'short' }).toUpperCase(),
-                cell: this.bindCell(date, dayEvents, { ...cellExtra, label: date.toLocaleDateString(this.locale(), { weekday: 'long', day: 'numeric' }) }),
-                allDayCell: this.bindCell(date, this.partitionEvents(dayEvents).allDay, { ...cellExtra, label: this.state.labels().allDay }),
+                cell: this.bindCell(date, dayEvents, { ...cellExtra, label: date.toLocaleDateString(this.locale(), { weekday: 'long', day: 'numeric' }) }, 'dayHeader'),
+                allDayCell: this.bindCell(date, this.partitionEvents(dayEvents).allDay, { ...cellExtra, label: this.state.labels().allDay }, 'allDay'),
                 cells,
                 slots,
                 events: laid.map((item) => ({

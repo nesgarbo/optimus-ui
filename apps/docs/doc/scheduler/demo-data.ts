@@ -79,6 +79,19 @@ export const DEMO_EVENTS: SchedulerEvent[] = [
  * A series and its edge cases: a daily stand-up with an exception, a weekly review on two weekdays,
  * and an occurrence overridden by a separate event.
  */
+/**
+ * The first `weekday` at or after a date, keeping its time.
+ *
+ * The recurrence demo needs an instant the RULE actually generates: hard-coding a day offset only
+ * lands on an occurrence when the anchor happens to fall on the right weekday.
+ */
+function nextWeekday(from: Date, weekday: number): Date {
+    const date = new Date(from);
+
+    date.setDate(date.getDate() + ((weekday - date.getDay() + 7) % 7));
+    return date;
+}
+
 export const DEMO_RECURRING_EVENTS: SchedulerEvent[] = [
     {
         id: 'standup',
@@ -102,11 +115,12 @@ export const DEMO_RECURRING_EVENTS: SchedulerEvent[] = [
         id: 'review-moved',
         title: 'Design review (moved)',
         // Una excepción: apunta a la serie y al instante original, así que sustituye a esa copia en
-        // vez de duplicarla.
+        // vez de duplicarla. El instante se calcula a partir de la REGLA y no a mano: con un offset
+        // fijo solo caía sobre una ocurrencia los días en que el ancla es martes.
         recurrenceId: 'review',
-        recurrenceStart: at(2, 15),
-        start: at(2, 11),
-        end: at(2, 12),
+        recurrenceStart: nextWeekday(at(0, 15), 4),
+        start: nextWeekday(at(0, 11), 4),
+        end: nextWeekday(at(0, 12), 4),
         categoryId: 'planning'
     },
     { id: 'monthly-close', title: 'Monthly close', start: at(0, 17), end: at(0, 18), categoryId: 'admin', rrule: 'FREQ=MONTHLY;BYMONTHDAY=1,15;COUNT=6' }

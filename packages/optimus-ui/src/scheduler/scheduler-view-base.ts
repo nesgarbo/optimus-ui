@@ -114,8 +114,11 @@ export abstract class SchedulerViewBase {
     /**
      * Builds the context of a date or time cell.
      */
-    protected bindCell(date: Date, events: SchedulerEvent[], extra: Partial<SchedulerCellContext> = {}): { key: unknown; context: SchedulerCellContext & { $implicit: SchedulerCellContext } } {
-        const key = extra.resource ? `${dayKey(date)}|${date.getHours()}:${date.getMinutes()}|${extra.resource.id}` : `${dayKey(date)}|${date.getHours()}:${date.getMinutes()}`;
+    protected bindCell(date: Date, events: SchedulerEvent[], extra: Partial<SchedulerCellContext> = {}, kind = 'cell'): { key: unknown; context: SchedulerCellContext & { $implicit: SchedulerCellContext } } {
+        // El `kind` distingue superficies que caen en el MISMO instante: la cabecera del día, su
+        // celda de todo el día y la celda de medianoche son las tres medianoche, y con una sola
+        // clave se sobrescribían el contexto entre ellas.
+        const key = `${kind}|${dayKey(date)}|${date.getHours()}:${date.getMinutes()}${extra.resource ? `|${extra.resource.id}` : ''}`;
         const context: SchedulerCellContext = {
             date,
             label: this.cellLabel(date),

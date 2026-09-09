@@ -285,7 +285,11 @@ describe('recurrencia', () => {
 
     it('lee el subconjunto de RRULE que usan los calendarios, y descarta lo que no entiende', () => {
         expect(parseRRule('FREQ=WEEKLY;INTERVAL=2;COUNT=4;BYDAY=MO,WE')).toMatchObject({ freq: 'WEEKLY', interval: 2, count: 4, byDay: [1, 3] });
-        expect(parseRRule('FREQ=DAILY;UNTIL=20260915')?.until).toEqual(new Date(2026, 8, 15));
+        // Un UNTIL en fecha suelta es INCLUSIVO: se guarda como el final de su día, o las citas con
+        // hora de ese último día se caerían de la serie.
+        expect(parseRRule('FREQ=DAILY;UNTIL=20260915')?.until).toEqual(new Date(2026, 8, 15, 23, 59, 59, 999));
+        // Con hora explícita se respeta tal cual.
+        expect(parseRRule('FREQ=DAILY;UNTIL=20260915T120000Z')?.until).toEqual(new Date(Date.UTC(2026, 8, 15, 12)));
         // Un INTERVAL de 0 dejaría al expansor sin avanzar nunca.
         expect(parseRRule('FREQ=DAILY;INTERVAL=0')?.interval).toBe(1);
         expect(parseRRule('every other tuesday')).toBeUndefined();
@@ -455,20 +459,31 @@ describe('zonas horarias', () => {
         }
     });
 
-    it('en la hora REPETIDA del cambio de otoño la vuelta cae en una de las dos, sin moverse en pantalla', () => {
-        // Las 02:30 del 25 de octubre existen DOS veces en Madrid, y la 01:30 del 1 de noviembre dos
-        // veces en Nueva York: por el reloj de pared no se puede saber cuál de las dos se quería.
-        for (const [zone, instant] of [
+    it('la hora REPETIDA del cambio de otoño resuelve SIEMPRE a la primera de las dos', () => {
+        // Las 02:30 del 25 de octubre existen dos veces en Madrid, y la 01:30 del 1 de noviembre dos
+        // veces en Nueva York. La regla es fija: el mismo reloj de pared significa la primera.
+        for (const [zone, first] of [
             ['Europe/Madrid', new Date(Date.UTC(2026, 9, 25, 0, 30))],
             ['America/New_York', new Date(Date.UTC(2026, 10, 1, 5, 30))]
         ] as const) {
-            const back = fromDisplayTime(toDisplayTime(instant, zone), zone);
+            const second = new Date(first.getTime() + 3_600_000);
 
-            // Cae en una de las dos: la misma o la de una hora después.
-            expect([instant.getTime(), instant.getTime() + 3_600_000]).toContain(back.getTime());
-            // Y la invariante que sí se mantiene siempre: en pantalla no se mueve nada.
-            expect(toDisplayTime(back, zone).getTime()).toBe(toDisplayTime(instant, zone).getTime());
+            // Las dos se pintan igual...
+            expect(toDisplayTime(second, zone).getTime()).toBe(toDisplayTime(first, zone).getTime());
+            // ...y las dos vuelven a la primera, de forma determinista.
+            expect(fromDisplayTime(toDisplayTime(first, zone), zone).getTime()).toBe(first.getTime());
+            expect(fromDisplayTime(toDisplayTime(second, zone), zone).getTime()).toBe(first.getTime());
         }
+    });
+
+    it('la hora que el salto de primavera SE COME resuelve justo después del hueco', () => {
+        // En Madrid las 02:30 del 29 de marzo de 2026 no existen: el reloj salta de 02:00 a 03:00.
+        const missing = new Date(2026, 2, 29, 2, 30);
+        const resolved = fromDisplayTime(missing, 'Europe/Madrid');
+
+        // Cae en el primer instante que sí existe, que es la misma hora UTC que las 03:30 locales.
+        expect(zoneOffsetMinutes(resolved, 'Europe/Madrid')).toBe(120);
+        expect(resolved.getTime()).toBe(Date.UTC(2026, 2, 29, 1, 30));
     });
 
     it('sin zona destino las dos conversiones son la identidad, por referencia', () => {
@@ -623,5 +638,52 @@ describe('navegación por celdas', () => {
 
         expect(cells[0].getAttribute('tabindex')).toBe('-1');
         expect(cells[1].getAttribute('tabindex')).toBe('0');
+    });
+});
+
+describe('correcciones de colocación', () => {
+    it('el mínimo de un evento no se sale del contenedor', () => {
+        // Una cita de un minuto a las 23:59 pedía 15 minutos de alto y se pintaba fuera de la rejilla.
+        const range = { start: new Date(2026, 8, 8), end: new Date(2026, 8, 9) };
+        const [item] = layoutTimeGrid([ev('late', '2026-09-08T23:59', '2026-09-09T00:00')], { range, minEventMinutes: 15 });
+
+        expect(item.offset + item.size).toBeLessThanOrEqual(1);
+    });
+
+    it('el desborde se cuelga del día de CALENDARIO, también el día del cambio de hora', () => {
+        // La semana del 29 de marzo de 2026 en Europa: el domingo dura 23 horas, así que dividir por
+        // 86.400.000 desplazaba el índice de todos los días siguientes.
+        const range = { start: new Date(2026, 2, 29), end: new Date(2026, 3, 5) };
+        // Se solapan a propósito: sin solape los dos caben en la misma fila y no hay desborde.
+        const { overflow } = layoutRows([ev('a', '2026-03-30T08:00', '2026-03-30T10:00'), ev('b', '2026-03-30T09:00', '2026-03-30T11:00')], { range, maxRows: 1 });
+
+        // El segundo evento del lunes desborda, y el lunes es el índice 1 de la semana.
+        expect([...overflow.keys()]).toEqual([1]);
+    });
+
+    it('un UNTIL en fecha suelta no se come las citas de ese mismo día', () => {
+        const rule = parseRRule('FREQ=DAILY;UNTIL=20260910')!;
+        const starts = recurrenceStarts(new Date(2026, 8, 8, 9), rule, { start: new Date(2026, 8, 1), end: new Date(2026, 8, 30) });
+
+        // El 10 entra: "hasta el 10" incluye el 10, aunque la cita sea a las 9 de la mañana.
+        expect(starts.map(dayKey)).toEqual(['2026-09-08', '2026-09-09', '2026-09-10']);
+    });
+
+    it('un id de recurso numérico vuelve como número desde el DOM', () => {
+        const lane = document.createElement('div');
+
+        lane.dataset['resourceId'] = '3';
+        const cell = document.createElement('div');
+
+        cell.dataset['slot'] = 'scheduler-timeline-cell';
+        cell.dataset['startDate'] = String(new Date(2026, 8, 8, 9).getTime());
+        cell.dataset['endDate'] = String(new Date(2026, 8, 8, 10).getTime());
+        lane.appendChild(cell);
+
+        // Un data attribute siempre es texto: sin reconvertirlo, "3" no casa con el recurso 3.
+        expect(readCellTarget(cell)!.resourceId).toBe(3);
+
+        lane.dataset['resourceId'] = 'crew-3';
+        expect(readCellTarget(cell)!.resourceId).toBe('crew-3');
     });
 });

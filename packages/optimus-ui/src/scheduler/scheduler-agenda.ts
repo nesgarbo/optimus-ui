@@ -122,13 +122,18 @@ export class SchedulerAgendaView extends SchedulerViewBase {
                     selected: this.state.isDateSelected(date),
                     disabled: false
                 });
+                // $implicit y context tienen que ser EL MISMO objeto, como en el resto de las
+                // superficies: con `let ctx` el consumidor recibía la mitad de los campos y con
+                // `let ctx="context"` la otra.
+                const merged = { ...binding.context, ...context };
+
                 return {
                     key,
                     cellKey: binding.key,
                     cellContext: binding.context,
                     today: context.today,
                     count: sorted.length,
-                    context: { ...binding.context, ...context, $implicit: context },
+                    context: { ...merged, $implicit: merged, context: merged },
                     events: sorted.map((event) => this.bindEvent(event, {}, `agenda|${key}`))
                 };
             });

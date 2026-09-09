@@ -5,18 +5,20 @@ import { SchedulerModule } from '@openng/optimus-ui/scheduler';
 import type { SchedulerEvent, SchedulerViewType } from '@openng/optimus-ui/types/scheduler';
 import { DEMO_CATEGORIES, DEMO_DATE, DEMO_RESOURCES, DEMO_TIMELINE_FIRST_DAY_OF_WEEK } from './demo-data';
 
-/** A week of 15-minute columns over four resources: 336 columns and 240 events. */
+/** A week of 15-minute columns over four resources: 336 columns and 336 events. */
 function busyWeek(): SchedulerEvent[] {
     const events: SchedulerEvent[] = [];
     const resources = DEMO_RESOURCES.map((resource) => resource.id);
     const categories = DEMO_CATEGORIES.map((category) => category.id);
 
+    // 48 huecos de 15 minutos entre las 7 y las 19, que es la misma retícula que el eje: con pasos
+    // de 12 minutos los eventos caían entre columnas.
     for (let day = 0; day < 7; day++) {
-        for (let slot = 0; slot < 60; slot++) {
+        for (let slot = 0; slot < 48; slot++) {
             const start = new Date(DEMO_DATE);
 
             start.setDate(start.getDate() + day);
-            start.setHours(7 + Math.floor(slot / 5), (slot % 5) * 12, 0, 0);
+            start.setHours(7 + Math.floor(slot / 4), (slot % 4) * 15, 0, 0);
 
             events.push({
                 id: `busy-${day}-${slot}`,

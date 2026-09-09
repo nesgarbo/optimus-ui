@@ -98,6 +98,12 @@ export interface SchedulerLabels {
     more: string;
     /** Header of the resource rail. */
     resources: string;
+    /** Label of the action that asks the application to edit an event. */
+    edit: string;
+    /** Label of the action that asks the application to delete an event. */
+    delete: string;
+    /** Accessible name of the button that dismisses an overlay. */
+    close: string;
     /** Lane that collects events whose resource is unknown. */
     unassigned: string;
     /** Localised name of each view. */
@@ -355,8 +361,11 @@ export class SchedulerState {
      */
     private readonly blocked = computed(() =>
         this.inputs.blockedIntervals().map((interval) => ({
-            start: toDate(interval.start).getTime(),
-            end: toDate(interval.end).getTime(),
+            // A tiempo de pantalla como los eventos: se comparan contra las fechas de las celdas, que
+            // están desplazadas. Sin convertirlos, una zona destino movía el calendario y dejaba los
+            // bloqueos donde estaban.
+            start: this.toDisplay(toDate(interval.start)).getTime(),
+            end: this.toDisplay(toDate(interval.end)).getTime(),
             resourceId: interval.resourceId
         }))
     );
@@ -367,8 +376,9 @@ export class SchedulerState {
     /** The available windows, with their instants resolved once. */
     readonly appointmentSlots = computed(() =>
         this.inputs.appointmentSlots().map((slot) => {
-            const start = toDate(slot.start);
-            const end = toDate(slot.end);
+            // Igual que los bloqueos: la geometría los sitúa contra celdas ya desplazadas.
+            const start = this.toDisplay(toDate(slot.start));
+            const end = this.toDisplay(toDate(slot.end));
             const capacity = slot.capacity;
             const booked = slot.booked ?? 0;
             return { ...slot, start, end, capacity, booked, full: capacity != null && booked >= capacity };
@@ -528,17 +538,54 @@ export class SchedulerState {
      * view: the engine goes on doing local-time arithmetic, and the only places that convert back are
      * the outputs, where a real instant is what the application needs.
      */
+    /**
+     * The application's own event behind each shifted copy.
+     *
+     * A `WeakMap` keyed by the copy: no bookkeeping to invalidate, and it lets every output hand back
+     * the object the application passed in — same identity, real instants — instead of the display
+     * copy, whose instants are deliberately wrong.
+     */
+    private readonly realEvents = new WeakMap<SchedulerEvent, SchedulerEvent>();
+
     private readonly zonedEvents = computed(() => {
         const zone = this.inputs.timeZone();
         const events = this.inputs.events();
         if (!zone) return events;
 
-        return events.map((event) => ({
-            ...event,
-            start: this.toDisplay(toDate(event.start)),
-            ...(event.end != null ? { end: this.toDisplay(toDate(event.end)) } : {})
-        }));
+        return events.map((event) => {
+            const copy = {
+                ...event,
+                start: this.toDisplay(toDate(event.start)),
+                ...(event.end != null ? { end: this.toDisplay(toDate(event.end)) } : {})
+            };
+            this.realEvents.set(copy, event);
+            return copy;
+        });
     });
+
+    /**
+     * The event an application should be handed, given one of the copies the views render.
+     *
+     * Without a target timezone every event IS the application's, so this is the identity. With one:
+     *
+     * - a bound event comes back as the very object that was passed in, real instants and identity
+     *   intact, which is what makes persisting a payload safe;
+     * - a recurring occurrence has no counterpart in the bound array — the application holds the
+     *   series — so it is rebuilt with its instants converted out of the rendered zone.
+     */
+    realOf(event: SchedulerEvent): SchedulerEvent {
+        if (!this.inputs.timeZone()) return event;
+
+        const bound = this.realEvents.get(event);
+        if (bound) return bound;
+
+        return {
+            ...event,
+            start: this.fromDisplay(toDate(event.start)),
+            ...(event.end != null ? { end: this.fromDisplay(toDate(event.end)) } : {}),
+            ...(event['recurrenceStart'] != null ? { recurrenceStart: this.fromDisplay(toDate(event['recurrenceStart'])) } : {})
+        };
+    }
 
     private readonly seriesEvents = computed(() => expandEvents(this.zonedEvents(), this.expansionWindow(), this.inputs.defaultEventDuration()));
 
@@ -857,7 +904,7 @@ export class SchedulerState {
 
     /** Asks the application to delete the selected events. */
     requestBulkDelete(): void {
-        this.inputs.bulkDelete(this.selectedEvents());
+        this.inputs.bulkDelete(this.selectedEvents().map((event) => this.realOf(event)));
     }
 
     /**
@@ -881,14 +928,14 @@ export class SchedulerState {
         if (!accepted) {
             this.inputs.emitSelectionLimit(max);
         } else if (mode !== 'none') {
-            this.inputs.emitSelectionChange(this.selectedEvents());
+            this.inputs.emitSelectionChange(this.selectedEvents().map((candidate) => this.realOf(candidate)));
         }
 
         if (this.inputs.quickInfoEnabled()) {
             this.quickInfo.set({ event, anchor: (originalEvent.currentTarget as HTMLElement) ?? undefined });
         }
 
-        this.inputs.emitEventClick(originalEvent, event);
+        this.inputs.emitEventClick(originalEvent, this.realOf(event));
     }
 
     /**
@@ -919,10 +966,29 @@ export class SchedulerState {
         this.contextMenu.set({ ...target, anchor: (originalEvent.currentTarget as HTMLElement) ?? undefined });
     }
 
-    /** Turns a payload's rendered dates back into the instants they stand for. */
+    /**
+     * Turns a payload into what the application should receive: its own event, and real instants.
+     *
+     * An endpoint the interaction did NOT move comes back byte-exact from the bound event rather than
+     * through the wall clock — which is what removes the repeated-hour ambiguity from every real
+     * flow. Resizing the end of an event that starts inside a fall-back hour used to walk its start
+     * back by an hour; now the start is simply the start it already had.
+     */
     private realise(payload: SchedulerDragPayload): SchedulerDragPayload {
-        if (!this.inputs.timeZone()) return payload;
-        return { ...payload, start: this.fromDisplay(payload.start), end: this.fromDisplay(payload.end) };
+        const event = this.realOf(payload.event);
+        if (!this.inputs.timeZone()) return { ...payload, event };
+
+        const displayed = payload.event;
+        const startMoved = toDate(displayed.start).getTime() !== payload.start.getTime();
+        const displayedEnd = displayed.end != null ? toDate(displayed.end).getTime() : null;
+        const endMoved = displayedEnd == null || displayedEnd !== payload.end.getTime();
+
+        return {
+            ...payload,
+            event,
+            start: startMoved ? this.fromDisplay(payload.start) : toDate(event.start),
+            end: endMoved || event.end == null ? this.fromDisplay(payload.end) : toDate(event.end)
+        };
     }
 
     /**
@@ -939,12 +1005,12 @@ export class SchedulerState {
 
     /** Asks the application to edit an event. The Scheduler never mutates it itself. */
     requestEdit(event?: SchedulerEvent): void {
-        if (event) this.inputs.eventChange(event);
+        if (event) this.inputs.eventChange(this.realOf(event));
     }
 
     /** Asks the application to delete an event. */
     requestRemove(event?: SchedulerEvent): void {
-        if (event) this.inputs.eventRemove(event);
+        if (event) this.inputs.eventRemove(this.realOf(event));
     }
 
     /** Localised time range of an event, for the overlays. */
@@ -987,7 +1053,9 @@ export class SchedulerState {
         durationEditable: (event) => this.isDurationEditable(event),
         // El timeline puede pedir su propio redondeo: una columna de una hora en horizontal no quiere
         // el mismo salto que una fila de media hora en vertical.
-        snapMinutes: (target: SchedulerDragTarget) => (target.whole ? 24 * 60 : (this.inputs.timelineSnapDuration() ?? this.inputs.snapDuration())),
+        // El redondeo del timeline es del TIMELINE: la rejilla vertical de día y semana también
+        // produce objetivos que no son de día entero, y estaba cogiendo el salto del eje horizontal.
+        snapMinutes: (target: SchedulerDragTarget) => (target.whole ? 24 * 60 : timelineScaleOf(this.inputs.view()) ? (this.inputs.timelineSnapDuration() ?? this.inputs.snapDuration()) : this.inputs.snapDuration()),
         minEventMinutes: () => this.inputs.minEventMinutes(),
         defaultEventDuration: () => this.inputs.defaultEventDuration(),
         minDistance: () => this.inputs.dragMinDistance(),

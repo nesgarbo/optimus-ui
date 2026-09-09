@@ -99,13 +99,17 @@ export function readCellTarget(element: Element | null): SchedulerDragTarget | n
     // una hora inventada a partir de la posición del ratón dentro de un cuadro de 6rem.
     const whole = allDay || slot === 'scheduler-month-cell';
     const lane = cell.closest<HTMLElement>('[data-resource-id]');
+    const rawResourceId = lane?.dataset['resourceId'] || undefined;
 
     return {
         start: new Date(start),
         end: new Date(end),
         allDay,
         whole,
-        resourceId: lane?.dataset['resourceId'] || undefined,
+        // Un data attribute siempre es texto, y `SchedulerResource.id` puede ser número: sin
+        // reconvertirlo, arrastrar a la columna del recurso 3 proponía el recurso "3" y no casaba
+        // con nada de la colección.
+        resourceId: rawResourceId != null && rawResourceId !== '' && String(Number(rawResourceId)) === rawResourceId ? Number(rawResourceId) : rawResourceId,
         instant: new Date(start)
     };
 }

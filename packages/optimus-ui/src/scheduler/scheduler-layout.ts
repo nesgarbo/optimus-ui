@@ -1,5 +1,5 @@
 import type { SchedulerEvent, SchedulerLayoutItem } from '@openng/optimus-ui/types/scheduler';
-import { MINUTE_MS, type SchedulerRange, toDate } from './scheduler-date';
+import { MINUTE_MS, daysBetween, type SchedulerRange, toDate } from './scheduler-date';
 
 /**
  * Event placement for the Scheduler. Pure functions over plain data: no DOM, no Angular, so the
@@ -99,10 +99,14 @@ export function layoutTimeGrid<T extends SchedulerEvent>(events: T[], options: T
         const visibleEnd = Math.min(b.end, to);
         const minSize = (minEventMinutes * MINUTE_MS) / span;
 
+        const offset = (visibleStart - from) / span;
+
         items.push({
             event: b.event,
-            offset: (visibleStart - from) / span,
-            size: Math.max((visibleEnd - visibleStart) / span, minSize),
+            offset,
+            // El mínimo no puede pasarse del final: una cita de un minuto a las 23:59 pedía 15
+            // minutos de alto y se salía de la rejilla. Lo que queda de contenedor es el techo.
+            size: Math.min(Math.max((visibleEnd - visibleStart) / span, minSize), 1 - offset),
             column,
             columns: 1,
             row: 0,
@@ -173,7 +177,10 @@ export function layoutRows<T extends SchedulerEvent>(events: T[], options: RowLa
         }
 
         if (row >= maxRows) {
-            const dayIndex = Math.floor((visibleStart - from) / 86_400_000);
+            // Días de CALENDARIO y no milisegundos entre 86.400.000: el día del cambio de hora dura
+            // 23 o 25 horas, y dividir desplazaba el índice de todos los días siguientes de la
+            // semana, colgando el "+N more" del día equivocado.
+            const dayIndex = daysBetween(range.start, new Date(visibleStart));
             const bucket = overflow.get(dayIndex) ?? [];
             bucket.push(b.event);
             overflow.set(dayIndex, bucket);

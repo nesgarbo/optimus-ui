@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, ViewEncapsulation, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Directive, ElementRef, ViewEncapsulation, computed, inject } from '@angular/core';
 import type { SchedulerEvent } from '@openng/optimus-ui/types/scheduler';
 import { SCHEDULER_CONTEXT_MENU_CONTEXT, SCHEDULER_EVENT_POPOVER_CONTEXT, SCHEDULER_MORE_POPOVER_CONTEXT, SCHEDULER_QUICK_INFO_CONTEXT } from './scheduler-context';
 import { SCHEDULER_STATE } from './scheduler-state';
@@ -16,6 +16,49 @@ import { SCHEDULER_STATE } from './scheduler-state';
  *
  * @module scheduler-overlays
  */
+
+/**
+ * What every overlay shares: dismissal on Escape and giving the focus back.
+ *
+ * An overlay the keyboard can open — and the event popover opens on `focusin` — is an overlay the
+ * keyboard has to be able to close. Escape closes it, and the focus returns to the surface it was
+ * opened from, because leaving the focus on a removed node drops it to the top of the document.
+ */
+@Directive()
+abstract class SchedulerOverlayBase {
+    /** @internal */
+    readonly state = inject(SCHEDULER_STATE);
+
+    protected readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
+
+    /** What the overlay is anchored to, whichever slot of the state it lives in. */
+    protected abstract target(): { anchor?: HTMLElement } | null;
+
+    /** Closes it. */
+    abstract close(): void;
+
+    /** @internal Where the panel sits, relative to the surface it was opened from. */
+    readonly offset = computed(() => anchorOffset(this.el.nativeElement, this.target()?.anchor ?? undefined));
+
+    /** @internal Chrome labels, so the default actions are not hard-coded English. */
+    readonly labels = computed(() => this.state.labels());
+
+    /** Escape closes, and the anchor gets the focus back. */
+    protected onKeydown(originalEvent: KeyboardEvent): void {
+        if (originalEvent.key !== 'Escape') return;
+
+        originalEvent.stopPropagation();
+        this.dismiss();
+    }
+
+    /** Closes and restores the focus. */
+    protected dismiss(): void {
+        const anchor = this.target()?.anchor;
+
+        this.close();
+        if (anchor?.isConnected && typeof anchor.focus === 'function') anchor.focus();
+    }
+}
 
 /**
  * Where an overlay panel goes, relative to the element it was opened from.
@@ -54,10 +97,10 @@ function anchorOffset(host: HTMLElement, anchor?: HTMLElement): { top: number; s
     standalone: true,
     template: `
         @if (context().visible) {
-            <div class="p-scheduler-more-popover-panel" role="dialog" [attr.aria-label]="title()" [style.inset-block-start.px]="offset()?.top" [style.inset-inline-start.px]="offset()?.start">
+            <div class="p-scheduler-more-popover-panel" role="dialog" [attr.aria-label]="title()" tabindex="-1" (keydown)="onKeydown($event)" [style.inset-block-start.px]="offset()?.top" [style.inset-inline-start.px]="offset()?.start">
                 <div class="p-scheduler-more-popover-header">
                     <span>{{ title() }}</span>
-                    <button type="button" class="p-scheduler-more-popover-close" [attr.aria-label]="state.labels().clear" (click)="context().close()">&times;</button>
+                    <button type="button" class="p-scheduler-more-popover-close" [attr.aria-label]="labels().close" (click)="dismiss()">&times;</button>
                 </div>
                 <ng-content>
                     @for (event of context().events; track event.id) {
@@ -79,14 +122,14 @@ function anchorOffset(host: HTMLElement, anchor?: HTMLElement): { top: number; s
     },
     providers: [{ provide: SCHEDULER_MORE_POPOVER_CONTEXT, useFactory: () => inject(SchedulerMorePopover).context }]
 })
-export class SchedulerMorePopover {
-    /** @internal */
-    readonly state = inject(SCHEDULER_STATE);
+export class SchedulerMorePopover extends SchedulerOverlayBase {
+    protected override target() {
+        return this.state.morePopover();
+    }
 
-    private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
-
-    /** @internal Where the panel sits, relative to the surface it was opened from. */
-    readonly offset = computed(() => anchorOffset(this.el.nativeElement, this.state.morePopover()?.anchor ?? undefined));
+    override close(): void {
+        this.state.morePopover.set(null);
+    }
 
     /** The overflow context. */
     readonly context = computed(() => {
@@ -122,13 +165,13 @@ export class SchedulerMorePopover {
     standalone: true,
     template: `
         @if (context().visible) {
-            <div class="p-scheduler-overlay-panel" role="dialog" [style.inset-block-start.px]="offset()?.top" [style.inset-inline-start.px]="offset()?.start">
+            <div class="p-scheduler-overlay-panel" role="dialog" tabindex="-1" (keydown)="onKeydown($event)" [style.inset-block-start.px]="offset()?.top" [style.inset-inline-start.px]="offset()?.start">
                 <ng-content>
                     <div class="p-scheduler-overlay-title">{{ title() }}</div>
                     <div class="p-scheduler-overlay-time">{{ timeText() }}</div>
                     <div class="p-scheduler-overlay-actions">
-                        <button type="button" (click)="context().edit()">Edit</button>
-                        <button type="button" (click)="context().remove()">Delete</button>
+                        <button type="button" (click)="context().edit()">{{ labels().edit }}</button>
+                        <button type="button" (click)="context().remove()">{{ labels().delete }}</button>
                     </div>
                 </ng-content>
             </div>
@@ -143,14 +186,14 @@ export class SchedulerMorePopover {
     },
     providers: [{ provide: SCHEDULER_QUICK_INFO_CONTEXT, useFactory: () => inject(SchedulerQuickInfo).context }]
 })
-export class SchedulerQuickInfo {
-    /** @internal */
-    readonly state = inject(SCHEDULER_STATE);
+export class SchedulerQuickInfo extends SchedulerOverlayBase {
+    protected override target() {
+        return this.state.quickInfo();
+    }
 
-    private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
-
-    /** @internal Where the panel sits, relative to the surface it was opened from. */
-    readonly offset = computed(() => anchorOffset(this.el.nativeElement, this.state.quickInfo()?.anchor ?? undefined));
+    override close(): void {
+        this.state.quickInfo.set(null);
+    }
 
     /** The quick info context. */
     readonly context = computed(() => {
@@ -186,7 +229,7 @@ export class SchedulerQuickInfo {
     standalone: true,
     template: `
         @if (context().visible) {
-            <div class="p-scheduler-overlay-panel" role="dialog" [style.inset-block-start.px]="offset()?.top" [style.inset-inline-start.px]="offset()?.start">
+            <div class="p-scheduler-overlay-panel" role="dialog" tabindex="-1" (keydown)="onKeydown($event)" [style.inset-block-start.px]="offset()?.top" [style.inset-inline-start.px]="offset()?.start">
                 <ng-content>
                     <div class="p-scheduler-overlay-title">{{ title() }}</div>
                 </ng-content>
@@ -202,14 +245,14 @@ export class SchedulerQuickInfo {
     },
     providers: [{ provide: SCHEDULER_EVENT_POPOVER_CONTEXT, useFactory: () => inject(SchedulerPopover).context }]
 })
-export class SchedulerPopover {
-    /** @internal */
-    readonly state = inject(SCHEDULER_STATE);
+export class SchedulerPopover extends SchedulerOverlayBase {
+    protected override target() {
+        return this.state.eventPopover();
+    }
 
-    private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
-
-    /** @internal Where the panel sits, relative to the surface it was opened from. */
-    readonly offset = computed(() => anchorOffset(this.el.nativeElement, this.state.eventPopover()?.anchor ?? undefined));
+    override close(): void {
+        this.state.eventPopover.set(null);
+    }
 
     /** The popover context. */
     readonly context = computed(() => {
@@ -239,10 +282,10 @@ export class SchedulerPopover {
     standalone: true,
     template: `
         @if (context().visible) {
-            <div class="p-scheduler-overlay-panel" role="menu" [style.inset-block-start.px]="offset()?.top" [style.inset-inline-start.px]="offset()?.start">
+            <div class="p-scheduler-overlay-panel" role="menu" tabindex="-1" (keydown)="onKeydown($event)" [style.inset-block-start.px]="offset()?.top" [style.inset-inline-start.px]="offset()?.start">
                 <ng-content>
-                    <button type="button" role="menuitem" (click)="context().edit()">Edit</button>
-                    <button type="button" role="menuitem" (click)="context().remove()">Delete</button>
+                    <button type="button" role="menuitem" (click)="context().edit()">{{ labels().edit }}</button>
+                    <button type="button" role="menuitem" (click)="context().remove()">{{ labels().delete }}</button>
                 </ng-content>
             </div>
         }
@@ -256,14 +299,14 @@ export class SchedulerPopover {
     },
     providers: [{ provide: SCHEDULER_CONTEXT_MENU_CONTEXT, useFactory: () => inject(SchedulerContextMenu).context }]
 })
-export class SchedulerContextMenu {
-    /** @internal */
-    readonly state = inject(SCHEDULER_STATE);
+export class SchedulerContextMenu extends SchedulerOverlayBase {
+    protected override target() {
+        return this.state.contextMenu();
+    }
 
-    private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
-
-    /** @internal Where the panel sits, relative to the surface it was opened from. */
-    readonly offset = computed(() => anchorOffset(this.el.nativeElement, this.state.contextMenu()?.anchor ?? undefined));
+    override close(): void {
+        this.state.contextMenu.set(null);
+    }
 
     /** The context menu context. */
     readonly context = computed(() => {

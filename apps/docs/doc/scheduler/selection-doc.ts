@@ -32,7 +32,7 @@ import { DEMO_CATEGORIES, DEMO_DATE, DEMO_EVENTS } from './demo-data';
                 [date]="date"
                 [dayStartHour]="7"
                 [dayEndHour]="19"
-                (eventSelectionChange)="selected.set($event.events)"
+                (eventSelectionChange)="onSelectionChange($event.events)"
                 (eventSelectionLimitReached)="limit.set($event.maxSelection)"
             >
                 <p-scheduler-header>
@@ -65,4 +65,10 @@ export class SelectionDoc {
     selected = signal<SchedulerEvent[]>([]);
 
     limit = signal<number | null>(null);
+
+    /** El aviso del tope se borra en cuanto la selección vuelve a cambiar: si no, se queda pegado. */
+    onSelectionChange(events: SchedulerEvent[]): void {
+        this.selected.set(events);
+        this.limit.set(null);
+    }
 }

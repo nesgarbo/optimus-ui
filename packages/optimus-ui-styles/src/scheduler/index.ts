@@ -210,10 +210,21 @@ export const style = /*css*/ `
         overflow: hidden;
     }
 
-    /* Pegada por debajo de la banda de grupos, que mide lo mismo que una cabecera de día. */
+    /* La banda de grupos se pega arriba y la cabecera de columnas justo debajo, sin calcular su alto:
+       un top deducido de padding + 1.2em asumía una interlínea que el anfitrión puede cambiar, y
+       cualquier desajuste solapaba las dos bandas o dejaba un hueco. Con la banda en el flujo sticky
+       y la cabecera pegada a su propio borde inferior, lo mide el navegador. */
     .p-scheduler-time-grid[data-grouping='resource'] .p-scheduler-time-grid-header,
     .p-scheduler-time-grid[data-grouping='date'] .p-scheduler-time-grid-header {
-        top: calc(dt('scheduler.day.header.padding') * 2 + 1.2em);
+        top: 0;
+        position: sticky;
+    }
+
+    .p-scheduler-time-grid[data-grouping='resource'],
+    .p-scheduler-time-grid[data-grouping='date'] {
+        /* El contenedor de pegado es la vista, y las dos bandas se apilan por orden de documento
+           gracias a sus z-index: la de grupos (2) por encima de la de columnas (1). */
+        position: relative;
     }
 
     .p-scheduler-time-grid-header {
@@ -278,10 +289,12 @@ export const style = /*css*/ `
         text-align: end;
     }
 
+    /* Las mismas pistas que la cabecera y el cuerpo: con 1fr a secas, en cuanto las columnas de
+       recurso desbordaban a lo ancho, los eventos de todo el día dejaban de cuadrar con su columna. */
     .p-scheduler-all-day-lanes {
         position: relative;
         display: grid;
-        grid-template-columns: repeat(var(--p-scheduler-columns, 1), 1fr);
+        grid-template-columns: repeat(var(--p-scheduler-columns, 1), minmax(var(--p-scheduler-column-min-width, dt('scheduler.day.min.width')), 1fr));
         min-height: calc(var(--p-scheduler-all-day-rows, 1) * dt('scheduler.all.day.row.height'));
     }
 
@@ -713,8 +726,10 @@ export const style = /*css*/ `
     }
 
     /* Hoy NO tiñe la celda del mes: el círculo del número ya lo dice y el tinte pelearía con el
-       relleno de los eventos. En la rejilla horaria sí, porque ahí no hay número. */
-    .p-scheduler-month-cell[data-today] {
+       relleno de los eventos. En la rejilla horaria sí, porque ahí no hay número.
+       El :not() es imprescindible: con la misma especificidad que la regla de [data-selected] y
+       viniendo después, hoy le ganaba y seleccionar el día de hoy no se veía. */
+    .p-scheduler-month-cell[data-today]:not([data-selected]) {
         background: transparent;
     }
 

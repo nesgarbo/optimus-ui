@@ -310,7 +310,13 @@ export interface SchedulerContextOptions {
     optional?: boolean;
 }
 
-function injectContext<T>(token: InjectionToken<Signal<T>>, parent: string, options?: SchedulerContextOptions): any {
+/**
+ * Reads a context token, or reports where it should have been.
+ *
+ * Returns `Signal<T> | null` and not `any`: with `{ optional: true }` the answer really can be
+ * `null`, and the wrappers declare that through overloads so a caller cannot forget to check.
+ */
+function injectContext<T>(token: InjectionToken<Signal<T>>, parent: string, options?: SchedulerContextOptions): Signal<T> | null {
     const context = inject(token, { optional: true });
     if (!context && !options?.optional) {
         throw new Error(`[Scheduler] no context found. This component must be a descendant of <${parent}>.`);
@@ -322,7 +328,9 @@ function injectContext<T>(token: InjectionToken<Signal<T>>, parent: string, opti
  * Reads the context of the enclosing event definition.
  * @group Function
  */
-export function injectSchedulerEventContext<T extends SchedulerEvent = SchedulerEvent>(options?: SchedulerContextOptions): Signal<SchedulerEventContext<T>> {
+export function injectSchedulerEventContext<T extends SchedulerEvent = SchedulerEvent>(options: SchedulerContextOptions & { optional: true }): Signal<SchedulerEventContext<T>> | null;
+export function injectSchedulerEventContext<T extends SchedulerEvent = SchedulerEvent>(options?: SchedulerContextOptions): Signal<SchedulerEventContext<T>>;
+export function injectSchedulerEventContext<T extends SchedulerEvent = SchedulerEvent>(options?: SchedulerContextOptions): Signal<SchedulerEventContext<T>> | null {
     return injectContext(SCHEDULER_EVENT_CONTEXT as any, 'p-scheduler-event', options);
 }
 
@@ -330,7 +338,9 @@ export function injectSchedulerEventContext<T extends SchedulerEvent = Scheduler
  * Reads the context of the enclosing cell definition.
  * @group Function
  */
-export function injectSchedulerCellContext(options?: SchedulerContextOptions): Signal<SchedulerCellContext> {
+export function injectSchedulerCellContext(options: SchedulerContextOptions & { optional: true }): Signal<SchedulerCellContext> | null;
+export function injectSchedulerCellContext(options?: SchedulerContextOptions): Signal<SchedulerCellContext>;
+export function injectSchedulerCellContext(options?: SchedulerContextOptions): Signal<SchedulerCellContext> | null {
     return injectContext(SCHEDULER_CELL_CONTEXT, 'p-scheduler-month-cell', options);
 }
 
@@ -338,7 +348,9 @@ export function injectSchedulerCellContext(options?: SchedulerContextOptions): S
  * Reads the context of the enclosing resource row.
  * @group Function
  */
-export function injectSchedulerResourceRowContext(options?: SchedulerContextOptions): Signal<SchedulerResourceContext> {
+export function injectSchedulerResourceRowContext(options: SchedulerContextOptions & { optional: true }): Signal<SchedulerResourceContext> | null;
+export function injectSchedulerResourceRowContext(options?: SchedulerContextOptions): Signal<SchedulerResourceContext>;
+export function injectSchedulerResourceRowContext(options?: SchedulerContextOptions): Signal<SchedulerResourceContext> | null {
     return injectContext(SCHEDULER_RESOURCE_ROW_CONTEXT, 'p-scheduler-resource-row', options);
 }
 
@@ -346,7 +358,9 @@ export function injectSchedulerResourceRowContext(options?: SchedulerContextOpti
  * Reads the context of the enclosing resource group.
  * @group Function
  */
-export function injectSchedulerResourceGroupContext(options?: SchedulerContextOptions): Signal<SchedulerResourceContext> {
+export function injectSchedulerResourceGroupContext(options: SchedulerContextOptions & { optional: true }): Signal<SchedulerResourceContext> | null;
+export function injectSchedulerResourceGroupContext(options?: SchedulerContextOptions): Signal<SchedulerResourceContext>;
+export function injectSchedulerResourceGroupContext(options?: SchedulerContextOptions): Signal<SchedulerResourceContext> | null {
     return injectContext(SCHEDULER_RESOURCE_GROUP_CONTEXT, 'p-scheduler-resource-group', options);
 }
 
@@ -354,7 +368,9 @@ export function injectSchedulerResourceGroupContext(options?: SchedulerContextOp
  * Reads the context of the enclosing resource column header.
  * @group Function
  */
-export function injectSchedulerResourceColumnHeaderContext(options?: SchedulerContextOptions): Signal<SchedulerResourceContext> {
+export function injectSchedulerResourceColumnHeaderContext(options: SchedulerContextOptions & { optional: true }): Signal<SchedulerResourceContext> | null;
+export function injectSchedulerResourceColumnHeaderContext(options?: SchedulerContextOptions): Signal<SchedulerResourceContext>;
+export function injectSchedulerResourceColumnHeaderContext(options?: SchedulerContextOptions): Signal<SchedulerResourceContext> | null {
     return injectContext(SCHEDULER_RESOURCE_COLUMN_HEADER_CONTEXT, 'p-scheduler-resource-column-header', options);
 }
 
@@ -362,7 +378,9 @@ export function injectSchedulerResourceColumnHeaderContext(options?: SchedulerCo
  * Reads the context of the enclosing aggregate badge.
  * @group Function
  */
-export function injectSchedulerResourceAggregateBadgeContext(options?: SchedulerContextOptions): Signal<SchedulerResourceContext> {
+export function injectSchedulerResourceAggregateBadgeContext(options: SchedulerContextOptions & { optional: true }): Signal<SchedulerResourceContext> | null;
+export function injectSchedulerResourceAggregateBadgeContext(options?: SchedulerContextOptions): Signal<SchedulerResourceContext>;
+export function injectSchedulerResourceAggregateBadgeContext(options?: SchedulerContextOptions): Signal<SchedulerResourceContext> | null {
     return injectContext(SCHEDULER_RESOURCE_AGGREGATE_BADGE_CONTEXT, 'p-scheduler-resource-aggregate-badge', options);
 }
 
@@ -370,7 +388,9 @@ export function injectSchedulerResourceAggregateBadgeContext(options?: Scheduler
  * Reads the context of the enclosing agenda date header.
  * @group Function
  */
-export function injectSchedulerAgendaDateHeaderContext(options?: SchedulerContextOptions): Signal<SchedulerAgendaDateHeaderContext> {
+export function injectSchedulerAgendaDateHeaderContext(options: SchedulerContextOptions & { optional: true }): Signal<SchedulerAgendaDateHeaderContext> | null;
+export function injectSchedulerAgendaDateHeaderContext(options?: SchedulerContextOptions): Signal<SchedulerAgendaDateHeaderContext>;
+export function injectSchedulerAgendaDateHeaderContext(options?: SchedulerContextOptions): Signal<SchedulerAgendaDateHeaderContext> | null {
     return injectContext(SCHEDULER_AGENDA_DATE_HEADER_CONTEXT, 'p-scheduler-agenda-date-header', options);
 }
 
@@ -378,7 +398,9 @@ export function injectSchedulerAgendaDateHeaderContext(options?: SchedulerContex
  * Reads the context of the header region.
  * @group Function
  */
-export function injectSchedulerHeaderContext(options?: SchedulerContextOptions): Signal<SchedulerHeaderContext> {
+export function injectSchedulerHeaderContext(options: SchedulerContextOptions & { optional: true }): Signal<SchedulerHeaderContext> | null;
+export function injectSchedulerHeaderContext(options?: SchedulerContextOptions): Signal<SchedulerHeaderContext>;
+export function injectSchedulerHeaderContext(options?: SchedulerContextOptions): Signal<SchedulerHeaderContext> | null {
     return injectContext(SCHEDULER_HEADER_CONTEXT, 'p-scheduler-header', options);
 }
 
@@ -386,7 +408,9 @@ export function injectSchedulerHeaderContext(options?: SchedulerContextOptions):
  * Reads the context of the category legend.
  * @group Function
  */
-export function injectSchedulerCategoryLegendContext(options?: SchedulerContextOptions): Signal<SchedulerCategoryLegendContext> {
+export function injectSchedulerCategoryLegendContext(options: SchedulerContextOptions & { optional: true }): Signal<SchedulerCategoryLegendContext> | null;
+export function injectSchedulerCategoryLegendContext(options?: SchedulerContextOptions): Signal<SchedulerCategoryLegendContext>;
+export function injectSchedulerCategoryLegendContext(options?: SchedulerContextOptions): Signal<SchedulerCategoryLegendContext> | null {
     return injectContext(SCHEDULER_CATEGORY_LEGEND_CONTEXT, 'p-scheduler-category-legend', options);
 }
 
@@ -394,7 +418,9 @@ export function injectSchedulerCategoryLegendContext(options?: SchedulerContextO
  * Reads the context of the selection toolbar.
  * @group Function
  */
-export function injectSchedulerSelectionToolbarContext(options?: SchedulerContextOptions): Signal<SchedulerSelectionToolbarContext> {
+export function injectSchedulerSelectionToolbarContext(options: SchedulerContextOptions & { optional: true }): Signal<SchedulerSelectionToolbarContext> | null;
+export function injectSchedulerSelectionToolbarContext(options?: SchedulerContextOptions): Signal<SchedulerSelectionToolbarContext>;
+export function injectSchedulerSelectionToolbarContext(options?: SchedulerContextOptions): Signal<SchedulerSelectionToolbarContext> | null {
     return injectContext(SCHEDULER_SELECTION_TOOLBAR_CONTEXT, 'p-scheduler-selection-toolbar', options);
 }
 
@@ -402,7 +428,9 @@ export function injectSchedulerSelectionToolbarContext(options?: SchedulerContex
  * Reads the context of the overflow popover.
  * @group Function
  */
-export function injectSchedulerMorePopoverContext(options?: SchedulerContextOptions): Signal<SchedulerMorePopoverContext> {
+export function injectSchedulerMorePopoverContext(options: SchedulerContextOptions & { optional: true }): Signal<SchedulerMorePopoverContext> | null;
+export function injectSchedulerMorePopoverContext(options?: SchedulerContextOptions): Signal<SchedulerMorePopoverContext>;
+export function injectSchedulerMorePopoverContext(options?: SchedulerContextOptions): Signal<SchedulerMorePopoverContext> | null {
     return injectContext(SCHEDULER_MORE_POPOVER_CONTEXT, 'p-scheduler-more-popover', options);
 }
 
@@ -410,7 +438,9 @@ export function injectSchedulerMorePopoverContext(options?: SchedulerContextOpti
  * Reads the context of the quick info overlay.
  * @group Function
  */
-export function injectSchedulerQuickInfoContext(options?: SchedulerContextOptions): Signal<SchedulerEventOverlayContext> {
+export function injectSchedulerQuickInfoContext(options: SchedulerContextOptions & { optional: true }): Signal<SchedulerEventOverlayContext> | null;
+export function injectSchedulerQuickInfoContext(options?: SchedulerContextOptions): Signal<SchedulerEventOverlayContext>;
+export function injectSchedulerQuickInfoContext(options?: SchedulerContextOptions): Signal<SchedulerEventOverlayContext> | null {
     return injectContext(SCHEDULER_QUICK_INFO_CONTEXT, 'p-scheduler-quick-info', options);
 }
 
@@ -418,7 +448,9 @@ export function injectSchedulerQuickInfoContext(options?: SchedulerContextOption
  * Reads the context of the event popover.
  * @group Function
  */
-export function injectSchedulerEventPopoverContext(options?: SchedulerContextOptions): Signal<SchedulerEventOverlayContext> {
+export function injectSchedulerEventPopoverContext(options: SchedulerContextOptions & { optional: true }): Signal<SchedulerEventOverlayContext> | null;
+export function injectSchedulerEventPopoverContext(options?: SchedulerContextOptions): Signal<SchedulerEventOverlayContext>;
+export function injectSchedulerEventPopoverContext(options?: SchedulerContextOptions): Signal<SchedulerEventOverlayContext> | null {
     return injectContext(SCHEDULER_EVENT_POPOVER_CONTEXT, 'p-scheduler-popover', options);
 }
 
@@ -426,6 +458,8 @@ export function injectSchedulerEventPopoverContext(options?: SchedulerContextOpt
  * Reads the context of the context menu.
  * @group Function
  */
-export function injectSchedulerContextMenuContext(options?: SchedulerContextOptions): Signal<SchedulerEventOverlayContext> {
+export function injectSchedulerContextMenuContext(options: SchedulerContextOptions & { optional: true }): Signal<SchedulerEventOverlayContext> | null;
+export function injectSchedulerContextMenuContext(options?: SchedulerContextOptions): Signal<SchedulerEventOverlayContext>;
+export function injectSchedulerContextMenuContext(options?: SchedulerContextOptions): Signal<SchedulerEventOverlayContext> | null {
     return injectContext(SCHEDULER_CONTEXT_MENU_CONTEXT, 'p-scheduler-context-menu', options);
 }

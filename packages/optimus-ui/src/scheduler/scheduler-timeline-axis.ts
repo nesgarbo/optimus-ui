@@ -98,7 +98,7 @@ export interface SchedulerTimelineAxisOptions {
  * Builds the axis for a scale.
  */
 export function buildTimelineAxis(scale: SchedulerTimelineScale, options: SchedulerTimelineAxisOptions): SchedulerTimelineAxis {
-    const slots = scale === 'year' ? monthSlots(options) : scale === 'month' ? daySlots(options) : timeColumns(scale, options);
+    const slots = scale === 'year' ? monthSlots(options) : scale === 'month' ? daySlots(options) : timeColumns(options);
     const tiers = scale === 'year' ? yearTiers(slots, options) : scale === 'month' ? monthTiers(slots, options) : timeTiers(scale, slots, options);
     const days = new Set(slots.map((slot) => dayKey(slot.start)));
 
@@ -115,9 +115,12 @@ export function buildTimelineAxis(scale: SchedulerTimelineScale, options: Schedu
  * Columns of the day and week scales: the same wall-clock window repeated for each day of the range,
  * so the nights between them are not drawn at all.
  */
-function timeColumns(scale: SchedulerTimelineScale, options: SchedulerTimelineAxisOptions): SchedulerTimelineSlot[] {
+function timeColumns(options: SchedulerTimelineAxisOptions): SchedulerTimelineSlot[] {
     const { range, dayBounds, slotMinutes, locale } = options;
-    const days = scale === 'week' ? eachDay(range.start, range.end) : [startOfDay(range.start)];
+    // Todos los días del RANGO, también en la escala de día: buildTimelineAxis es público y su rango
+    // no está limitado a un día, y quedarse con el primero dejaba los eventos posteriores pegados al
+    // final del eje.
+    const days = eachDay(range.start, range.end);
     const slots: SchedulerTimelineSlot[] = [];
 
     for (const day of days) {
