@@ -30,8 +30,13 @@ import { DEMO_CATEGORIES, DEMO_DATE, DEMO_RECURRING_EVENTS } from './demo-data';
                 forces the category colours, because without them a browser prints every event white and they all become the same event.
             </p>
             <p>
-                <i>print()</i> takes what a handoff tends to need: <i>color</i> to print in grey on purpose, <i>layout.orientation</i>, and <i>layout.scale</i> — <i>fit</i> shrinks the schedule until its full width lands on the sheet, which is the
-                only way a week of resource columns gets onto one page. <i>pageChrome</i> fills in <i>p-scheduler-print-header</i>, which is invisible on screen and is what stops a printed sheet from being a grid with nothing saying what it is.
+                <i>print()</i> takes what a handoff tends to need: <i>color</i> to print in grey on purpose, <i>layout.orientation</i>, and <i>layout.scale</i> — <i>fit</i> shrinks the schedule until it lands on one sheet, which is the only way a
+                week of resource columns gets onto a page. <i>pageChrome</i> fills in <i>p-scheduler-print-header</i>, which is invisible on screen and is what stops a printed sheet from being a grid with nothing saying what it is.
+            </p>
+            <p>
+                Landscape is the one that needs a word of warning. It is asked for with an <i>&#64;page</i> rule, which Chrome and Firefox honour and WebKit does not — in Safari the orientation comes from the system dialog and CSS cannot touch it. So
+                <i>landscape</i> together with <i>fit</i> rotates the sheet itself, which comes out landscape everywhere; that pairing is deliberate, because a rotated page cannot overflow onto the next one, it clips, and <i>fit</i> is what
+                guarantees there is only one.
             </p>
         </app-docsectiontext>
         <div class="card">

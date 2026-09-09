@@ -116,14 +116,25 @@ export class Scheduler extends BaseComponent<SchedulerPassThrough> {
         copy.setAttribute('data-print-scale', scale);
         if (pageChrome === false) copy.setAttribute('data-print-chrome', 'false');
 
-        // `fit` se calcula, no se adivina: lo que hay que encoger es el ancho REAL del eje contra el
-        // ancho util de la hoja, y ese ancho util es lo unico que el navegador no cuenta. Se toma A4
-        // a 96dpi menos margenes, que es el papel de casi todo el mundo y falla por poco en Letter.
-        if (scale === 'fit') {
-            const printable = orientation === 'landscape' ? 1000 : 700;
-            const needed = Math.max(host.scrollWidth, 1);
+        // WebKit no implementa @page { size }, asi que en Safari la orientacion la pone el dialogo del
+        // sistema y no el CSS. Con `fit` se rota la hoja aqui —el contenido cabe en una pagina por
+        // construccion, que es lo que hace segura la rotacion— y asi sale horizontal en todas partes.
+        const rotate = orientation === 'landscape' && scale === 'fit';
 
-            if (needed > printable) copy.style.zoom = String(Math.max(printable / needed, 0.4));
+        if (rotate) container.setAttribute('data-print-rotate', '');
+
+        // `fit` se calcula, no se adivina: lo que hay que encoger es el tamano REAL del componente
+        // contra el util de la hoja, y ese es lo unico que el navegador no cuenta. Se toma A4 a 96dpi
+        // menos margenes, que es el papel de casi todo el mundo y falla por poco en Letter. Rotando,
+        // el ancho disponible es el LARGO de la hoja, y se mira tambien el alto: una pagina rotada no
+        // desborda a la siguiente, recorta.
+        if (scale === 'fit') {
+            const printable = rotate || orientation === 'landscape' ? 1000 : 700;
+            const ratio = printable / Math.max(host.scrollWidth, 1);
+            const vertical = rotate ? 700 / Math.max(host.scrollHeight, 1) : 1;
+            const zoom = Math.max(Math.min(ratio, vertical, 1), 0.3);
+
+            if (zoom < 1) copy.style.zoom = String(zoom);
         }
 
         container.appendChild(copy);
