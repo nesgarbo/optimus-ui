@@ -148,7 +148,7 @@ export class ToolbarSuperscriptUI {
     selector: 'heading-ui',
     standalone: true,
     template: `
-        <select class="p-text-editor-ui-select" aria-label="Block type" [value]="value()" (change)="onChange($event)">
+        <select class="p-text-editor-ui-select p-text-editor-ui-select-wide" aria-label="Block type" [value]="value()" (change)="onChange($event)">
             <option value="">Paragraph</option>
             @for (level of levels; track level) {
                 <option [value]="level">Heading {{ level }}</option>
@@ -172,33 +172,33 @@ export class ToolbarHeadingUI {
     }
 }
 
-/** Alignment buttons. */
+/** Alignment dropdown. */
 @Component({
     selector: 'text-align-ui',
     standalone: true,
-    imports: [ToolbarButtonUI],
     template: `
-        @for (option of options; track option.value) {
-            <ui-toolbar-button [label]="option.label" [pressed]="ctx.state().textAlign === option.value" (pressedChange)="ctx.commands().textAlign(option.value)">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M4 6h16" />
-                    <path [attr.d]="option.line" />
-                    <path d="M4 18h16" />
-                </svg>
-            </ui-toolbar-button>
-        }
+        <select class="p-text-editor-ui-select p-text-editor-ui-select-narrow" aria-label="Text align" [value]="ctx.state().textAlign || 'left'" (change)="apply($event)">
+            @for (option of options; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+            }
+        </select>
     `,
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    encapsulation: ViewEncapsulation.None
 })
 export class ToolbarTextAlignUI {
     readonly ctx = inject(TEXT_EDITOR_CONTEXT);
 
     readonly options = [
-        { value: 'left', label: 'Align left', line: 'M4 12h10' },
-        { value: 'center', label: 'Align center', line: 'M7 12h10' },
-        { value: 'right', label: 'Align right', line: 'M10 12h10' },
-        { value: 'justify', label: 'Justify', line: 'M4 12h16' }
+        { value: 'left', label: 'Left' },
+        { value: 'center', label: 'Center' },
+        { value: 'right', label: 'Right' },
+        { value: 'justify', label: 'Justify' }
     ];
+
+    apply(event: Event): void {
+        this.ctx.commands().textAlign((event.target as HTMLSelectElement).value);
+    }
 }
 
 /** Text colour picker. */
@@ -251,7 +251,7 @@ export class ToolbarBackgroundColorUI {
     selector: 'font-family-ui',
     standalone: true,
     template: `
-        <select class="p-text-editor-ui-select" aria-label="Font family" [value]="ctx.state().fontFamily || ''" (change)="apply($event)">
+        <select class="p-text-editor-ui-select p-text-editor-ui-select-wide" aria-label="Font family" [value]="ctx.state().fontFamily || ''" (change)="apply($event)">
             <option value="">Default</option>
             @for (font of fonts; track font) {
                 <option [value]="font">{{ font }}</option>
@@ -276,7 +276,7 @@ export class ToolbarFontFamilyUI {
     selector: 'font-size-ui',
     standalone: true,
     template: `
-        <select class="p-text-editor-ui-select" aria-label="Font size" [value]="ctx.state().fontSize || ''" (change)="apply($event)">
+        <select class="p-text-editor-ui-select p-text-editor-ui-select-narrow" aria-label="Font size" [value]="ctx.state().fontSize || ''" (change)="apply($event)">
             <option value="">16px</option>
             @for (size of sizes; track size) {
                 <option [value]="size">{{ size }}</option>
@@ -351,7 +351,9 @@ export class ToolbarCheckListUI {
     imports: [ToolbarButtonUI],
     template: `
         <ui-toolbar-button label="Blockquote" [pressed]="!!ctx.state().blockquote" (pressedChange)="ctx.commands().blockquote()">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7c-2 0-3 1.5-3 3.5S5 14 7 14c0 2-1 3-3 3M17 7c-2 0-3 1.5-3 3.5s1 3.5 3 3.5c0 2-1 3-3 3" /></svg>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 7H5.5A2.5 2.5 0 0 0 3 9.5v2A2.5 2.5 0 0 0 5.5 14H7c0 2-1 3-2.5 3.5M20 7h-3.5A2.5 2.5 0 0 0 14 9.5v2a2.5 2.5 0 0 0 2.5 2.5H18c0 2-1 3-2.5 3.5" />
+            </svg>
         </ui-toolbar-button>
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -560,4 +562,76 @@ export class ToolbarUndoUI {
 })
 export class ToolbarRedoUI {
     readonly ctx = inject(TEXT_EDITOR_CONTEXT);
+}
+
+/** One-click highlight, with the editor's default highlight colour. */
+@Component({
+    selector: 'highlight-ui',
+    standalone: true,
+    imports: [ToolbarButtonUI],
+    template: `
+        <ui-toolbar-button label="Highlight" [pressed]="!!ctx.state().highlight" (pressedChange)="ctx.commands().highlight()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="m4 20 3-1 9-9-2-2-9 9z" />
+                <path d="m14 6 4 4 2-2a2.8 2.8 0 0 0-4-4z" />
+                <path d="M4 20h6" />
+            </svg>
+        </ui-toolbar-button>
+    `,
+    changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class ToolbarHighlightUI {
+    readonly ctx = inject(TEXT_EDITOR_CONTEXT);
+}
+
+/** Clears every inline format the state reports as active on the selection. */
+@Component({
+    selector: 'clear-format-ui',
+    standalone: true,
+    imports: [ToolbarButtonUI],
+    template: `
+        <ui-toolbar-button label="Clear formatting" [disabled]="!ctx.state().hasSelection" (pressedChange)="clear()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M7 6h12M11 6 8 20M6 12h8M4 20h7" />
+                <path d="m16 14 5 5m0-5-5 5" />
+            </svg>
+        </ui-toolbar-button>
+    `,
+    changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class ToolbarClearFormatUI {
+    readonly ctx = inject(TEXT_EDITOR_CONTEXT);
+
+    /**
+     * There is no single "clear" command: the state says what is on, and each toggle turns its own
+     * mark off, which is exactly what a user means by clearing the formatting of a selection.
+     */
+    clear(): void {
+        const state = this.ctx.state();
+        const commands = this.ctx.commands();
+
+        if (state.bold) commands.bold();
+
+        if (state.italic) commands.italic();
+
+        if (state.underline) commands.underline();
+
+        if (state.strikethrough) commands.strikethrough();
+
+        if (state.code) commands.code();
+
+        if (state.subscript) commands.subscript();
+
+        if (state.superscript) commands.superscript();
+
+        if (state.link) commands.removeLink();
+
+        if (state.foregroundColor) commands.foregroundColor('');
+
+        if (state.backgroundColor) commands.backgroundColor('');
+
+        if (state.fontFamily) commands.fontFamily('');
+
+        if (state.fontSize) commands.fontSize('');
+    }
 }

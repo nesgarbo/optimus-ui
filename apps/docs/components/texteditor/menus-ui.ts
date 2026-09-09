@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject } from '@angular/core';
+import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 import { BLOCK_CONTROLS_CONTEXT, BLOCK_MENU_CONTEXT, MENTION_MENU_CONTEXT, NAVIGATOR_CONTEXT, SLASH_MENU_CONTEXT, TABLE_CELL_MENU_CONTEXT, TABLE_COLUMN_MENU_CONTEXT, TABLE_ROW_MENU_CONTEXT, UPLOAD_CONTEXT } from '@openng/optimus-ui/texteditor';
 
 const SWATCHES = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#64748b', '#0f172a', '#ffffff', 'transparent'];
@@ -112,7 +113,10 @@ export class BlockColorSubmenuUI {
     template: `
         <div class="p-text-editor-ui-menu">
             @for (item of visible(); track item.label) {
-                <button type="button" role="option" class="p-text-editor-ui-menu-item" (click)="run(item.label)">{{ item.label }}</button>
+                <button type="button" role="option" class="p-text-editor-ui-menu-item" (click)="run(item.label)">
+                    <span class="p-text-editor-ui-menu-icon" [innerHTML]="item.icon"></span>
+                    <span>{{ item.label }}</span>
+                </button>
             }
             @if (!visible().length) {
                 <div class="p-text-editor-ui-menu-empty">No matches for "{{ ctx.filterText() }}"</div>
@@ -125,20 +129,31 @@ export class BlockColorSubmenuUI {
 export class SlashMenuUI {
     readonly ctx = inject(SLASH_MENU_CONTEXT);
 
+    private readonly sanitizer = inject(DomSanitizer);
+
+    /** The icons are inline SVG, trusted because this file is the one that wrote them. */
+    private icon(paths: string): SafeHtml {
+        return this.sanitizer.bypassSecurityTrustHtml(`<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">${paths}</svg>`);
+    }
+
     readonly items = [
-        { label: 'Text', run: () => this.ctx.commands().text() },
-        { label: 'Heading 1', run: () => this.ctx.commands().heading(1) },
-        { label: 'Heading 2', run: () => this.ctx.commands().heading(2) },
-        { label: 'Heading 3', run: () => this.ctx.commands().heading(3) },
-        { label: 'Bullet list', run: () => this.ctx.commands().bulletList() },
-        { label: 'Ordered list', run: () => this.ctx.commands().orderedList() },
-        { label: 'Check list', run: () => this.ctx.commands().checkList() },
-        { label: 'Quote', run: () => this.ctx.commands().blockquote() },
-        { label: 'Code', run: () => this.ctx.commands().code() },
-        { label: 'Divider', run: () => this.ctx.commands().divider() },
-        { label: 'Table', run: () => this.ctx.commands().table() },
-        { label: 'Image', run: () => this.ctx.commands().uploadImages() },
-        { label: 'Document', run: () => this.ctx.commands().uploadDocuments() }
+        { label: 'Text', icon: this.icon('<path d="M6 6h12M12 6v12" />'), run: () => this.ctx.commands().text() },
+        { label: 'Heading 1', icon: this.icon('<path d="M4 6v12M12 6v12M4 12h8M17 18v-8l-2 1.5" />'), run: () => this.ctx.commands().heading(1) },
+        { label: 'Heading 2', icon: this.icon('<path d="M4 6v12M12 6v12M4 12h8M15 11a2 2 0 1 1 4 0c0 2-4 3-4 7h4" />'), run: () => this.ctx.commands().heading(2) },
+        { label: 'Heading 3', icon: this.icon('<path d="M4 6v12M12 6v12M4 12h8M15 10a2 2 0 1 1 3 3 2 2 0 1 1-3 3" />'), run: () => this.ctx.commands().heading(3) },
+        { label: 'Bullet List', icon: this.icon('<path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01" />'), run: () => this.ctx.commands().bulletList() },
+        { label: 'Numbered List', icon: this.icon('<path d="M10 6h10M10 12h10M10 18h10M4 6h2M4 12h2l-2 3h2M4 18h2" />'), run: () => this.ctx.commands().orderedList() },
+        { label: 'Check List', icon: this.icon('<path d="M10 6h10M10 12h10M10 18h10M3 6.5 4.5 8 7 5M3 12.5 4.5 14 7 11M3 18.5 4.5 20 7 17" />'), run: () => this.ctx.commands().checkList() },
+        {
+            label: 'Blockquote',
+            icon: this.icon('<path d="M9 7H5.5A2.5 2.5 0 0 0 3 9.5v2A2.5 2.5 0 0 0 5.5 14H7c0 2-1 3-2.5 3.5M20 7h-3.5A2.5 2.5 0 0 0 14 9.5v2a2.5 2.5 0 0 0 2.5 2.5H18c0 2-1 3-2.5 3.5" />'),
+            run: () => this.ctx.commands().blockquote()
+        },
+        { label: 'Code Block', icon: this.icon('<path d="m9 8-5 4 5 4M15 8l5 4-5 4" />'), run: () => this.ctx.commands().code() },
+        { label: 'Divider', icon: this.icon('<path d="M4 12h16" />'), run: () => this.ctx.commands().divider() },
+        { label: 'Table', icon: this.icon('<rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 10h18M3 15h18M9 4v16M15 4v16" />'), run: () => this.ctx.commands().table() },
+        { label: 'Image', icon: this.icon('<rect x="3" y="5" width="18" height="14" rx="2" /><circle cx="8.5" cy="10" r="1.5" /><path d="m5 17 4.5-4.5L13 16l2.5-2.5L21 19" />'), run: () => this.ctx.commands().uploadImages() },
+        { label: 'Document', icon: this.icon('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" /><path d="M14 3v5h5" />'), run: () => this.ctx.commands().uploadDocuments() }
     ];
 
     readonly visible = computed(() => {

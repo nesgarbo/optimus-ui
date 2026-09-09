@@ -45,12 +45,22 @@
 
 .p-text-editor-ui-select {
     height: 1.5rem;
+    max-width: 8rem;
+    text-overflow: ellipsis;
     padding: 0 0.25rem;
     border: 0 none;
     border-radius: var(--p-texteditor-border-radius);
     background: transparent;
     color: var(--p-texteditor-color);
     font-size: 0.875rem;
+}
+
+.p-text-editor-ui-select-wide {
+    width: 7rem;
+}
+
+.p-text-editor-ui-select-narrow {
+    width: 5rem;
 }
 
 .p-text-editor-ui-color {
@@ -125,6 +135,14 @@
 
 .p-text-editor-ui-menu-item[data-danger] {
     color: var(--p-texteditor-danger-color);
+}
+
+.p-text-editor-ui-menu-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1rem;
+    color: var(--p-texteditor-muted-color);
 }
 
 .p-text-editor-ui-menu-empty {

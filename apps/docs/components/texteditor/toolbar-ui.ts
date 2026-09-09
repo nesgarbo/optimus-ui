@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation, inject } from '@
 import { CONTEXT_TOOLBAR_CONTEXT } from '@openng/optimus-ui/texteditor';
 import {
     ToolbarBackgroundColorUI,
+    ToolbarClearFormatUI,
     ToolbarBlockquoteUI,
     ToolbarBoldUI,
     ToolbarBulletListUI,
@@ -13,6 +14,7 @@ import {
     ToolbarFontSizeUI,
     ToolbarForegroundColorUI,
     ToolbarHeadingUI,
+    ToolbarHighlightUI,
     ToolbarHorizontalRuleUI,
     ToolbarImageInsertUI,
     ToolbarImageUploadUI,
@@ -53,6 +55,8 @@ import {
         ToolbarCodeUI,
         ToolbarCodeBlockUI,
         ToolbarBlockquoteUI,
+        ToolbarHighlightUI,
+        ToolbarClearFormatUI,
         ToolbarLinkUI,
         ToolbarImageInsertUI,
         ToolbarImageUploadUI,
@@ -65,36 +69,32 @@ import {
     ],
     template: `
         <div class="p-text-editor-ui-toolbar">
-            <heading-ui />
-            <font-family-ui />
-            <font-size-ui />
-            <span class="p-text-editor-ui-divider"></span>
             <bold-ui />
             <italic-ui />
             <underline-ui />
             <strikethrough-ui />
             <superscript-ui />
             <subscript-ui />
-            <span class="p-text-editor-ui-divider"></span>
+            <code-ui />
+            <blockquote-ui />
+            <font-family-ui />
+            <font-size-ui />
+            <heading-ui />
+            <text-align-ui />
             <foreground-color-ui />
             <background-color-ui />
-            <text-align-ui />
-            <span class="p-text-editor-ui-divider"></span>
+            <highlight-ui />
+            <clear-format-ui />
             <bullet-list-ui />
             <ordered-list-ui />
             <check-list-ui />
-            <blockquote-ui />
-            <code-ui />
-            <code-block-ui />
-            <span class="p-text-editor-ui-divider"></span>
             <link-ui />
             <image-insert-ui />
             <image-upload-ui />
             <document-upload-ui />
-            <table-insert-ui />
-            <horizontal-rule-ui />
-            <span class="p-text-editor-ui-divider"></span>
             <print-ui />
+            <horizontal-rule-ui />
+            <table-insert-ui />
             <undo-ui />
             <redo-ui />
         </div>
@@ -108,7 +108,7 @@ export class ToolbarUI {}
 @Component({
     selector: 'context-toolbar-ui',
     standalone: true,
-    imports: [ToolbarBoldUI, ToolbarItalicUI, ToolbarUnderlineUI, ToolbarStrikethroughUI, ToolbarCodeUI, ToolbarLinkUI],
+    imports: [ToolbarBoldUI, ToolbarItalicUI, ToolbarUnderlineUI, ToolbarStrikethroughUI, ToolbarCodeUI, ToolbarHighlightUI, ToolbarLinkUI],
     template: `
         <div class="p-text-editor-ui-toolbar">
             <bold-ui />
@@ -116,6 +116,7 @@ export class ToolbarUI {}
             <underline-ui />
             <strikethrough-ui />
             <code-ui />
+            <highlight-ui />
             <link-ui />
             <button type="button" class="p-text-editor-ui-button" aria-label="More" [attr.aria-expanded]="ctx.moreActive()" (click)="ctx.toggleMore($event)">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">

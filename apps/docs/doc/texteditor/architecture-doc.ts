@@ -14,49 +14,6 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
             Each part renders an empty surface and exposes its <i>commands</i>, <i>state</i> and request data through a matching context token resolved with <i>inject(...)</i>, or through its <i>*Def</i> slot template. That is why the editor ships no
             widgets: the application brings them, and the runtime keeps the document behaviour identical whatever they look like.
         </p>
-        <h3>Anatomy</h3>
-        <p>The tree below is a map of every part the editor can render. A real page declares only the surfaces it needs - each part turns its feature on by being present.</p>
-        <pre class="app-code"><code>&lt;p-text-editor-root&gt;
-    &lt;p-text-editor-toolbar /&gt;
-    &lt;p-text-editor-content /&gt;
-
-    &lt;p-text-editor-context-toolbar&gt;
-        &lt;p-text-editor-context-toolbar-more /&gt;
-    &lt;/p-text-editor-context-toolbar&gt;
-
-    &lt;p-text-editor-block-controls /&gt;
-    &lt;p-text-editor-block-menu&gt;
-        &lt;p-text-editor-block-submenu /&gt;
-    &lt;/p-text-editor-block-menu&gt;
-
-    &lt;p-text-editor-slash-menu /&gt;
-    &lt;p-text-editor-mention-menu /&gt;
-
-    &lt;p-text-editor-image-upload&gt;
-        &lt;p-text-editor-image-upload-dropzone /&gt;
-        &lt;p-text-editor-image-upload-progress /&gt;
-    &lt;/p-text-editor-image-upload&gt;
-    &lt;p-text-editor-document-upload&gt;
-        &lt;p-text-editor-document-upload-dropzone /&gt;
-        &lt;p-text-editor-document-upload-progress /&gt;
-    &lt;/p-text-editor-document-upload&gt;
-
-    &lt;p-text-editor-table-controls /&gt;
-    &lt;p-text-editor-table-column-menu&gt;
-        &lt;p-text-editor-table-column-submenu /&gt;
-    &lt;/p-text-editor-table-column-menu&gt;
-    &lt;p-text-editor-table-row-menu&gt;
-        &lt;p-text-editor-table-row-submenu /&gt;
-    &lt;/p-text-editor-table-row-menu&gt;
-    &lt;p-text-editor-table-cell-menu&gt;
-        &lt;p-text-editor-table-cell-submenu /&gt;
-    &lt;/p-text-editor-table-cell-menu&gt;
-
-    &lt;p-text-editor-navigator&gt;
-        &lt;p-text-editor-navigator-trigger /&gt;
-        &lt;p-text-editor-navigator-menu /&gt;
-    &lt;/p-text-editor-navigator&gt;
-&lt;/p-text-editor-root&gt;</code></pre>
         <h3>Editing Modes</h3>
         <p>
             <i>mode</i> selects the editing surface, and with it the shape of the value. <i>classic</i> binds to an HTML string and puts a fixed toolbar above one content area - a comment box or an article body. <i>block</i> binds to an array of HTML

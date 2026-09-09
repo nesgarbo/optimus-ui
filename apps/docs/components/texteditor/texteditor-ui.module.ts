@@ -20,6 +20,7 @@ import {
 } from './menus-ui';
 import {
     ToolbarBackgroundColorUI,
+    ToolbarClearFormatUI,
     ToolbarBlockquoteUI,
     ToolbarBoldUI,
     ToolbarBulletListUI,
@@ -31,6 +32,7 @@ import {
     ToolbarFontSizeUI,
     ToolbarForegroundColorUI,
     ToolbarHeadingUI,
+    ToolbarHighlightUI,
     ToolbarHorizontalRuleUI,
     ToolbarImageInsertUI,
     ToolbarImageUploadUI,
@@ -71,6 +73,8 @@ const widgets = [
     ToolbarOrderedListUI,
     ToolbarCheckListUI,
     ToolbarBlockquoteUI,
+    ToolbarHighlightUI,
+    ToolbarClearFormatUI,
     ToolbarLinkUI,
     ToolbarImageInsertUI,
     ToolbarImageUploadUI,
