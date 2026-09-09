@@ -61,7 +61,7 @@ export class FilteringDoc {
 
     readonly sort = signal('board order');
 
-    /** How heavy each priority is, so "critical first" has a meaning to sort by. */
+    /** How heavy each priority is, so "critical first" has something to sort by. */
     private readonly weight: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
 
     /**

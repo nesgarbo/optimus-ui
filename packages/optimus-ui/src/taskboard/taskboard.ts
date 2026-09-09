@@ -827,10 +827,10 @@ export class TaskBoard<T extends TaskBoardItem = TaskBoardItem> extends BaseComp
         const bodyAlready = body.classList.contains('p-taskboard-print-active');
         if (!bodyAlready) body.classList.add('p-taskboard-print-active');
 
-        // Los ganchos se escriben en el DOM aquí y no a través de una señal: `window.print()` es
-        // sincrónico, así que un atributo que esperase al siguiente ciclo de detección no estaría
-        // puesto cuando el navegador fotografía la página — y la hoja de impresión, que esconde
-        // todo lo que no sea el tablero marcado, saldría en blanco.
+        // The hooks are written straight to the DOM rather than through a signal: window.print() is
+        // synchronous, so an attribute waiting for the next change-detection pass would not be there
+        // when the browser snapshots the page — and the print sheet, which hides everything that is
+        // not the marked board, would therefore print blank.
         host.setAttribute('data-print-target', 'true');
         host.classList.add('p-taskboard-printing');
         host.scrollTop = 0;
@@ -862,13 +862,13 @@ export class TaskBoard<T extends TaskBoardItem = TaskBoardItem> extends BaseComp
         try {
             view.print();
         } finally {
-            // El repuesto importa en las dos direcciones. Los ganchos esconden TODO lo que no sea el
-            // tablero marcado, así que un `afterprint` que no llegue —el diálogo se cierra de una
-            // forma que no lo dispara— dejaría la página entera invisible; pero limpiar aquí sin más
-            // rompería lo contrario, un `print()` que no bloquea, quitando los ganchos antes de que el
-            // navegador fotografíe la página. `beforeprint` distingue los dos casos: si ha llegado,
-            // el navegador está imprimiendo y `afterprint` vendrá detrás; si no, no se imprimió nada
-            // y limpiar ahora es lo correcto.
+            // The fallback matters in both directions. The hooks hide EVERYTHING that is not the
+            // marked board, so an afterprint that never arrives — a dialog dismissed in a way that
+            // does not fire it — would leave the whole page invisible; but cleaning up here
+            // unconditionally breaks the opposite case, a print() that does not block, by stripping
+            // the hooks before the browser has snapshotted the page. beforeprint tells the two apart:
+            // if it fired, the browser is printing and afterprint will follow; if it did not, nothing
+            // was printed and cleaning up now is correct.
             if (!entered) restore();
         }
     }

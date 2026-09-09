@@ -56,6 +56,39 @@ const PRIORITY_TONE: Record<TaskBoardPriority, { background: string; color: stri
  */
 const LOCK_PATH = 'M4.5 5.5V4a2.5 2.5 0 0 1 5 0v1.5H11a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V6a.5.5 0 0 1 .5-.5h1.5Zm1 0h3V4a1.5 1.5 0 0 0-3 0v1.5Z';
 
+/**
+ * Reads a due date, treating a date-only string as a LOCAL day.
+ *
+ * `new Date('2026-09-09')` is defined to parse as UTC midnight, which west of Greenwich lands on the
+ * previous local day: a card due today printed yesterday's date and picked up the overdue style.
+ * Anything carrying a time is left to the platform, which is where a real instant belongs.
+ */
+function readDueDate(value: Date | string | number | undefined): Date | undefined {
+    if (value == null) return undefined;
+    if (value instanceof Date) return Number.isNaN(value.getTime()) ? undefined : value;
+
+    if (typeof value === 'string') {
+        const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
+
+        if (dateOnly) {
+            const local = new Date(Number(dateOnly[1]), Number(dateOnly[2]) - 1, Number(dateOnly[3]));
+            return Number.isNaN(local.getTime()) ? undefined : local;
+        }
+    }
+
+    const parsed = new Date(value);
+
+    return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+}
+
+/** Whether the first day is strictly before the second, comparing calendar days only. */
+function isBeforeDay(left: Date, right: Date): boolean {
+    if (left.getFullYear() !== right.getFullYear()) return left.getFullYear() < right.getFullYear();
+    if (left.getMonth() !== right.getMonth()) return left.getMonth() < right.getMonth();
+
+    return left.getDate() < right.getDate();
+}
+
 /** The neutral tone the advanced card's labels use. */
 const LABEL_TONE = { background: 'light-dark(var(--p-slate-100), color-mix(in srgb, var(--p-slate-400) 18%, transparent))', color: 'light-dark(var(--p-slate-600), var(--p-slate-200))' };
 
@@ -229,14 +262,7 @@ export class TaskBoardCardAdvancedUI<T extends TaskBoardItem = TaskBoardItem> {
 
     protected readonly owner = computed(() => this.item()?.assignee ?? this.item()?.assignees?.[0] ?? '');
 
-    private readonly dueDate = computed(() => {
-        const raw = this.item()?.dueDate;
-        if (raw == null) return undefined;
-
-        const date = raw instanceof Date ? raw : new Date(raw);
-
-        return Number.isNaN(date.getTime()) ? undefined : date;
-    });
+    private readonly dueDate = computed(() => readDueDate(this.item()?.dueDate));
 
     /**
      * The due date as a short month and day.
@@ -249,15 +275,10 @@ export class TaskBoardCardAdvancedUI<T extends TaskBoardItem = TaskBoardItem> {
         return date ? date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '';
     });
 
-    /** Whether the due date has passed. Compared by day, not by instant. */
+    /** Whether the due date has passed. Compared by calendar day, so today is never overdue. */
     protected readonly overdue = computed(() => {
         const date = this.dueDate();
-        if (!date) return false;
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        return date.getTime() < today.getTime();
+        return date ? isBeforeDay(date, new Date()) : false;
     });
 
     protected initials(name: string): string {

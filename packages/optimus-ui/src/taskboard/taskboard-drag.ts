@@ -25,7 +25,7 @@ interface CellGeometry {
     /** Where the body is on screen. */
     rect: DOMRect;
     /** The card wrappers of the cell, in render order. */
-    cards: { id: string | number; rect: DOMRect; index: number }[];
+    cards: { key: string; rect: DOMRect; index: number }[];
 }
 
 /** How close to an edge auto-scroll kicks in, in pixels. */
@@ -158,8 +158,8 @@ export class TaskBoardDrag<T extends TaskBoardItem = TaskBoardItem> {
         this.state.beginCardDrag(item);
         this.snapshot();
 
-        // Lo que el navegador haya alcanzado a seleccionar antes de cruzar el umbral se descarta: si
-        // no, el gesto arrastra la tarjeta y deja una franja de texto resaltado detrás.
+        // Whatever the browser managed to select before the threshold was crossed is dropped;
+        // otherwise the gesture drags the card and leaves a stripe of highlighted text behind.
         this.document?.getSelection()?.removeAllRanges();
 
         const source = this.candidateElement?.getBoundingClientRect();
@@ -207,8 +207,8 @@ export class TaskBoardDrag<T extends TaskBoardItem = TaskBoardItem> {
         const dragged = this.started;
         const target = this.state.dropTarget();
 
-        // Todo lo que hace falta se lee ANTES de cerrar el arrastre: `resetCard` vacía el conjunto
-        // que viaja, y leerlo después dejaría el movimiento sin tarjetas.
+        // Everything needed is read BEFORE the drag is closed: resetCard empties the travelling set,
+        // and reading it afterwards would leave the move with no cards in it.
         const ids = [...this.state.draggingIds()];
         const oldColumnValue = item ? this.state.columnOf(item) : undefined;
         const oldColumn = oldColumnValue == null ? undefined : this.state.columnById(oldColumnValue);
@@ -227,6 +227,19 @@ export class TaskBoardDrag<T extends TaskBoardItem = TaskBoardItem> {
         this.state.requestMove(item, { id: this.state.idOf(item), columnValue: target.columnValue, index: target.index, swimlaneValue: target.swimlaneValue }, ids);
 
         this.state.emitDragEnd(item, oldColumn, this.state.columnById(target.columnValue), Math.max(0, oldIndex), target.index);
+    };
+
+    /**
+     * Refuses the browser's own text selection while a press is being tracked.
+     *
+     * `user-select: none` covers the board's own surfaces, but a card projects arbitrary content and
+     * a stylesheet the application owns can put `user-select: text` back on part of it. Cancelling
+     * `selectstart` is the one hook that cannot be overridden from CSS.
+     */
+    private onSelectStart = (event: Event): void => {
+        if (this.origin === null) return;
+
+        event.preventDefault();
     };
 
     private onKeyDown = (event: KeyboardEvent): void => {
@@ -320,9 +333,13 @@ export class TaskBoardDrag<T extends TaskBoardItem = TaskBoardItem> {
             const swimlane = swimlaneRaw == null ? undefined : this.state.swimlanes().find((entry) => String(entry.id) === swimlaneRaw);
             if (this.state.grouped() && !swimlane) continue;
 
-            const cards = Array.from(element.querySelectorAll<HTMLElement>('[data-task-id]'))
+            // The typed key is stored, not data-task-id. The DOM only knows strings, so a numeric id
+            // of 7 comes back as "7" and never matches the n:7 the state holds. The filter removed
+            // nothing, the travelling card kept counting towards the midpoint, and the resolved index
+            // came out one position below the line the user was looking at.
+            const cards = Array.from(element.querySelectorAll<HTMLElement>('[data-part="card"][data-taskboard-id-key]'))
                 .filter((card) => card.closest('[data-part="column-content"], .p-taskboard-swimlane-cell') === element)
-                .map((card, index) => ({ id: card.dataset['taskId'] as string, rect: card.getBoundingClientRect(), index }));
+                .map((card, index) => ({ key: card.dataset['taskboardIdKey'] as string, rect: card.getBoundingClientRect(), index }));
 
             this.geometry.push({ columnValue: column.id, swimlaneValue: swimlane?.id, element, rect: element.getBoundingClientRect(), cards });
         }
@@ -355,7 +372,7 @@ export class TaskBoardDrag<T extends TaskBoardItem = TaskBoardItem> {
         for (const cell of this.geometry) {
             cell.rect = cell.element.getBoundingClientRect();
             for (const card of cell.cards) {
-                const element = cell.element.querySelector<HTMLElement>(`[data-task-id="${cssEscape(String(card.id))}"]`);
+                const element = cell.element.querySelector<HTMLElement>(`[data-taskboard-id-key="${cssEscape(card.key)}"]`);
                 if (element) card.rect = element.getBoundingClientRect();
             }
         }
@@ -385,7 +402,7 @@ export class TaskBoardDrag<T extends TaskBoardItem = TaskBoardItem> {
         }
 
         const travelling = new Set(this.state.draggingIds().map(taskBoardIdKey));
-        const cards = cell.cards.filter((card) => !travelling.has(taskBoardIdKey(card.id)));
+        const cards = cell.cards.filter((card) => !travelling.has(card.key));
 
         let index = cards.length;
         for (let position = 0; position < cards.length; position += 1) {
@@ -405,8 +422,8 @@ export class TaskBoardDrag<T extends TaskBoardItem = TaskBoardItem> {
         const inside = this.geometry.find((cell) => x >= cell.rect.left && x <= cell.rect.right && y >= cell.rect.top && y <= cell.rect.bottom);
         if (inside) return this.droppable(inside) ? inside : undefined;
 
-        // Fuera de toda celda se busca la columna por su franja horizontal: arrastrar por debajo del
-        // último hueco de una columna sigue queriendo decir "al final de esta columna".
+        // Outside every cell the column is found by its horizontal band: dragging below a column's
+        // last gap still means "at the end of this column".
         const column = this.geometry.filter((cell) => x >= cell.rect.left && x <= cell.rect.right);
         if (column.length === 0) return undefined;
 
@@ -434,7 +451,7 @@ export class TaskBoardDrag<T extends TaskBoardItem = TaskBoardItem> {
      * the published target, so nothing has to be written into the DOM here — only the fallback line
      * needs coordinates, and only when the cell has no marker to reveal.
      */
-    private placeIndicator(cell: CellGeometry, cards: { id: string | number; rect: DOMRect; index: number }[], index: number): void {
+    private placeIndicator(cell: CellGeometry, cards: { key: string; rect: DOMRect; index: number }[], index: number): void {
         if (cell.element.querySelector('[data-drop-index]')) {
             this.runtimeIndicator.set(null);
             return;
@@ -465,7 +482,10 @@ export class TaskBoardDrag<T extends TaskBoardItem = TaskBoardItem> {
             this.edgeFrame = null;
 
             const pointer = this.edgePointer;
-            if (!pointer || !this.started) return;
+            // `started` belongs to the card gesture; a column reorder has its own flag, and without
+            // checking it the first frame returned and never rescheduled: dragging a header to the
+            // edge did not scroll the board, so an off-screen column could not be reached.
+            if (!pointer || (!this.started && !this.columnStarted)) return;
 
             const horizontal = this.host?.querySelector<HTMLElement>('.p-taskboard-columns, .p-taskboard-swimlane-grid');
             let scrolled = false;
@@ -572,8 +592,8 @@ export class TaskBoardDrag<T extends TaskBoardItem = TaskBoardItem> {
 
         if (cancelled || !started || !candidate || !pointer) return;
 
-        // Los rects se vuelven a leer del DOM y no del snapshot: si el auto-scroll ha movido la pista
-        // mientras se arrastraba, el índice de destino es el del orden en pantalla ahora.
+        // The rects are read from the DOM again rather than from the snapshot: if auto-scroll moved
+        // the track during the drag, the target index is the one in the on-screen order now.
         this.measureColumns();
 
         const target = this.columnRects.find((entry) => pointer.x >= entry.rect.left && pointer.x <= entry.rect.right);
@@ -621,6 +641,7 @@ export class TaskBoardDrag<T extends TaskBoardItem = TaskBoardItem> {
         this.document.addEventListener('pointerup', this.onPointerUp);
         this.document.addEventListener('pointercancel', this.onPointerUp);
         this.document.addEventListener('keydown', this.onKeyDown);
+        this.document.addEventListener('selectstart', this.onSelectStart);
     }
 
     private detachWindow(): void {
@@ -631,6 +652,7 @@ export class TaskBoardDrag<T extends TaskBoardItem = TaskBoardItem> {
         this.document.removeEventListener('pointerup', this.onPointerUp);
         this.document.removeEventListener('pointercancel', this.onPointerUp);
         this.document.removeEventListener('keydown', this.onKeyDown);
+        this.document.removeEventListener('selectstart', this.onSelectStart);
     }
 }
 

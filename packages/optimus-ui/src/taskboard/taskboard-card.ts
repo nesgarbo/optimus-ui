@@ -90,8 +90,15 @@ export class TaskBoardCard<T extends TaskBoardItem = TaskBoardItem> {
 
     protected readonly dragging = computed(() => this.state.isDragging(this.id()));
 
-    /** Effective disabled state: the card's own, the board's, or a read-only board. */
-    protected readonly disabled = computed(() => this.item().disabled === true || this.state.inert());
+    /**
+     * Effective disabled state: the card's own, or a disabled board.
+     *
+     * A READ-ONLY board is deliberately not included. Read-only means nothing can be changed, not
+     * that the cards stop being content: marking them disabled dimmed every card to half opacity and
+     * took away the pointer, so the text could not be selected and a link inside a card could not be
+     * followed. The mutation guards live in the runtime, which refuses every write either way.
+     */
+    protected readonly disabled = computed(() => this.item().disabled === true || this.state.disabled());
 
     /** Whether this card can be picked up. */
     protected readonly draggable = computed(() => {
@@ -154,7 +161,7 @@ export class TaskBoardCard<T extends TaskBoardItem = TaskBoardItem> {
     protected onClick(event: MouseEvent): void {
         if (this.disabled()) return;
 
-        // Un arrastre con puntero acaba también en `click`; ese no cambia la selección.
+        // A pointer drag also ends in a click; that one does not touch the selection.
         if (this.drag.shouldSwallowClick()) return;
 
         this.state.selectFromPointer(this.item(), { toggle: event.ctrlKey || event.metaKey, range: event.shiftKey });

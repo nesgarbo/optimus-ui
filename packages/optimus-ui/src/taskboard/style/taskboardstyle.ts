@@ -2,9 +2,9 @@ import { Injectable } from '@angular/core';
 import { style } from '@openng/optimus-ui-styles/taskboard';
 import { BaseStyle } from '@openng/optimus-ui/base';
 
-// Los estados de interacción salen de aquí y no de un classList imperativo: la raíz lleva un
-// binding [class], y escribirle clases por detrás deja el resultado a merced de cuándo vuelva a
-// evaluarse ese binding.
+// The interaction states come from here rather than from an imperative classList write: the root
+// carries a [class] binding, and writing classes behind its back leaves the result at the mercy of
+// when that binding next evaluates.
 const classes = {
     root: ({ instance }) => [
         'p-taskboard p-component',

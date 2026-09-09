@@ -42,10 +42,10 @@ import { TASKBOARD_CARD_CONTEXT, type TaskBoardCardContext } from '@openng/optim
 })
 export class WorkCard {
     readonly card = inject<TaskBoardCardContext>(TASKBOARD_CARD_CONTEXT);
-}
 
-// A component that may also render outside a board asks for it optionally.
-readonly maybeCard = inject<TaskBoardCardContext | null>(TASKBOARD_CARD_CONTEXT, { optional: true });`,
+    // A component that may also render outside a board asks for it optionally.
+    readonly maybeCard = inject<TaskBoardCardContext | null>(TASKBOARD_CARD_CONTEXT, { optional: true });
+}`,
         html: `<p-taskboard-column [column]="column" [value]="column.id" [label]="column.label">
     <ng-template pTaskBoardColumnDef let-columnContext let-itemCount="itemCount">
         <p-taskboard-column-header>{{ columnContext.label }} ({{ itemCount }})</p-taskboard-column-header>

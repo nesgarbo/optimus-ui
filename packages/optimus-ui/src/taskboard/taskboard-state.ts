@@ -1159,7 +1159,7 @@ export class TaskBoardState<T extends TaskBoardItem = TaskBoardItem> {
         const movingKeys = new Set(moving.map((item) => taskBoardIdKey(this.idOf(item))));
         const targetKey = this.cellKeyOf(request.columnValue, request.swimlaneValue);
 
-        // Las celdas que quedan cortas al irse las tarjetas, para renumerarlas y cerrar el hueco.
+        // The cells left short by the departing cards, to renumber and close the gap.
         const sourceKeys = new Set(moving.map((item) => this.cellKeyOf(this.columnOf(item), this.swimlaneOf(item))));
         sourceKeys.delete(targetKey);
 
@@ -1209,11 +1209,21 @@ export class TaskBoardState<T extends TaskBoardItem = TaskBoardItem> {
         const target = columnValue ?? this.columnOf(item) ?? this.columns()[0]?.id;
         const placed = target == null ? item : writeField(item, columnField, target);
         const cell = target == null ? [] : this.itemsOf(target, this.swimlaneOf(placed));
-        const at = index ?? cell.length;
+        const at = Math.max(0, Math.min(index ?? cell.length, cell.length));
         const withOrder = { ...placed, order: at } as T;
 
         if (!this.external()) {
-            const next = [...this.config.tasks(), withOrder];
+            // Everything already in the cell from `at` onwards shifts by one. Writing only the new
+            // card's own order left two cards holding the same number, and because the sort is stable
+            // the newcomer landed behind the one that already had it: addTask(card, 'backlog', 0) put
+            // it at position 1.
+            const shifted = new Map(cell.slice(at).map((entry) => [taskBoardIdKey(this.idOf(entry)), (entry.order ?? 0) + 1]));
+            const current = this.config.tasks().map((entry) => {
+                const shift = shifted.get(taskBoardIdKey(this.idOf(entry)));
+                return shift === undefined ? entry : ({ ...entry, order: shift } as T);
+            });
+
+            const next = [...current, withOrder];
 
             this.pushHistory(this.config.tasks());
             this.config.setTasks(next);
@@ -1280,8 +1290,8 @@ export class TaskBoardState<T extends TaskBoardItem = TaskBoardItem> {
         next.splice(oldIndex, 1);
         next.splice(newIndex, 0, moved);
 
-        // Un reorder que desplaza una columna bloqueada de su sitio se rechaza entero: `locked`
-        // promete una posición, no solo que esa columna no se arrastre.
+        // A reorder that would displace a locked column is refused whole: locked promises a position,
+        // not merely that the column resists being picked up.
         const displacedLocked = next.some((column, index) => column.locked && columns[index]?.id !== column.id);
         if (displacedLocked) return;
 
@@ -1379,10 +1389,23 @@ export class TaskBoardState<T extends TaskBoardItem = TaskBoardItem> {
     /** What the assertive live region is saying. */
     readonly alertMessage = this.assertiveMessage.asReadonly();
 
+    /**
+     * Whether the next announcement carries the invisible marker.
+     *
+     * A live region only speaks when its text CHANGES, so the same message twice — the same card
+     * refused twice by the same WIP limit — would be announced once. Alternating a zero-width space
+     * makes the text differ every time without changing what is read out.
+     */
+    private announceToggle = false;
+
     /** Says something in one of the live regions. */
     announce(message: string, level: 'polite' | 'assertive' = 'polite'): void {
-        if (level === 'assertive') this.assertiveMessage.set(message);
-        else this.politeMessage.set(message);
+        this.announceToggle = !this.announceToggle;
+
+        const text = this.announceToggle ? `${message}\u200b` : message;
+
+        if (level === 'assertive') this.assertiveMessage.set(text);
+        else this.politeMessage.set(text);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -1430,9 +1453,9 @@ export class TaskBoardState<T extends TaskBoardItem = TaskBoardItem> {
 
     /** Applies whichever fields a snapshot carries. */
     restoreState(state: TaskBoardStateSnapshot): void {
-        // Una instantánea es la lista completa de lo que estaba plegado, así que se escribe una
-        // decisión explícita para CADA columna y fila: lo que no aparece en ella estaba abierto, y
-        // dejarlo sin decidir haría que volviera a mandar la metadata.
+        // A snapshot is the complete list of what was collapsed, so an explicit decision is written
+        // for EVERY column and row: whatever is absent from it was open, and leaving those undecided
+        // would hand them back to the metadata.
         if (state.collapsedColumnIds) {
             const collapsed = new Set(state.collapsedColumnIds.map(taskBoardIdKey));
             this.columnCollapseOverrides.set(Object.fromEntries(this.config.columns().map((column) => [taskBoardIdKey(column.id), collapsed.has(taskBoardIdKey(column.id))])));

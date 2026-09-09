@@ -110,8 +110,8 @@ export class TaskBoardKeyboard<T extends TaskBoardItem = TaskBoardItem> {
             const role = element.getAttribute('role');
             if (role && INTERACTIVE_ROLES.has(role)) return true;
 
-            // Un <label> solo secuestra la tecla si gobierna un control habilitado: una etiqueta
-            // suelta dentro de una tarjeta es texto, y el teclado del tablero sigue valiendo ahí.
+            // A <label> only claims the key if it governs an enabled control: a bare label inside a
+            // card is text, and the board's keyboard still applies there.
             if (element.tagName === 'LABEL') {
                 const control = (element as HTMLLabelElement).control;
                 if (control && !(control as HTMLInputElement).disabled) return true;

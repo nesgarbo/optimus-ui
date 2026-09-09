@@ -16,9 +16,9 @@ import { TASKBOARD_STATE, formatLabel } from './taskboard-state';
  * @module taskboard-parts
  */
 
-// Los decoradores van escritos a mano y no generados por un helper: el compilador AOT de Angular
-// tiene que poder LEER los metadatos estáticamente, y un objeto obtenido de una llamada le deja el
-// `template` invisible y falla con NG2001.
+// The decorators are written out by hand rather than produced by a helper: Angular's AOT compiler
+// has to READ the metadata statically, and an object returned from a call leaves the template
+// invisible to it and fails with NG2001.
 
 /**
  * Board-level chrome: the place a product toolbar, search, filters or export controls go.

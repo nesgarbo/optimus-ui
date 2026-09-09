@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, ViewEncapsulation, computed, contentChild, effect, inject, input, numberAttribute, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, ViewEncapsulation, afterRenderEffect, computed, contentChild, effect, inject, input, numberAttribute, signal, viewChild } from '@angular/core';
 import type { TaskBoardItem } from '@openng/optimus-ui/types/taskboard';
 import { TASKBOARD_COLUMN_CONTEXT, TASKBOARD_DROP_INDICATOR_CONTEXT, type TaskBoardColumnContext, type TaskBoardDropIndicatorContext } from './taskboard-context';
 import { TASKBOARD_DRAG } from './taskboard-drag';
@@ -97,17 +97,24 @@ export class TaskBoardDropIndicator {
         const classes = ['p-taskboard-drop-indicator'];
 
         if (this.state.grouped()) classes.push('p-taskboard-swimlane-drop-indicator');
-        if (this.hasContent()) classes.push('p-taskboard-drop-indicator-custom');
+        if (this.definition() || this.projected()) classes.push('p-taskboard-drop-indicator-custom');
 
         return classes.join(' ');
     });
 
-    /** Whether anything was projected into the marker. */
-    private hasContent(): boolean {
-        if (this.definition()) return true;
+    /**
+     * Whether anything was projected into the marker.
+     *
+     * Angular offers no way to ASK whether content was projected, so it is measured — and measured
+     * after every render rather than once inside a computed: content that appears later, from an
+     * `@if` in the application's template, has to add the class too, and a DOM read inside a
+     * computed would never invalidate.
+     */
+    private readonly projected = signal(false);
 
-        return this.hostElement.nativeElement.childElementCount > 0;
-    }
+    private readonly measureProjected = afterRenderEffect(() => {
+        this.projected.set(this.hostElement.nativeElement.childElementCount > 0);
+    });
 
     /** @internal The context this marker's children inject. */
     readonly indicatorContext: TaskBoardDropIndicatorContext = {

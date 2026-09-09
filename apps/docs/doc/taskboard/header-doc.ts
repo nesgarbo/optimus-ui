@@ -25,8 +25,8 @@ import { demoColumns, demoTasks } from './demo-data';
     imports: [Avatar, AvatarGroup, BarsIcon, Button, FilterIcon, FormsModule, InputTextModule, PlusIcon, StarIcon, UndoIcon],
     changeDetection: ChangeDetectionStrategy.OnPush,
     styles: `
-        /* El solape por defecto del grupo se come la mitad de cada inicial; 0.375rem deja ver las dos
-           letras y sigue leyéndose como una pila. */
+        /* The group's default overlap eats half of every set of initials; 0.375rem shows both letters
+           and still reads as a stack. */
         .taskboard-doc-header-owners .p-avatar {
             width: 1.75rem;
             height: 1.75rem;
@@ -246,8 +246,8 @@ export class HeaderDoc {
     });
 
     constructor() {
-        // El header pide y la página hace: así el botón vive donde el usuario lo espera y la
-        // mutación sigue estando en quien tiene los datos.
+        // The header asks and the page acts: the button lives where the user expects it while the
+        // mutation stays with whoever owns the data.
         queueMicrotask(() => {
             const header = this.boardHeader();
 
@@ -267,8 +267,8 @@ export class HeaderDoc {
     }
 
     onTasksChange(next: TaskBoardItem[]): void {
-        // Las tarjetas que el filtro esconde no están en el array que el tablero devuelve, así que se
-        // conservan y solo se reemplazan las que sí venían.
+        // Cards the filter hides are not in the array the board hands back, so they are kept and only
+        // the ones that were actually there get replaced.
         const changed = new Map(next.map((item) => [String(item['id']), item]));
 
         this.source.update((items) => items.map((item) => changed.get(String(item['id'])) ?? item));

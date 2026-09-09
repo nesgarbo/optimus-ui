@@ -3,13 +3,14 @@ import type { TaskBoardColumnModel, TaskBoardItem, TaskBoardSwimlane } from '@op
 import { beforeEach, describe, expect, it } from 'vitest';
 import { TASKBOARD_DEFAULT_LABELS, TaskBoardState, taskBoardIdKey, type TaskBoardStateConfig } from './taskboard-state';
 
-// El motor se prueba sin DOM: es una clase que solo recibe señales, así que aquí se le pasan señales
-// planas y se mira lo que decide. Lo que se protege es lo que no se ve mirando el tablero:
-//   - que el orden de las reglas de movimiento sea el que promete la documentación,
-//   - que un movimiento aceptado renumere las celdas de origen y de destino y nada más,
-//   - que la selección por rango sea local a la celda,
-//   - que el modo externo no escriba nunca y siga emitiendo,
-//   - que la ventana virtual sea la lista entera cuando está apagada.
+// The engine is exercised without a DOM: it is a class that takes nothing but signals, so plain
+// signals go in and what it decides comes out. What this protects is what looking at a board does
+// not show:
+//   - that the move rules fire in the order the docs promise,
+//   - that an accepted move renumbers the source and target cells and nothing else,
+//   - that range selection is local to the cell,
+//   - that external mode never writes and still emits,
+//   - that the virtual window is the whole list while it is off.
 
 interface Card extends TaskBoardItem {
     id: string;
@@ -36,15 +37,15 @@ function cards(): Card[] {
     return [
         { id: 'a', title: 'A', columnId: 'backlog', swimlaneId: 'growth', order: 0 },
         { id: 'b', title: 'B', columnId: 'backlog', swimlaneId: 'growth', order: 1 },
-        // `order` es por columna, no por celda: en un tablero sin filas backlog es a, b, c, y al
-        // agrupar 'c' se queda sola en su celda, así que el 2 vale para los dos casos.
+        // `order` is per column, not per cell: on an ungrouped board backlog is a, b, c, and once
+        // grouped 'c' is alone in its cell, so 2 works for both cases.
         { id: 'c', title: 'C', columnId: 'backlog', swimlaneId: 'platform', order: 2 },
         { id: 'd', title: 'D', columnId: 'active', swimlaneId: 'growth', order: 0, owner: 'Ana' },
         { id: 'e', title: 'E', columnId: 'active', swimlaneId: 'platform', order: 1 }
     ];
 }
 
-/** La configuración del motor, con lo que cada prueba necesite cambiar. */
+/** The engine's configuration, with whatever a given test needs to change. */
 function makeConfig(overrides: Partial<TaskBoardStateConfig<Card>> = {}) {
     const tasks = signal<Card[]>(cards());
     const emitted: Record<string, any[]> = {};
@@ -107,8 +108,8 @@ function makeConfig(overrides: Partial<TaskBoardStateConfig<Card>> = {}) {
         ...overrides
     };
 
-    // `tasks` puede venir sobreescrito, y entonces el escritor por defecto apuntaría al array que no
-    // es; se vuelve a atar al que haya quedado si nadie ha traído su propio escritor.
+    // `tasks` can be overridden, and then the default writer would point at the wrong array; it is
+    // rebound to whichever one ended up in the config unless a writer came with it.
     const model = config.tasks as ReturnType<typeof signal<Card[]>>;
     if (!overrides.setTasks) config.setTasks = (value) => model.set(value);
     if (!overrides.emitTasksChange) config.emitTasksChange = record('tasksChange');
@@ -116,7 +117,7 @@ function makeConfig(overrides: Partial<TaskBoardStateConfig<Card>> = {}) {
     return { config, tasks: model, emitted };
 }
 
-/** Un banco de pruebas del motor, con las emisiones recogidas para poder mirarlas. */
+/** A bench around the engine, with the emissions collected so they can be inspected. */
 function bench(options: { external?: boolean; swimlanes?: boolean } = {}) {
     const { config, tasks, emitted } = makeConfig({
         items: signal<Card[] | undefined>(options.external ? cards() : undefined),
@@ -127,8 +128,8 @@ function bench(options: { external?: boolean; swimlanes?: boolean } = {}) {
     return { state: new TaskBoardState<Card>(config), tasks, emitted };
 }
 
-describe('el índice del tablero', () => {
-    it('agrupa por columna y, cuando hay filas, por celda', () => {
+describe('the board index', () => {
+    it('groups by column and, when there are rows, by cell', () => {
         const plain = bench();
         expect(plain.state.itemsOf('backlog').map((item) => item.id)).toEqual(['a', 'b', 'c']);
 
@@ -137,40 +138,40 @@ describe('el índice del tablero', () => {
         expect(grouped.state.itemsOf('backlog', 'platform').map((item) => item.id)).toEqual(['c']);
     });
 
-    it('los recuentos de columna y de fila cruzan la otra dimensión', () => {
+    it('the column and row counts cross the other dimension', () => {
         const { state } = bench({ swimlanes: true });
 
         expect(state.countOfColumn('backlog')).toBe(3);
         expect(state.countOfSwimlane('growth')).toBe(3);
     });
 
-    it('ordena las columnas por order y esconde las que el acceso niega', () => {
+    it('sorts the columns by order', () => {
         const { state } = bench();
         expect(state.columns().map((column) => column.id)).toEqual(['backlog', 'active', 'review', 'done']);
     });
 
-    it('una clave de id no confunde el 1 numérico con el "1" de texto', () => {
+    it('an id key does not confuse the number 1 with the string "1"', () => {
         expect(taskBoardIdKey(1)).not.toBe(taskBoardIdKey('1'));
     });
 });
 
-describe('las reglas de movimiento', () => {
-    it('las reglas de transición se comprueban antes que los campos obligatorios', () => {
+describe('the move rules', () => {
+    it('the transition rules are checked before the required fields', () => {
         const { state } = bench();
         const card = state.itemById('a')!;
 
-        // 'a' está en backlog, y review solo admite desde active. Además le falta `owner`, que es el
-        // otro motivo por el que sería rechazada: la que gana tiene que ser la transición.
+        // 'a' is in backlog, and review only accepts from active. It is also missing `owner`, which is
+        // the other reason it would be refused: the one that wins has to be the transition.
         const refusal = state.validateMove(card, 'review');
 
         expect(refusal?.reason).toBe('transition-rule');
     });
 
-    it('el límite de WIP rechaza una entrada y deja los datos como estaban', () => {
+    it('the WIP limit refuses an entry and leaves the data untouched', () => {
         const { state, tasks, emitted } = bench();
         const card = state.itemById('a')!;
 
-        // active tiene wipLimit 2 y ya tiene dos tarjetas.
+        // `active` has a wipLimit of 2 and already holds two cards.
         state.requestMove(card, { id: 'a', columnValue: 'active', index: 0 });
 
         expect(emitted['cardDropBlocked']?.[0].reason).toBe('wip-limit');
@@ -178,7 +179,7 @@ describe('las reglas de movimiento', () => {
         expect(tasks().find((item) => item.id === 'a')!.columnId).toBe('backlog');
     });
 
-    it('los campos obligatorios rechazan y dicen cuáles faltan', () => {
+    it('the required fields refuse and say which are missing', () => {
         const { state } = bench();
         const card = state.itemById('e')!;
 
@@ -188,7 +189,7 @@ describe('las reglas de movimiento', () => {
         expect(refusal?.failedFields).toEqual(['owner']);
     });
 
-    it('una columna que pide confirmación retiene el movimiento y no emite rechazo', () => {
+    it('a column asking for confirmation holds the move and emits no refusal', () => {
         const { state, tasks, emitted } = bench();
         const card = state.itemById('a')!;
 
@@ -204,7 +205,7 @@ describe('las reglas de movimiento', () => {
         expect(tasks().find((item) => item.id === 'a')!.columnId).toBe('done');
     });
 
-    it('cancelar la confirmación deja el tablero intacto', () => {
+    it('cancelling the confirmation leaves the board untouched', () => {
         const { state, tasks } = bench();
 
         state.requestMove(state.itemById('a')!, { id: 'a', columnValue: 'done', index: 0 });
@@ -214,19 +215,19 @@ describe('las reglas de movimiento', () => {
         expect(tasks().find((item) => item.id === 'a')!.columnId).toBe('backlog');
     });
 
-    it('el acceso puede prohibir la salida de una columna y la entrada en otra', () => {
+    it('access can forbid leaving one column and entering another', () => {
         const { config } = makeConfig({
             access: signal({ columnAccess: { backlog: { canMoveOut: false }, done: { canMoveIn: false } } })
         });
 
         const local = new TaskBoardState<Card>(config);
 
-        // 'a' sale de backlog y 'd' entra en done: los dos lados del guardia.
+        // 'a' leaves backlog and 'd' enters done: both sides of the guard.
         expect(local.validateMove(local.itemById('a')!, 'done')?.reason).toBe('access');
         expect(local.validateMove(local.itemById('d')!, 'done')?.reason).toBe('access');
     });
 
-    it('una columna que el acceso esconde desaparece de las columnas visibles', () => {
+    it('a column hidden by access disappears from the visible columns', () => {
         const { config } = makeConfig({ access: signal({ columnAccess: { done: { canView: false } } }) });
         const local = new TaskBoardState<Card>(config);
 
@@ -234,14 +235,14 @@ describe('las reglas de movimiento', () => {
     });
 });
 
-describe('un movimiento aceptado', () => {
+describe('an accepted move', () => {
     let harness: ReturnType<typeof bench>;
 
     beforeEach(() => {
         harness = bench();
     });
 
-    it('emite el array nuevo ANTES del movimiento', () => {
+    it('emits the next array BEFORE the move', () => {
         const order: string[] = [];
         const { config } = makeConfig({
             emitTasksChange: () => order.push('tasksChange'),
@@ -256,7 +257,7 @@ describe('un movimiento aceptado', () => {
         expect(order).toEqual(['tasksChange', 'cardMove', 'cardReorder']);
     });
 
-    it('un movimiento dentro de la misma celda emite cardMove y después cardReorder', () => {
+    it('a move inside the same cell emits cardMove and then cardReorder', () => {
         const { state, emitted } = harness;
 
         state.requestMove(state.itemById('a')!, { id: 'a', columnValue: 'backlog', index: 2 });
@@ -266,16 +267,16 @@ describe('un movimiento aceptado', () => {
         expect(emitted['cardReorder'][0]).toMatchObject({ columnValue: 'backlog', oldIndex: 0, newIndex: 2 });
     });
 
-    it('un movimiento entre columnas NO emite cardReorder', () => {
+    it('a move between columns does NOT emit cardReorder', () => {
         const { state, emitted } = harness;
 
         state.requestMove(state.itemById('a')!, { id: 'a', columnValue: 'review', index: 0 });
 
-        // review rechaza desde backlog, así que se usa una columna sin reglas.
+        // review refuses from backlog, so a column with no rules is used.
         expect(emitted['cardReorder']).toBeUndefined();
     });
 
-    it('renumera la celda de destino y cierra el hueco en la de origen', () => {
+    it('renumbers the target cell and closes the gap in the source one', () => {
         const { state, tasks } = harness;
 
         state.requestMove(state.itemById('a')!, { id: 'a', columnValue: 'backlog', index: 2 });
@@ -288,7 +289,7 @@ describe('un movimiento aceptado', () => {
         expect(backlog.map((item) => item.order)).toEqual([0, 1, 2]);
     });
 
-    it('cruzar de fila reescribe los dos campos configurados', () => {
+    it('crossing a row rewrites both configured fields', () => {
         const grouped = bench({ swimlanes: true });
 
         grouped.state.requestMove(grouped.state.itemById('a')!, { id: 'a', columnValue: 'backlog', index: 0, swimlaneValue: 'platform' });
@@ -300,7 +301,7 @@ describe('un movimiento aceptado', () => {
         expect(grouped.state.itemsOf('backlog', 'growth').map((item) => item.id)).toEqual(['b']);
     });
 
-    it('un grupo de tarjetas viaja en el orden en que se pintaba', () => {
+    it('a group of cards travels in the order it was rendered', () => {
         const { state, tasks } = harness;
 
         state.setSelection(['b', 'a']);
@@ -314,8 +315,8 @@ describe('un movimiento aceptado', () => {
     });
 });
 
-describe('el modo externo', () => {
-    it('no escribe nunca, pero sigue emitiendo el movimiento', () => {
+describe('external mode', () => {
+    it('never writes, but still emits the move', () => {
         const { state, tasks, emitted } = bench({ external: true });
         const before = tasks();
 
@@ -326,7 +327,7 @@ describe('el modo externo', () => {
         expect(emitted['cardMove']).toHaveLength(1);
     });
 
-    it('no graba historial: el deshacer es de quien tiene los datos', () => {
+    it('records no history: undo belongs to whoever owns the data', () => {
         const { state } = bench({ external: true });
 
         state.requestMove(state.itemById('a')!, { id: 'a', columnValue: 'backlog', index: 2 });
@@ -335,8 +336,8 @@ describe('el modo externo', () => {
     });
 });
 
-describe('la selección', () => {
-    it('un clic sencillo reemplaza y un clic con modificador alterna', () => {
+describe('the selection', () => {
+    it('a plain click replaces and a modifier click toggles', () => {
         const { state } = bench();
 
         state.selectFromPointer(state.itemById('a')!);
@@ -349,7 +350,7 @@ describe('la selección', () => {
         expect(state.selectedIds()).toEqual(['a']);
     });
 
-    it('el rango es local a la celda: si el destino está en otra columna, solo se selecciona él', () => {
+    it('a range is local to the cell: a target in another column selects only itself', () => {
         const { state } = bench();
 
         state.selectFromPointer(state.itemById('a')!);
@@ -361,7 +362,7 @@ describe('la selección', () => {
         expect(state.selectedIds()).toEqual(['d']);
     });
 
-    it('cardSelect describe una tarjeta y selectionChange la selección entera', () => {
+    it('cardSelect describes one card and selectionChange the whole selection', () => {
         const { state, emitted } = bench();
 
         state.selectFromPointer(state.itemById('a')!);
@@ -370,7 +371,7 @@ describe('la selección', () => {
         expect(emitted['selectionChange'][0].selectedIds).toEqual(['a']);
     });
 
-    it('seleccionar la celda entera emite solo selectionChange', () => {
+    it('selecting a whole cell emits only selectionChange', () => {
         const { state, emitted } = bench();
 
         state.selectCell('backlog');
@@ -379,7 +380,7 @@ describe('la selección', () => {
         expect(emitted['cardSelect']).toBeUndefined();
     });
 
-    it('borrar una tarjeta la saca de la selección', () => {
+    it('deleting a card takes it out of the selection', () => {
         const { state } = bench();
 
         state.setSelection(['a', 'b']);
@@ -389,8 +390,8 @@ describe('la selección', () => {
     });
 });
 
-describe('el plegado', () => {
-    it('la semilla de la metadata se lee una vez y no vuelve a pisar al usuario', () => {
+describe('collapsing', () => {
+    it('the metadata seed is read once and never overrides the user again', () => {
         const columns = signal<TaskBoardColumnModel[]>([{ id: 'backlog', label: 'Backlog', collapsed: true }]);
         const { config } = makeConfig({ columns });
         const local = new TaskBoardState<Card>(config);
@@ -399,14 +400,14 @@ describe('el plegado', () => {
 
         local.setColumnCollapsed('backlog', false);
 
-        // El array llega otra vez con `collapsed: true`, como tras un refresco de datos: la columna
-        // tiene que quedarse abierta.
+        // The array arrives again with `collapsed: true`, as after a data refresh: the column has to
+        // stay open.
         columns.set([{ id: 'backlog', label: 'Backlog', collapsed: true }]);
 
         expect(local.isColumnCollapsed('backlog')).toBe(false);
     });
 
-    it('el estado de WIP es aviso una tarjeta antes del límite y excedido al alcanzarlo', () => {
+    it('the WIP state is a warning one card short of the limit and exceeded at it', () => {
         const { state, tasks } = bench();
 
         expect(state.wipStateOf('active')).toBe('exceeded');
@@ -416,8 +417,8 @@ describe('el plegado', () => {
     });
 });
 
-describe('el reorden de columnas', () => {
-    it('rechaza entero un reorden que desplazaría una columna bloqueada', () => {
+describe('reordering the columns', () => {
+    it('refuses whole a reorder that would displace a locked column', () => {
         const tasks = signal<Card[]>(cards());
         const locked: TaskBoardColumnModel[] = [
             { id: 'backlog', label: 'Backlog', order: 0 },
@@ -437,8 +438,8 @@ describe('el reorden de columnas', () => {
     });
 });
 
-describe('el historial', () => {
-    it('deshacer devuelve el array anterior y rehacer lo vuelve a aplicar', () => {
+describe('the history', () => {
+    it('undo returns the previous array and redo applies it again', () => {
         const { state, tasks } = bench();
 
         state.requestMove(state.itemById('a')!, { id: 'a', columnValue: 'backlog', index: 2 });
@@ -452,8 +453,8 @@ describe('el historial', () => {
     });
 });
 
-describe('la exportación', () => {
-    it('el JSON lleva columnas, tarjetas, filas y el instante', () => {
+describe('exporting', () => {
+    it('the JSON carries the columns, the cards, the rows and the instant', () => {
         const { state } = bench({ swimlanes: true });
         const payload = JSON.parse(state.exportToJSON());
 
@@ -463,18 +464,18 @@ describe('la exportación', () => {
         expect(typeof payload.exportedAt).toBe('string');
     });
 
-    it('el CSV escapa el separador y aplana los arrays', () => {
-        const tasks = signal<Card[]>([{ id: 'x', title: 'Uno, dos', columnId: 'backlog', order: 0, tags: ['a', 'b'] } as Card]);
+    it('the CSV escapes the delimiter and flattens the arrays', () => {
+        const tasks = signal<Card[]>([{ id: 'x', title: 'One, two', columnId: 'backlog', order: 0, tags: ['a', 'b'] } as Card]);
         const { config } = makeConfig({ tasks });
         const local = new TaskBoardState<Card>(config);
 
         const csv = local.exportToCSV({ fields: ['id', 'title', 'tags'] });
 
         expect(csv.split('\n')[0]).toBe('id,title,tags');
-        expect(csv.split('\n')[1]).toBe('x,"Uno, dos",a;b');
+        expect(csv.split('\n')[1]).toBe('x,"One, two",a;b');
     });
 
-    it('la instantánea guarda solo estado de pantalla y se restaura a trozos', () => {
+    it('the snapshot saves UI state only and restores in parts', () => {
         const { state } = bench();
 
         state.setSelection(['a']);
@@ -493,14 +494,14 @@ describe('la exportación', () => {
     });
 });
 
-describe('la ventana virtual', () => {
-    it('apagada, la ventana es la lista entera y no reserva espacio', () => {
+describe('the virtual window', () => {
+    it('off, the window is the whole list and reserves no space', () => {
         const { state } = bench();
 
         expect(state.windowOf('s:backlog|', 40)).toEqual({ start: 0, end: 40, paddingTop: 0, paddingBottom: 0 });
     });
 
-    it('encendida, se ajusta al viewport y reserva lo que deja fuera', () => {
+    it('on, it follows the viewport and reserves what it leaves out', () => {
         const { config } = makeConfig({ virtualScroll: signal(true), virtualScrollItemHeight: signal(100), virtualScrollBuffer: signal(1) });
         const local = new TaskBoardState<Card>(config);
 

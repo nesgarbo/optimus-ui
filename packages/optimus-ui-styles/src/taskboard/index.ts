@@ -12,8 +12,8 @@ export const style = /*css*/ `
         container-type: inline-size;
     }
 
-    /* El foco vive en las tarjetas y en las columnas, no en la raíz: la raíz solo es tabulable para
-       poder entrar al tablero con el teclado, y un anillo alrededor de todo no dice nada. */
+    /* Focus lives on the cards and the columns, not on the root: the root is tabbable only so the
+       keyboard can enter the board, and a ring drawn around the whole thing says nothing. */
     .p-taskboard:focus,
     .p-taskboard:focus-visible {
         outline: none;
@@ -40,18 +40,20 @@ export const style = /*css*/ `
         user-select: none;
     }
 
-    /* Solo pointer-events: un tablero de lectura sigue legible y seleccionable con el cursor, que es
-       la diferencia con estar deshabilitado. */
-    .p-taskboard.p-taskboard-readonly {
-        pointer-events: none;
+    /* A read-only board does NOT lose the pointer. The runtime already refuses every write while
+       readonly is set, and switching pointer events off here took the column scrolling, the text
+       selection and any link inside a card with it. What must not happen is changing the board, not
+       reading it; what stays inert is the drag, which the card no longer offers. */
+    .p-taskboard.p-taskboard-readonly .p-taskboard-card {
+        cursor: default;
     }
 
     .p-taskboard-header {
         flex-shrink: 0;
     }
 
-    /* Encima del tablero y no en su flujo: mientras carga, lo que hay debajo sigue midiendo lo mismo,
-       así que las columnas no dan un salto al llegar los datos. */
+    /* Over the board rather than in its flow: what is underneath keeps its size while the board
+       loads, so the columns do not jump when the data lands. */
     .p-taskboard-loading {
         position: absolute;
         inset: 0;
@@ -98,8 +100,7 @@ export const style = /*css*/ `
         background: dt('taskboard.scrollbar.track');
     }
 
-    /* Con cabeceras de fase el contenedor pasa a ser una pila: la banda arriba y la pista de columnas
-       debajo. */
+    /* With phase headers the container becomes a stack: the band on top, the columns track below. */
     .p-taskboard-columns-with-groups {
         flex-direction: column;
         gap: 0.5rem;
@@ -115,8 +116,9 @@ export const style = /*css*/ `
         min-height: 0;
     }
 
-    /* Sin cabeceras de fase la pista no debe existir para el layout: las columnas tienen que ser
-       ítems flex del scroller. Se emite igual para que el componente tenga un solo <ng-content>. */
+    /* Without phase headers the track must not exist as far as layout is concerned: the columns have
+       to be flex items of the scroller. It is emitted anyway so the component keeps one <ng-content>,
+       and Angular only ever fills the first of those. */
     .p-taskboard-columns-plain {
         display: contents;
     }
@@ -178,9 +180,9 @@ export const style = /*css*/ `
         padding: dt('taskboard.column.footer.padding');
     }
 
-    /* 44px es el ancho de una columna plegada: cabe el chevron y nada más, que es justo lo que una
-       columna plegada tiene que ofrecer. El !important es para ganarle al flex-basis de la columna,
-       que lleva la anchura efectiva en la propia declaración. */
+    /* 44px is a collapsed column: the chevron fits and nothing else, which is all a collapsed column
+       has to offer. The !important beats the column's own flex-basis, which carries its width in the
+       same declaration. */
     .p-taskboard-column-collapsed {
         min-width: 44px !important;
         max-width: 44px !important;
@@ -195,8 +197,8 @@ export const style = /*css*/ `
         text-align: center;
     }
 
-    /* El cuerpo se queda montado y vacío en vez de desaparecer: sigue siendo el rectángulo contra el
-       que se prueba el puntero, y así una columna plegada puede seguir recibiendo el foco. */
+    /* The body stays mounted and empty instead of disappearing: it is still the rectangle the pointer
+       is tested against, and a column that vanished could not take focus. */
     .p-taskboard-column-collapsed .p-taskboard-column-body {
         pointer-events: none;
         overflow: hidden;
@@ -246,8 +248,8 @@ export const style = /*css*/ `
         flex: 0 0 auto;
     }
 
-    /* La franja de estado va en la cabecera y no en la columna: es la cabecera la que se queda
-       visible cuando la columna se plega. */
+    /* The status strip sits on the header and not on the column: the header is what stays visible
+       when the column collapses. */
     .p-taskboard-column-todo > .p-taskboard-column-header {
         border-top: 3px solid dt('taskboard.column.status.todo.color');
     }
@@ -361,9 +363,8 @@ export const style = /*css*/ `
         box-shadow: 0 0 0 dt('taskboard.focus.ring.width') dt('taskboard.focus.ring.color');
     }
 
-    /* Seleccionada Y enfocada llevan las dos sombras: el anillo interior de selección y el exterior
-       de foco dicen cosas distintas, y una regla combinada es lo que evita que la segunda pise a la
-       primera. */
+    /* Selected AND focused carries both shadows: the inner selection ring and the outer focus ring
+       say different things, and a combined rule is what stops the second overwriting the first. */
     .p-taskboard-card-selected.p-taskboard-card-focused::after {
         box-shadow:
             inset 0 0 0 2px dt('taskboard.card.selected.ring.color'),
@@ -393,9 +394,9 @@ export const style = /*css*/ `
         min-width: fit-content;
     }
 
-    /* La anchura sale de --p-taskboard-group-span, que el componente pone en el estilo en línea:
-       es el número de columnas que abarca el segmento. Así la cabecera sigue midiendo lo mismo que
-       las columnas de debajo sin que nadie mida nada. */
+    /* The width comes from --p-taskboard-group-span, which the component sets inline: the number of
+       columns the segment spans. That keeps the header the same size as the columns underneath it
+       without anything measuring anything. */
     .p-taskboard-column-group-header {
         display: flex;
         align-items: center;
@@ -413,8 +414,8 @@ export const style = /*css*/ `
         border-bottom: 2px solid var(--p-taskboard-column-group-color, dt('taskboard.drop.indicator.color'));
     }
 
-    /* La banda estrecha repite la etiqueta una vez por columna: por debajo del punto de ruptura solo
-       cabe una columna en pantalla, y una etiqueta que abarca tres deja dos sin nombre. */
+    /* The narrow band repeats the label once per column: below the breakpoint only one column fits on
+       screen, and a label spanning three would leave two of them unnamed. */
     .p-taskboard-column-group-mobile-headers {
         display: none;
         flex-shrink: 0;
@@ -473,8 +474,8 @@ export const style = /*css*/ `
         border-bottom: 1px solid dt('taskboard.swimlane.border.color');
     }
 
-    /* El hueco de la esquina y las cabeceras de fila comparten posición pegada, y el hueco va un
-       nivel por encima: es el único punto donde los dos ejes pegados se cruzan. */
+    /* The corner spacer and the row headers are both sticky, and the spacer sits one level above:
+       it is the only place where the two sticky axes cross. */
     .p-taskboard-column-headers-spacer {
         width: dt('taskboard.swimlane.header.width');
         min-width: dt('taskboard.swimlane.header.width');
@@ -582,8 +583,8 @@ export const style = /*css*/ `
         width: dt('taskboard.column.min.width');
         flex: 0 0 dt('taskboard.column.min.width');
         padding: dt('taskboard.column.body.padding');
-        /* 0.375rem extra abajo: la fila mide por la celda más alta y sin ese margen la última
-           tarjeta queda pegada al borde de la fila siguiente. */
+        /* 0.375rem extra at the bottom: the row is as tall as its tallest cell, and without it the
+           last card sits flush against the next row's border. */
         padding-block-end: calc(dt('taskboard.column.body.padding') + 0.375rem);
         min-height: dt('taskboard.swimlane.cell.min.height');
         overflow: hidden;
@@ -593,8 +594,8 @@ export const style = /*css*/ `
        Arrastre
        ---------------------------------------------------------------------------------------------- */
 
-    /* La pulsación empieza antes que el arrastre, y el navegador ya está seleccionando texto para
-       entonces: sin esto cada gesto deja una franja de texto resaltado en la tarjeta. */
+    /* The press starts before the drag, and the browser is already selecting text by then: without
+       this every gesture leaves a stripe of highlighted card text behind. */
     .p-taskboard-pressing {
         user-select: none;
     }
@@ -648,8 +649,8 @@ export const style = /*css*/ `
         display: block;
     }
 
-    /* El marcador reserva el hueco de la tarjeta que va a entrar, y la línea se pinta centrada dentro
-       de él: así la lista se abre en vez de que la línea se coma el espacio entre dos tarjetas. */
+    /* The marker reserves the gap the incoming card will occupy and the line is drawn centred inside
+       it, so the list opens up instead of the line eating the space between two cards. */
     .p-taskboard-drop-indicator {
         position: relative;
         flex: 0 0 0.75rem;
@@ -684,8 +685,8 @@ export const style = /*css*/ `
         margin: 0;
     }
 
-    /* En una celda de swimlane el marcador no puede reservar altura: la fila mide por la celda más
-       alta y abrir un hueco de 12px movería toda la rejilla. Se pinta encima, sin ocupar. */
+    /* In a swimlane cell the marker cannot reserve height: the row is as tall as its tallest cell, so
+       opening a 12px gap would move the whole grid. It is drawn on top, taking no space. */
     .p-taskboard-swimlane-drop-indicator {
         flex: 0 0 0;
         height: 0;
@@ -699,8 +700,8 @@ export const style = /*css*/ `
         transform: none;
     }
 
-    /* Un marcador con contenido propio y la línea de serie son excluyentes: si no, el marcador
-       personalizado sale montado encima de una raya que no ha pedido. */
+    /* A marker with content of its own and the preset line are mutually exclusive: otherwise a custom
+       marker ends up sitting on top of a line it never asked for. */
     .p-taskboard-drop-indicator-custom {
         flex-basis: auto;
         height: auto;
@@ -965,8 +966,8 @@ export const style = /*css*/ `
         }
     }
 
-    /* En modo de colores forzados las sombras desaparecen, así que seleccionada y enfocada tienen que
-       volver a ser contornos o dejan de distinguirse. */
+    /* Shadows do not render in forced-colors mode, so selected and focused have to go back to being
+       outlines or they stop being distinguishable. */
     @media (forced-colors: active) {
         .p-taskboard-card-focused {
             outline: 2px solid CanvasText;
@@ -1015,8 +1016,8 @@ export const style = /*css*/ `
        Impresión
        ---------------------------------------------------------------------------------------------- */
 
-    /* Se esconde todo y se vuelve a mostrar solo el tablero marcado y sus ascendientes: un tablero
-       dentro de un panel con scroll se imprimiría recortado a la pantalla visible. */
+    /* Everything is hidden and only the marked board and its ancestors are shown again: a board
+       inside a scroll panel would otherwise print clipped to the one visible screenful. */
     @media print {
         body.p-taskboard-print-active * {
             visibility: hidden;
@@ -1069,6 +1070,10 @@ export const style = /*css*/ `
             container-type: normal !important;
         }
 
+        .p-taskboard-header {
+            margin-bottom: 0.5rem;
+        }
+
         .p-taskboard-body,
         .p-taskboard-printing .p-taskboard-body {
             display: block !important;
@@ -1078,8 +1083,8 @@ export const style = /*css*/ `
             max-height: none !important;
         }
 
-        /* En papel las columnas se envuelven en vez de desplazarse: el scroll horizontal no existe
-           en una hoja, y una fila de siete columnas sale cortada por el margen. */
+        /* On paper the columns wrap instead of scrolling: a sheet has no horizontal scroll, and a row
+           of seven columns comes out cut off by the margin. */
         .p-taskboard-columns,
         .p-taskboard-printing .p-taskboard-columns {
             display: flex !important;
@@ -1130,23 +1135,34 @@ export const style = /*css*/ `
             background: none !important;
         }
 
+        .p-taskboard-column-todo,
+        .p-taskboard-column-in-progress,
+        .p-taskboard-column-done,
+        .p-taskboard-column-blocked,
         .p-taskboard-column-todo > .p-taskboard-column-header,
         .p-taskboard-column-in-progress > .p-taskboard-column-header,
         .p-taskboard-column-done > .p-taskboard-column-header,
         .p-taskboard-column-blocked > .p-taskboard-column-header {
-            border-top: 0 !important;
+            border-top: none !important;
         }
 
+        /* The body keeps its flex display, which is the whole point: the card gap comes from it, and
+           flattening it to a block prints the cards touching each other and the column edges. Only
+           the padding, the surface and the scrolling go. */
         .p-taskboard-column-body,
         .p-taskboard-printing .p-taskboard-column-body {
-            display: block !important;
-            padding: 0 !important;
             overflow: visible !important;
+            height: auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
+            padding: 0 !important;
             background: none !important;
+            border: 0 !important;
+            border-radius: 0 !important;
         }
 
-        /* Una columna plegada imprime sus tarjetas: un estado de pantalla guardado no debe borrar
-           trabajo del tablero impreso. */
+        /* A collapsed column prints its cards: a saved screen state should not take work off the
+           printed board. */
         .p-taskboard-column-collapsed {
             min-width: 0 !important;
             max-width: none !important;
@@ -1156,34 +1172,66 @@ export const style = /*css*/ `
 
         .p-taskboard-column-collapsed .p-taskboard-column-body,
         .p-taskboard-column-collapsed .p-taskboard-column-body > * {
-            display: block !important;
+            display: flex !important;
             pointer-events: auto;
         }
 
-        .p-taskboard-card-dragging,
-        .p-taskboard-card-selected::after,
-        .p-taskboard-card-focused::after,
-        .p-taskboard-card::after {
-            box-shadow: none !important;
-            opacity: 1 !important;
+        .p-taskboard-empty-column {
+            color: #999 !important;
+            font-style: italic;
         }
 
         .p-taskboard-card-draggable {
             cursor: default !important;
         }
 
+        .p-taskboard-card-dragging {
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+
+        .p-taskboard-card-selected,
+        .p-taskboard-card-focused {
+            outline: none !important;
+        }
+
+        .p-taskboard-card::after,
+        .p-taskboard-card-selected::after,
+        .p-taskboard-card-focused::after {
+            box-shadow: none !important;
+        }
+
         .p-taskboard-drag-preview,
         .p-taskboard-drop-indicator,
         .p-taskboard-column-footer,
-        .p-taskboard-column-collapse-toggle,
-        .p-taskboard-swimlane-collapse-toggle {
+        .p-taskboard-loading {
             display: none !important;
         }
 
+        .p-taskboard-columns::-webkit-scrollbar,
+        .p-taskboard-column-body::-webkit-scrollbar {
+            display: none;
+        }
+
+        .p-taskboard-column-pinned {
+            position: static !important;
+            background: none !important;
+        }
+
+        .p-taskboard-column-pinned::after {
+            display: none !important;
+        }
+
+        /* A grouped board prints the grid it is showing rather than a second, print-only copy of the
+           markup: the rows and the cells already carry their identity, so unrolling them is enough
+           and there is nothing to keep in step. */
         .p-taskboard .p-taskboard-swimlane-grid,
         .p-taskboard-printing .p-taskboard-swimlane-grid {
             display: block !important;
             overflow: visible !important;
+            height: auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
         }
 
         .p-taskboard .p-taskboard-column-headers,
@@ -1194,18 +1242,25 @@ export const style = /*css*/ `
         .p-taskboard .p-taskboard-swimlane-row,
         .p-taskboard-printing .p-taskboard-swimlane-row {
             display: block !important;
+            height: auto !important;
             min-height: 0 !important;
+            min-width: 0 !important;
+            overflow: visible !important;
             break-inside: avoid;
             page-break-inside: avoid;
+            margin-bottom: 0.4rem;
+            border: 1px solid #d1d5db;
         }
 
         .p-taskboard .p-taskboard-swimlane-header,
         .p-taskboard-printing .p-taskboard-swimlane-header {
             position: static !important;
-            width: auto !important;
+            width: 100% !important;
             min-width: 0 !important;
-            padding: 0 0 0.25rem !important;
-            background: none !important;
+            padding: 0.45rem 0.6rem !important;
+            border-bottom: 1px solid #d1d5db;
+            background: #f8fafc !important;
+            color: #000 !important;
             font-size: 0.8rem !important;
             font-weight: 700 !important;
         }
@@ -1214,28 +1269,28 @@ export const style = /*css*/ `
         .p-taskboard-printing .p-taskboard-swimlane-body,
         .p-taskboard .p-taskboard-swimlane-collapsed .p-taskboard-swimlane-body,
         .p-taskboard-printing .p-taskboard-swimlane-collapsed .p-taskboard-swimlane-body {
-            display: flex !important;
-            flex-wrap: wrap;
-            gap: 1rem;
-            padding: 0 !important;
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(2.25in, 1fr));
+            gap: 0.4rem;
+            width: 100% !important;
+            min-width: 0 !important;
+            padding: 0.4rem !important;
+            box-sizing: border-box;
         }
 
         .p-taskboard .p-taskboard-swimlane-cell,
         .p-taskboard-printing .p-taskboard-swimlane-cell {
-            display: block !important;
+            display: flex !important;
             width: auto !important;
-            flex: 1 1 45% !important;
-            padding: 0 !important;
+            min-width: 0 !important;
             min-height: 0 !important;
+            flex: none !important;
+            padding: 0.35rem !important;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.25rem;
             overflow: visible !important;
-        }
-
-        .p-taskboard-column-pinned {
-            position: static !important;
-        }
-
-        .p-taskboard-column-pinned::after {
-            display: none !important;
+            break-inside: avoid;
+            page-break-inside: avoid;
         }
     }
 
@@ -1266,8 +1321,8 @@ export const style = /*css*/ `
         color: dt('taskboard.color');
     }
 
-    /* Recortada a dos líneas: la descripción es una pista, y una tarjeta que crece con ella rompe la
-       densidad de la columna. */
+    /* Clamped to two lines: the description is a hint, and a card that grows with it breaks the
+       column's density. */
     .taskboard-card-description {
         display: -webkit-box;
         -webkit-line-clamp: 2;
@@ -1370,8 +1425,8 @@ export const style = /*css*/ `
         border-radius: 0.125rem;
     }
 
-    /* Hueco a la derecha para el avatar, que va absoluto en la esquina: sin él el título le pasa por
-       debajo en cuanto tiene dos líneas. */
+    /* Room on the right for the avatar, which is absolutely positioned in the corner: without it the
+       title runs underneath as soon as it wraps to two lines. */
     .taskboard-card-advanced-title {
         padding-right: 2rem;
         font-size: 0.8125rem;
@@ -1496,7 +1551,7 @@ export const style = /*css*/ `
         cursor: default;
     }
 
-    /* Plegada, el botón es toda la cabecera: es el único blanco que queda en 44px de ancho. */
+    /* Collapsed, the button IS the header: it is the only target left in 44px of width. */
     .taskboard-column-header-content--collapsed .taskboard-column-header-collapse-toggle {
         width: 100%;
         height: auto;
@@ -1663,4 +1718,66 @@ export const style = /*css*/ `
         overflow: hidden;
         text-overflow: ellipsis;
     }
+
+    /* ----------------------------------------------------------------------------------------------
+       The supplied parts on paper
+       ---------------------------------------------------------------------------------------------- */
+
+    /* The header loses its surface and its controls: the column NAME is what a printed board needs,
+       and a chevron that cannot be clicked is ink spent on nothing. */
+    @media print {
+        .p-taskboard .taskboard-column-header-content,
+        .p-taskboard-printing .taskboard-column-header-content {
+            min-height: 0 !important;
+            padding: 0 0 0.35rem !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            background: none !important;
+            justify-content: flex-start !important;
+            gap: 0 !important;
+        }
+
+        .p-taskboard .taskboard-column-header-left,
+        .p-taskboard-printing .taskboard-column-header-left {
+            gap: 0 !important;
+            min-width: 0;
+        }
+
+        .p-taskboard .taskboard-column-header-title,
+        .p-taskboard-printing .taskboard-column-header-title {
+            color: #000 !important;
+            font-size: 0.72rem !important;
+            font-weight: 700 !important;
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+        }
+
+        .p-taskboard .taskboard-column-header-collapse-toggle,
+        .p-taskboard .taskboard-column-header-content .p-tag,
+        .p-taskboard .taskboard-column-header-meta-group,
+        .p-taskboard-printing .taskboard-column-header-collapse-toggle,
+        .p-taskboard-printing .taskboard-column-header-content .p-tag,
+        .p-taskboard-printing .taskboard-column-header-meta-group {
+            display: none !important;
+        }
+
+        /* A tinted chip prints as a grey block and the label inside it disappears, so a label keeps
+           only its outline on paper. */
+        .p-taskboard .taskboard-card-tags .p-tag,
+        .p-taskboard .taskboard-card-advanced-tag,
+        .p-taskboard-printing .taskboard-card-tags .p-tag,
+        .p-taskboard-printing .taskboard-card-advanced-tag {
+            border: 1px solid #d1d5db !important;
+            background: #fff !important;
+            color: #374151 !important;
+            box-shadow: none !important;
+        }
+
+        .p-taskboard .taskboard-swimlane-header-collapse-toggle,
+        .p-taskboard-printing .taskboard-swimlane-header-collapse-toggle {
+            display: none !important;
+        }
+    }
+
 `;

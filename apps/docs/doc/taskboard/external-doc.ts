@@ -58,10 +58,28 @@ export class ExternalDoc {
     readonly applied = signal(0);
 
     onCardMove(payload: TaskBoardCardMovePayload): void {
-        // Un movimiento dentro de la misma columna llega también aquí; lo aplica `cardReorder`.
+        // A move inside the same column arrives here too; cardReorder is what applies it.
         if (payload.oldColumnId === payload.newColumnId) return;
 
-        this.source.update((items) => items.map((item) => (item['id'] === payload.card['id'] ? { ...item, columnId: payload.newColumnId, order: payload.newIndex } : item)));
+        // The destination column is renumbered whole. Writing only `order: newIndex` on the arriving
+        // card leaves another card in that column holding the same number, and then which one comes
+        // first is decided by array order rather than by where the card was dropped.
+        this.source.update((items) => {
+            const moved = items.find((item) => item['id'] === payload.card['id']);
+            if (!moved) return items;
+
+            const target = items.filter((item) => item !== moved && item['columnId'] === payload.newColumnId).sort((left, right) => (left['order'] ?? 0) - (right['order'] ?? 0));
+            const at = Math.max(0, Math.min(payload.newIndex, target.length));
+            const orders = new Map([...target.slice(0, at), moved, ...target.slice(at)].map((item, index) => [item['id'], index]));
+
+            return items.map((item) => {
+                const order = orders.get(item['id']);
+                if (order === undefined) return item;
+
+                return item === moved ? { ...item, columnId: payload.newColumnId, order } : { ...item, order };
+            });
+        });
+
         this.applied.update((count) => count + 1);
     }
 

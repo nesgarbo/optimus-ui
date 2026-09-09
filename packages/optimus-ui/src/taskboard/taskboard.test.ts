@@ -6,13 +6,13 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { TaskBoard } from './taskboard';
 import { TaskBoardModule } from './taskboard.module';
 
-// Se monta el árbol compuesto TAL CUAL lo escribe un consumidor: root → content → columna con su
-// definición → cabecera de serie + tarjetas de serie. Lo que se protege:
-//   - que la composición compile y pinte las columnas, las tarjetas y sus data-attributes,
-//   - que la definición de columna gane al contenido proyectado, y el fallback cuando no hay ninguna,
-//   - que las partes de serie lean su contexto sin recibir un solo input,
-//   - que el plegado, la selección y el foco lleguen al DOM,
-//   - que las cabeceras de fase midan por tramos de columnas consecutivas.
+// The compound tree is mounted EXACTLY as a consumer writes it: root -> content -> column with its
+// definition -> supplied header and supplied cards. What this protects:
+//   - that the composition compiles and renders the columns, the cards and their data attributes,
+//   - that a column definition wins over projected content, and the fallback when there is none,
+//   - that the supplied parts read their context without receiving a single input,
+//   - that collapse, selection and focus reach the DOM,
+//   - that the phase headers are sized by runs of consecutive columns.
 
 interface Card extends TaskBoardItem {
     id: string;
@@ -109,7 +109,7 @@ class TestHost {
         <p-taskboard-root [tasks]="tasks()" dataKey="id" columnField="columnId">
             <p-taskboard-content>
                 <p-taskboard-column value="backlog" label="Backlog">
-                    <span class="projected">Sin definición</span>
+                    <span class="projected">No definition</span>
                 </p-taskboard-column>
             </p-taskboard-content>
         </p-taskboard-root>
@@ -139,7 +139,7 @@ describe('TaskBoard', () => {
         await fixture.whenStable();
     });
 
-    it('monta el árbol compuesto y pinta las columnas', () => {
+    it('mounts the compound tree and renders the columns', () => {
         expect(q('[data-part="root"]').length).toBe(1);
         expect(one('[data-part="root"]')?.className).toContain('p-taskboard-density-standard');
         expect(q('[data-part="content"] [data-part="columns"]').length).toBe(1);
@@ -147,7 +147,7 @@ describe('TaskBoard', () => {
         expect(text('.toolbar')).toEqual(['Toolbar']);
     });
 
-    it('la columna lleva su identidad, su familia de estado y su recuento accesible', () => {
+    it('a column carries its identity, its status family and an accessible count', () => {
         const backlog = one('[data-part="column"][data-column-id="backlog"]')!;
 
         expect(backlog.className).toContain('p-taskboard-column-todo');
@@ -157,11 +157,11 @@ describe('TaskBoard', () => {
         expect(backlog.getAttribute('aria-expanded')).toBe('true');
     });
 
-    it('una columna bloqueada lo dice en su clase', () => {
+    it('a locked column says so in its class', () => {
         expect(one('[data-column-id="done"]')?.className).toContain('p-taskboard-column-locked');
     });
 
-    it('la tarjeta es el objetivo de foco y de arrastre, con sus data-attributes', () => {
+    it('a card is the focus and drag target, with its data attributes', () => {
         const card = one('[data-part="card"][data-task-id="a"]')!;
 
         expect(card.getAttribute('role')).toBe('listitem');
@@ -172,7 +172,7 @@ describe('TaskBoard', () => {
         expect(card.className).toContain('p-taskboard-card-draggable');
     });
 
-    it('la definición de columna gana, y sin ninguna se usa el contenido proyectado', async () => {
+    it('the column definition wins, and without one the projected content is used', async () => {
         expect(q('.footer-count').length).toBe(3);
         expect(text('.footer-count')).toEqual(['2', '2', '0']);
 
@@ -182,14 +182,14 @@ describe('TaskBoard', () => {
         expect(fallback.debugElement.queryAll(By.css('.projected')).length).toBe(1);
     });
 
-    it('las partes de serie leen su contexto sin recibir un solo input', () => {
+    it('the supplied parts read their context without receiving a single input', () => {
         expect(text('.taskboard-column-header-title')).toEqual(['Backlog', 'Active', 'Done']);
         expect(text('.taskboard-card-title')).toEqual(['Alpha', 'Beta', 'Gamma', 'Delta']);
         expect(text('.taskboard-card-description')).toEqual(['Primera']);
         expect(one('.taskboard-card-progress-label')?.textContent?.trim()).toBe('40%');
     });
 
-    it('la insignia de WIP sale solo en la columna que tiene límite, y avisa según lo lleno', () => {
+    it('the WIP badge appears only on the column that has a limit, and tones with how full it is', () => {
         const badges = q('.taskboard-column-header-meta');
 
         expect(badges.length).toBe(1);
@@ -197,19 +197,19 @@ describe('TaskBoard', () => {
         expect((badges[0].nativeElement as HTMLElement).className).toContain('taskboard-column-header-meta--danger');
     });
 
-    it('una columna vacía pinta su superficie de vacío', () => {
+    it('an empty column renders its empty surface', () => {
         expect(q('[data-column-id="done"] [data-part="column-empty"]').length).toBe(1);
     });
 
-    it('los marcadores están declarados y todos escondidos mientras no se arrastra', () => {
+    it('the markers are declared and all hidden while nothing is being dragged', () => {
         const markers = q('[data-part="drop-indicator"]');
 
-        // Uno antes de cada tarjeta y uno al final, por columna: 3 + 3 + 1.
+        // One before every card plus one at the end, per column: 3 + 3 + 1.
         expect(markers.length).toBe(7);
         expect(markers.every((marker) => (marker.nativeElement as HTMLElement).hasAttribute('hidden'))).toBe(true);
     });
 
-    it('plegar una columna lo dice en la clase, en aria-expanded y en la etiqueta del control', async () => {
+    it('collapsing a column shows in the class, in aria-expanded and in the control label', async () => {
         host.board().collapseColumn('backlog');
         await fixture.whenStable();
 
@@ -220,7 +220,7 @@ describe('TaskBoard', () => {
         expect(one('.taskboard-column-header-collapse-toggle')?.getAttribute('aria-label')).toBe('Expand Backlog column');
     });
 
-    it('seleccionar marca las tarjetas y emite la selección entera', async () => {
+    it('selecting marks the cards and reports the whole selection', async () => {
         host.board().setSelectedCards(['a', 'b']);
         await fixture.whenStable();
 
@@ -228,7 +228,7 @@ describe('TaskBoard', () => {
         expect(host.board().getSelectedCardIds()).toEqual(['a', 'b']);
     });
 
-    it('un clic en una tarjeta la selecciona y le pasa el foco', async () => {
+    it('a click on a card selects it', async () => {
         (one('[data-task-id="c"]') as HTMLElement).dispatchEvent(new MouseEvent('click', { bubbles: true }));
         await fixture.whenStable();
 
@@ -236,14 +236,14 @@ describe('TaskBoard', () => {
         expect(one('[data-task-id="c"]')?.className).toContain('p-taskboard-card-selected');
     });
 
-    it('la densidad viaja a la clase de la raíz', async () => {
+    it('the density reaches the root class', async () => {
         host.density.set('compact');
         await fixture.whenStable();
 
         expect(one('[data-part="root"]')?.className).toContain('p-taskboard-density-compact');
     });
 
-    it('las cabeceras de fase se agrupan por tramos de columnas consecutivas', async () => {
+    it('the phase headers group by runs of consecutive columns', async () => {
         host.groups.set(GROUPS);
         await fixture.whenStable();
 
@@ -253,13 +253,13 @@ describe('TaskBoard', () => {
         expect((headers[1].nativeElement as HTMLElement).style.getPropertyValue('--p-taskboard-group-span')).toBe('2');
         expect(one('[data-part="columns"]')?.className).toContain('p-taskboard-columns-with-groups');
 
-        // La banda estrecha repite la etiqueta una vez por columna.
+        // The narrow band repeats the label once per column.
         expect(text('.p-taskboard-column-group-mobile-header')).toEqual(['Intake', 'Delivery', 'Delivery']);
     });
 
-    it('un tablero agrupado cambia de contenedor y deja la rejilla a la aplicación', async () => {
-        // Hacen falta las dos cosas: las filas Y el campo que las nombra. Sin el campo el tablero no
-        // sabe a qué fila pertenece una tarjeta, así que no está agrupado.
+    it('a grouped board switches container and leaves the grid to the application', async () => {
+        // Both are needed: the rows AND the field that names them. Without the field the board cannot
+        // tell which row a card belongs to, so it is not grouped.
         host.swimlanes.set(SWIMLANES);
         host.swimlaneField.set('swimlaneId');
         await fixture.whenStable();
@@ -267,7 +267,7 @@ describe('TaskBoard', () => {
         expect(one('[data-part="columns"]')?.className).toContain('p-taskboard-swimlane-grid');
     });
 
-    it('la raíz lleva las regiones en vivo y los atajos que reclama', () => {
+    it('the root carries the live regions and the shortcuts it claims', () => {
         const root = one('[data-part="root"]')!;
 
         expect(root.getAttribute('aria-label')).toBe('Task board');
@@ -276,11 +276,11 @@ describe('TaskBoard', () => {
         expect(q('.p-taskboard-live-region-assertive').length).toBe(1);
     });
 
-    it('un movimiento imperativo reescribe la columna y anuncia el cambio', async () => {
+    it('an imperative move rewrites the column, and a refused one changes nothing', async () => {
         host.board().moveTask('a', 'active', 0);
         await fixture.whenStable();
 
-        // active tiene wipLimit 2 y ya está llena, así que el movimiento se rechaza.
+        // `active` has a wipLimit of 2 and is already full, so the move is refused.
         expect(host.tasks().find((card) => card.id === 'a')!.columnId).toBe('backlog');
 
         host.board().moveTask('a', 'done', 0);
@@ -290,11 +290,11 @@ describe('TaskBoard', () => {
         expect(q('[data-column-id="done"] [data-part="card"]').length).toBe(1);
     });
 
-    it('el teclado mueve el foco por las tarjetas de la celda', async () => {
+    it('the keyboard moves the focus across the cards of a cell', async () => {
         const root = one('[data-part="root"]')!;
 
-        // El foco del DOM es lo que arranca la navegación, igual que al pinchar en el navegador: el
-        // `focusin` de la tarjeta es lo que pone el foco móvil del tablero en ella.
+        // DOM focus is what starts the navigation, exactly as clicking does in a browser: the card's
+        // focusin is what puts the board's roving focus on it.
         (one('[data-task-id="a"]') as HTMLElement).focus();
         await fixture.whenStable();
 
@@ -304,7 +304,7 @@ describe('TaskBoard', () => {
         expect(one('[data-task-id="b"]')?.className).toContain('p-taskboard-card-focused');
     });
 
-    it('Escape deshace la selección antes que el foco', async () => {
+    it('Escape unwinds the selection before the focus', async () => {
         const root = one('[data-part="root"]')!;
 
         host.board().setSelectedCards(['a']);
@@ -316,20 +316,20 @@ describe('TaskBoard', () => {
         expect(host.board().getSelectedCardIds()).toEqual([]);
     });
 
-    it('las superficies de arrastre existen y están escondidas en reposo', () => {
+    it('the drag surfaces exist and are hidden at rest', () => {
         expect(one('[data-part="drag-preview"]')?.hasAttribute('hidden')).toBe(true);
         expect(one('[data-part="drag-confirm"]')?.hasAttribute('hidden')).toBe(true);
     });
 
-    it('arrastrar suprime la selección de texto desde la pulsación, no desde el arrastre', async () => {
+    it('dragging suppresses text selection from the press, not from the drag', async () => {
         const card = one('[data-task-id="a"]')!;
         const root = one('[data-part="root"]')!;
 
         card.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId: 1, button: 0, clientX: 10, clientY: 10 }));
         await fixture.whenStable();
 
-        // Antes de cruzar el umbral ya hay que estar suprimiendo: el navegador empieza a seleccionar
-        // texto en cuanto el puntero se mueve con el botón bajado.
+        // Suppression has to be on before the threshold is crossed: the browser starts selecting text
+        // the moment the pointer moves with the button down.
         expect(root.className).toContain('p-taskboard-pressing');
         expect(root.className).not.toContain('p-taskboard-dragging');
 
@@ -345,7 +345,7 @@ describe('TaskBoard', () => {
         expect(root.className).not.toContain('p-taskboard-dragging');
     });
 
-    it('el preview sin contenido propio muestra una copia de la tarjeta que viaja', async () => {
+    it('a preview with no body of its own shows a copy of the travelling card', async () => {
         const card = one('[data-task-id="a"]')!;
 
         card.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId: 2, button: 0, clientX: 10, clientY: 10 }));
@@ -355,7 +355,7 @@ describe('TaskBoard', () => {
         const preview = one('[data-part="drag-preview"]')!;
 
         expect(preview.hasAttribute('hidden')).toBe(false);
-        // Una copia, no la tarjeta movida: la original se queda en su columna atenuada.
+        // A copy, not the card itself: the original stays in its column, dimmed.
         expect(preview.textContent).toContain('Alpha');
         expect(q('[data-task-id="a"]').length).toBe(1);
 
@@ -365,7 +365,7 @@ describe('TaskBoard', () => {
         expect(one('[data-part="drag-preview"]')?.hasAttribute('hidden')).toBe(true);
     });
 
-    it('la superficie de carga se declara siempre y solo se ve mientras loading está puesto', async () => {
+    it('the loading surface is always declared and only visible while loading is set', async () => {
         const surface = one('[data-part="loading"]')!;
 
         expect(surface.hasAttribute('hidden')).toBe(true);
@@ -376,18 +376,18 @@ describe('TaskBoard', () => {
 
         expect(one('[data-part="loading"]')?.hasAttribute('hidden')).toBe(false);
         expect(one('[data-part="root"]')?.getAttribute('aria-busy')).toBe('true');
-        // El anuncio lo da aria-busy en la raíz; decirlo dos veces es peor que decirlo una.
+        // aria-busy on the root is what announces it; saying it twice is worse than saying it once.
         expect(one('[data-part="loading"]')?.getAttribute('aria-hidden')).toBe('true');
     });
 
-    it('print marca el tablero y el body ANTES de abrir el diálogo, y lo deja limpio', () => {
+    it('print marks the board and the body BEFORE opening the dialog, and cleans up', () => {
         const seen: { target: boolean; printing: boolean; body: boolean; ancestors: number }[] = [];
         const view = fixture.nativeElement.ownerDocument.defaultView!;
         const original = view.print;
 
-        // La hoja de impresión esconde todo lo que no sea el tablero marcado, así que los ganchos han
-        // de estar puestos en el instante en que el navegador fotografía la página. Un atributo que
-        // esperase al siguiente ciclo de detección saldría en blanco.
+        // The print sheet hides everything that is not the marked board, so the hooks have to be in
+        // place at the instant the browser snapshots the page. An attribute waiting for the next
+        // change-detection pass would print blank.
         view.print = () => {
             const root = fixture.nativeElement.querySelector('[data-part="root"]') as HTMLElement;
 
@@ -411,8 +411,8 @@ describe('TaskBoard', () => {
         expect(seen[0].body).toBe(true);
         expect(seen[0].ancestors).toBeGreaterThan(0);
 
-        // Y se limpia aunque el navegador no llegue a emitir `afterprint`: el stub no dispara
-        // `beforeprint`, así que no se ha entrado en modo impresión y no hay nada que esperar.
+        // And it cleans up even if the browser never emits afterprint: the stub does not fire
+        // beforeprint, so print mode was never entered and there is nothing to wait for.
         const root = one('[data-part="root"]')!;
 
         expect(root.hasAttribute('data-print-target')).toBe(false);
@@ -421,12 +421,12 @@ describe('TaskBoard', () => {
         expect(document.querySelectorAll('.p-taskboard-print-ancestor').length).toBe(0);
     });
 
-    it('si el navegador SÍ entra en modo impresión, los ganchos esperan a afterprint', () => {
+    it('when the browser DOES enter print mode, the hooks wait for afterprint', () => {
         const view = fixture.nativeElement.ownerDocument.defaultView!;
         const original = view.print;
 
-        // Un `print()` que no bloquea: quitar los ganchos al volver de la llamada dejaría la hoja en
-        // blanco, así que mientras el navegador esté imprimiendo tienen que quedarse puestos.
+        // A print() that does not block: stripping the hooks when the call returns would print a blank
+        // sheet, so while the browser is printing they have to stay put.
         view.print = () => view.dispatchEvent(new Event('beforeprint'));
 
         try {

@@ -16,14 +16,14 @@ export const columns: TaskBoardTokenSections.Columns = {
 
 export const column: TaskBoardTokenSections.Column = {
     gap: '0.75rem',
-    // Suelo y techo, no un ancho: entre 280 y 380 una columna cabe cuatro veces en un portátil y
-    // sigue siendo legible, y con `flex: 1 0` reparte el espacio de sobra en vez de dejar un hueco
-    // al final de la pista.
+    // A floor and a ceiling, not a width: between 280 and 380 a column fits four times on a laptop
+    // and stays readable, and with `flex: 1 0` the leftover space is shared out instead of being
+    // left as a gap at the end of the track.
     minWidth: '280px',
     maxWidth: '380px',
     borderRadius: '{border.radius.lg}',
-    // 3.125rem es el alto que deja el chevron de 1.75rem con su padding de 0.75rem sin recortarse,
-    // y es también el ancho útil de una columna plegada.
+    // 3.125rem is what the 1.75rem chevron needs with its 0.75rem padding without being clipped, and
+    // it doubles as the usable width of a collapsed column.
     headerMinHeight: '3.125rem',
     bodyPadding: '0.5rem',
     footerPadding: '0.5rem'
@@ -47,8 +47,8 @@ export const dropIndicator: TaskBoardTokenSections.DropIndicator = {
 };
 
 export const dragPreview: TaskBoardTokenSections.DragPreview = {
-    // Grado y medio: suficiente para que la tarjeta se lea como levantada del tablero, y poco como
-    // para no desalinearla del hueco que va a ocupar.
+    // A degree and a half: enough for the card to read as lifted off the board, little enough not to
+    // misalign it from the gap it is about to fill.
     rotation: '1.5deg'
 };
 
@@ -80,8 +80,8 @@ export const wip: TaskBoardTokenSections.Wip = {
 export const colorScheme: TaskBoardTokenSections.ColorScheme = {
     light: {
         root: {
-            // El tablero es el suelo y las columnas se apoyan encima: surface.50 detrás y surface.100
-            // delante. Al revés las columnas desaparecerían en el fondo.
+            // The board is the ground and the columns sit on it: surface.50 behind, surface.100 in
+            // front. The other way round the columns would disappear into the background.
             background: '{surface.50}'
         },
         hover: {
@@ -139,8 +139,8 @@ export const colorScheme: TaskBoardTokenSections.ColorScheme = {
         scrollbar: {
             thumb: '{surface.600}'
         },
-        // En oscuro las insignias van con fondo translúcido en vez de un tono claro del color: un
-        // amber.50 sobre surface.900 es una mancha, y el borde ya da el color.
+        // In dark mode the badges take a translucent fill rather than a light tint of the colour: an
+        // amber.50 over surface.900 is a blob, and the border already carries the meaning.
         meta: {
             neutralBorderColor: '{surface.600}',
             neutralBackground: 'color-mix(in srgb, {surface.700} 72%, transparent)',
