@@ -35,7 +35,17 @@ import { ChartsStyle } from './style/chartsstyle';
     standalone: true,
     exportAs: 'pChartCanvas',
     template: `
-        <div #container [class]="cx('container')" [attr.data-chart-container]="chartId" [style.height.px]="$height()" [style.width.px]="$width()" role="figure" aria-roledescription="chart" [attr.aria-label]="$ariaLabel()" tabindex="0">
+        <div
+            #container
+            [class]="cx('container')"
+            [attr.data-chart-container]="chartId"
+            [style.height.px]="$containerHeight()"
+            [style.width.px]="$containerWidth()"
+            role="figure"
+            aria-roledescription="chart"
+            [attr.aria-label]="$ariaLabel()"
+            tabindex="0"
+        >
             <canvas #surface [class]="cx('surface')" [attr.data-renderer]="rendererType" [style.width.px]="$width()" [style.height.px]="$height()"></canvas>
             <div [class]="cx('overlays')">
                 <ng-content />

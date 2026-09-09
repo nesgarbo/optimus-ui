@@ -7,7 +7,7 @@
  * merely documented.
  */
 import { isPlatformServer } from '@angular/common';
-import { DestroyRef, ElementRef, NgZone, booleanAttribute, computed, effect, inject, input, numberAttribute, signal, untracked, type Signal } from '@angular/core';
+import { DestroyRef, Directive, ElementRef, NgZone, booleanAttribute, computed, effect, inject, input, numberAttribute, signal, untracked, type Signal } from '@angular/core';
 import { BaseComponent } from '@openng/optimus-ui/basecomponent';
 import type {
     AnimationSpec,
@@ -49,9 +49,12 @@ const DEFAULT_ANIMATION: Required<Pick<AnimationSpec, 'duration' | 'easing' | 'd
 /**
  * The base class both chart roots extend.
  *
- * It is not a component itself: each root declares its own selector, template and style so the two
- * stay independently tree-shakable.
+ * It is not a component itself -- each root declares its own selector, template and style so the
+ * two stay independently tree-shakable -- but it still needs the `@Directive` decorator: Angular
+ * only recognises `input()` on a decorated class, so an undecorated base holding inputs fails to
+ * compile rather than silently dropping them.
  */
+@Directive({ standalone: true })
 export abstract class ChartRootBase extends BaseComponent<ChartsPassThrough> implements ChartRootApi {
     /**
      * Which renderer this root is. The subclass fixes it, and the parts read it off the context to
@@ -172,7 +175,7 @@ export abstract class ChartRootBase extends BaseComponent<ChartsPassThrough> imp
      * Measured size
      * --------------------------------------------------------------------------------------- */
 
-    private readonly measured = signal({ width: 0, height: 0 });
+    protected readonly measured = signal({ width: 0, height: 0 });
 
     /**
      * The pixel size the chart renders at.
@@ -201,6 +204,32 @@ export abstract class ChartRootBase extends BaseComponent<ChartsPassThrough> imp
     readonly $width = computed(() => this.$size().width);
 
     readonly $height = computed(() => this.$size().height);
+
+    /**
+     * The height to put on the container element, or `null` to let CSS govern it.
+     *
+     * Deliberately not `$height()`. The container is what gets measured, so sizing it from that
+     * measurement is a feedback loop: it can only ever report the size it already has, never the
+     * space available to it. CSS gives it 100% of its parent, and this only intervenes in the two
+     * cases CSS cannot cover -- an explicit pixel `height`, or a parent that gives it no height at
+     * all, where a fallback is better than an invisible chart.
+     */
+    readonly $containerHeight = computed(() => {
+        const explicit = this.height();
+
+        if (typeof explicit === 'number') return explicit;
+
+        return this.measured().height > 0 ? null : FALLBACK_SIZE.height;
+    });
+
+    /** The width to put on the container element, or `null` to let CSS govern it. */
+    readonly $containerWidth = computed(() => {
+        const explicit = this.width();
+
+        if (typeof explicit === 'number') return explicit;
+
+        return null;
+    });
 
     /* ------------------------------------------------------------------------------------------
      * Theme and typography

@@ -36,6 +36,13 @@ export interface SeriesPoint {
      * Index into the original data array.
      */
     dataIndex: number;
+    /**
+     * Whether this point is a waterfall summary rather than a delta.
+     *
+     * A summary spans from zero to the running total, so it is neither a rise nor a fall and must
+     * not be coloured as one.
+     */
+    isTotal?: boolean;
 }
 
 /** One series, resolved from its props into values the renderers can place. */
@@ -56,6 +63,14 @@ export interface ResolvedSeries {
      */
     xAxisId: string;
     yAxisId: string;
+    /**
+     * Which axis this series puts its categories on. The other one carries the values.
+     *
+     * A horizontal bar binds `categoryYField`, so its category axis is y and its value axis is x.
+     * Recording it here is what lets an axis with no explicit `type` work out whether it is a
+     * category axis or a value axis from what is actually bound to it.
+     */
+    categoryAxis: 'x' | 'y';
     /**
      * Whether the legend has switched this series off.
      */
@@ -202,6 +217,7 @@ export function createChartState(options: ChartStateOptions) {
             categories: points.map((point) => point.category),
             xAxisId: entry.xAxisId,
             yAxisId: entry.yAxisId,
+            categoryAxis: entry.horizontal ? 'y' : 'x',
             visible: !hidden.has(entry.registration.id),
             registration: entry.registration
         });
@@ -229,7 +245,7 @@ export function createChartState(options: ChartStateOptions) {
                 entry.registration.id,
                 toResolved(
                     entry,
-                    entry.points.map((point, i) => ({ ...point, base: steps[i].base, value: steps[i].top }))
+                    entry.points.map((point, i) => ({ ...point, base: steps[i].base, value: steps[i].top, isTotal: steps[i].isTotal }))
                 )
             );
         }
@@ -317,8 +333,8 @@ export function createChartState(options: ChartStateOptions) {
 
         for (const [key, axis] of axes) {
             const props = axis.props();
-            const type = (props['type'] as AxisType | undefined) ?? 'category';
             const bound = series.filter((entry) => (axis.axis === 'x' ? entry.xAxisId : entry.yAxisId) === axis.id);
+            const type = resolveAxisType(props['type'] as AxisType | undefined, axis.axis, bound);
 
             if (type === 'category') {
                 const categories = unionCategories(bound.map((entry) => entry.categories));
@@ -377,6 +393,25 @@ export function createChartState(options: ChartStateOptions) {
         return result;
     });
 
+    /**
+     * Works out what kind of scale an axis carries.
+     *
+     * An explicit `type` always wins. Otherwise the role is read from the series bound to the axis:
+     * whichever axis they put their categories on is the category axis, and the other is the value
+     * axis. That is what makes a bare `<p-chart-y-axis />` a numeric axis on a column chart and a
+     * category axis on a horizontal bar chart, without the author restating what the field bindings
+     * already said.
+     *
+     * With nothing bound yet -- the first frame, or a chart mid-construction -- x falls back to
+     * category and y to linear, which is the common shape and keeps the empty case harmless.
+     */
+    function resolveAxisType(explicit: AxisType | undefined, axis: 'x' | 'y', bound: readonly ResolvedSeries[]): AxisType {
+        if (explicit) return explicit;
+        if (bound.length === 0) return axis === 'x' ? 'category' : 'linear';
+
+        return bound.some((entry) => entry.categoryAxis === axis) ? 'category' : 'linear';
+    }
+
     /** Sums what every bound series contributes to one category, for value sorting. */
     function sumAt(series: readonly ResolvedSeries[], category: string): number {
         let total = 0;
@@ -409,8 +444,18 @@ export function createChartState(options: ChartStateOptions) {
         for (const entry of series) {
             for (const point of entry.points) {
                 if (point.value == null) continue;
-                min = Math.min(min, point.value, point.base);
-                max = Math.max(max, point.value, point.base);
+
+                min = Math.min(min, point.value);
+                max = Math.max(max, point.value);
+
+                // A base is only part of the domain when it is a position the mark actually spans
+                // from -- a stack's floor, a floating bar's start. A base of 0 is the default every
+                // unstacked series carries, and folding that in would drag the minimum of every
+                // line chart down to zero. Whether zero belongs there is `startFromZero`'s call.
+                if (point.base !== 0) {
+                    min = Math.min(min, point.base);
+                    max = Math.max(max, point.base);
+                }
             }
         }
 
@@ -653,8 +698,14 @@ export function createChartState(options: ChartStateOptions) {
             for (const entry of series) {
                 for (const point of entry.points) {
                     if (point.value == null) continue;
-                    min = Math.min(min, point.value, point.base);
-                    max = Math.max(max, point.value, point.base);
+
+                    min = Math.min(min, point.value);
+                    max = Math.max(max, point.value);
+
+                    if (point.base !== 0) {
+                        min = Math.min(min, point.base);
+                        max = Math.max(max, point.base);
+                    }
                 }
             }
 

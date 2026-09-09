@@ -86,7 +86,7 @@ export function installPlugins(entries: readonly ChartPluginEntry[], host: Plugi
             onUnmounted: (fn) => teardown.push(fn)
         };
 
-        let result: { api: unknown } | void;
+        let result: { api: unknown } | void | undefined;
 
         try {
             result = typed.install(ctx);
@@ -98,7 +98,11 @@ export function installPlugins(entries: readonly ChartPluginEntry[], host: Plugi
             continue;
         }
 
-        installed[typed.name] = { name: typed.name, api: result?.api };
+        // Narrowed rather than optional-chained: `install` returns `{ api } | void`, and reaching
+        // for `.api` on the void arm is what the compiler objects to.
+        const api = result && typeof result === 'object' && 'api' in result ? result.api : undefined;
+
+        installed[typed.name] = { name: typed.name, api };
 
         destroyRef.onDestroy(() => {
             for (const fn of teardown) {

@@ -25,6 +25,10 @@ export interface BarGeometry {
     category: string;
     dataIndex: number;
     isNegative: boolean;
+    /**
+     * Whether the bar is a waterfall summary rather than a step.
+     */
+    isTotal: boolean;
 }
 
 /** How a category band is divided between the series sharing it. */
@@ -82,7 +86,9 @@ export function projectBars(ctx: DrawContext, series: ResolvedSeries, props: Bar
     const categoryScale = scaleFor(ctx, horizontal ? 'y' : 'x', horizontal ? series.yAxisId : series.xAxisId);
     const valueScale = scaleFor(ctx, horizontal ? 'x' : 'y', horizontal ? series.xAxisId : series.yAxisId);
 
-    if (!categoryScale || categoryScale.type !== 'band' || !valueScale) return [];
+    // A value scale that turned out to be categorical has no numbers to measure against, so
+    // there is nothing to draw rather than something to draw at NaN.
+    if (!categoryScale || categoryScale.type !== 'band' || !valueScale || valueScale.type === 'band') return [];
 
     const baseline = baselineOn(valueScale);
     const progress = ctx.progress;
@@ -98,6 +104,8 @@ export function projectBars(ctx: DrawContext, series: ResolvedSeries, props: Bar
         const basePixel = point.base === 0 ? baseline : valueScale.scale(point.base);
         const valuePixel = valueScale.scale(point.value);
 
+        if (!Number.isFinite(basePixel) || !Number.isFinite(valuePixel)) continue;
+
         // Growing out of the base rather than fading in keeps every on-screen bar at a real value
         // for the whole of the entrance animation.
         const animatedValue = basePixel + (valuePixel - basePixel) * progress;
@@ -112,14 +120,27 @@ export function projectBars(ctx: DrawContext, series: ResolvedSeries, props: Bar
             start = valuePixel <= basePixel ? basePixel - extent : basePixel;
         }
 
-        bars.push(
-            horizontal
-                ? { x: start, y: bandStart + slot.offset, width: extent, height: slot.size, value: point.value, base: point.base, category: point.category, dataIndex: point.dataIndex, isNegative: point.value < point.base }
-                : { x: bandStart + slot.offset, y: start, width: slot.size, height: extent, value: point.value, base: point.base, category: point.category, dataIndex: point.dataIndex, isNegative: point.value < point.base }
-        );
+        const shared = { value: point.value, base: point.base, category: point.category, dataIndex: point.dataIndex, isNegative: point.value < point.base, isTotal: point.isTotal === true };
+
+        bars.push(horizontal ? { x: start, y: bandStart + slot.offset, width: extent, height: slot.size, ...shared } : { x: bandStart + slot.offset, y: start, width: slot.size, height: extent, ...shared });
     }
 
     return bars;
+}
+
+/**
+ * The colour a bar falls back to when the series does not set one.
+ *
+ * On a waterfall this is the direction colour rather than the series colour: a waterfall exists to
+ * show what went up and what came down, and painting every step the same defeats the chart. A
+ * summary bar is neither, so it keeps the series colour.
+ */
+function fallbackColorFor(ctx: DrawContext, series: ResolvedSeries, bar: BarGeometry): string {
+    if (!series.registration.waterfall || bar.isTotal) return ctx.seriesColor(series.seriesIndex);
+
+    const directional = bar.isNegative ? ctx.theme.negative : ctx.theme.positive;
+
+    return directional ?? ctx.seriesColor(series.seriesIndex);
 }
 
 /** Paints a bar series. */
@@ -131,7 +152,7 @@ export function paintBarSeries(ctx: DrawContext, series: ResolvedSeries, props: 
     for (const bar of bars) {
         const context: ItemContext<unknown> = itemContext(data[bar.dataIndex], bar.dataIndex, series.seriesIndex, series.id, bar.value, bar.category);
         const hovered = isHovered(ctx, series.id, bar.dataIndex);
-        const fallback = ctx.seriesColor(series.seriesIndex);
+        const fallback = fallbackColorFor(ctx, series, bar);
         const hoverFill = hovered ? (resolveColorAccessor(props.hoverColor, context) as string | undefined) : undefined;
         const fill = hoverFill ?? (resolveColorAccessor(props.color, context, fallback) as string) ?? fallback;
         const stroke = hovered
@@ -165,6 +186,7 @@ export function paintBarSeries(ctx: DrawContext, series: ResolvedSeries, props: 
                 'data-index': bar.dataIndex,
                 'data-category': bar.category,
                 'data-state': hovered ? 'hovered' : null,
+                'data-direction': series.registration.waterfall ? (bar.isTotal ? 'total' : bar.isNegative ? 'negative' : 'positive') : null,
                 d: custom ?? shapeFor(geometry, radius, props, bar.isNegative, horizontal),
                 fill,
                 'fill-opacity': opacity,

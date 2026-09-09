@@ -6,14 +6,20 @@
  * because the scale is built from the plot area that the reservation itself determines -- measuring
  * from the domain is what breaks that loop.
  */
-import { ChangeDetectionStrategy, Component, DestroyRef, ViewEncapsulation, booleanAttribute, computed, inject, input, numberAttribute } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, Directive, ViewEncapsulation, booleanAttribute, computed, inject, input, numberAttribute } from '@angular/core';
 import type { AxisTickMarkRenderContext, AxisTickRenderContext, AxisType, BaseAxisProps, DataGroupingConfig, DateTimeFormatConfig, TickStyle, TickValue, TimeTickConfig, TimeUnit } from '@openng/optimus-ui/types/charts';
 import { formatTick } from '../render/axis';
 import { generateTicks } from '../render/axis';
 import { lineHeightOf, measureTextWidth, rotatedBounds } from '../core/layout';
 import { CHART_CONTEXT } from '../charts-registry';
 
-/** Inputs shared by the two axes. */
+/**
+ * Inputs shared by the two axes.
+ *
+ * Decorated even though it is never used directly: Angular only recognises `input()` on a decorated
+ * class.
+ */
+@Directive({ standalone: true })
 abstract class ChartAxisBase {
     protected readonly context = inject(CHART_CONTEXT, { optional: true });
 
@@ -30,10 +36,15 @@ abstract class ChartAxisBase {
     readonly id = input('default');
     /**
      * Axis scale type.
-     * @defaultValue 'category'
+     *
+     * Left unset the role is inferred from the series bound to this axis: whichever axis they put
+     * their categories on is the category axis and the other is the value axis. A literal default
+     * here would make "not set" indistinguishable from "set to category", which is exactly what
+     * turned a bare `<p-chart-y-axis />` into a band scale and left the series with nowhere to
+     * plot.
      * @group Props
      */
-    readonly type = input<AxisType>('category');
+    readonly type = input<AxisType | undefined>(undefined);
     /**
      * Fixed axis minimum. A time axis also accepts a `Date` or an ISO string.
      * @group Props

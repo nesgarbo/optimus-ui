@@ -209,16 +209,25 @@ export function baselineOf(points: readonly PathPoint[], baselineY: number): Pat
     return points.map((p) => ({ x: p.x, y: baselineY }));
 }
 
+/** Whether a point has a real position on both axes and can therefore be drawn. */
+export function isPlaced(point: ComputedPoint): boolean {
+    return point.value != null && Number.isFinite(point.x) && Number.isFinite(point.y);
+}
+
 /**
  * Splits a point list at the gaps, so `connectNulls: 'gap'` renders separate subpaths instead of
  * bridging a missing value with a straight line that implies data.
+ *
+ * A point is a gap when it has no value *or* no position. Checking only the value was a real bug:
+ * a category absent from the axis domain scales to NaN, and the path came out as
+ * `M NaN NaN L NaN NaN`, which the browser rejects once per mark.
  */
 export function splitAtGaps(points: readonly ComputedPoint[]): ComputedPoint[][] {
     const runs: ComputedPoint[][] = [];
     let current: ComputedPoint[] = [];
 
     for (const point of points) {
-        if (point.value == null || !Number.isFinite(point.y)) {
+        if (!isPlaced(point)) {
             if (current.length) runs.push(current);
             current = [];
             continue;

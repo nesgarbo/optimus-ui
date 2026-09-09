@@ -9,7 +9,7 @@
 import type { ComputedPoint, ItemContext, LineSeriesProps, SvgNode } from '@openng/optimus-ui/types/charts';
 import { itemContext, resolveColorAccessor, resolveDashAccessor, resolveDashPattern, resolveScalarAccessor } from '../core/accessor';
 import { isGradient } from '../core/color';
-import { areaPath, curvePath, splitAtGaps, type PathPoint } from '../core/curve';
+import { areaPath, curvePath, isPlaced, splitAtGaps, type PathPoint } from '../core/curve';
 import { isMarkerShapeName, markerPath } from '../core/geometry';
 import { seriesColorClass } from '../core/palette';
 import type { ResolvedSeries } from '../charts-state';
@@ -63,8 +63,14 @@ export function projectLine(ctx: DrawContext, series: ResolvedSeries, props: Lin
  * fade tells the reader nothing while a rise from the axis reads as the value it is arriving at.
  */
 export function paintLineSeries(ctx: DrawContext, series: ResolvedSeries, props: LineSeriesProps): SvgNode[] {
-    const geometry = projectLine(ctx, series, props);
+    const xScale = scaleFor(ctx, 'x', series.xAxisId);
     const yScale = scaleFor(ctx, 'y', series.yAxisId);
+
+    // Without both scales there is nowhere to put a point. Drawing nothing is the only honest
+    // answer, and it is also what keeps a chart mid-construction from emitting NaN geometry.
+    if (!xScale || !yScale || yScale.type === 'band') return [];
+
+    const geometry = projectLine(ctx, series, props);
     const baseline = baselineOn(yScale);
     const curve = props.curve ?? 'linear';
     const tension = props.tension ?? 0.5;
@@ -80,7 +86,7 @@ export function paintLineSeries(ctx: DrawContext, series: ResolvedSeries, props:
         y: Number.isFinite(point.y) && Number.isFinite(baseline) ? baseline + (point.y - baseline) * progress : point.y
     }));
 
-    const runs = props.connectNulls === true || props.connectNulls === 'connect' ? [grown.filter((point) => Number.isFinite(point.y))] : splitAtGaps(grown);
+    const runs = props.connectNulls === true || props.connectNulls === 'connect' ? [grown.filter(isPlaced)] : splitAtGaps(grown);
 
     const dash = resolveDashPattern(props.lineDash ?? props.lineStyle);
 
@@ -218,7 +224,7 @@ export function paintMarkers(ctx: DrawContext, series: ResolvedSeries, props: Li
     const multiplier = ctx.hoverEffect?.radiusMultiplier ?? 1.3;
 
     for (const point of points) {
-        if (!Number.isFinite(point.x) || !Number.isFinite(point.y)) continue;
+        if (!isPlaced(point)) continue;
 
         const context: ItemContext<unknown> = itemContext(data[point.dataIndex], point.dataIndex, series.seriesIndex, series.id, point.value, point.category);
         const hovered = isHovered(ctx, series.id, point.dataIndex);

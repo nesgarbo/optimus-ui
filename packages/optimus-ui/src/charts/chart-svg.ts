@@ -12,7 +12,7 @@ import { Bind } from '@openng/optimus-ui/bind';
 import type { BoxArea, ChartExportOptions, ChartOverlaySurface, RendererType, SvgNode } from '@openng/optimus-ui/types/charts';
 import { buildPdf, dataUrlToBytes, downloadBlob, markupToBlob, rasterizeSvg, resolveExportBackground, serializeSvg } from './core/export';
 import { measureTextWidth } from './core/layout';
-import { seriesColorAt, seriesColorVariable } from './core/palette';
+import { seriesColorAt, seriesColorVariable, seriesTokenVariable } from './core/palette';
 import { createSvgElement } from './core/svg-node';
 import { ChartRootBase } from './chart-root-base';
 import { CHART_CONTEXT } from './charts-registry';
@@ -33,7 +33,17 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
     standalone: true,
     exportAs: 'pChartSvg',
     template: `
-        <div #container [class]="cx('container')" [attr.data-chart-container]="chartId" [style.height.px]="$height()" [style.width.px]="$width()" role="figure" aria-roledescription="chart" [attr.aria-label]="$ariaLabel()" tabindex="0">
+        <div
+            #container
+            [class]="cx('container')"
+            [attr.data-chart-container]="chartId"
+            [style.height.px]="$containerHeight()"
+            [style.width.px]="$containerWidth()"
+            role="figure"
+            aria-roledescription="chart"
+            [attr.aria-label]="$ariaLabel()"
+            tabindex="0"
+        >
             <svg #surface [class]="cx('surface')" [attr.width]="$width()" [attr.height]="$height()" [attr.viewBox]="$viewBox()" [attr.data-renderer]="rendererType" focusable="false">
                 <defs #defs></defs>
                 <g #plot [class]="cx('plot')"></g>
@@ -138,16 +148,19 @@ export class ChartSvg extends ChartRootBase {
     };
 
     /**
-     * A palette slot as a CSS custom property with the theme colour as its fallback.
+     * A palette slot, resolved through three levels of precedence.
      *
-     * This is what makes the documented override work: setting `--p-chart-color-0` anywhere above
-     * the chart restyles it without the chart knowing, and the fallback keeps it correct when
-     * nothing has been set.
+     * The public `--p-chart-color-N` wins, then the preset's `--p-charts-palette-colorN` design
+     * token, then the built-in literal. That order is what makes the documented override work
+     * -- setting the public property anywhere above the chart restyles it without the chart
+     * knowing -- while still letting the active theme preset supply the default, and still
+     * rendering correctly when neither is present.
      */
     private readonly seriesColor = (seriesIndex: number): string => {
         const palette = this.context.theme().series ?? [];
+        const size = palette.length || undefined;
 
-        return `var(${seriesColorVariable(seriesIndex, palette.length || undefined)}, ${seriesColorAt(palette, seriesIndex)})`;
+        return `var(${seriesColorVariable(seriesIndex, size)}, var(${seriesTokenVariable(seriesIndex, size)}, ${seriesColorAt(palette, seriesIndex)}))`;
     };
 
     /**

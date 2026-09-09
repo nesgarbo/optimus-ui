@@ -64,8 +64,20 @@ describe('scales', () => {
 describe('ticks', () => {
     it('snaps a step to a number a reader recognises', () => {
         expect(niceStep(3.7)).toBe(5);
-        expect(niceStep(0.021)).toBeCloseTo(0.025);
-        expect(niceStep(120)).toBe(200);
+        expect(niceStep(0.021)).toBeCloseTo(0.02);
+        expect(niceStep(120)).toBe(100);
+    });
+
+    it('snaps to the nearest nice step rather than rounding up', () => {
+        // A span of 20 over 8 ticks is 2.5. Rounding up gives 40/42.5/45; the nearest nice value
+        // gives 40/42/44, and half-steps on integer data read as a mistake.
+        expect(niceStep(2.5)).toBe(2);
+        expect(niceStep(2.4)).toBe(2);
+        expect(niceStep(3.5)).toBe(5);
+    });
+
+    it('keeps integer ticks on an integer domain', () => {
+        for (const tick of linearTicks(40, 60, 8)) expect(Number.isInteger(tick)).toBe(true);
     });
 
     it('lands linear ticks on round numbers covering the domain', () => {

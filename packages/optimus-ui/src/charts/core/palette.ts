@@ -89,6 +89,16 @@ export function seriesColorVariable(index: number, paletteSize: number = LIGHT_S
     return `--p-chart-color-${((index % paletteSize) + paletteSize) % paletteSize}`;
 }
 
+/**
+ * The design-token custom property behind a palette slot.
+ *
+ * This is the theme preset's variable rather than the public override name, so it serves as the
+ * middle level of precedence: an application override beats it, and it beats the built-in literal.
+ */
+export function seriesTokenVariable(index: number, paletteSize: number = LIGHT_SERIES_PALETTE.length): string {
+    return `--p-charts-palette-color${((index % paletteSize) + paletteSize) % paletteSize}`;
+}
+
 /** The stable class an SVG mark carries so a stylesheet can reach it by series index. */
 export function seriesColorClass(index: number, paletteSize: number = LIGHT_SERIES_PALETTE.length): string {
     return `p-chart-color-${((index % paletteSize) + paletteSize) % paletteSize}`;

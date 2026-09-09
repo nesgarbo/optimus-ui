@@ -62,6 +62,7 @@ function series(type: ResolvedSeries['type'], props: object, values: (number | n
         categories: ['Jan', 'Feb', 'Mar'],
         xAxisId: 'default',
         yAxisId: 'default',
+        categoryAxis: 'x',
         visible: overrides.visible ?? true,
         registration
     };
@@ -275,6 +276,55 @@ describe('scene composition', () => {
         expect(markup).not.toContain('data-series="line-b"');
     });
 
+    it('never emits a path with a non-finite coordinate', () => {
+        // The bug this guards: a bare <p-chart-y-axis /> defaulted to a category scale, so every
+        // y position came out NaN and the browser rejected `M NaN NaN L NaN NaN` once per mark.
+        const scene = buildScene(fakeContext(axes), [series('line', { data: [{}, {}, {}] }, [10, 50, 90]), series('bar', { data: [{}, {}, {}] }, [20, 40, 60], { id: 'bar-x', seriesIndex: 1 })], drawContext());
+
+        for (const node of allNodes(scene.layers)) {
+            for (const [name, value] of Object.entries(node.attrs)) {
+                if (value == null) continue;
+                expect(String(value), `${node.tag}.${name}`).not.toMatch(/NaN|Infinity/);
+            }
+        }
+    });
+
+    it('draws nothing rather than NaN geometry when a scale is missing', () => {
+        const withoutScales = drawContext({ scales: new Map() });
+        const scene = buildScene(fakeContext(axes), [series('line', { data: [{}, {}, {}] }, [10, 50, 90])], withoutScales);
+
+        expect(markupOf(scene.layers)).not.toContain('NaN');
+    });
+
+    it('draws nothing rather than NaN geometry when the value axis is categorical', () => {
+        // Two band scales leave no numbers to measure a bar against.
+        const bothBands = drawContext({
+            scales: new Map<string, AxisScale>([
+                ['x:default', bandScale(['Jan', 'Feb', 'Mar'], { start: AREA.x, end: AREA.x + AREA.width }, 0.2, 0.1)],
+                ['y:default', bandScale(['a', 'b'], { start: AREA.y + AREA.height, end: AREA.y }, 0.2, 0.1)]
+            ])
+        });
+        const scene = buildScene(fakeContext(axes), [series('bar', { data: [{}, {}, {}] }, [20, 40, 60])], bothBands);
+
+        expect(markupOf(scene.layers)).not.toContain('NaN');
+    });
+
+    it('skips a category the axis domain does not contain', () => {
+        // A category absent from the domain has no position, so it is a gap rather than a NaN point.
+        const partial = drawContext({
+            scales: new Map<string, AxisScale>([
+                ['x:default', bandScale(['Jan', 'Mar'], { start: AREA.x, end: AREA.x + AREA.width }, 0, 0.05)],
+                ['y:default', linearScale(0, 100, { start: AREA.y + AREA.height, end: AREA.y })]
+            ])
+        });
+        const scene = buildScene(fakeContext(axes), [series('line', { data: [{}, {}, {}] }, [10, 50, 90])], partial);
+        const paths = allNodes(scene.layers).filter((node) => node.tag === 'path' && String(node.attrs['class'] ?? '').includes('p-chart-line'));
+
+        expect(markupOf(scene.layers)).not.toContain('NaN');
+        // Jan and Mar are placed, Feb is not, so the line breaks into two runs.
+        expect(paths).toHaveLength(2);
+    });
+
     it('draws nothing at all when the plot area has collapsed', () => {
         const collapsed = drawContext({ area: { x: 0, y: 0, width: 0, height: 0 } });
         const scene = buildScene(fakeContext(axes), [series('line', { data: [{}] }, [10])], collapsed);
@@ -291,6 +341,44 @@ describe('scene composition', () => {
         expect(bar.attrs['data-series']).toBe('bar-1');
         expect(bar.attrs['data-index']).toBe(0);
         expect(bar.attrs['data-category']).toBe('Jan');
+    });
+
+    it('colours a waterfall by direction and leaves the total neutral', () => {
+        // A waterfall exists to show what went up and what came down, so painting every step the
+        // same colour defeats the chart.
+        const registration: SeriesRegistration = {
+            id: 'wf',
+            type: 'bar',
+            props: computed(() => ({ data: [{}, {}, {}] })) as never,
+            seriesIndex: signal(0),
+            waterfall: { totalField: 'total' }
+        };
+        const resolved: ResolvedSeries = {
+            id: 'wf',
+            type: 'bar',
+            seriesIndex: 0,
+            points: [
+                { category: 'Jan', value: 100, base: 0, dataIndex: 0 },
+                { category: 'Feb', value: 70, base: 100, dataIndex: 1 },
+                { category: 'Mar', value: 70, base: 0, dataIndex: 2, isTotal: true }
+            ],
+            categories: ['Jan', 'Feb', 'Mar'],
+            xAxisId: 'default',
+            yAxisId: 'default',
+            categoryAxis: 'x',
+            visible: true,
+            registration
+        };
+
+        const scene = buildScene(fakeContext(axes), [resolved], drawContext());
+        const bars = allNodes(scene.layers).filter((node) => String(node.attrs['data-slot']) === 'chart-bar');
+        const directions = bars.map((bar) => bar.attrs['data-direction']);
+
+        expect(directions).toEqual(['positive', 'negative', 'total']);
+        expect(bars[0].attrs['fill']).toBe(defaultLightTheme.positive);
+        expect(bars[1].attrs['fill']).toBe(defaultLightTheme.negative);
+        // The summary is neither a rise nor a fall, so it keeps the series colour.
+        expect(bars[2].attrs['fill']).toBe(seriesColorAt(LIGHT_SERIES_PALETTE, 0));
     });
 
     it('registers a gradient definition when a series is filled with one', () => {

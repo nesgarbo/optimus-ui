@@ -2,62 +2,23 @@ export const style = /*css*/ `
     /*
      * The chart's public styling surface.
      *
-     * Every visual value is aliased onto a --p-chart-* custom property here, and everything below
-     * consumes only those aliases. That indirection is the point: an application overrides
-     * --p-chart-color-0 or --p-chart-grid at any scope -- :root, a section, a single chart wrapper --
-     * and the SVG restyles with no JavaScript re-render, while the theme preset still supplies the
-     * default through the design tokens. The Canvas renderer cannot read any of this, which is why
-     * it is themed through the 'theme' input instead.
+     * Every colour is read as var(--p-chart-<name>, <design token>): the public custom property
+     * first, the preset's token as the fallback. So an application setting --p-chart-color-0 or
+     * --p-chart-grid at any scope -- :root, a section, a single chart wrapper -- restyles an SVG
+     * chart with no JavaScript re-render, and a chart nobody has overridden still follows the theme.
+     *
+     * Note that nothing here *declares* a custom property. The build rejects that, and rightly: a
+     * component that declared its own --p-chart-grid would shadow an override coming from an outer
+     * scope, which is the opposite of what the override is for.
+     *
+     * The Canvas renderer cannot read any of this, having no DOM for a custom property to apply to,
+     * which is why it is themed through the 'theme' input instead.
      */
     .p-chart {
-        --p-chart-color-0: dt('charts.palette.color0');
-        --p-chart-color-1: dt('charts.palette.color1');
-        --p-chart-color-2: dt('charts.palette.color2');
-        --p-chart-color-3: dt('charts.palette.color3');
-        --p-chart-color-4: dt('charts.palette.color4');
-        --p-chart-color-5: dt('charts.palette.color5');
-        --p-chart-color-6: dt('charts.palette.color6');
-        --p-chart-color-7: dt('charts.palette.color7');
-        --p-chart-color-8: dt('charts.palette.color8');
-        --p-chart-color-9: dt('charts.palette.color9');
-        --p-chart-color-10: dt('charts.palette.color10');
-        --p-chart-color-11: dt('charts.palette.color11');
-        --p-chart-color-12: dt('charts.palette.color12');
-        --p-chart-color-13: dt('charts.palette.color13');
-
-        --p-chart-axis: dt('charts.axis.color');
-        --p-chart-axis-title-color: dt('charts.axis.title.color');
-        --p-chart-grid: dt('charts.grid.color');
-        --p-chart-grid-minor: dt('charts.grid.minor.color');
-        --p-chart-tick-label-color: dt('charts.tick.label.color');
-        --p-chart-data-label-color: dt('charts.data.label.color');
-        --p-chart-annotation-color: dt('charts.annotation.color');
-        --p-chart-title-color: dt('charts.title.color');
-        --p-chart-caption-color: dt('charts.caption.color');
-        --p-chart-band-fill: dt('charts.band.fill');
-        --p-chart-crosshair-color: dt('charts.crosshair.color');
-        --p-chart-legend-color: dt('charts.legend.color');
-
-        --p-chart-tooltip-background: dt('charts.tooltip.background');
-        --p-chart-tooltip-color: dt('charts.tooltip.color');
-        --p-chart-tooltip-border-color: dt('charts.tooltip.border.color');
-        --p-chart-tooltip-shadow: dt('charts.tooltip.shadow');
-
-        --p-chart-positive: dt('charts.direction.positive');
-        --p-chart-negative: dt('charts.direction.negative');
-
-        --p-chart-hover-brightness: dt('charts.hover.brightness');
-        --p-chart-dim-opacity: dt('charts.dim.opacity');
-
-        --p-chart-zoom-button-bg: dt('charts.zoom.button.background');
-        --p-chart-zoom-button-color: dt('charts.zoom.button.color');
-        --p-chart-zoom-button-border-color: dt('charts.zoom.button.border.color');
-        --p-chart-zoom-button-disabled-color: dt('charts.zoom.button.disabled.color');
-        --p-chart-zoom-button-disabled-border-color: dt('charts.zoom.button.disabled.border.color');
-        --p-chart-zoom-button-radius: dt('charts.zoom.button.border.radius');
-
         display: block;
         position: relative;
+        width: 100%;
+        height: 100%;
         color: dt('charts.color');
         font-family: dt('charts.font.family');
     }
@@ -76,63 +37,77 @@ export const style = /*css*/ `
         outline-offset: dt('charts.focus.ring.offset');
     }
 
+    /*
+     * Absolutely positioned on purpose. An <svg> in flow with no CSS height falls back to the CSS
+     * default for a replaced element -- 150px -- and since the container is what gets measured, that
+     * 150px became the chart's height and it never filled its parent. Out of flow, the surface
+     * contributes nothing to the container's height, so the measurement is of the space available.
+     */
     .p-chart-surface {
+        position: absolute;
+        inset: 0;
         display: block;
         overflow: visible;
     }
 
-    /* The series palette. A mark carries its slot class, and the class supplies the colour. */
-    .p-chart-color-0 { color: var(--p-chart-color-0); }
-    .p-chart-color-1 { color: var(--p-chart-color-1); }
-    .p-chart-color-2 { color: var(--p-chart-color-2); }
-    .p-chart-color-3 { color: var(--p-chart-color-3); }
-    .p-chart-color-4 { color: var(--p-chart-color-4); }
-    .p-chart-color-5 { color: var(--p-chart-color-5); }
-    .p-chart-color-6 { color: var(--p-chart-color-6); }
-    .p-chart-color-7 { color: var(--p-chart-color-7); }
-    .p-chart-color-8 { color: var(--p-chart-color-8); }
-    .p-chart-color-9 { color: var(--p-chart-color-9); }
-    .p-chart-color-10 { color: var(--p-chart-color-10); }
-    .p-chart-color-11 { color: var(--p-chart-color-11); }
-    .p-chart-color-12 { color: var(--p-chart-color-12); }
-    .p-chart-color-13 { color: var(--p-chart-color-13); }
+    /*
+     * The series palette.
+     *
+     * A mark carries its slot class and the class supplies the colour. The public name is read
+     * first and the design token is the fallback, so an application override at any scope wins over
+     * the preset without either having to know about the other.
+     */
+    .p-chart-color-0 { color: var(--p-chart-color-0, dt('charts.palette.color0')); }
+    .p-chart-color-1 { color: var(--p-chart-color-1, dt('charts.palette.color1')); }
+    .p-chart-color-2 { color: var(--p-chart-color-2, dt('charts.palette.color2')); }
+    .p-chart-color-3 { color: var(--p-chart-color-3, dt('charts.palette.color3')); }
+    .p-chart-color-4 { color: var(--p-chart-color-4, dt('charts.palette.color4')); }
+    .p-chart-color-5 { color: var(--p-chart-color-5, dt('charts.palette.color5')); }
+    .p-chart-color-6 { color: var(--p-chart-color-6, dt('charts.palette.color6')); }
+    .p-chart-color-7 { color: var(--p-chart-color-7, dt('charts.palette.color7')); }
+    .p-chart-color-8 { color: var(--p-chart-color-8, dt('charts.palette.color8')); }
+    .p-chart-color-9 { color: var(--p-chart-color-9, dt('charts.palette.color9')); }
+    .p-chart-color-10 { color: var(--p-chart-color-10, dt('charts.palette.color10')); }
+    .p-chart-color-11 { color: var(--p-chart-color-11, dt('charts.palette.color11')); }
+    .p-chart-color-12 { color: var(--p-chart-color-12, dt('charts.palette.color12')); }
+    .p-chart-color-13 { color: var(--p-chart-color-13, dt('charts.palette.color13')); }
 
     .p-chart-axis-line,
     .p-chart-axis-tick {
-        stroke: var(--p-chart-axis);
+        stroke: var(--p-chart-axis, dt('charts.axis.color'));
     }
 
     .p-chart-tick-label {
-        fill: var(--p-chart-tick-label-color);
+        fill: var(--p-chart-tick-label-color, dt('charts.tick.label.color'));
     }
 
     .p-chart-axis-title {
-        fill: var(--p-chart-axis-title-color);
+        fill: var(--p-chart-axis-title-color, dt('charts.axis.title.color'));
     }
 
     .p-chart-grid-line {
-        stroke: var(--p-chart-grid);
+        stroke: var(--p-chart-grid, dt('charts.grid.color'));
     }
 
     .p-chart-grid-line-minor {
-        stroke: var(--p-chart-grid-minor);
+        stroke: var(--p-chart-grid-minor, dt('charts.grid.minor.color'));
     }
 
     .p-chart-band {
-        fill: var(--p-chart-band-fill);
+        fill: var(--p-chart-band-fill, dt('charts.band.fill'));
     }
 
     .p-chart-data-label {
-        fill: var(--p-chart-data-label-color);
+        fill: var(--p-chart-data-label-color, dt('charts.data.label.color'));
     }
 
     .p-chart-annotation,
     .p-chart-reference-label {
-        fill: var(--p-chart-annotation-color);
+        fill: var(--p-chart-annotation-color, dt('charts.annotation.color'));
     }
 
     .p-chart-crosshair {
-        stroke: var(--p-chart-crosshair-color);
+        stroke: var(--p-chart-crosshair-color, dt('charts.crosshair.color'));
     }
 
     /*
@@ -141,12 +116,12 @@ export const style = /*css*/ `
      * no fade -- because fading every other mark on each pointer move makes a dense chart flicker.
      */
     .p-chart-point-hover {
-        filter: brightness(var(--p-chart-hover-brightness));
+        filter: brightness(var(--p-chart-hover-brightness, dt('charts.hover.brightness')));
     }
 
     .p-chart-point-inactive,
     .p-chart-series-inactive {
-        opacity: var(--p-chart-dim-opacity);
+        opacity: var(--p-chart-dim-opacity, dt('charts.dim.opacity'));
     }
 
     .p-chart-marker,
@@ -171,7 +146,7 @@ export const style = /*css*/ `
     }
 
     .p-chart-legend {
-        color: var(--p-chart-legend-color);
+        color: var(--p-chart-legend-color, dt('charts.legend.color'));
     }
 
     .p-chart-legend-item {
@@ -207,11 +182,11 @@ export const style = /*css*/ `
     }
 
     .p-chart-tooltip {
-        background: var(--p-chart-tooltip-background);
-        color: var(--p-chart-tooltip-color);
-        border: 1px solid var(--p-chart-tooltip-border-color);
+        background: var(--p-chart-tooltip-background, dt('charts.tooltip.background'));
+        color: var(--p-chart-tooltip-color, dt('charts.tooltip.color'));
+        border: 1px solid var(--p-chart-tooltip-border-color, dt('charts.tooltip.border.color'));
         border-radius: dt('charts.tooltip.border.radius');
-        box-shadow: var(--p-chart-tooltip-shadow);
+        box-shadow: var(--p-chart-tooltip-shadow, dt('charts.tooltip.shadow'));
         padding: dt('charts.tooltip.padding');
         font-size: dt('charts.tooltip.font.size');
         line-height: 1.4;

@@ -85,6 +85,8 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
         if (!scale) continue;
 
         const position = props.position ?? defaultPosition(registration.axis);
+        // The scale already embodies whatever the state resolved the role to be, so it is the
+        // authority here rather than the prop -- which may legitimately be unset.
         const type = (props.type as AxisType | undefined) ?? (scale.type === 'band' ? 'category' : scale.type);
         const render = resolveAxis(drawContext, scale, props, position, type);
 

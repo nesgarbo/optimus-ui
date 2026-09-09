@@ -1,26 +1,37 @@
 /**
  * Tick generation. A tick algorithm has one job: land on numbers a reader recognises. Dividing a
  * domain into `n` equal parts gives ticks like 3.7143, so the numeric generator snaps the step to
- * 1, 2, 2.5, 5 or 10 times a power of ten, and the time generator snaps to calendar boundaries.
+ * 1, 2, 5 or 10 times a power of ten, and the time generator snaps to calendar boundaries.
  */
 import type { TimeUnit } from '@openng/optimus-ui/types/charts';
 import { TIME_UNIT_MS } from './scale';
 
-/** The step multipliers a nice numeric tick may use, within one decade. */
-const NICE_STEPS = [1, 2, 2.5, 5, 10];
+/**
+ * Thresholds for snapping a step to 1, 2, 5 or 10 times a power of ten.
+ *
+ * They are geometric means -- sqrt(50), sqrt(10), sqrt(2) -- so a raw step snaps to the *nearest*
+ * nice value rather than up to the next one. Rounding up sounds safer but reads worse: a span of 20
+ * over 8 ticks is 2.5, and rounding up gives labels of 40, 42.5, 45 where the nearest value gives
+ * 40, 42, 44. Half-steps on integer data look like a mistake.
+ */
+const STEP_THRESHOLDS: [number, number][] = [
+    [Math.sqrt(50), 10],
+    [Math.sqrt(10), 5],
+    [Math.sqrt(2), 2]
+];
 
-/** Rounds a raw step up to the nearest recognisable number. */
+/** Snaps a raw step to the nearest recognisable number. */
 export function niceStep(rawStep: number): number {
     if (!Number.isFinite(rawStep) || rawStep <= 0) return 1;
 
     const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
     const normalized = rawStep / magnitude;
 
-    for (const step of NICE_STEPS) {
-        if (normalized <= step) return step * magnitude;
+    for (const [threshold, step] of STEP_THRESHOLDS) {
+        if (normalized >= threshold) return step * magnitude;
     }
 
-    return 10 * magnitude;
+    return magnitude;
 }
 
 /**
