@@ -569,6 +569,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     private readonly contextCaret = signal<CaretPosition | null>(null);
 
+    private contextRange: string | null = null;
+
     private readonly tableState = signal<TableActiveState | null>(null);
 
     private readonly tableColumnMenu = signal<{ colIndex: number; anchor: HTMLElement | null } | null>(null);
@@ -1916,14 +1918,23 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
         this.tableActiveStateChange.emit(table);
 
         /* The floating toolbar tracks the selection and closes on any document edit: a bar hovering
-           over text the user is still changing gets in the way of the change. */
-        if (docChanged || next.selection.empty) this.contextCaret.set(null);
-        else if (this.view) {
+           over text the user is still changing gets in the way of the change.
+
+           The caret object is replaced only when the selected range actually changes, so a widget
+           can remember "the user dismissed the toolbar for this selection" by identity - with a new
+           object on every transaction, a dismissed toolbar sprang back on the next one. */
+        const range = next.selection.empty ? null : `${next.selection.from}-${next.selection.to}`;
+
+        if (docChanged || !range) {
+            this.contextRange = null;
+            this.contextCaret.set(null);
+        } else if (this.view && this.contextRange !== range) {
             const caret = caretPositionAt(this.view, next.selection.from);
 
+            this.contextRange = range;
             this.contextCaret.set(caret);
 
-            if (!previous.selection.eq(next.selection) && this.hasPart('context-toolbar')) this.contextToolbarRequest.emit(caret);
+            if (this.hasPart('context-toolbar')) this.contextToolbarRequest.emit(caret);
         }
 
         if (!docChanged && !previous.selection.eq(next.selection)) this.selectionUpdate.emit();

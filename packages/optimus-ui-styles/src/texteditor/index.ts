@@ -528,6 +528,17 @@ export const style = /*css*/ `
         overflow: visible;
     }
 
+    /* A part that sets its own display beats the user agent rule for the hidden attribute, so a
+       closed toolbar stayed on screen with the attribute set. */
+    .p-text-editor-context-toolbar[hidden],
+    .p-text-editor-context-toolbar-more[hidden],
+    .p-text-editor-popover-menu[hidden],
+    .p-text-editor-popover-submenu[hidden],
+    .p-text-editor-navigator-popover[hidden],
+    .p-text-editor-block-controls[hidden] {
+        display: none;
+    }
+
     .p-text-editor-popover-menu [role='option'],
     .p-text-editor-popover-menu [role='menuitem'],
     .p-text-editor-popover-submenu [role='menuitem'],
