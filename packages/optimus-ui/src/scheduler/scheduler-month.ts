@@ -28,8 +28,8 @@ import { SchedulerViewBase } from './scheduler-view-base';
         @for (panel of panels(); track panel.key) {
             <div class="p-scheduler-month" [attr.data-view]="view" [attr.data-grouping]="grouping()" [attr.data-resource-id]="panel.resource?.id">
                 @if (panel.label) {
-                    <!-- Un grid por recurso necesita decir de quién es: sin la cabecera, tres meses
-                     apilados son tres meses idénticos. -->
+                    <!-- One grid per resource has to say whose it is: without the header, three
+                     stacked months are three identical months. -->
                     <div class="p-scheduler-month-resource-header" data-slot="scheduler-resource-header" [attr.data-resource-id]="panel.resource?.id" [attr.data-event-count]="panel.count">
                         @if (resourceHeaderDef(); as tpl) {
                             <ng-container *ngTemplateOutlet="tpl; context: panel.context" />
@@ -328,8 +328,8 @@ export class SchedulerMonthView extends SchedulerViewBase {
                 const dayStart = date.getTime();
                 const dayEnd = endOfDay(date).getTime();
 
-                // Cuántas filas de barra pisan ESTE día: es el hueco que la lista de la celda no
-                // puede usar, y varía de un día a otro dentro de la misma semana.
+                // How many bar rows cross THIS day: that is the space the cell's own list cannot
+                // use, and it differs from one day to the next inside the same week.
                 const barRows = items.filter((item) => {
                     const from = weekStart.getTime() + item.offset * (weekEnd.getTime() - weekStart.getTime());
                     const to = from + item.size * (weekEnd.getTime() - weekStart.getTime());
@@ -357,8 +357,9 @@ export class SchedulerMonthView extends SchedulerViewBase {
                         ...this.bindEvent(event, {}, `${panelKey}|${key}`),
                         shortTime: toDate(event.start).toLocaleTimeString(this.locale(), { hour: 'numeric', minute: '2-digit' })
                     })),
-                    // En dateMonth los eventos del día se agrupan bajo su recurso: es lo único que
-                    // cabe en una celda de mes, que es un día y no se puede partir en seis columnas.
+                    // In dateMonth the day's events are grouped under their resource: it is all
+                    // that fits in a month cell, which is one day and cannot be split into six
+                    // columns.
                     resourceGroups: this.grouping() === 'date' ? this.groupByResource(visible, `${panelKey}|${key}`) : [],
                     overflow: hidden.length,
                     moreContext: {
@@ -422,7 +423,7 @@ export class SchedulerMonthView extends SchedulerViewBase {
         const start = toDate(event.start);
         const rawEnd = event.end != null ? toDate(event.end) : null;
         const end = rawEnd && rawEnd > start ? rawEnd : new Date(start.getTime() + defaultDuration * 60_000);
-        // -1ms: el que acaba justo a medianoche cabe en su día, no cruza al siguiente.
+        // -1ms: one that ends exactly at midnight belongs to its day and does not cross into the next.
         return dayKey(start) !== dayKey(new Date(end.getTime() - 1));
     }
 

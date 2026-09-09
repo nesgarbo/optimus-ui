@@ -9,57 +9,57 @@ import { moveCellFocus } from './scheduler-keyboard';
 import { fromDisplayTime, toDisplayTime, zoneLabel, zoneOffsetMinutes } from './scheduler-timezone';
 import { parseICalendar, parseSchedule, serializeSchedule, toICalendar } from './scheduler-transfer';
 
-// El motor del Scheduler es aritmética de fechas y colocación de eventos: las dos cosas que se
-// rompen en silencio y sin las que ninguna vista se puede confiar. Se prueba aquí, sin DOM.
+// The Scheduler's engine is date arithmetic and event placement: the two things that break in
+// silence and without which no view can be trusted. Tested here, without a DOM.
 
 const d = (iso: string) => new Date(iso);
 const ev = (id: string, start: string, end?: string, extra: Partial<SchedulerEvent> = {}): SchedulerEvent => ({ id, start: d(start), end: end ? d(end) : undefined, ...extra });
 
 describe('scheduler-date', () => {
-    it('dayKey usa el día LOCAL, no el de UTC', () => {
-        // 00:30 en UTC+2 es el día anterior en UTC: por aquí se cuelan los off-by-one.
+    it('dayKey uses the LOCAL day and not the UTC one', () => {
+        // 00:30 in UTC+2 is the previous day in UTC: this is where off-by-ones get in.
         expect(dayKey(new Date(2026, 8, 8, 0, 30))).toBe('2026-09-08');
         expect(dayKey(new Date(2026, 8, 8, 23, 30))).toBe('2026-09-08');
     });
 
-    it('addDays conserva la hora local al cruzar el cambio de hora', () => {
-        // En Europa el horario de verano acaba el último domingo de octubre: ese día tiene 25 horas,
-        // así que sumar 86.400.000 ms daría las 08:00 en vez de las 09:00.
+    it('addDays keeps the local time across a clock change', () => {
+        // In Europe summer time ends on the last Sunday of October: that day is 25 hours long, so
+        // adding 86,400,000 ms would give 08:00 instead of 09:00.
         const before = new Date(2026, 9, 25, 9, 0);
         const after = addDays(before, 1);
         expect(after.getDate()).toBe(26);
         expect(after.getHours()).toBe(9);
     });
 
-    it('addMonths recorta el día en vez de desbordar al mes siguiente', () => {
+    it('addMonths clamps the day instead of spilling into the next month', () => {
         expect(dayKey(addMonths(new Date(2026, 0, 31), 1))).toBe('2026-02-28');
         expect(dayKey(addMonths(new Date(2024, 0, 31), 1))).toBe('2024-02-29');
     });
 
-    it('daysBetween cuenta días de calendario, también en el día del cambio de hora', () => {
+    it('daysBetween counts calendar days, the day the clocks change included', () => {
         expect(daysBetween(new Date(2026, 9, 25), new Date(2026, 9, 26))).toBe(1);
         expect(daysBetween(new Date(2026, 8, 1), new Date(2026, 8, 30))).toBe(29);
     });
 
-    it('startOfWeek respeta firstDayOfWeek', () => {
-        const wed = new Date(2026, 8, 9); // miércoles
+    it('startOfWeek honours firstDayOfWeek', () => {
+        const wed = new Date(2026, 8, 9); // a Wednesday
         expect(dayKey(startOfWeek(wed, 0))).toBe('2026-09-06'); // domingo
         expect(dayKey(startOfWeek(wed, 1))).toBe('2026-09-07'); // lunes
     });
 
-    it('viewRange de month cubre semanas enteras, no solo el mes', () => {
+    it("the month's viewRange covers whole weeks and not just the month", () => {
         const { start, end } = viewRange('month', new Date(2026, 8, 15), { firstDayOfWeek: 1 });
         expect(dayKey(start)).toBe('2026-08-31'); // lunes anterior al 1 de septiembre
         expect(daysBetween(start, end)).toBe(42); // 6 semanas fijas
     });
 
-    it('viewRange de week son 7 días y de day son dayCount', () => {
+    it("the week's viewRange is 7 days and the day's is dayCount", () => {
         expect(daysBetween(viewRange('week', new Date(2026, 8, 9)).start, viewRange('week', new Date(2026, 8, 9)).end)).toBe(7);
         const three = viewRange('day', new Date(2026, 8, 9), { dayCount: 3 });
         expect(daysBetween(three.start, three.end)).toBe(3);
     });
 
-    it('navigate mueve lo que corresponde a cada vista', () => {
+    it('navigate moves by whatever each view moves by', () => {
         const base = new Date(2026, 8, 9);
         expect(dayKey(navigate('day', base, 1))).toBe('2026-09-10');
         expect(dayKey(navigate('week', base, -1))).toBe('2026-09-02');
@@ -67,7 +67,7 @@ describe('scheduler-date', () => {
         expect(navigate('year', base, 1).getFullYear()).toBe(2027);
     });
 
-    it('timeSlots marca las horas en punto y respeta el rango', () => {
+    it('timeSlots marks the whole hours and honours the range', () => {
         const slots = timeSlots(8, 10, 30);
         expect(slots.map((s) => s.minutes)).toEqual([480, 510, 540, 570]);
         expect(slots.filter((s) => s.major).map((s) => s.minutes)).toEqual([480, 540]);
@@ -78,34 +78,34 @@ describe('scheduler-date', () => {
 describe('layoutTimeGrid', () => {
     const range = { start: new Date(2026, 8, 8, 0, 0), end: new Date(2026, 8, 9, 0, 0) };
 
-    it('coloca un evento como fracción del rango', () => {
+    it('places an event as a fraction of the range', () => {
         const [item] = layoutTimeGrid([ev('a', '2026-09-08T06:00', '2026-09-08T12:00')], { range });
         expect(item.offset).toBeCloseTo(0.25, 5);
         expect(item.size).toBeCloseTo(0.25, 5);
         expect(item.columns).toBe(1);
     });
 
-    it('dos eventos solapados se reparten el ancho', () => {
+    it('two overlapping events split the width', () => {
         const items = layoutTimeGrid([ev('a', '2026-09-08T09:00', '2026-09-08T11:00'), ev('b', '2026-09-08T10:00', '2026-09-08T12:00')], { range });
         expect(items.map((i) => i.column)).toEqual([0, 1]);
         expect(items.every((i) => i.columns === 2)).toBe(true);
     });
 
-    it('eventos que NO se solapan van los dos a ancho completo', () => {
+    it('events that do NOT overlap both go full width', () => {
         const items = layoutTimeGrid([ev('a', '2026-09-08T09:00', '2026-09-08T10:00'), ev('b', '2026-09-08T11:00', '2026-09-08T12:00')], { range });
         expect(items.every((i) => i.columns === 1 && i.column === 0)).toBe(true);
     });
 
-    it('en una cadena a-b-c, c reutiliza la columna de a (concurrencia máxima, no tamaño del clúster)', () => {
-        // a pisa a b y b pisa a c, pero a y c NO se pisan: en ningún instante hay 3 eventos a la vez.
-        // Repartir en tercios dejaría un tercio del ancho muerto para siempre, así que c vuelve a la
-        // columna 0. Es lo que hacen Google Calendar y FullCalendar.
+    it("in an a-b-c chain, c reuses a's column (peak concurrency, not cluster size)", () => {
+        // a overlaps b and b overlaps c, but a and c do NOT: at no instant are there 3 at once.
+        // Splitting into thirds would leave a third of the width dead for good, so c goes back to
+        // column 0. It is what Google Calendar and FullCalendar do.
         const items = layoutTimeGrid([ev('a', '2026-09-08T09:00', '2026-09-08T11:00'), ev('b', '2026-09-08T10:00', '2026-09-08T13:00'), ev('c', '2026-09-08T12:00', '2026-09-08T14:00')], { range });
         expect(items.map((i) => i.column)).toEqual([0, 1, 0]);
         expect(items.every((i) => i.columns === 2)).toBe(true);
     });
 
-    it('recorta el evento que se sale del rango y lo señala', () => {
+    it('clips an event that runs past the range and flags it', () => {
         const [item] = layoutTimeGrid([ev('a', '2026-09-07T22:00', '2026-09-09T02:00')], { range });
         expect(item.offset).toBe(0);
         expect(item.size).toBeCloseTo(1, 5);
@@ -113,17 +113,17 @@ describe('layoutTimeGrid', () => {
         expect(item.continuesAfter).toBe(true);
     });
 
-    it('un evento de un minuto sigue siendo visible', () => {
+    it('a one-minute event is still visible', () => {
         const [item] = layoutTimeGrid([ev('a', '2026-09-08T05:43', '2026-09-08T05:44')], { range, minEventMinutes: 15 });
         expect(item.size).toBeCloseTo(15 / 1440, 5);
     });
 
-    it('un evento sin fin recibe la duración por defecto', () => {
+    it('an event with no end gets the default duration', () => {
         const [item] = layoutTimeGrid([ev('a', '2026-09-08T06:00')], { range, defaultEventDuration: 60 });
         expect(item.size).toBeCloseTo(1 / 24, 5);
     });
 
-    it('descarta lo que queda fuera del rango', () => {
+    it('drops whatever falls outside the range', () => {
         expect(layoutTimeGrid([ev('a', '2026-09-01T09:00', '2026-09-01T10:00')], { range })).toHaveLength(0);
     });
 });
@@ -131,23 +131,23 @@ describe('layoutTimeGrid', () => {
 describe('layoutRows', () => {
     const week = { start: new Date(2026, 8, 6), end: new Date(2026, 8, 13) };
 
-    it('un evento de varios días ocupa UNA fila de punta a punta', () => {
+    it('a multi-day event takes ONE row from end to end', () => {
         const { items } = layoutRows([ev('a', '2026-09-07T00:00', '2026-09-10T00:00')], { range: week });
         expect(items[0].row).toBe(0);
         expect(items[0].size).toBeCloseTo(3 / 7, 5);
     });
 
-    it('dos eventos que se pisan caen en filas distintas', () => {
+    it('two events that overlap land in different rows', () => {
         const { items } = layoutRows([ev('a', '2026-09-07', '2026-09-10'), ev('b', '2026-09-08', '2026-09-09')], { range: week });
         expect(items.map((i) => i.row)).toEqual([0, 1]);
     });
 
-    it('reutiliza la fila cuando ya está libre', () => {
+    it('reuses a row once it is free', () => {
         const { items } = layoutRows([ev('a', '2026-09-07', '2026-09-08'), ev('b', '2026-09-09', '2026-09-10')], { range: week });
         expect(items.every((i) => i.row === 0)).toBe(true);
     });
 
-    it('lo que no cabe en maxRows sale como overflow, no se pierde', () => {
+    it('what does not fit in maxRows comes out as overflow rather than being lost', () => {
         const events = [ev('a', '2026-09-07', '2026-09-08'), ev('b', '2026-09-07', '2026-09-08'), ev('c', '2026-09-07', '2026-09-08')];
         const { items, overflow } = layoutRows(events, { range: week, maxRows: 2 });
         expect(items).toHaveLength(2);
@@ -155,18 +155,18 @@ describe('layoutRows', () => {
     });
 });
 
-describe('agrupaciones', () => {
-    it('groupByDay lista el evento en TODOS los días que toca', () => {
+describe('grouping helpers', () => {
+    it('groupByDay lists an event under EVERY day it touches', () => {
         const groups = groupByDay([ev('a', '2026-09-07T22:00', '2026-09-09T02:00')]);
         expect([...groups.keys()].sort()).toEqual(['2026-09-07', '2026-09-08', '2026-09-09']);
     });
 
-    it('groupByDay NO mete en el día siguiente lo que acaba a medianoche', () => {
+    it('groupByDay does NOT put an event ending at midnight into the next day', () => {
         const groups = groupByDay([ev('a', '2026-09-07T08:00', '2026-09-08T00:00')]);
         expect([...groups.keys()]).toEqual(['2026-09-07']);
     });
 
-    it('groupByResource deja los huérfanos bajo null en vez de tirarlos', () => {
+    it('groupByResource keeps the orphans under null instead of dropping them', () => {
         const groups = groupByResource([ev('a', '2026-09-08', undefined, { resourceId: 'r1' }), ev('b', '2026-09-08', undefined, { resourceId: 'zzz' }), ev('c', '2026-09-08')], ['r1', 'r2']);
         expect(groups.get('r1')?.map((e) => e.id)).toEqual(['a']);
         expect(groups.get('r2')).toEqual([]);
@@ -174,7 +174,7 @@ describe('agrupaciones', () => {
     });
 });
 
-describe('escalas del timeline', () => {
+describe('timeline scales', () => {
     const axisOptions = (range: { start: Date; end: Date }) => ({
         range,
         dayBounds: { start: 8, end: 12 },
@@ -183,7 +183,7 @@ describe('escalas del timeline', () => {
         locale: 'en-US'
     });
 
-    it('el nombre de la vista decide la escala, y los nombres antiguos siguen siendo el día', () => {
+    it('the view name decides the scale, and the older names still mean the day', () => {
         expect(timelineScaleOf('timeline')).toBe('day');
         expect(timelineScaleOf('resourceTimeline')).toBe('day');
         expect(timelineScaleOf('timelineWeek')).toBe('week');
@@ -192,7 +192,7 @@ describe('escalas del timeline', () => {
         expect(timelineScaleOf('month')).toBeUndefined();
     });
 
-    it('cada escala abarca su periodo, y el mes NO se rellena a semanas enteras', () => {
+    it('each scale spans its period, and the month is NOT padded to whole weeks', () => {
         const anchor = new Date(2026, 8, 8); // martes 8 de septiembre
         const week = viewRange('timelineWeek', anchor, { firstDayOfWeek: 1 });
         expect(dayKey(week.start)).toBe('2026-09-07');
@@ -207,7 +207,7 @@ describe('escalas del timeline', () => {
         expect(dayKey(year.end)).toBe('2027-01-01');
     });
 
-    it('navegar mueve el rango de la escala, no un día', () => {
+    it("navigating moves the scale's range and not a day", () => {
         const anchor = new Date(2026, 8, 8);
         expect(dayKey(navigate('timelineWeek', anchor, 1, {}))).toBe('2026-09-15');
         expect(dayKey(navigate('timelineMonth', anchor, 1, {}))).toBe('2026-10-08');
@@ -215,31 +215,31 @@ describe('escalas del timeline', () => {
         expect(dayKey(navigate('timelineDay', anchor, 1, {}))).toBe('2026-09-09');
     });
 
-    it('el eje de la semana repite la ventana horaria en cada día y se salta las noches', () => {
+    it("the week's axis repeats the hour window on each day and skips the nights", () => {
         const range = viewRange('timelineWeek', new Date(2026, 8, 8), { firstDayOfWeek: 1 });
         const axis = buildTimelineAxis('week', axisOptions(range));
 
-        // 7 días × 4 horas (08:00–12:00)
+        // 7 days x 4 hours (08:00-12:00)
         expect(axis.slots.length).toBe(28);
         expect(axis.multiDay).toBe(true);
-        // La primera columna del segundo día es de nuevo las 08:00, no las 12:00.
+        // The second day's first column is 08:00 again and not 12:00.
         expect(axis.slots[4].start.getHours()).toBe(8);
         expect(dayKey(axis.slots[4].start)).toBe('2026-09-08');
     });
 
-    it('una hora de la noche cae en el borde del hueco, no interpolada por dentro', () => {
+    it('an hour of the night lands on the edge of the gap, not interpolated inside it', () => {
         const range = viewRange('timelineWeek', new Date(2026, 8, 8), { firstDayOfWeek: 1 });
         const axis = buildTimelineAxis('week', axisOptions(range));
 
-        // Las 03:00 del martes están fuera de la ventana dibujada: el eje las resuelve al inicio de
-        // las columnas del martes, que es donde acaba el hueco.
+        // 03:00 on Tuesday is outside the drawn window: the axis resolves it to the start of
+        // Tuesday's columns, which is where the gap ends.
         const nightPosition = axis.position(new Date(2026, 8, 8, 3, 0));
         expect(nightPosition).toBeCloseTo(4 / 28, 6);
-        // Las 10:00 del martes son la mitad de la ventana de ese día.
+        // 10:00 on Tuesday is halfway through that day's window.
         expect(axis.position(new Date(2026, 8, 8, 10, 0))).toBeCloseTo(6 / 28, 6);
     });
 
-    it('las bandas de cabecera agrupan las columnas y su span suma el eje', () => {
+    it('the header bands group the columns and their spans add up to the axis', () => {
         const range = viewRange('timelineWeek', new Date(2026, 8, 8), { firstDayOfWeek: 1 });
         const axis = buildTimelineAxis('week', axisOptions(range));
         const [period, day] = axis.tiers;
@@ -251,7 +251,7 @@ describe('escalas del timeline', () => {
         }
     });
 
-    it('el mes es una columna por día y el año una por mes', () => {
+    it('the month is one column per day and the year one per month', () => {
         const monthAxis = buildTimelineAxis('month', axisOptions(viewRange('timelineMonth', new Date(2026, 8, 8), {})));
         expect(monthAxis.slots.length).toBe(30);
         expect(monthAxis.tiers.length).toBe(1);
@@ -261,7 +261,7 @@ describe('escalas del timeline', () => {
         expect(yearAxis.slots[0].label).toBe('Jan');
     });
 
-    it('un evento más corto que media columna conserva media columna de ancho', () => {
+    it('an event shorter than half a column keeps half a column of width', () => {
         const range = viewRange('timelineYear', new Date(2026, 8, 8), {});
         const axis = buildTimelineAxis('year', axisOptions(range));
         const events = [ev('a', '2026-09-08T10:00', '2026-09-08T11:00')];
@@ -270,69 +270,69 @@ describe('escalas del timeline', () => {
 
         expect(placed.length).toBe(1);
         expect(placed[0].size).toBeCloseTo(0.5 / 12, 6);
-        // Septiembre es el noveno mes: la barra arranca dentro de su columna.
+        // September is the ninth month: the bar starts inside its own column.
         expect(placed[0].offset).toBeGreaterThanOrEqual(8 / 12);
         expect(placed[0].offset).toBeLessThan(9 / 12);
     });
 
-    it('la hora se imprime sin cero de relleno y con guion', () => {
-        // Algunas versiones de ICU separan el AM con U+202F en vez de un espacio normal: se normaliza
-        // antes de comparar, porque lo que se prueba es el rango y no el espacio que use la plataforma.
+    it('the time prints without a leading zero and with a dash', () => {
+        // Some ICU versions separate the AM with U+202F rather than a normal space: normalised
+        // before comparing, because what is under test is the range and not the platform's space.
         const range = formatTimeRange(new Date(2026, 8, 8, 8, 30), new Date(2026, 8, 8, 9, 30), 'en-US');
 
         expect(range.replace(/\u202f/g, ' ')).toBe('8:30 AM - 9:30 AM');
     });
 });
 
-describe('recurrencia', () => {
+describe('recurrence', () => {
     const window = (fromDay: number, toDay: number) => ({ start: new Date(2026, 8, fromDay), end: new Date(2026, 8, toDay) });
 
-    it('lee el subconjunto de RRULE que usan los calendarios, y descarta lo que no entiende', () => {
+    it('reads the RRULE subset calendars actually use, and discards what it does not understand', () => {
         expect(parseRRule('FREQ=WEEKLY;INTERVAL=2;COUNT=4;BYDAY=MO,WE')).toMatchObject({ freq: 'WEEKLY', interval: 2, count: 4, byDay: [1, 3] });
-        // Un UNTIL en fecha suelta es INCLUSIVO: se guarda como el final de su día, o las citas con
-        // hora de ese último día se caerían de la serie.
+        // A bare-date UNTIL is INCLUSIVE: it is stored as the end of its day, or the timed
+        // appointments on that last day would fall out of the series.
         expect(parseRRule('FREQ=DAILY;UNTIL=20260915')?.until).toEqual(new Date(2026, 8, 15, 23, 59, 59, 999));
-        // Con hora explícita se respeta tal cual.
+        // With an explicit time it is taken as it stands.
         expect(parseRRule('FREQ=DAILY;UNTIL=20260915T120000Z')?.until).toEqual(new Date(Date.UTC(2026, 8, 15, 12)));
-        // Un INTERVAL de 0 dejaría al expansor sin avanzar nunca.
+        // An INTERVAL of 0 would leave the expander never advancing.
         expect(parseRRule('FREQ=DAILY;INTERVAL=0')?.interval).toBe(1);
         expect(parseRRule('every other tuesday')).toBeUndefined();
         expect(parseRRule(undefined)).toBeUndefined();
     });
 
-    it('COUNT cuenta desde el inicio de la serie, no desde el borde de la ventana', () => {
+    it('COUNT counts from the start of the series and not from the edge of the window', () => {
         const rule = parseRRule('FREQ=DAILY;COUNT=5')!;
-        // La serie empieza el día 1 y la ventana abre el día 4: quedan 2 ocurrencias, no 5.
+        // The series starts on the 1st and the window opens on the 4th: 2 occurrences left, not 5.
         const starts = recurrenceStarts(new Date(2026, 8, 1, 9), rule, window(4, 30));
         expect(starts.map(dayKey)).toEqual(['2026-09-04', '2026-09-05']);
     });
 
-    it('BYDAY reparte la semana y respeta el inicio de la serie', () => {
+    it('BYDAY spreads across the week and honours the start of the series', () => {
         const rule = parseRRule('FREQ=WEEKLY;BYDAY=TU,TH;COUNT=4')!;
-        // Empieza el martes 8: el jueves 3 de esa misma semana no existe hacia atrás.
+        // It starts on Tuesday the 8th: Thursday the 3rd of that same week does not exist backwards.
         const starts = recurrenceStarts(new Date(2026, 8, 8, 15), rule, window(1, 30));
         expect(starts.map(dayKey)).toEqual(['2026-09-08', '2026-09-10', '2026-09-15', '2026-09-17']);
     });
 
-    it('BYMONTHDAY se salta los días que ese mes no tiene, en vez de recortarlos', () => {
+    it('BYMONTHDAY skips the days a month does not have instead of clamping them', () => {
         const rule = parseRRule('FREQ=MONTHLY;BYMONTHDAY=30,31;COUNT=4')!;
         const starts = recurrenceStarts(new Date(2026, 0, 30, 9), rule, { start: new Date(2026, 0, 1), end: new Date(2026, 4, 1) });
-        // Febrero no tiene ni 30 ni 31: la serie salta a marzo sin duplicar el 28.
+        // February has neither a 30th nor a 31st: the series jumps to March without doubling the 28th.
         expect(starts.map(dayKey)).toEqual(['2026-01-30', '2026-01-31', '2026-03-30', '2026-03-31']);
     });
 
-    it('expandir da una ocurrencia por fecha, con id propio y enlace a la serie', () => {
+    it('expanding gives one occurrence per date, with its own id and a link to the series', () => {
         const series: SchedulerEvent = { id: 's', title: 'Stand-up', start: new Date(2026, 8, 8, 9), end: new Date(2026, 8, 8, 9, 15), rrule: 'FREQ=DAILY;COUNT=3' };
         const occurrences = expandEvents([series], window(1, 30), 30);
 
         expect(occurrences.length).toBe(3);
         expect(new Set(occurrences.map((event) => event.id)).size).toBe(3);
         expect(occurrences.every((event) => event['recurrenceId'] === 's')).toBe(true);
-        // La duración de la serie se conserva en cada copia.
+        // The series' duration is kept in every copy.
         expect(occurrences.map((event) => toDate(event.end!).getTime() - toDate(event.start).getTime())).toEqual([900_000, 900_000, 900_000]);
     });
 
-    it('exdate se salta una ocurrencia y rdate añade una fuera de la regla', () => {
+    it('exdate skips an occurrence and rdate adds one outside the rule', () => {
         const series: SchedulerEvent = {
             id: 's',
             start: new Date(2026, 8, 8, 9),
@@ -344,7 +344,7 @@ describe('recurrencia', () => {
         expect(expandEvents([series], window(1, 30), 30).map((event) => dayKey(toDate(event.start)))).toEqual(['2026-09-08', '2026-09-10', '2026-09-20']);
     });
 
-    it('una excepción guardada aparte sustituye a su ocurrencia en vez de duplicarla', () => {
+    it('an override stored separately replaces its occurrence instead of duplicating it', () => {
         const series: SchedulerEvent = { id: 's', start: new Date(2026, 8, 8, 9), end: new Date(2026, 8, 8, 10), rrule: 'FREQ=DAILY;COUNT=3' };
         const exception: SchedulerEvent = { id: 's-moved', recurrenceId: 's', recurrenceStart: new Date(2026, 8, 9, 9), start: new Date(2026, 8, 9, 14), end: new Date(2026, 8, 9, 15) };
 
@@ -354,21 +354,21 @@ describe('recurrencia', () => {
         expect(nine[0].id).toBe('s-moved');
     });
 
-    it('sin ninguna regla se devuelve el array TAL CUAL, por referencia', () => {
+    it('with no rule at all the array comes back AS IS, by reference', () => {
         const events = [ev('a', '2026-09-08T09:00')];
         expect(expandEvents(events, window(1, 30), 30)).toBe(events);
     });
 });
 
-describe('arrastre y redimensión', () => {
-    it('el redondeo cuenta desde el inicio del día, no desde la época', () => {
+describe('drag and resize', () => {
+    it('snapping counts from the start of the day and not from the epoch', () => {
         expect(snapInstant(new Date(2026, 8, 8, 9, 7), 15)).toEqual(new Date(2026, 8, 8, 9, 0));
         expect(snapInstant(new Date(2026, 8, 8, 9, 8), 15)).toEqual(new Date(2026, 8, 8, 9, 15));
-        // Un paso de 0 o negativo no puede dividir: se devuelve el instante intacto.
+        // A step of 0 or less cannot divide: the instant comes back untouched.
         expect(snapInstant(new Date(2026, 8, 8, 9, 7), 0)).toEqual(new Date(2026, 8, 8, 9, 7));
     });
 
-    it('un cambio pendiente se aplica solo mientras el dato siga como estaba', () => {
+    it('a pending change only applies while the data is still as it was', () => {
         const event = ev('a', '2026-09-08T09:00', '2026-09-08T10:00');
         const change = {
             from: { start: new Date(2026, 8, 8, 9).getTime(), end: new Date(2026, 8, 8, 10).getTime(), resourceId: undefined, allDay: false },
@@ -378,21 +378,21 @@ describe('arrastre y redimensión', () => {
 
         expect(toDate(applyPendingChanges([event], pending)[0].start).getHours()).toBe(11);
 
-        // La aplicación ha guardado el cambio: el override deja de aplicarse en vez de sumarse.
+        // The application saved the change: the override stops applying instead of adding to it.
         const persisted = ev('a', '2026-09-08T11:00', '2026-09-08T12:00');
         expect(toDate(applyPendingChanges([persisted], pending)[0].start).getHours()).toBe(11);
 
-        // Y si el dato cambió por cualquier otro motivo, manda el dato.
+        // And if the data changed for any other reason, the data wins.
         const elsewhere = ev('a', '2026-09-09T08:00', '2026-09-09T09:00');
         expect(applyPendingChanges([elsewhere], pending)[0]).toBe(elsewhere);
     });
 
-    it('sin cambios pendientes se devuelve el array por referencia', () => {
+    it('with no pending change the array comes back by reference', () => {
         const events = [ev('a', '2026-09-08T09:00')];
         expect(applyPendingChanges(events, new Map())).toBe(events);
     });
 
-    it('el objetivo de un arrastre se lee de los data-attributes de la celda', () => {
+    it("a drag's target is read off the cell's data attributes", () => {
         const lane = document.createElement('div');
         lane.dataset['resourceId'] = 'r1';
         const cell = document.createElement('div');
@@ -404,7 +404,7 @@ describe('arrastre y redimensión', () => {
         const target = readCellTarget(cell)!;
         expect(target.start).toEqual(new Date(2026, 8, 8, 9));
         expect(target.resourceId).toBe('r1');
-        // Una celda horaria SÍ se interpola por dentro; una de mes es un día entero.
+        // A time cell IS interpolated inside; a month cell is a whole day.
         expect(target.whole).toBe(false);
 
         const monthCell = document.createElement('div');
@@ -413,35 +413,35 @@ describe('arrastre y redimensión', () => {
         monthCell.dataset['endDate'] = String(new Date(2026, 8, 9).getTime());
         expect(readCellTarget(monthCell)!.whole).toBe(true);
 
-        // Cualquier cosa que no sea una celda etiquetada no es un objetivo.
+        // Anything that is not a labelled cell is not a target.
         expect(readCellTarget(document.createElement('div'))).toBeNull();
         expect(readCellTarget(null)).toBeNull();
     });
 });
 
-describe('zonas horarias', () => {
-    // Un instante conocido: 2026-07-01T12:00:00Z, en pleno verano del hemisferio norte.
+describe('timezones', () => {
+    // A known instant: 2026-07-01T12:00:00Z, the middle of the northern summer.
     const summer = new Date(Date.UTC(2026, 6, 1, 12));
-    // Y otro en invierno, para que se vea que el offset se pregunta por instante y no una vez.
+    // And another in winter, to show the offset is asked for per instant and not once.
     const winter = new Date(Date.UTC(2026, 0, 1, 12));
 
-    it('el offset se pregunta por instante, así que el horario de verano entra solo', () => {
+    it('the offset is asked for per instant, so daylight saving comes for free', () => {
         expect(zoneOffsetMinutes(summer, 'Europe/Madrid')).toBe(120);
         expect(zoneOffsetMinutes(winter, 'Europe/Madrid')).toBe(60);
         expect(zoneOffsetMinutes(summer, 'Asia/Tokyo')).toBe(540);
-        // Tokio no tiene horario de verano: el mismo offset todo el año.
+        // Tokyo has no summer time: the same offset all year round.
         expect(zoneOffsetMinutes(winter, 'Asia/Tokyo')).toBe(540);
     });
 
-    it('una zona que la plataforma no conoce no rompe nada', () => {
+    it('a zone the platform does not know breaks nothing', () => {
         expect(Number.isNaN(zoneOffsetMinutes(summer, 'Mars/Olympus'))).toBe(true);
-        // Y desplazar con ella devuelve el instante intacto en vez de una fecha inválida.
+        // And shifting with it returns the instant untouched instead of an invalid date.
         expect(toDisplayTime(summer, 'Mars/Olympus').getTime()).toBe(summer.getTime());
     });
 
-    it('la fecha de pantalla lee la hora de pared de la zona destino', () => {
-        // La hora LOCAL de la fecha desplazada tiene que ser la que Intl da en la zona destino: eso
-        // es lo que hace que la aritmética local del motor coloque el evento donde toca.
+    it("the display date reads the target zone's wall clock", () => {
+        // The shifted date's LOCAL time has to be the one Intl reports in the target zone: that is
+        // what makes the engine's local arithmetic place the event where it belongs.
         for (const zone of ['Asia/Tokyo', 'America/New_York', 'Pacific/Auckland']) {
             const expected = Number(new Intl.DateTimeFormat('en-US', { timeZone: zone, hour: '2-digit', hour12: false }).format(summer)) % 24;
             expect(toDisplayTime(summer, zone).getHours()).toBe(expected);
@@ -450,10 +450,10 @@ describe('zonas horarias', () => {
 
     const zones = ['Europe/Madrid', 'Asia/Tokyo', 'America/New_York', 'Pacific/Auckland'];
 
-    it('desplazar y volver es la identidad, incluido el salto de primavera', () => {
-        // El salto adelante y un instante a cada lado de los cambios americano y europeo: ahí el
-        // instante y su fecha de pantalla caen a distinto lado de una frontera, que es donde una
-        // implementación a base de sumar offsets se deja una hora.
+    it('shifting and back is the identity, the spring-forward jump included', () => {
+        // The forward jump and an instant either side of the American and European changes: there
+        // the instant and its display date fall on opposite sides of a boundary, which is where an
+        // implementation built on adding offsets loses an hour.
         const instants = [summer, winter, new Date(Date.UTC(2026, 2, 29, 1, 30)), new Date(Date.UTC(2026, 2, 8, 6, 30)), new Date(Date.UTC(2026, 5, 15, 3, 15))];
 
         for (const zone of zones) {
@@ -463,28 +463,28 @@ describe('zonas horarias', () => {
         }
     });
 
-    it('la hora REPETIDA del cambio de otoño resuelve SIEMPRE a la primera de las dos', () => {
-        // Las 02:30 del 25 de octubre existen dos veces en Madrid, y la 01:30 del 1 de noviembre dos
-        // veces en Nueva York. La regla es fija: el mismo reloj de pared significa la primera.
+    it('the REPEATED hour of the autumn change ALWAYS resolves to the first of the two', () => {
+        // 02:30 on 25 October happens twice in Madrid, and 01:30 on 1 November twice in New York.
+        // The rule is fixed: the same wall clock means the first of the two.
         for (const [zone, first] of [
             ['Europe/Madrid', new Date(Date.UTC(2026, 9, 25, 0, 30))],
             ['America/New_York', new Date(Date.UTC(2026, 10, 1, 5, 30))]
         ] as const) {
             const second = new Date(first.getTime() + 3_600_000);
 
-            // Las dos se pintan igual...
+            // Both are drawn the same...
             expect(toDisplayTime(second, zone).getTime()).toBe(toDisplayTime(first, zone).getTime());
-            // ...y las dos vuelven a la primera, de forma determinista.
+            // ...and both come back to the first, deterministically.
             expect(fromDisplayTime(toDisplayTime(first, zone), zone).getTime()).toBe(first.getTime());
             expect(fromDisplayTime(toDisplayTime(second, zone), zone).getTime()).toBe(first.getTime());
         }
     });
 
-    it('la hora que el salto de primavera SE COME resuelve justo después del hueco', () => {
-        // Las 02:30 del día del salto no existen en la zona destino. El caso se prueba en varias
-        // zonas cuyos saltos caen en fechas DISTINTAS y se descartan las que la máquina que corre el
-        // test no puede ni expresar: `new Date(y, m, d, 2, 30)` normaliza a 03:30 si el anfitrión
-        // salta ese mismo día, así que con la zona clavada el test no probaba nada fuera de Madrid.
+    it('the hour the spring-forward jump SWALLOWS resolves just past the gap', () => {
+        // 02:30 on the day of the jump does not exist in the target zone. The case is tried in
+        // several zones whose jumps fall on DIFFERENT dates, discarding the ones the machine running
+        // the test cannot even express: `new Date(y, m, d, 2, 30)` normalises to 03:30 when the host
+        // jumps that same day, so with one zone pinned the test proved nothing outside Madrid.
         const gaps = [
             { zone: 'Europe/Madrid', date: [2026, 2, 29] as const },
             { zone: 'America/New_York', date: [2026, 2, 8] as const },
@@ -499,23 +499,23 @@ describe('zonas horarias', () => {
 
             const resolved = fromDisplayTime(missing, zone);
 
-            // El instante existe —el offset de la zona lo confirma— y su reloj de pared en la zona
-            // es el primero después del hueco, no una hora inventada dentro de él.
+            // The instant exists — the zone's offset confirms it — and its wall clock in the zone
+            // is the first one past the gap, not an hour invented inside it.
             expect(Number.isNaN(zoneOffsetMinutes(resolved, zone))).toBe(false);
             expect(wallClock(resolved, zone)).toBe('03:30');
             tested++;
         }
 
-        // Un anfitrión sólo puede colisionar con uno de los tres saltos: siempre queda algo probado.
+        // A host can only collide with one of the three jumps: something is always exercised.
         expect(tested).toBeGreaterThan(0);
     });
 
-    it('sin zona destino las dos conversiones son la identidad, por referencia', () => {
+    it('with no target zone both conversions are the identity, by reference', () => {
         expect(toDisplayTime(summer, undefined)).toBe(summer);
         expect(fromDisplayTime(summer, undefined)).toBe(summer);
     });
 
-    it('la etiqueta del gutter dice el offset de la zona que se está pintando', () => {
+    it("the gutter's label states the offset of the zone being drawn", () => {
         expect(zoneLabel(summer, 'Asia/Tokyo')).toBe('GMT+9');
         expect(zoneLabel(summer, 'Europe/Madrid')).toBe('GMT+2');
         expect(zoneLabel(summer, 'Asia/Kolkata')).toBe('GMT+5:30');
@@ -523,30 +523,30 @@ describe('zonas horarias', () => {
     });
 });
 
-describe('importar y exportar', () => {
+describe('import and export', () => {
     const events: SchedulerEvent[] = [
         { id: 'a', title: 'Stand-up; daily', start: new Date(2026, 8, 8, 9, 30), end: new Date(2026, 8, 8, 9, 45), description: 'Line one\nline two', rrule: 'FREQ=DAILY;COUNT=5', categoryId: 'ops', resourceId: 'crew' },
         { id: 'b', title: 'Festival', start: new Date(2026, 8, 10), end: new Date(2026, 8, 13), allDay: true }
     ];
 
-    it('una serie se exporta como UN VEVENT con su regla, no como sus copias', () => {
+    it('a series exports as ONE VEVENT with its rule and not as its copies', () => {
         const ics = toICalendar(events, { name: 'Demo' });
         expect(ics.match(/BEGIN:VEVENT/g)?.length).toBe(2);
         expect(ics).toContain('RRULE:FREQ=DAILY;COUNT=5');
         expect(ics).toContain('X-WR-CALNAME:Demo');
-        // Punto y coma y salto de línea son estructurales en ICS: van escapados.
+        // Semicolons and newlines are structural in ICS: they go escaped.
         expect(ics).toContain('SUMMARY:Stand-up\\; daily');
         expect(ics).toContain('DESCRIPTION:Line one\\nline two');
-        // El día completo va como VALUE=DATE, que es lo que el formato entiende por un día entero.
+        // An all-day event goes as VALUE=DATE, which is what the format means by a whole day.
         expect(ics).toContain('DTSTART;VALUE=DATE:20260910');
     });
 
-    it('las líneas se plegan a 75 octetos, que es lo que muchos parsers exigen', () => {
+    it('the lines fold at 75 octets, which is what plenty of parsers demand', () => {
         const long = toICalendar([{ id: 'l', title: 'x'.repeat(200), start: new Date(2026, 8, 8, 9) }]);
         for (const line of long.split('\r\n')) expect(line.length).toBeLessThanOrEqual(75);
     });
 
-    it('la ida y vuelta conserva lo que el Scheduler sabe pintar', () => {
+    it('the round trip keeps what the Scheduler knows how to draw', () => {
         const { events: parsed, name } = parseICalendar(toICalendar(events, { name: 'Demo' }));
 
         expect(name).toBe('Demo');
@@ -561,8 +561,8 @@ describe('importar y exportar', () => {
         expect(parsed[1].allDay).toBe(true);
     });
 
-    it('el día completo lleva un DTEND EXCLUSIVO, también sin final propio', () => {
-        // Un día entero del 10 al 12 acaba, en el formato, el 13; y uno sin final ocupa su día, no cero.
+    it('an all-day event carries an EXCLUSIVE DTEND, with no end of its own too', () => {
+        // A whole day from the 10th to the 12th ends, in the format, on the 13th; and one with no end takes its day, not zero.
         expect(toICalendar(events)).toContain('DTEND;VALUE=DATE:20260913');
 
         const single = toICalendar([{ id: 's', title: 'Feriado', start: new Date(2026, 8, 8), allDay: true }]);
@@ -570,28 +570,28 @@ describe('importar y exportar', () => {
         expect(single).toContain('DTEND;VALUE=DATE:20260909');
     });
 
-    it('un final a medianoche no arrastra el día siguiente', () => {
-        // [start, end) es la convención del motor: acabar el 11 a las 00:00 ocupa el 10 y nada más.
-        const ics = toICalendar([{ id: 'm', title: 'Un día', start: new Date(2026, 8, 10), end: new Date(2026, 8, 11), allDay: true }]);
+    it('an end at midnight does not drag the next day in', () => {
+        // [start, end) is the engine's convention: ending on the 11th at 00:00 occupies the 10th and nothing else.
+        const ics = toICalendar([{ id: 'm', title: 'One day', start: new Date(2026, 8, 10), end: new Date(2026, 8, 11), allDay: true }]);
         expect(ics).toContain('DTEND;VALUE=DATE:20260911');
     });
 
-    it('el desescapado va en UNA pasada, así que una ruta de Windows sobrevive', () => {
+    it('unescaping runs in ONE pass, so a Windows path survives', () => {
         const ics = toICalendar([{ id: 'w', title: 'Copia', start: new Date(2026, 8, 8, 9), location: 'C:\\network\\share' }]);
         const { events: parsed } = parseICalendar(ics);
 
-        // Desescapar por pasos convertiría la barra escapada mas la n siguiente en un salto de línea.
+        // Unescaping in steps would turn the escaped backslash plus the following n into a newline.
         expect(parsed[0].location).toBe('C:\\network\\share');
     });
 
-    it('un calendario roto da lo que se pueda leer, no una excepción', () => {
+    it('a broken calendar yields what can be read rather than an exception', () => {
         const { events: parsed } = parseICalendar('BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nSUMMARY:No start\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nDTSTART:20260908T090000Z\r\nSUMMARY:Fine\r\nEND:VEVENT\r\nEND:VCALENDAR');
-        // El VEVENT sin DTSTART no se puede colocar en ningún sitio y se descarta; el otro entra.
+        // The VEVENT with no DTSTART cannot be placed anywhere and is discarded; the other one gets in.
         expect(parsed.length).toBe(1);
         expect(parsed[0].title).toBe('Fine');
     });
 
-    it('el JSON lleva los instantes como ISO y los devuelve como Date', () => {
+    it('the JSON carries the instants as ISO and gives them back as Dates', () => {
         const payload = serializeSchedule(events, { categories: [{ id: 'ops', name: 'Operations' }] });
         expect(typeof payload.events[0].start).toBe('string');
         expect(payload.categories?.length).toBe(1);
@@ -602,8 +602,8 @@ describe('importar y exportar', () => {
     });
 });
 
-describe('navegación por celdas', () => {
-    /** Monta una estructura como la que pinta el renderer, con el marcador que lee el navegador. */
+describe('cell navigation', () => {
+    /** Builds the structure a renderer draws, with the marker the navigator reads. */
     function grid(html: string): HTMLElement {
         const root = document.createElement('div');
 
@@ -617,7 +617,7 @@ describe('navegación por celdas', () => {
 
     afterEach(() => document.querySelectorAll('.p-scheduler-view').forEach((node) => node.remove()));
 
-    it('en una columna horaria las verticales recorren la columna y las horizontales cambian de columna', () => {
+    it('in a time column the vertical keys walk the column and the horizontal ones change column', () => {
         const root = grid(`
             <div class="p-scheduler-time-grid-column">${cell('a1')}${cell('a2')}${cell('a3')}</div>
             <div class="p-scheduler-time-grid-column">${cell('b1')}${cell('b2')}${cell('b3')}</div>
@@ -627,28 +627,28 @@ describe('navegación por celdas', () => {
 
         expect(moveCellFocus(at('a1'), 'ArrowDown')).toBe(true);
         expect(document.activeElement?.getAttribute('aria-label')).toBe('a2');
-        // Cambiar de columna conserva la fila, que es lo que hace útil moverse en horizontal.
+        // Changing column keeps the row, which is what makes moving horizontally useful.
         expect(moveCellFocus(at('a2'), 'ArrowRight')).toBe(true);
         expect(document.activeElement?.getAttribute('aria-label')).toBe('b2');
     });
 
-    it('el relleno deshabilitado de un minimes se salta, sin perder la columna del día', () => {
+    it("a mini-month's disabled padding is skipped without losing the weekday column", () => {
         const disabled = (label: string) => `<button data-nav-cell="" tabindex="-1" disabled aria-label="${label}"></button>`;
         const cells7 = (week: number) => Array.from({ length: 7 }, (_, day) => (week === 1 && day < 3 ? disabled(`w${week}d${day}`) : cell(`w${week}d${day}`))).join('');
         const root = grid(`<div class="p-scheduler-mini-month-grid">${cells7(1)}${cells7(2)}</div>`);
         const cells = [...root.querySelectorAll<HTMLElement>('[data-nav-cell]')];
         const at = (label: string) => cells.find((node) => node.getAttribute('aria-label') === label)!;
 
-        // Bajar sigue moviéndose de siete en siete: el mismo día de la semana, no el siguiente hueco.
+        // Down still moves seven at a time: the same weekday, not the next free cell.
         expect(moveCellFocus(at('w1d3'), 'ArrowDown')).toBe(true);
         expect(document.activeElement?.getAttribute('aria-label')).toBe('w2d3');
-        // Home no puede dejar el único punto de entrada en un botón deshabilitado.
+        // Home cannot leave the single entry point on a disabled button.
         expect(moveCellFocus(at('w1d3'), 'Home')).toBe(true);
         expect(document.activeElement?.getAttribute('aria-label')).toBe('w1d3');
         expect(at('w1d0').getAttribute('tabindex')).toBe('-1');
     });
 
-    it('en una semana de mes es al contrario, y bajar salta a la semana siguiente', () => {
+    it('in a month week it is the other way round, and down jumps to the next week', () => {
         const root = grid(`
             <div class="p-scheduler-month-week">${cell('w1d1')}${cell('w1d2')}</div>
             <div class="p-scheduler-month-week">${cell('w2d1')}${cell('w2d2')}</div>
@@ -662,27 +662,27 @@ describe('navegación por celdas', () => {
         expect(document.activeElement?.getAttribute('aria-label')).toBe('w2d2');
     });
 
-    it('el minimes es una rejilla de siete: bajar avanza una semana', () => {
+    it('a mini-month is a seven-wide grid: down advances a week', () => {
         const root = grid(`<div class="p-scheduler-mini-month-grid">${Array.from({ length: 14 }, (_, i) => cell(`d${i + 1}`)).join('')}</div>`);
         const cells = [...root.querySelectorAll<HTMLElement>('[data-nav-cell]')];
 
         expect(moveCellFocus(cells[2], 'ArrowDown')).toBe(true);
         expect(document.activeElement?.getAttribute('aria-label')).toBe('d10');
-        // Y el borde del minimes es el borde: ahí abajo empieza otro mes, no la semana siguiente.
+        // And a mini-month's edge is the edge: below it another month starts, not the next week.
         expect(moveCellFocus(cells[10], 'ArrowDown')).toBe(false);
     });
 
-    it('un movimiento que se sale de la rejilla NO se consume, para no atrapar el foco en el borde', () => {
+    it('a move that would leave the grid is NOT consumed, so focus is not trapped at the edge', () => {
         const root = grid(`<div class="p-scheduler-time-grid-column">${cell('only')}</div>`);
         const only = root.querySelector<HTMLElement>('[data-nav-cell]')!;
 
         expect(moveCellFocus(only, 'ArrowUp')).toBe(false);
         expect(moveCellFocus(only, 'ArrowLeft')).toBe(false);
-        // Y una tecla que no es de movimiento tampoco.
+        // Nor does a key that is not a movement.
         expect(moveCellFocus(only, 'a')).toBe(false);
     });
 
-    it('en RTL las flechas horizontales se invierten', () => {
+    it('in RTL the horizontal arrows are reversed', () => {
         const root = grid(`
             <div class="p-scheduler-month-week">${cell('d1')}${cell('d2')}</div>
         `);
@@ -692,7 +692,7 @@ describe('navegación por celdas', () => {
         expect(document.activeElement?.getAttribute('aria-label')).toBe('d2');
     });
 
-    it('el foco deja una sola parada de tabulación detrás', () => {
+    it('the focus leaves a single tab stop behind it', () => {
         const root = grid(`<div class="p-scheduler-month-week">${cell('d1')}${cell('d2')}</div>`);
         const cells = [...root.querySelectorAll<HTMLElement>('[data-nav-cell]')];
 
@@ -704,23 +704,23 @@ describe('navegación por celdas', () => {
     });
 });
 
-describe('correcciones de colocación', () => {
-    it('el mínimo de un evento no se sale del contenedor', () => {
-        // Una cita de un minuto a las 23:59 pedía 15 minutos de alto y se pintaba fuera de la rejilla.
+describe('placement fixes', () => {
+    it("an event's minimum does not run outside its container", () => {
+        // A one-minute appointment at 23:59 asked for 15 minutes of height and drew outside the grid.
         const range = { start: new Date(2026, 8, 8), end: new Date(2026, 8, 9) };
         const [item] = layoutTimeGrid([ev('late', '2026-09-08T23:59', '2026-09-09T00:00')], { range, minEventMinutes: 15 });
 
         expect(item.offset + item.size).toBeLessThanOrEqual(1);
     });
 
-    it('el desborde se cuelga del día de CALENDARIO, también el día del cambio de hora', () => {
-        // El día del cambio de hora dura 23 o 25 horas, así que dividir por 86.400.000 desplazaba el
-        // índice de los días siguientes y el "+N more" colgaba del día equivocado.
+    it('the overflow hangs off the CALENDAR day, the day the clocks change included', () => {
+        // The day the clocks change is 23 or 25 hours long, so dividing by 86,400,000 shifted the
+        // index of the later days and the "+N more" hung off the wrong one.
         //
-        // El día corto se BUSCA en la zona de la máquina en vez de clavar una fecha de Madrid: con la
-        // fecha fija, un anfitrión sin ese cambio —UTC en el CI— medía días de 24 horas exactas y la
-        // regresión no se veía. Donde no hay ningún cambio de hora se prueba la semana normal, que es
-        // todo lo que esa zona puede distinguir.
+        // The short day is SEARCHED for in the host's zone rather than pinned to a Madrid date: with
+        // a fixed date, a host without that change — UTC in CI — measured days of exactly 24 hours
+        // and the regression was invisible. Where there is no clock change at all, the plain week is
+        // exercised, which is all that zone can tell apart.
         const shortDay = (() => {
             for (let month = 0; month < 24; month++) {
                 const year = 2026 + Math.floor(month / 12);
@@ -737,9 +737,9 @@ describe('correcciones de colocación', () => {
         const first = shortDay ?? new Date(2026, 2, 29);
         const second = new Date(first.getFullYear(), first.getMonth(), first.getDate() + 1);
         const range = { start: first, end: new Date(first.getFullYear(), first.getMonth(), first.getDate() + 7) };
-        // Justo pasada la medianoche del día siguiente: ahí es donde las 23 horas del día anterior
-        // dejaban el cociente por debajo de 1 y el desborde caía en el índice 0. Y se solapan a
-        // propósito, porque sin solape los dos caben en la misma fila y no hay desborde.
+        // Just past midnight on the following day: that is where the previous day's 23 hours left
+        // the quotient below 1 and the overflow landed on index 0. And they overlap on purpose,
+        // because without an overlap both fit in the same row and there is no overflow.
         const at = (hour: number, minute: number) => new Date(second.getFullYear(), second.getMonth(), second.getDate(), hour, minute);
         const { overflow } = layoutRows(
             [
@@ -752,15 +752,15 @@ describe('correcciones de colocación', () => {
         expect([...overflow.keys()]).toEqual([1]);
     });
 
-    it('un UNTIL en fecha suelta no se come las citas de ese mismo día', () => {
+    it("a bare-date UNTIL does not swallow that same day's appointments", () => {
         const rule = parseRRule('FREQ=DAILY;UNTIL=20260910')!;
         const starts = recurrenceStarts(new Date(2026, 8, 8, 9), rule, { start: new Date(2026, 8, 1), end: new Date(2026, 8, 30) });
 
-        // El 10 entra: "hasta el 10" incluye el 10, aunque la cita sea a las 9 de la mañana.
+        // The 10th is in: "until the 10th" includes the 10th, even for a 9 a.m. appointment.
         expect(starts.map(dayKey)).toEqual(['2026-09-08', '2026-09-09', '2026-09-10']);
     });
 
-    it('un id de recurso numérico vuelve como número desde el DOM', () => {
+    it('a numeric resource id comes back from the DOM as a number', () => {
         const lane = document.createElement('div');
 
         lane.dataset['resourceId'] = '3';
@@ -771,7 +771,7 @@ describe('correcciones de colocación', () => {
         cell.dataset['endDate'] = String(new Date(2026, 8, 8, 10).getTime());
         lane.appendChild(cell);
 
-        // Un data attribute siempre es texto: sin reconvertirlo, "3" no casa con el recurso 3.
+        // A data attribute is always text: without converting it back, "3" does not match resource 3.
         expect(readCellTarget(cell)!.resourceId).toBe(3);
 
         lane.dataset['resourceId'] = 'crew-3';

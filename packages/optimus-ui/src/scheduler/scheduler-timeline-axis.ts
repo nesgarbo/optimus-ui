@@ -117,9 +117,9 @@ export function buildTimelineAxis(scale: SchedulerTimelineScale, options: Schedu
  */
 function timeColumns(options: SchedulerTimelineAxisOptions): SchedulerTimelineSlot[] {
     const { range, dayBounds, slotMinutes, locale } = options;
-    // Todos los días del RANGO, también en la escala de día: buildTimelineAxis es público y su rango
-    // no está limitado a un día, y quedarse con el primero dejaba los eventos posteriores pegados al
-    // final del eje.
+    // Every day of the RANGE, on the day scale too: buildTimelineAxis is public and its range is
+    // not limited to a single day, and keeping only the first left every later event pinned to the
+    // end of the axis.
     const days = eachDay(range.start, range.end);
     const slots: SchedulerTimelineSlot[] = [];
 
@@ -148,8 +148,8 @@ function daySlots(options: SchedulerTimelineAxisOptions): SchedulerTimelineSlot[
         start: day,
         end: addDays(day, 1),
         label: day.toLocaleDateString(locale, { day: 'numeric', weekday: 'short' }),
-        // La regla sólida cae al empezar la semana: es lo que deja contar semanas de un vistazo en
-        // un eje de treinta y una columnas iguales.
+        // The solid rule lands where the week starts: that is what makes weeks countable at a
+        // glance on an axis of thirty-one identical columns.
         major: day.getDay() === firstDayOfWeek,
         today: isToday(day, options.now)
     }));
@@ -171,7 +171,7 @@ function monthSlots(options: SchedulerTimelineAxisOptions): SchedulerTimelineSlo
             start,
             end,
             label: start.toLocaleDateString(locale, { month: 'short' }),
-            // Trimestres: la única subdivisión que un eje de doce columnas puede señalar sin ruido.
+            // Quarters: the only subdivision a twelve-column axis can mark without adding noise.
             major: start.getMonth() % 3 === 0,
             today: now >= start && now < end
         });
@@ -196,10 +196,10 @@ function timeTiers(scale: SchedulerTimelineScale, slots: SchedulerTimelineSlot[]
         },
         {
             key: 'day',
-            // Por dia en las dos escalas: el rango de buildTimelineAxis no esta limitado a un dia, ni
-            // en la escala de dia, y una unica celda etiquetada con el primero mentia sobre el resto
-            // de las columnas. Con un solo dia agrupar por dia da exactamente una celda, que es lo
-            // que se pintaba antes.
+            // Per day on both scales: buildTimelineAxis is not limited to a single day, not even on
+            // the day scale, and one cell labelled with the first day lied about the rest of the
+            // columns. With a single day, grouping by day gives exactly one cell, which is what was
+            // drawn before.
             cells: groupSlots(
                 slots,
                 (slot) => dayKey(slot.start),
@@ -278,8 +278,8 @@ function positionOn(slots: SchedulerTimelineSlot[], date: Date): number {
     for (let index = 0; index < slots.length; index++) {
         const start = slots[index].start.getTime();
         const end = slots[index].end.getTime();
-        // Antes de esta columna y después de la anterior: cae en un hueco que el eje no dibuja (una
-        // noche), así que se resuelve al borde y no interpolado por dentro del hueco.
+        // Before this column and after the previous one: it falls in a gap the axis does not draw
+        // (a night), so it resolves to the edge instead of being interpolated across the gap.
         if (time < start) return index / slots.length;
         if (time < end) return (index + (time - start) / (end - start)) / slots.length;
     }

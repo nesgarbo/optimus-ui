@@ -251,8 +251,8 @@ export class SchedulerState {
      * resort, for a root with no content region at all.
      */
     readonly availableViews = computed<SchedulerViewType[]>(() => {
-        // `!= null` y no `?.length`: una lista vacía pasada a propósito es "no ofrezcas ninguna
-        // vista", y caer a los scopes declarados en ese caso ignoraría lo que la página pidió.
+        // `!= null` and not `?.length`: an empty list passed on purpose means "offer no views at
+        // all", and falling back to the declared scopes there would ignore what the page asked for.
         const explicit = this.inputs.availableViews();
         if (explicit != null) return explicit;
         const declared = this.declaredViews();
@@ -363,9 +363,9 @@ export class SchedulerState {
      */
     private readonly blocked = computed(() =>
         this.inputs.blockedIntervals().map((interval) => ({
-            // A tiempo de pantalla como los eventos: se comparan contra las fechas de las celdas, que
-            // están desplazadas. Sin convertirlos, una zona destino movía el calendario y dejaba los
-            // bloqueos donde estaban.
+            // On display time like the events: they are compared against the cells' dates, which
+            // are shifted. Without converting them, a target zone moved the calendar and left the
+            // blocked windows where they were.
             start: this.toDisplay(toDate(interval.start)).getTime(),
             end: this.toDisplay(toDate(interval.end)).getTime(),
             resourceId: interval.resourceId
@@ -378,7 +378,7 @@ export class SchedulerState {
     /** The available windows, with their instants resolved once. */
     readonly appointmentSlots = computed(() =>
         this.inputs.appointmentSlots().map((slot) => {
-            // Igual que los bloqueos: la geometría los sitúa contra celdas ya desplazadas.
+            // Same as the blocked windows: the geometry places them against already shifted cells.
             const start = this.toDisplay(toDate(slot.start));
             const end = this.toDisplay(toDate(slot.end));
             const capacity = slot.capacity;
@@ -415,8 +415,8 @@ export class SchedulerState {
                     offset: (visibleStart - from) / span,
                     size: (visibleEnd - visibleStart) / span,
                     label,
-                    // El hueco es accionable, asi que necesita nombre: la hora, y la ocupacion cuando
-                    // la hay. Sin el, un lector de pantalla anuncia un boton sin contenido.
+                    // The slot is actionable, so it needs a name: the time, plus the occupancy when
+                    // there is one. Without it a screen reader announces an empty button.
                     ariaLabel: label ? `${range}, ${label}` : range,
                     full: slot.full,
                     slot
@@ -597,11 +597,11 @@ export class SchedulerState {
     private readonly seriesEvents = computed(() => expandEvents(this.zonedEvents(), this.expansionWindow(), this.inputs.defaultEventDuration()));
 
     readonly expandedEvents = computed(() => {
-        // Dos capas y no una: la expansión de series depende SOLO de los datos y de la ventana, así
-        // que un preview de arrastre —que cambia sesenta veces por segundo— no vuelve a parsear una
-        // RRULE ni a regenerar ocurrencias. Los cambios se aplican después de expandir porque el id
-        // de una ocurrencia solo existe una vez expandida: arrastrar una cita de una serie mueve esa
-        // ocurrencia, no la serie.
+        // Two layers and not one: series expansion depends ONLY on the data and the window, so a
+        // drag preview — which changes sixty times a second — neither re-parses an RRULE nor
+        // regenerates occurrences. The changes are applied after expanding because an occurrence's
+        // id only exists once expanded: dragging an appointment out of a series moves that
+        // occurrence, not the series.
         const preview = this.dragPreview();
         const pending = preview ? new Map([...this.pendingChanges(), [preview.id, preview.change]]) : this.pendingChanges();
         return applyPendingChanges(this.seriesEvents(), pending);
@@ -882,8 +882,8 @@ export class SchedulerState {
         if (next.has(event.id)) {
             next.delete(event.id);
         } else {
-            // El tope se comprueba ANTES de añadir y se avisa al llamante: el root emite
-            // eventSelectionLimitReached en vez de tragarse el clic en silencio.
+            // The cap is checked BEFORE adding and the caller is told: the root emits
+            // eventSelectionLimitReached instead of swallowing the click in silence.
             if (Number.isFinite(max) && next.size >= max) return false;
             next.add(event.id);
         }
@@ -923,8 +923,8 @@ export class SchedulerState {
      * `eventSelectionLimitReached` instead of silently doing nothing.
      */
     handleEventClick(originalEvent: MouseEvent | KeyboardEvent, event: SchedulerEvent): void {
-        // El clic que cierra un arrastre no es un clic: sin esto, mover una cita la seleccionaría y
-        // abriría su quick info al soltar.
+        // The click that ends a drag is not a click: without this, moving an appointment would
+        // select it and open its quick info on release.
         if (this.drag.consumeClickSuppression()) return;
 
         const mode = this.inputs.selectionMode();
@@ -1030,8 +1030,8 @@ export class SchedulerState {
 
     /** Opens the overflow popover for a cell. */
     openMorePopover(date: Date, events: SchedulerEvent[], anchor?: HTMLElement): void {
-        // El aviso sale siempre, tambien con el popover apagado: apagarlo es quedarse con el enlace
-        // para abrir lo que la pagina quiera, no perder el evento.
+        // The notice always goes out, popover off included: turning it off is keeping the link to
+        // open whatever the page wants, not losing the event.
         this.inputs.emitMoreClick(
             date,
             events.map((event) => this.realOf(event))
@@ -1061,8 +1061,8 @@ export class SchedulerState {
 
     /** Whether an event may be resized. */
     isDurationEditable(event: SchedulerEvent): boolean {
-        // Un evento de todo el día no se redimensiona en la rejilla: no tiene eje de tiempo al que
-        // agarrarse, así que cambiar su rango es un formulario, no un arrastre.
+        // An all-day event is not resized in the grid: it has no time axis to grab, so changing its
+        // range is a form, not a drag.
         if (event.allDay) return false;
         return (event.editable ?? this.inputs.editable()) && this.inputs.eventDurationEditable();
     }
@@ -1072,16 +1072,16 @@ export class SchedulerState {
         view: () => this.inputs.view(),
         startEditable: (event) => this.isStartEditable(event),
         durationEditable: (event) => this.isDurationEditable(event),
-        // El timeline puede pedir su propio redondeo: una columna de una hora en horizontal no quiere
-        // el mismo salto que una fila de media hora en vertical.
-        // El redondeo del timeline es del TIMELINE: la rejilla vertical de día y semana también
-        // produce objetivos que no son de día entero, y estaba cogiendo el salto del eje horizontal.
+        // A timeline can ask for a snap of its own: an hour-wide column laid out horizontally does
+        // not want the same step as a half-hour row laid out vertically. It applies to the TIMELINE
+        // only, because the vertical day and week grids also produce targets that are not whole
+        // days and were picking up the horizontal axis's step.
         snapMinutes: (target: SchedulerDragTarget) => (target.whole ? 24 * 60 : timelineScaleOf(this.inputs.view()) ? (this.inputs.timelineSnapDuration() ?? this.inputs.snapDuration()) : this.inputs.snapDuration()),
         minEventMinutes: () => this.inputs.minEventMinutes(),
         defaultEventDuration: () => this.inputs.defaultEventDuration(),
         minDistance: () => this.inputs.dragMinDistance(),
-        // Un hueco bloqueado se rechaza ANTES de preguntar a la aplicación: si la página ya declaró
-        // que ahí no se puede, no tiene que volver a decirlo en el callback.
+        // A blocked window is refused BEFORE the application is asked: if the page already declared
+        // that it cannot happen there, it should not have to say so again in the callback.
         allow: (info) => !this.overlapsBlocked(info.start, info.end, info.resourceId) && (this.inputs.eventAllow()?.(info) ?? true),
         preview: (id, change, kind) => {
             if (id == null || !change) {
@@ -1090,8 +1090,8 @@ export class SchedulerState {
                 this.resizingEventId.set(null);
                 return;
             }
-            // El punto de partida lo trae el controlador, que ya lo capturó al empezar: buscarlo aquí
-            // por id era un recorrido de toda la colección en cada frame del arrastre.
+            // The starting point comes from the controller, which captured it when the drag began:
+            // looking it up by id here walked the whole collection on every frame.
             this.dragPreview.set({ id, change });
             (kind === 'move' ? this.draggingEventId : this.resizingEventId).set(id);
         },
@@ -1105,8 +1105,8 @@ export class SchedulerState {
             next.delete(id);
             this.pendingChanges.set(next);
         },
-        // Cada salida deshace el desplazamiento de zona: el componente pinta en la zona destino, la
-        // aplicación guarda instantes reales.
+        // Every output undoes the zone shift: the component draws in the target zone, the
+        // application stores real instants.
         emitDragStart: (payload) => this.inputs.emitDragStart(this.realise(payload)),
         emitDrop: (payload) => this.inputs.emitDrop(this.realise(payload)),
         emitResizeStart: (payload) => this.inputs.emitResizeStart(this.realise(payload)),
@@ -1130,10 +1130,10 @@ export class SchedulerState {
         if (view === 'year' || timelineScale === 'year') {
             return String(start.getFullYear());
         }
-        // El mes y la agenda se titulan con el mes de la fecha ancla y NO con el rango: el del mes
-        // abarca semanas enteras y se sale por los dos lados —un mes que empieza en domingo se
-        // titularía con el anterior—, y el de la agenda son N días a partir del ancla, que impreso
-        // como rango da un "8 sep - 7 oct" que no dice dónde estás.
+        // Month and agenda are titled with the anchor date's month and NOT with the range: the
+        // month's range covers whole weeks and spills at both ends — a month starting on a Sunday
+        // would be titled with the previous one — and the agenda's is N days from the anchor, which
+        // printed as a range gives an "8 Sep - 7 Oct" that says nothing about where you are.
         if (view === 'month' || view === 'resourceMonth' || view === 'dateMonth' || view === 'agenda' || timelineScale === 'month') {
             return this.inputs.date().toLocaleDateString(locale, { month: 'long', year: 'numeric' });
         }
@@ -1146,7 +1146,7 @@ export class SchedulerState {
         if (start.getMonth() !== last.getMonth()) {
             return `${start.toLocaleDateString(locale, { day: 'numeric', month: 'short' })} - ${last.toLocaleDateString(locale, { day: 'numeric', month: 'short' })}`;
         }
-        // Sin año dentro del mismo mes: en una semana el año es ruido, y el mes ya sale una vez.
+        // No year within the same month: across a week the year is noise, and the month is already there once.
         return `${start.getDate()} - ${last.toLocaleDateString(locale, { day: 'numeric', month: 'long' })}`;
     });
 }

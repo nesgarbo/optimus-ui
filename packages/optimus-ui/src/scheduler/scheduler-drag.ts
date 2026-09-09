@@ -95,8 +95,8 @@ export function readCellTarget(element: Element | null): SchedulerDragTarget | n
 
     const slot = cell.dataset['slot'] ?? '';
     const allDay = slot === 'scheduler-all-day-cell';
-    // Una celda de mes o de la banda de todo el día es un día ENTERO: interpolar dentro de ella daría
-    // una hora inventada a partir de la posición del ratón dentro de un cuadro de 6rem.
+    // A month cell or an all-day lane is a WHOLE day: interpolating inside one would invent a time
+    // out of where the mouse happens to sit within a 6rem box.
     const whole = allDay || slot === 'scheduler-month-cell';
     const lane = cell.closest<HTMLElement>('[data-resource-id]');
     const rawResourceId = lane?.dataset['resourceId'] || undefined;
@@ -106,9 +106,9 @@ export function readCellTarget(element: Element | null): SchedulerDragTarget | n
         end: new Date(end),
         allDay,
         whole,
-        // Un data attribute siempre es texto, y `SchedulerResource.id` puede ser número: sin
-        // reconvertirlo, arrastrar a la columna del recurso 3 proponía el recurso "3" y no casaba
-        // con nada de la colección.
+        // A data attribute is always text and `SchedulerResource.id` can be a number: without
+        // converting it back, dragging onto resource 3's column proposed resource "3" and matched
+        // nothing in the collection.
         resourceId: rawResourceId != null && rawResourceId !== '' && String(Number(rawResourceId)) === rawResourceId ? Number(rawResourceId) : rawResourceId,
         instant: new Date(start)
     };
@@ -151,8 +151,8 @@ interface CellHit {
 
 /** Reads the deepest labelled cell under a point, ignoring the surface being dragged. */
 function cellUnder(clientX: number, clientY: number): CellHit | null {
-    // elementsFromPoint y no elementFromPoint: el evento que se arrastra está justo debajo del
-    // puntero y sería siempre la respuesta.
+    // elementsFromPoint and not elementFromPoint: the event being dragged sits right under the
+    // pointer and would always be the answer.
     const stack = typeof document === 'undefined' ? [] : document.elementsFromPoint(clientX, clientY);
     for (const element of stack) {
         const cell = element.closest<HTMLElement>('[data-start-date][data-end-date]');
@@ -293,8 +293,8 @@ export class SchedulerDragController {
     /** Begins a resize of one edge. */
     startResize(originalEvent: PointerEvent, event: SchedulerEvent, edge: SchedulerResizeEdge): void {
         if (originalEvent.button !== 0 || !this.deps.durationEditable(event)) return;
-        // Un tirador de redimensión vive DENTRO de la superficie del evento: sin parar la propagación,
-        // el mismo pointerdown arrancaría también un movimiento.
+        // A resize handle lives INSIDE the event's surface: without stopping propagation, the same
+        // pointerdown would start a move as well.
         originalEvent.stopPropagation();
         this.begin(originalEvent, event, 'resize', edge);
     }
@@ -313,8 +313,8 @@ export class SchedulerDragController {
             baseEnd: end.getTime(),
             baseResourceId: event.resourceId,
             baseAllDay: !!event.allDay,
-            // Se agarra por donde se pinchó, no por el inicio: arrastrar una cita de dos horas por su
-            // mitad no debe teletransportar su inicio bajo el puntero.
+            // Grabbed where it was pressed, not by its start: dragging a two-hour appointment from
+            // the middle must not teleport its start under the pointer.
             grabOffset: under ? instantAt(under, originalEvent.clientX, originalEvent.clientY, this.isRtl(under.element)).getTime() - start.getTime() : 0,
             originX: originalEvent.clientX,
             originY: originalEvent.clientY,
@@ -364,8 +364,8 @@ export class SchedulerDragController {
             const travelled = Math.hypot(originalEvent.clientX - session.originX, originalEvent.clientY - session.originY);
             if (travelled < this.deps.minDistance()) return;
             session.started = true;
-            // Una selección ya empezada sigue viva y el navegador la arrastraría con el puntero: se
-            // limpia al cruzar el umbral, que es cuando esto pasa a ser un arrastre.
+            // A selection already under way stays alive and the browser would drag it along with
+            // the pointer: it is cleared at the threshold, which is when this becomes a drag.
             document.getSelection?.()?.removeAllRanges();
             const payload = this.payload(originalEvent, { start: new Date(session.baseStart), end: new Date(session.baseEnd), resourceId: session.baseResourceId, allDay: session.baseAllDay }, session);
             session.kind === 'move' ? this.deps.emitDragStart(payload) : this.deps.emitResizeStart(payload);
@@ -389,9 +389,9 @@ export class SchedulerDragController {
         const session = this.session;
         if (!session) return null;
 
-        // El hit test solo se repite cuando el puntero SALE de la celda que ya tenemos medida:
-        // comprobar si un punto está dentro de un rectángulo es gratis, y elementsFromPoint más un
-        // getBoundingClientRect por movimiento no lo es.
+        // The hit test only runs again when the pointer LEAVES the cell already measured: testing a
+        // point against a rectangle is free, and elementsFromPoint plus a getBoundingClientRect per
+        // move is not.
         const under = session.hit && inside(session.hit.box, originalEvent.clientX, originalEvent.clientY) ? session.hit : cellUnder(originalEvent.clientX, originalEvent.clientY);
         if (!under) return null;
         session.hit = under;
@@ -405,8 +405,8 @@ export class SchedulerDragController {
 
         if (session.kind === 'move') {
             if (under.target.whole) {
-                // En una celda de día entero se cambia el DÍA y se conserva la hora: es lo que
-                // significa arrastrar una cita en la rejilla del mes.
+                // On a whole-day cell the DAY changes and the time is kept: that is what dragging
+                // an appointment across the month grid means.
                 const base = new Date(session.baseStart);
                 start = new Date(under.target.start.getFullYear(), under.target.start.getMonth(), under.target.start.getDate(), base.getHours(), base.getMinutes(), base.getSeconds());
             } else {
@@ -438,7 +438,7 @@ export class SchedulerDragController {
         this.teardown();
         if (!session) return;
 
-        // Sin haber superado el umbral no ha habido arrastre: el clic sigue su curso y selecciona.
+        // Below the threshold there was no drag: the click runs its course and selects.
         if (!session.started || !session.last) {
             this.deps.preview(null, null, session.kind);
             return;

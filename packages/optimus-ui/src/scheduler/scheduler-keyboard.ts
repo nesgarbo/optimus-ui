@@ -78,7 +78,7 @@ function targetFor(cell: HTMLElement, key: string, rtl: boolean): HTMLElement | 
     const index = cells.indexOf(cell);
     if (index < 0) return null;
 
-    // En RTL las flechas horizontales están al revés: la izquierda avanza.
+    // In RTL the horizontal arrows are reversed: left is the one that advances.
     const horizontal = rtl ? (key === 'ArrowLeft' ? 1 : key === 'ArrowRight' ? -1 : 0) : key === 'ArrowLeft' ? -1 : key === 'ArrowRight' ? 1 : 0;
     const vertical = key === 'ArrowUp' ? -1 : key === 'ArrowDown' ? 1 : 0;
 
@@ -86,19 +86,19 @@ function targetFor(cell: HTMLElement, key: string, rtl: boolean): HTMLElement | 
     if (key === 'End') return firstFocusable(cells, cells.length - 1, -1);
     if (!horizontal && !vertical) return null;
 
-    // Dentro del contenedor: por su eje.
+    // Inside the container: along its axis.
     const within = container.axis === 'column' ? vertical : container.axis === 'row' ? horizontal : horizontal + vertical * container.columns;
     if (within) {
-        // Se sigue en la misma direccion mientras las celdas no puedan recibir el foco, de forma que
-        // el relleno de un minimes no se coma la pulsacion.
+        // Keep going in the same direction while the cells cannot take focus, so the padding of a
+        // mini-month does not swallow the keypress.
         const next = firstFocusable(cells, index + within, within);
         if (next) return next;
-        // Fuera de rango en una rejilla de siete: el borde del minimes es el borde, no la semana
-        // siguiente, porque ahí empieza otro mes.
+        // Out of range in a seven-wide grid: the edge of a mini-month IS the edge, not the next
+        // week, because that is where another month starts.
         return null;
     }
 
-    // Fuera del contenedor: al mismo índice del contenedor vecino.
+    // Outside the container: the same index of the neighbouring one.
     const across = container.axis === 'column' ? horizontal : vertical;
     if (!across) return null;
 
@@ -111,8 +111,8 @@ function targetFor(cell: HTMLElement, key: string, rtl: boolean): HTMLElement | 
     const neighbourCells = cellsOf(neighbour);
     const landing = Math.min(index, neighbourCells.length - 1);
     if (landing < 0) return null;
-    // Desde el mismo indice hacia dentro, y si no hay nada, hacia atras: el vecino puede ser mas
-    // corto o empezar con relleno.
+    // From the same index forwards, and backwards when that finds nothing: the neighbour can be
+    // shorter or start with padding.
     return firstFocusable(neighbourCells, landing, 1) ?? firstFocusable(neighbourCells, landing, -1);
 }
 

@@ -31,13 +31,13 @@ import { SchedulerViewBase } from './scheduler-view-base';
             [style.--p-scheduler-columns]="columns().length"
             [style.--p-scheduler-column-min-width]="columnMinWidth()"
         >
-            <!-- ── Cabecera pegada: la banda de grupos y la de columnas van DENTRO de un solo
-                 elemento sticky. Dos hermanos sticky con el mismo inset-block-start ocupan el mismo
-                 sitio, asi que la banda de grupos tapaba la de columnas al desplazar; pegando el
-                 envoltorio se apilan por flujo y el alto lo mide el navegador. -->
+            <!-- ── Sticky head: the groups band and the column band live INSIDE one sticky
+                 element. Two sticky siblings with the same inset-block-start land in the same
+                 place, so the groups band covered the column band while scrolling; sticking the
+                 wrapper stacks them by flow and lets the browser measure the height. -->
             <div class="p-scheduler-time-grid-head">
-                <!-- ── Banda de grupos: el recurso sobre sus fechas, o la fecha sobre sus recursos.
-                     Cada celda abarca las columnas que le tocan, igual que las bandas del timeline. -->
+                <!-- ── Groups band: the resource over its dates, or the date over its resources.
+                     Each cell spans the columns it owns, like the timeline's own bands. -->
                 @if (groups().length) {
                     <div class="p-scheduler-time-grid-groups">
                         <div class="p-scheduler-time-gutter-spacer"></div>
@@ -63,7 +63,7 @@ import { SchedulerViewBase } from './scheduler-view-base';
                     </div>
                 }
 
-                <!-- ── Cabecera: hueco del gutter + una columna por unidad de agrupación ──────── -->
+                <!-- ── Header: the gutter spacer + one column per grouping unit ──────────────── -->
                 <div class="p-scheduler-time-grid-header">
                     <div class="p-scheduler-time-gutter-spacer">{{ timeZoneLabel() }}</div>
                     @for (column of columns(); track column.key) {
@@ -78,7 +78,7 @@ import { SchedulerViewBase } from './scheduler-view-base';
                             @if (dayHeaderDef(); as tpl) {
                                 <ng-container *ngTemplateOutlet="tpl; context: column.cell.context; injector: cellInjector(column.cell.key)" />
                             } @else if (showResourceInHeader()) {
-                                <!-- La fecha ya está arriba —en la banda o en el título—: aquí manda el recurso. -->
+                                <!-- The date is already above — in the band or in the title — so the resource leads here. -->
                                 @if (column.resource) {
                                     <span class="p-scheduler-resource-dot" [style.background]="column.resource.color" aria-hidden="true"></span>
                                 }
@@ -92,7 +92,7 @@ import { SchedulerViewBase } from './scheduler-view-base';
                 </div>
             </div>
 
-            <!-- ── Banda de todo el día ───────────────────────────────────────────────────── -->
+            <!-- ── All-day band ───────────────────────────────────────────────────────────── -->
             @if (allDayRows().length || alwaysShowAllDay()) {
                 <div class="p-scheduler-all-day-row" data-slot="scheduler-all-day-row" [style.--p-scheduler-all-day-rows]="allDayRowCount()">
                     <div class="p-scheduler-all-day-gutter">{{ labels().allDay }}</div>
@@ -152,7 +152,7 @@ import { SchedulerViewBase } from './scheduler-view-base';
                 </div>
             }
 
-            <!-- ── Cuerpo: gutter + columnas con los eventos posicionados ─────────────────── -->
+            <!-- ── Body: gutter + columns with the events positioned in them ───────────────── -->
             <div class="p-scheduler-time-grid-body" data-slot="scheduler-content">
                 <div class="p-scheduler-time-gutter" data-slot="scheduler-time-gutter">
                     @for (slot of slots(); track slot.minutes) {
@@ -192,8 +192,8 @@ import { SchedulerViewBase } from './scheduler-view-base';
                             </div>
                         }
 
-                        <!-- Los huecos disponibles van DETRÁS de los eventos y no como eventos: un
-                             hueco libre es una propiedad del calendario, no una cita. -->
+                        <!-- The available windows go BEHIND the events and not as events: a free
+                             slot is a property of the calendar, not an appointment. -->
                         @for (slot of column.slots; track slot.key) {
                             <div
                                 class="p-scheduler-appointment-slot"
@@ -250,9 +250,9 @@ import { SchedulerViewBase } from './scheduler-view-base';
                                     <span class="p-scheduler-event-time">{{ item.context.timeText }}</span>
                                 }
                                 @if (item.context.resizable) {
-                                    <!-- Los tiradores viven DENTRO de la superficie del evento, así que su
-                                         pointerdown tiene que parar la propagación o el mismo gesto arrancaría
-                                         también un movimiento. Lo hace el controlador. -->
+                                    <!-- The handles live INSIDE the event's surface, so their
+                                         pointerdown has to stop propagation or the same gesture would
+                                         start a move as well. The controller does it. -->
                                     <span class="p-scheduler-event-resize-handle" data-slot="scheduler-event-resize-handle" data-edge="start" aria-hidden="true" (pointerdown)="onResizePointerDown($event, item.context.event, 'start')"></span>
                                     <span class="p-scheduler-event-resize-handle" data-slot="scheduler-event-resize-handle" data-edge="end" aria-hidden="true" (pointerdown)="onResizePointerDown($event, item.context.event, 'end')"></span>
                                 }
@@ -398,8 +398,9 @@ export class SchedulerTimeGridView extends SchedulerViewBase {
         const dates = eachDay(start, end);
         const resources = this.columnResources();
 
-        // El orden de las columnas ES la agrupación: recurso-primero recorre los recursos por fuera y
-        // las fechas por dentro, fecha-primero al contrario. Todo lo demás es idéntico.
+        // The order of the columns IS the grouping: resource-first walks the resources on the
+        // outside and the dates on the inside, date-first the other way round. Everything else is
+        // identical.
         const pairs: { date: Date; resource: SchedulerResource | null }[] =
             grouping === 'resource'
                 ? resources.flatMap((resource) => dates.map((date) => ({ date, resource })))
@@ -424,18 +425,19 @@ export class SchedulerTimeGridView extends SchedulerViewBase {
             const cells = timeSlots(bounds.start, bounds.end, slotMinutes).map((slot) => {
                 const cellStart = addMinutes(date, slot.minutes);
                 const cellEnd = addMinutes(cellStart, slotMinutes);
-                // Dos cosas distintas: "esta celda está DENTRO del horario declarado" —que es lo que
-                // nombra el slot, pone data-business y resuelve la definición workCell— y "aquí se
-                // puede reservar", que es true cuando no hay horario declarado. Sin separarlas, un
-                // Scheduler sin businessHours marcaba TODAS sus celdas como work-cell.
+                // Two different things: "this cell is INSIDE the declared hours" — which is what
+                // names the slot, sets data-business and resolves the workCell definition — and
+                // "booking is possible here", which is true when no hours were declared at all.
+                // Without separating them, a Scheduler with no businessHours marked EVERY cell as a
+                // work-cell.
                 const inBusiness = this.state.hasBusinessHours() && this.state.isBusinessTime(date, slot.minutes);
                 return {
                     key: `${dateKey}|${resource?.id ?? ''}|${slot.minutes}`,
                     start: cellStart,
                     end: cellEnd,
                     label: formatTime(cellStart, this.locale()),
-                    // La celda vacía es enfocable, así que necesita nombre: sin él un lector de
-                    // pantalla anuncia "botón" cuarenta veces por columna.
+                    // The empty cell is focusable, so it needs a name: without one a screen reader
+                    // announces "button" forty times per column.
                     ariaLabel: `${cellStart.toLocaleDateString(this.locale(), { weekday: 'long', day: 'numeric', month: 'long' })} ${formatTime(cellStart, this.locale())}${resource ? ` · ${resource.name ?? resource.id}` : ''}`,
                     major: slot.major,
                     business: inBusiness,
@@ -463,18 +465,18 @@ export class SchedulerTimeGridView extends SchedulerViewBase {
                 events: laid.map((item) => ({
                     top: item.offset,
                     height: item.size,
-                    // El evento que se está arrastrando ocupa la columna ENTERA: si participara del
-                    // reparto por solape, se estrecharía y se desplazaría de lado cada vez que pasa
-                    // por encima de otra cita. Los demás conservan su sitio porque el que se arrastra
-                    // sigue contando para SU reparto: lo único que cambia es cómo se pinta.
-                    // Las columnas de solape dejan un pelín de aire a la derecha (95% del hueco) para
-                    // que el borde del evento de detrás siga viéndose y no parezca uno solo.
+                    // The event being dragged takes the WHOLE column: were it part of the overlap
+                    // split, it would narrow and slide sideways every time it passed over another
+                    // appointment. The others keep their places because the dragged one still counts
+                    // towards THEIR split — the only thing that changes is how it is drawn.
+                    // Overlap columns leave a sliver of air at the end (95% of the slot) so the edge
+                    // of the event behind stays visible and the two do not read as one.
                     left: item.event.id === interacting ? 0 : item.column / item.columns,
                     width: item.event.id === interacting ? 1 : (1 / item.columns) * 0.95,
                     continuesBefore: item.continuesBefore,
                     continuesAfter: item.continuesAfter,
-                    // El sufijo de clave: un evento con `resourceIds` sale en varias columnas y son
-                    // superficies distintas, con su propio contexto y su propio injector.
+                    // The key suffix: an event with `resourceIds` appears in several columns, and
+                    // those are distinct surfaces with their own context and their own injector.
                     ...this.bindEvent(item.event, { continuesBefore: item.continuesBefore, continuesAfter: item.continuesAfter }, `${dateKey}|${resource?.id ?? ''}`)
                 }))
             };
@@ -488,8 +490,8 @@ export class SchedulerTimeGridView extends SchedulerViewBase {
     readonly groups = computed(() => {
         const grouping = this.grouping();
         if (grouping === 'none') return [];
-        // Con una sola fecha, el recurso cabe en la cabecera de su propia columna y la banda sería
-        // una fila entera para repetir cinco veces "8 TUE" debajo. La fecha ya está en el título.
+        // With a single date the resource fits in its own column header, and the band would be a
+        // whole row spent repeating "8 TUE" five times underneath. The date is already in the title.
         if (grouping === 'resource' && this.dateCount() === 1) return [];
 
         const columns = this.columns();
@@ -517,8 +519,8 @@ export class SchedulerTimeGridView extends SchedulerViewBase {
                 events: column.cell.context.events,
                 count: column.cell.context.count
             };
-            // En agrupación por fecha la celda de banda ES una fecha: arrastrar aquí el recurso de la
-            // primera columna le ponía su punto de color al día.
+            // Under date grouping a band cell IS a date: carrying the first column's resource in
+            // here gave the day that resource's colour dot.
             cells.push({ key, label, span: 1, count: column.cell.context.count, resource: grouping === 'resource' ? column.resource : null, dateKey: grouping === 'date' ? column.dateKey : undefined, context: { ...context, context } });
         }
 
@@ -539,8 +541,8 @@ export class SchedulerTimeGridView extends SchedulerViewBase {
 
     ngAfterViewChecked(): void {
         this.state.autoSelectResource();
-        // Los contextos se publican DESPUÉS del render: escribir estas señales dentro del computed
-        // del layout es justo lo que Angular prohíbe (NG0600).
+        // The contexts are published AFTER the render: writing these signals inside the layout
+        // computed is exactly what Angular forbids (NG0600).
         const columns = this.columns();
         this.publishContexts(
             [...columns.flatMap((column) => column.events), ...this.allDayRows()],

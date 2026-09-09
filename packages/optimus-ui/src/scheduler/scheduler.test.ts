@@ -5,19 +5,19 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { SchedulerCategory, SchedulerEvent, SchedulerViewType } from '@openng/optimus-ui/types/scheduler';
 import { SchedulerModule } from './scheduler.module';
 
-// Se monta el árbol compuesto TAL CUAL lo escribe un consumidor: root → header → content → scope,
-// con definiciones propias en un scope y un fallback en el content. Lo que se protege:
-//   - que la composición compile y pinte la vista activa,
-//   - que un *...Def de un scope gane al fallback y que en otra vista se use el fallback,
-//   - que el contexto llegue con el título y la hora ya resueltos,
-//   - que el día de hoy y el mes ajeno salgan marcados con sus data-attributes,
-//   - que una celda densa colapse en "+N more",
-//   - que navegación y selector de vista muevan el rango.
+// The compound tree is mounted EXACTLY as a consumer writes it: root -> header -> content -> scope,
+// with definitions of its own in one scope and a fallback in the content. What this protects:
+//   - that the composition compiles and draws the active view,
+//   - that a scope's *...Def beats the fallback and that another view falls back,
+//   - that the context arrives with the title and the time already resolved,
+//   - that today and the neighbouring month come out marked with their data attributes,
+//   - that a dense cell collapses into "+N more",
+//   - that navigation and the view selector move the range.
 const DAY = new Date(2026, 8, 8); // martes 8 de septiembre de 2026
 
 const CATEGORIES: SchedulerCategory[] = [
-    { id: 'prod', name: 'Producción', color: '#0ea5e9' },
-    { id: 'lab', name: 'Laboratorio', color: '#f59e0b' }
+    { id: 'prod', name: 'Production', color: '#0ea5e9' },
+    { id: 'lab', name: 'Laboratory', color: '#f59e0b' }
 ];
 
 function at(day: number, hour: number, minute = 0) {
@@ -25,11 +25,11 @@ function at(day: number, hour: number, minute = 0) {
 }
 
 const EVENTS: SchedulerEvent[] = [
-    { id: 'a', title: 'Escurrir tinturas', start: at(8, 9), end: at(8, 11), categoryId: 'prod' },
-    { id: 'b', title: 'Pigmentar', start: at(8, 10), end: at(8, 12), categoryId: 'prod' },
-    { id: 'c', title: 'Ensayo solidez', start: at(8, 15), end: at(8, 16), categoryId: 'lab' },
-    { id: 'd', title: 'Parada mantenimiento', start: at(8, 0), end: at(11, 0), allDay: true },
-    { id: 'e', title: 'Cuarto del día', start: at(8, 17), end: at(8, 18), categoryId: 'lab' }
+    { id: 'a', title: 'Dye batch rinse', start: at(8, 9), end: at(8, 11), categoryId: 'prod' },
+    { id: 'b', title: 'Pigment run', start: at(8, 10), end: at(8, 12), categoryId: 'prod' },
+    { id: 'c', title: 'Fastness test', start: at(8, 15), end: at(8, 16), categoryId: 'lab' },
+    { id: 'd', title: 'Maintenance shutdown', start: at(8, 0), end: at(11, 0), allDay: true },
+    { id: 'e', title: 'Fourth of the day', start: at(8, 17), end: at(8, 18), categoryId: 'lab' }
 ];
 
 @Component({
@@ -113,51 +113,51 @@ describe('Scheduler', () => {
         await fixture.whenStable();
     });
 
-    it('monta el árbol compuesto y pinta la vista activa', () => {
+    it('mounts the compound tree and draws the active view', () => {
         expect(q('[data-slot="scheduler-root"]').length).toBe(1);
         expect(q('[data-slot="scheduler-content"][data-view="month"]').length).toBeGreaterThan(0);
         expect(q('.p-scheduler-view-month').length).toBe(1);
     });
 
-    it('el mes son 6 semanas de 7 días', () => {
+    it('the month is 6 weeks of 7 days', () => {
         expect(q('.p-scheduler-month-week').length).toBe(6);
         expect(q('[data-slot="scheduler-month-cell"]').length).toBe(42);
     });
 
-    it('marca hoy, el fin de semana y los días de otro mes', () => {
+    it('marks today, the weekend and the days of another month', () => {
         expect(q('[data-slot="scheduler-month-cell"][data-other-month]').length).toBeGreaterThan(0);
-        expect(q('[data-slot="scheduler-month-cell"][data-weekend]').length).toBe(12); // 6 semanas × sáb+dom
+        expect(q('[data-slot="scheduler-month-cell"][data-weekend]').length).toBe(12); // 6 weeks x Sat+Sun
         expect(q('[data-slot="scheduler-month-cell"][data-date="2026-09-08"]').length).toBe(1);
     });
 
-    it('usa la definición del scope del mes, no el fallback', () => {
+    it("uses the month scope's definition and not the fallback", () => {
         expect(q('.month-card').length).toBeGreaterThan(0);
         expect(q('.fallback-card').length).toBe(0);
     });
 
-    it('el contexto llega con el título y la hora ya resueltos', () => {
+    it('the context arrives with the title and the time already resolved', () => {
         const cards = text('.month-card');
-        expect(cards.some((t) => t?.includes('Escurrir tinturas'))).toBe(true);
+        expect(cards.some((t) => t?.includes('Dye batch rinse'))).toBe(true);
         expect(cards.some((t) => t?.includes('·'))).toBe(true);
     });
 
-    it('una celda densa colapsa en "+N more"', () => {
-        // maxEventsPerCell = 2 y el día 8 tiene 4 eventos con hora más la parada de varios días.
+    it('a dense cell collapses into "+N more"', () => {
+        // maxEventsPerCell = 2 and the 8th has 4 timed events plus the multi-day shutdown.
         const links = q('[data-slot="scheduler-month-more-link"]');
         expect(links.length).toBeGreaterThan(0);
         expect((links[0].nativeElement as HTMLElement).textContent).toMatch(/\+\d+/);
     });
 
-    it('la leyenda cuenta los eventos por categoría', async () => {
+    it('the legend counts the events per category', async () => {
         const items = q('[data-slot="scheduler-category-legend-ui-item"]');
         expect(items.length).toBe(2);
         expect((items[0].nativeElement as HTMLElement).getAttribute('data-event-count')).toBe('2');
     });
 
-    it('filtrar por categoría quita sus eventos', async () => {
-        // Se mide el total que reportan las celdas y NO las tarjetas visibles: con maxEventsPerCell
-        // la celda recorta, así que filtrar cambia CUÁLES se ven y no cuántas, y la aserción sobre
-        // lo visible pasaba por casualidad o fallaba sin que hubiera nada roto.
+    it('filtering a category out removes its events', async () => {
+        // The total the cells report is measured and NOT the visible cards: with maxEventsPerCell
+        // the cell clips, so filtering changes WHICH are seen and not how many, and an assertion
+        // about what is visible passed by luck or failed with nothing actually broken.
         const totalEvents = () => q('[data-slot="scheduler-month-cell"]').reduce((sum, el) => sum + Number((el.nativeElement as HTMLElement).getAttribute('data-event-count') ?? 0), 0);
 
         const before = totalEvents();
@@ -170,42 +170,42 @@ describe('Scheduler', () => {
         expect(q('[data-slot="scheduler-category-legend-ui-item"][data-selected]').length).toBe(1);
     });
 
-    it('al cambiar a semana usa la definición de la semana y aparece la rejilla horaria', async () => {
+    it("switching to week uses the week's definition and the time grid appears", async () => {
         host.view.set('week');
         await fixture.whenStable();
 
         expect(q('.p-scheduler-view-time-grid').length).toBe(1);
         expect(q('.week-card').length).toBeGreaterThan(0);
         expect(q('.month-card').length).toBe(0);
-        // 7 columnas de día
+        // 7 day columns
         expect(q('[data-slot="scheduler-time-grid-column"]').length).toBe(7);
     });
 
-    it('el color de la categoría llega al contexto del evento', async () => {
+    it("the category's colour reaches the event's context", async () => {
         host.view.set('week');
         await fixture.whenStable();
         const accents = q('.week-card').map((el) => (el.nativeElement as HTMLElement).getAttribute('data-accent'));
         expect(accents).toContain('#0ea5e9');
     });
 
-    it('el evento de todo el día va a la banda superior, no a la rejilla', async () => {
+    it('an all-day event goes to the top band and not into the grid', async () => {
         host.view.set('week');
         await fixture.whenStable();
         expect(q('[data-slot="scheduler-all-day-event"]').length).toBe(1);
     });
 
-    it('en la agenda cada día es un grupo y los días vacíos no salen', async () => {
+    it('in the agenda each day is a group and the empty days do not appear', async () => {
         host.view.set('agenda');
         await fixture.whenStable();
 
         const headers = q('[data-slot="scheduler-agenda-date-header"]');
         expect(headers.length).toBeGreaterThan(0);
-        // La parada de varios días aparece en sus 3 días; ninguno de los grupos está vacío.
+        // The multi-day shutdown appears on all 3 of its days; none of the groups is empty.
         expect(q('[data-slot="scheduler-agenda-event"]').length).toBeGreaterThanOrEqual(EVENTS.length);
         expect(q('.p-scheduler-agenda-empty').length).toBe(0);
     });
 
-    it('la navegación mueve el rango y el título', async () => {
+    it('navigating moves the range and the title', async () => {
         const title = () => (q('[data-slot="scheduler-title"]')[0].nativeElement as HTMLElement).textContent?.trim();
         const before = title();
         (q('[data-slot="scheduler-nav-next"]')[0].nativeElement as HTMLElement).click();
@@ -213,7 +213,7 @@ describe('Scheduler', () => {
         expect(title()).not.toBe(before);
     });
 
-    it('el selector de vista cambia la vista y marca la activa', async () => {
+    it('the view selector changes the view and marks the active one', async () => {
         const dayButton = q('[data-slot="scheduler-view-button"][data-view="day"]')[0];
         (dayButton.nativeElement as HTMLElement).click();
         await fixture.whenStable();
@@ -223,7 +223,7 @@ describe('Scheduler', () => {
         expect(q('[data-slot="scheduler-view-button"][data-view="day"][data-selected]').length).toBe(1);
     });
 
-    it('el "+N more" abre el popover de desborde con los eventos del día', async () => {
+    it('the "+N more" opens the overflow popover with that day events', async () => {
         expect(q('[data-slot="scheduler-more-popover"] .p-scheduler-more-popover-panel').length).toBe(0);
 
         (q('[data-slot="scheduler-month-more-link"]')[0].nativeElement as HTMLElement).click();
@@ -238,46 +238,46 @@ describe('Scheduler', () => {
         expect(q('[data-slot="scheduler-more-popover"] .p-scheduler-more-popover-panel').length).toBe(0);
     });
 
-    it('el "+N more" avisa siempre, y con el popover apagado NO abre el panel', async () => {
+    it('the "+N more" always reports, and with the popover off it does NOT open the panel', async () => {
         host.showMorePopover.set(false);
         await fixture.whenStable();
 
         (q('[data-slot="scheduler-month-more-link"]')[0].nativeElement as HTMLElement).click();
         await fixture.whenStable();
 
-        // Apagar el popover deja el aviso: la página abre lo que quiera con los eventos del día.
+        // Turning the popover off keeps the notice: the page opens whatever it likes with the day's events.
         expect(host.more.length).toBe(1);
         expect(host.more[0].view).toBe('month');
         expect(host.more[0].events.length).toBeGreaterThan(0);
         expect(q('[data-slot="scheduler-more-popover"] .p-scheduler-more-popover-panel').length).toBe(0);
     });
 
-    it('el año son doce minimeses y marca los días con eventos', async () => {
+    it('the year is twelve mini-months and marks the days with events', async () => {
         host.view.set('year');
         await fixture.whenStable();
 
         expect(q('[data-slot="scheduler-mini-month"]').length).toBe(12);
-        // Los eventos del fixture caen en septiembre: al menos un día tiene indicador.
+        // The fixture's events fall in September: at least one day carries an indicator.
         expect(q('.p-scheduler-mini-month-day-has-events').length).toBeGreaterThan(0);
-        // El año es un navegador: pulsar un día lleva a la vista de día.
+        // The year is a navigator: pressing a day takes you to the day view.
         const marked = q('.p-scheduler-mini-month-day-has-events')[0];
         (marked.nativeElement as HTMLElement).click();
         await fixture.whenStable();
         expect(host.view()).toBe('day');
     });
 
-    it('el timeline pone el día en horizontal, con una fila por solape', async () => {
+    it('the timeline lays the day out horizontally, with one row per overlap', async () => {
         host.view.set('timeline');
         await fixture.whenStable();
 
         expect(q('[data-slot="scheduler-timeline-body"]').length).toBe(1);
         expect(q('[data-slot="scheduler-timeline-lane"]').length).toBe(1);
         expect(q('[data-slot="scheduler-timeline-event"]').length).toBeGreaterThan(0);
-        // Sin carril de recursos en la vista simple.
+        // No resource rail in the plain view.
         expect(q('[data-slot="scheduler-resource-area"]').length).toBe(0);
     });
 
-    it('el timeline de recursos da un carril por recurso y recoge los huérfanos', async () => {
+    it('the resource timeline gives one lane per resource and collects the orphans', async () => {
         host.resources = [
             { id: 'r1', name: 'Drum 1' },
             { id: 'r2', name: 'Drum 2' }
@@ -287,13 +287,13 @@ describe('Scheduler', () => {
 
         expect(q('[data-slot="scheduler-resource-area"]').length).toBe(1);
         const labels = q('.p-scheduler-resource-label').map((el) => (el.nativeElement as HTMLElement).textContent?.trim());
-        // Dos recursos más el carril de los que no tienen recurso conocido: ningún evento se pierde.
+        // Two resources plus the lane for those with no known resource: no event is lost.
         expect(labels).toContain('Drum 1');
         expect(labels).toContain('Drum 2');
         expect(labels).toContain('Unassigned');
     });
 
-    it('un clic en un evento lo selecciona', async () => {
+    it('a click on an event selects it', async () => {
         const card = q('[data-slot="scheduler-month-event"]')[0];
         (card.nativeElement as HTMLElement).click();
         await fixture.whenStable();

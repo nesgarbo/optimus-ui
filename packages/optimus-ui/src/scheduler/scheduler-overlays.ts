@@ -72,9 +72,9 @@ abstract class SchedulerOverlayBase {
  * the "+N more" list used before it had one.
  */
 function anchorOffset(host: HTMLElement, anchor?: HTMLElement): { top: number; start: number } | null {
-    // getBoundingClientRect y getComputedStyle no existen fuera del navegador: el servidor tiene
-    // árbol de elementos pero no motor de layout, y un overlay sin posicionar es exactamente lo que
-    // debe salir en el HTML prerenderizado.
+    // getBoundingClientRect and getComputedStyle do not exist outside the browser: the server has
+    // an element tree but no layout engine, and an unpositioned overlay is exactly what belongs in
+    // the prerendered HTML.
     if (!anchor?.isConnected || typeof anchor.getBoundingClientRect !== 'function' || typeof getComputedStyle !== 'function') return null;
 
     const parent = (host.offsetParent as HTMLElement | null) ?? host.ownerDocument.body;

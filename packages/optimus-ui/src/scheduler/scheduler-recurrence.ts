@@ -81,15 +81,15 @@ export function parseRRule(value: string | undefined | null): SchedulerRecurrenc
 
     return {
         freq,
-        // Un INTERVAL de 0 o negativo haría que el expansor no avanzara nunca: se normaliza a 1.
+        // An INTERVAL of 0 or less would stop the expander ever advancing: it is normalised to 1.
         interval: Number.isFinite(interval) && interval > 0 ? Math.floor(interval) : 1,
         count: Number.isFinite(count) && count > 0 ? Math.floor(count) : undefined,
         until: inclusiveUntil(parts.get('UNTIL')),
         byDay: parts
             .get('BYDAY')
             ?.split(',')
-            // El prefijo ordinal de BYDAY (-1SU, 2MO) no está soportado: se lee el día y se ignora
-            // el ordinal, que es mejor que descartar la regla entera.
+            // BYDAY's ordinal prefix (-1SU, 2MO) is not supported: the day is read and the ordinal
+            // ignored, which beats discarding the whole rule.
             .map((item) => WEEKDAYS[item.trim().toUpperCase().slice(-2)])
             .filter((day) => day != null),
         byMonthDay: numbers(parts.get('BYMONTHDAY')),
@@ -159,9 +159,9 @@ export function recurrenceStarts(start: Date, rule: SchedulerRecurrenceRule, win
     const until = rule.until?.getTime() ?? Infinity;
     const windowEnd = window.end.getTime();
     let emitted = 0;
-    // "Agotada" es distinto de "este paso no dio ninguna fecha": una regla BYMONTHDAY=30,31 no
-    // produce nada en febrero y tiene que seguir hasta marzo, mientras que pasarse de UNTIL o de
-    // COUNT sí termina la serie. Confundir las dos cosas cortaba la serie en febrero.
+    // "Exhausted" is not the same as "this step produced no date": a BYMONTHDAY=30,31 rule yields
+    // nothing in February and has to carry on into March, whereas running past UNTIL or COUNT does
+    // end the series. Conflating the two cut the series off in February.
     let exhausted = false;
 
     const accept = (date: Date): void => {
@@ -172,10 +172,10 @@ export function recurrenceStarts(start: Date, rule: SchedulerRecurrenceRule, win
         if (rule.byMonth?.length && !rule.byMonth.includes(date.getMonth() + 1)) return;
 
         emitted++;
-        // Una ocurrencia anterior a la ventana CUENTA para COUNT pero no se dibuja: es lo que
-        // mantiene el orden y el conteo de la serie cuando la ventana empieza a mitad. Quien llama
-        // ensancha la ventana lo que haga falta para que una cita de varios días que empezó antes
-        // siga entrando.
+        // An occurrence before the window COUNTS towards COUNT but is not drawn: that is what keeps
+        // the series ordered and counted when the window starts partway through. The caller widens
+        // the window as much as it needs so a multi-day appointment that started earlier still
+        // comes in.
         if (date.getTime() < windowEnd && date.getTime() >= window.start.getTime()) starts.push(new Date(date.getTime()));
     };
 
@@ -187,7 +187,7 @@ export function recurrenceStarts(start: Date, rule: SchedulerRecurrenceRule, win
             if (weekStart.getTime() > windowEnd) break;
             for (const day of days) {
                 const date = withTimeOf(addDays(weekStart, day), start);
-                // Un BYDAY anterior al inicio de la serie en su primera semana no existe.
+                // A BYDAY before the series start, in its first week, does not exist.
                 if (date.getTime() < start.getTime()) continue;
                 accept(date);
                 if (exhausted) break;
@@ -203,8 +203,9 @@ export function recurrenceStarts(start: Date, rule: SchedulerRecurrenceRule, win
             if (anchor.getTime() > windowEnd) break;
             const lastDay = new Date(anchor.getFullYear(), anchor.getMonth() + 1, 0).getDate();
             for (const day of days) {
-                // Un día que ese mes no existe (el 31 en febrero) se salta, no se recorta: recortarlo
-                // pondría dos ocurrencias en el mismo día cuando la regla pide 30 y 31.
+                // A day that month does not have (the 31st in February) is skipped, not clamped:
+                // clamping would put two occurrences on the same day when the rule asks for 30 and
+                // 31.
                 if (day < 1 || day > lastDay) continue;
                 const date = withTimeOf(new Date(anchor.getFullYear(), anchor.getMonth(), day), start);
                 if (date.getTime() < start.getTime()) continue;
@@ -277,10 +278,10 @@ export function expandEvent<T extends SchedulerEvent>(event: T, window: Schedule
 
     const occurrences: T[] = [];
     for (const occurrenceStart of starts) {
-        // EXDATE se compara por instante Y por día: un calendario que exporta EXDATE en fecha suelta
-        // (sin hora) tiene que poder saltarse la cita de ese día.
+        // EXDATE is matched by instant AND by day: a calendar that exports EXDATE as a bare date
+        // (no time) still has to be able to skip that day's appointment.
         if (excluded.has(occurrenceStart.getTime()) || excludedDays.has(dayKey(occurrenceStart))) continue;
-        // Una excepción guardada aparte sustituye a su ocurrencia; dibujar las dos duplicaría la cita.
+        // An override stored separately replaces its occurrence; drawing both would duplicate it.
         if (overrides?.has(overrideKey(event.id, occurrenceStart))) continue;
 
         occurrences.push({
@@ -321,9 +322,9 @@ export function expandEvents<T extends SchedulerEvent>(events: readonly T[], win
         }
     }
 
-    // Sin una sola regla en la colección se devuelve el array TAL CUAL, sin copiar: la mayoría de los
-    // calendarios no tienen series y no deben pagar por la expansión ni perder la identidad del
-    // array, que es lo que deja a los consumidores comparar por referencia.
+    // With no rule anywhere in the collection the array is returned AS IS, uncopied: most calendars
+    // have no series and should pay neither for the expansion nor with the array's identity, which is
+    // what lets consumers compare by reference.
     if (!hasRule) return events as T[];
 
     const expanded: T[] = [];

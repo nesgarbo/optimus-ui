@@ -25,8 +25,8 @@ export const style = /*css*/ `
         gap: 0.25rem;
     }
 
-    /* El título centrado de verdad: flex:1 en los tres lados, no solo en el del medio, o el
-       título se descentra en cuanto la nav y el selector miden distinto. */
+    /* Genuinely centred title: flex:1 on all three sides and not only on the middle one, or the
+       title drifts off centre as soon as the nav and the selector measure differently. */
     .p-scheduler-navigation,
     .p-scheduler-view-selector {
         flex: 1 0 auto;
@@ -36,9 +36,9 @@ export const style = /*css*/ `
         justify-content: flex-end;
     }
 
-    /* nowrap + ellipsis y NO wrap: el título es el ancla visual de la cabecera y partido en tres
-       líneas por un selector de vista ancho le cambiaba el alto a toda la barra. Si no cabe, se
-       recorta. */
+    /* nowrap + ellipsis and NOT wrap: the title is the header's visual anchor, and broken across
+       three lines by a wide view selector it changed the height of the whole bar. If it does not
+       fit, it is clipped. */
     .p-scheduler-title {
         flex: 0 1 auto;
         min-inline-size: 0;
@@ -57,8 +57,8 @@ export const style = /*css*/ `
         gap: 0.125rem;
     }
 
-    /* La etiqueta que sale cuando solo hay una vista: un botón que no lleva a ningún sitio invita a
-       pulsarlo, así que con una sola vista disponible el selector imprime texto. */
+    /* The label shown when there is only one view: a button that leads nowhere invites a click, so
+       with a single view available the selector prints text instead. */
     .p-scheduler-view-label {
         padding: 0.25rem 0.5rem;
         font-size: 0.8125rem;
@@ -90,9 +90,9 @@ export const style = /*css*/ `
         font-weight: 500;
     }
 
-    /* Bordes FÍSICOS y no lógicos: la flecha es una esquina rotada, y con border-inline-end la
-       esquina se movía sola en RTL y la rotación dejaba de apuntar a ningún lado. En RTL lo que se
-       invierte son las rotaciones, abajo. */
+    /* PHYSICAL borders and not logical ones: the arrow is a rotated corner, and with
+       border-inline-end the corner moved by itself in RTL and the rotation stopped pointing
+       anywhere. In RTL it is the rotations that flip, below. */
     .p-scheduler-nav-icon {
         display: inline-block;
         inline-size: 0.5rem;
@@ -109,7 +109,7 @@ export const style = /*css*/ `
         transform: rotate(45deg);
     }
 
-    /* "Anterior" apunta hacia donde se lee hacia atrás, que en RTL es la derecha. */
+    /* "Previous" points the way reading goes backwards, which in RTL is to the right. */
     [dir='rtl'] .p-scheduler-nav-icon-prev {
         transform: rotate(45deg);
     }
@@ -118,20 +118,20 @@ export const style = /*css*/ `
         transform: rotate(-135deg);
     }
 
-    /* Fondo y color SIEMPRE juntos: con solo el fondo, un tema cuyo highlight sea un relleno
-       oscuro deja la etiqueta invisible. */
+    /* Background and colour ALWAYS together: with the background alone, a theme whose highlight is
+       a dark fill leaves the label invisible. */
     .p-scheduler-view-button[data-selected] {
         background: dt('scheduler.selected.background');
         color: dt('scheduler.selected.color');
         font-weight: 600;
     }
 
-    /* Los componentes semánticos son FRONTERAS DE CONTEXTO, no cajas: cuando se usan como
-       definición, su elemento anfitrión queda dentro de la superficie que sustituyen —una celda
-       flex, una rejilla— y como elemento en línea partía ese layout: los hijos dejaban de ser
-       ítems flex del padre, así que un margin-inline-start:auto no empujaba nada y el gap
-       desaparecía. display:contents los saca del layout y deja sus hijos donde el renderer los
-       espera, sin quitarlos del DOM: los data-slot y los selectores de prueba siguen ahí. */
+    /* The semantic components are CONTEXT BOUNDARIES, not boxes: used as a definition, their host
+       element lands inside the surface they replace — a flex cell, a grid — and as an inline
+       element it broke that layout: the children stopped being flex items of the parent, so a
+       margin-inline-start:auto pushed nothing and the gap disappeared. display:contents takes them
+       out of the layout and leaves their children where the renderer expects them, without taking
+       them out of the DOM: the data-slots and the test selectors are still there. */
     p-scheduler-event,
     p-scheduler-time-grid-event,
     p-scheduler-all-day-event,
@@ -171,7 +171,7 @@ export const style = /*css*/ `
         overflow: auto;
     }
 
-    /* ── Rejilla horaria: día y semana ────────────────────────────────────── */
+    /* ── Time grid: day and week ─────────────────────────────────────────── */
 
     .p-scheduler-time-grid {
         display: flex;
@@ -179,8 +179,9 @@ export const style = /*css*/ `
         min-height: 0;
     }
 
-    /* El mínimo de columna sale de una variable con el token como respaldo: cuando las columnas son
-       recursos y no días hay muchas más y necesitan otro suelo, y quien lo decide es la vista. */
+    /* The column minimum comes from a variable with the token as its fallback: when the columns are
+       resources rather than days there are many more of them and they need a different floor, and
+       the view is what decides that. */
     .p-scheduler-time-grid-header,
     .p-scheduler-time-grid-body,
     .p-scheduler-time-grid-groups {
@@ -188,10 +189,10 @@ export const style = /*css*/ `
         grid-template-columns: dt('scheduler.gutter.width') repeat(var(--p-scheduler-columns, 1), minmax(var(--p-scheduler-column-min-width, dt('scheduler.day.min.width')), 1fr));
     }
 
-    /* La cabecera entera se pega como una unidad y las dos bandas se apilan dentro por flujo. Con
-       una banda sticky sobre otra, ambas a inset-block-start: 0, las dos aterrizan en el mismo sitio
-       y la de encima tapa a la de abajo; con el envoltorio pegado el alto lo mide el navegador y no
-       hay ningun calculo que dependa de la interlinea del anfitrion. */
+    /* The whole head sticks as one unit and the two bands stack inside it by flow. With one sticky
+       band above another, both at inset-block-start: 0, the two land in the same place and the upper
+       covers the lower; with the wrapper stuck, the browser measures the height and nothing depends
+       on a calculation about the host's line height. */
     .p-scheduler-time-grid-head {
         position: sticky;
         inset-block-start: 0;
@@ -277,8 +278,8 @@ export const style = /*css*/ `
         text-align: end;
     }
 
-    /* Las mismas pistas que la cabecera y el cuerpo: con 1fr a secas, en cuanto las columnas de
-       recurso desbordaban a lo ancho, los eventos de todo el día dejaban de cuadrar con su columna. */
+    /* The same tracks as the header and the body: with a bare 1fr, as soon as the resource columns
+       overflowed horizontally the all-day events stopped lining up with their column. */
     .p-scheduler-all-day-lanes {
         position: relative;
         display: grid;
@@ -312,14 +313,14 @@ export const style = /*css*/ `
         text-overflow: ellipsis;
     }
 
-    /* Las barras del mes arrancan justo debajo de la banda del número. */
+    /* The month's bars start just below the number band. */
     .p-scheduler-month-bar {
         inset-block-start: calc(dt('scheduler.month.cell.padding') + dt('scheduler.month.number.height') + var(--p-scheduler-event-row, 0) * dt('scheduler.all.day.row.height'));
         z-index: 1;
     }
 
-    /* Un evento con hora dentro del mes es punto + título + hora, sin caja: media docena de
-       rectángulos rellenos en una celda de 6rem no se leen. */
+    /* A timed event inside the month is dot + title + time, with no box: half a dozen filled
+       rectangles in a 6rem cell cannot be read. */
 
 
     .p-scheduler-time-gutter-spacer {
@@ -338,8 +339,8 @@ export const style = /*css*/ `
         font-variant-numeric: tabular-nums;
     }
 
-    /* La etiqueta va posicionada y con nowrap: si se parte en dos líneas, la franja crece y la
-       columna de horas deja de cuadrar con la rejilla — que es exactamente lo que pasaba. */
+    /* The label is positioned and nowrap: broken across two lines it grows the strip and the hour
+       column stops lining up with the grid — which is exactly what happened. */
     .p-scheduler-time-gutter-label {
         position: absolute;
         inset-block-start: 0;
@@ -357,20 +358,20 @@ export const style = /*css*/ `
         border-inline-start: 1px solid dt('scheduler.border.color');
     }
 
-    /* El rayado va por encima del fondo de la celda (comercial o no) y por debajo de los eventos,
-       igual que el tinte de hoy: son dos hechos distintos sobre la misma celda y los dos tienen que
-       poder verse. */
+    /* The hatching goes above the cell's background (business hours or not) and below the events,
+       just like today's tint: they are two different facts about the same cell and both have to
+       stay visible. */
     .p-scheduler-time-grid-cell[data-blocked],
     .p-scheduler-timeline-cell[data-blocked] {
         background-image: dt('scheduler.blocked.background');
         cursor: not-allowed;
     }
 
-    /* Tinte de la columna entera, no solo de su cabecera: es lo que deja localizar hoy sin leer.
-       Va en un ::before por encima de las celdas y NO como fondo de la columna: las celdas pintan su
-       propio fondo (horario comercial o no) y tapaban el tinte de la columna que tienen detrás. El
-       token es translúcido, así que el sombreado de debajo se sigue viendo, y los eventos —que son
-       hermanos posicionados posteriores— quedan por encima. */
+    /* The whole column is tinted, not just its header: that is what lets you find today without
+       reading. It goes in a ::before above the cells and NOT as the column's background: the cells
+       paint a background of their own (business hours or not) and covered the tint of the column
+       behind them. The token is translucent, so the shading underneath still shows through, and the
+       events — later positioned siblings — stay above it. */
     .p-scheduler-time-grid-column[data-today]::before {
         content: '';
         position: absolute;
@@ -388,9 +389,9 @@ export const style = /*css*/ `
         border-bottom-style: solid;
     }
 
-    /* El sombreado de fuera de horario solo entra si la página CONFIGURÓ horario comercial: sin la
-       condición, una rejilla sin horario definido salía entera del color de "no laborable", que es
-       lo contrario de lo que dice. */
+    /* The out-of-hours shading only applies when the page CONFIGURED business hours: without that
+       condition, a grid with no hours declared came out entirely in the "non-working" colour, which
+       says the opposite of what it means. */
     .p-scheduler-time-grid-cell[data-business] {
         background: dt('scheduler.business.background');
     }
@@ -408,8 +409,9 @@ export const style = /*css*/ `
         min-block-size: 1.25rem;
         padding: 0.1875rem 0.375rem;
         border-radius: dt('scheduler.event.border.radius');
-        /* El acento tiñe el relleno Y pinta el borde: el fondo sale del propio color del evento a
-           baja opacidad con color-mix, no de un token fijo, para que cada categoría se distinga. */
+        /* The accent tints the fill AND draws the border: the background comes from the event's own
+           colour at low opacity through color-mix, not from a fixed token, so each category stays
+           distinguishable. */
         border-inline-start: 3px solid var(--p-scheduler-event-border-accent, dt('scheduler.event.border.accent'));
         background: color-mix(in srgb, var(--p-scheduler-event-border-accent, dt('scheduler.event.border.accent')) dt('scheduler.event.fill.opacity'), dt('scheduler.background'));
         color: dt('scheduler.event.color');
@@ -423,8 +425,8 @@ export const style = /*css*/ `
         font-weight: 600;
     }
 
-    /* min-inline-size: 0 es imprescindible para que el ellipsis funcione dentro de un flex; sin
-       ello el título fuerza el ancho y el evento desborda en vez de recortarse. */
+    /* min-inline-size: 0 is what makes the ellipsis work inside a flex container; without it the
+       title forces the width and the event overflows instead of being clipped. */
     .p-scheduler-time-grid-event > * {
         min-inline-size: 0;
         white-space: nowrap;
@@ -464,20 +466,20 @@ export const style = /*css*/ `
         white-space: nowrap;
     }
 
-    /* El anillo de foco de una celda vacía va por DENTRO: una celda de la rejilla horaria mide
-       28px de alto y un outline por fuera lo tapa la celda siguiente. Sin esto, navegar con las
-       flechas mueve un foco invisible, que es peor que no navegar. */
+    /* An empty cell's focus ring goes INSIDE: a time-grid cell is 28px tall and an outline drawn
+       outside it is covered by the next cell. Without this, arrow navigation moves an invisible
+       focus, which is worse than not navigating at all. */
     [data-nav-cell]:focus-visible {
         outline: 0;
         box-shadow: inset 0 0 0 2px dt('scheduler.focus.ring.color');
         z-index: 1;
     }
 
-    /* ── Huecos de cita ───────────────────────────────────────────────────── */
+    /* ── Appointment slots ───────────────────────────────────────────────── */
 
-    /* Detrás de los eventos (z-index por debajo, sin puntero salvo el clic) y con el color de
-       "disponible" del tema. Un hueco lleno se raya como un bloqueo, porque para reservar es lo
-       mismo. */
+    /* Behind the events (lower z-index, no pointer beyond the click) and in the theme's "available"
+       colour. A full slot is hatched like a blocked one, because as far as booking goes they are
+       the same thing. */
     .p-scheduler-appointment-slot {
         position: absolute;
         inset-inline: 0;
@@ -498,8 +500,8 @@ export const style = /*css*/ `
         cursor: not-allowed;
     }
 
-    /* data-display=grid tiñe el hueco de la celda entera sin borde ni etiqueta: es para cuando lo que importa
-       es la mancha y no el detalle. */
+    /* data-display=grid tints the slot across the whole cell with no border and no label: for when
+       what matters is the shape of the availability and not the detail. */
     .p-scheduler-appointment-slot[data-display='grid'] {
         border-block: 0;
     }
@@ -508,8 +510,8 @@ export const style = /*css*/ `
         display: none;
     }
 
-    /* data-display=indicator no tiñe nada: una barra de 3px en el borde de la columna, para una rejilla
-       demasiado densa como para pintarle fondos. */
+    /* data-display=indicator tints nothing: a 3px bar at the column's edge, for a grid too dense to
+       paint backgrounds into. */
     .p-scheduler-appointment-slot[data-display='indicator'] {
         inset-inline: auto 0;
         inline-size: 3px;
@@ -522,14 +524,14 @@ export const style = /*css*/ `
         display: none;
     }
 
-    /* ── Arrastre y redimensión ───────────────────────────────────────────── */
+    /* ── Drag and resize ─────────────────────────────────────────────────── */
 
-    /* touch-action: none en la superficie arrastrable y no en el contenedor: sin ello, un arrastre
-       con el dedo lo interpreta el navegador como scroll y el evento no se mueve; ponerlo más arriba
-       mataría el scroll de la rejilla entera. */
-    /* user-select: none en lo arrastrable, y en TODO el Scheduler mientras hay un arrastre en curso:
-       en macOS el gesto empezaba una selección de texto, y a partir de ahí el navegador arrastra la
-       selección en vez de dejar que el componente siga el puntero. */
+    /* touch-action: none on the draggable surface and not on the container: without it the browser
+       reads a finger drag as a scroll and the event does not move; putting it any higher would kill
+       scrolling for the whole grid. */
+    /* user-select: none on what can be dragged, and on the WHOLE Scheduler while a drag is under
+       way: on macOS the gesture started a text selection, and from then on the browser drags the
+       selection instead of letting the component follow the pointer. */
     [data-draggable],
     .p-scheduler-event-resize-handle {
         touch-action: none;
@@ -554,8 +556,8 @@ export const style = /*css*/ `
         box-shadow: 0 4px 12px -6px rgba(0, 0, 0, 0.5);
     }
 
-    /* El tirador es una franja de 6px sobre el borde del evento. No lleva fondo: se nota por el
-       cursor, y un asa visible en cada cita llena la rejilla de ruido. */
+    /* The handle is a 6px strip over the event's edge. It has no background: the cursor is what
+       announces it, and a visible grip on every appointment fills the grid with noise. */
     .p-scheduler-event-resize-handle {
         position: absolute;
         z-index: 3;
@@ -610,7 +612,7 @@ export const style = /*css*/ `
         background: dt('scheduler.now.indicator.color');
     }
 
-    /* ── Rejilla de mes ───────────────────────────────────────────────────── */
+    /* ── Month grid ──────────────────────────────────────────────────────── */
 
     .p-scheduler-month {
         display: flex;
@@ -626,8 +628,8 @@ export const style = /*css*/ `
         border-bottom: 1px solid dt('scheduler.border.color');
     }
 
-    /* Los mismos separadores que el cuerpo, menos el primero: sin ellos la fila de días de la
-       semana flotaba sobre una rejilla que sí los lleva. */
+    /* The same separators as the body, minus the first: without them the weekday row floated above
+       a grid that has them. */
     .p-scheduler-month-header-cell + .p-scheduler-month-header-cell {
         border-inline-start: 1px solid dt('scheduler.border.color');
     }
@@ -691,8 +693,8 @@ export const style = /*css*/ `
         color: dt('scheduler.selected.color');
     }
 
-    /* Banda de altura fija para el número: es la que reservan los eventos de debajo, así que su
-       alto NO puede depender del contenido o las barras se le montarían encima. */
+    /* A fixed-height band for the number: it is what the events below reserve, so its height must
+       NOT depend on the content or the bars would ride over it. */
     .p-scheduler-month-cell-number {
         display: flex;
         align-items: center;
@@ -703,8 +705,8 @@ export const style = /*css*/ `
     }
 
     .p-scheduler-month-cell[data-today] .p-scheduler-month-cell-number {
-        /* Aquí sí va el relleno sólido, con su color de contraste: marcar el día, no invertir la
-           celda entera. */
+        /* Here the solid fill does belong, with its contrast colour: mark the day, do not invert the
+           whole cell. */
         inline-size: dt('scheduler.month.number.height');
         justify-content: center;
         border-radius: 999px;
@@ -713,10 +715,10 @@ export const style = /*css*/ `
         font-weight: 600;
     }
 
-    /* Hoy NO tiñe la celda del mes: el círculo del número ya lo dice y el tinte pelearía con el
-       relleno de los eventos. En la rejilla horaria sí, porque ahí no hay número.
-       El :not() es imprescindible: con la misma especificidad que la regla de [data-selected] y
-       viniendo después, hoy le ganaba y seleccionar el día de hoy no se veía. */
+    /* Today does NOT tint the month cell: the circle around the number already says so and the tint
+       would fight the events' fills. In the time grid it does, because there is no number there.
+       The :not() is essential: at the same specificity as the [data-selected] rule and coming
+       after it, today won and selecting today was invisible. */
     .p-scheduler-month-cell[data-today]:not([data-selected]) {
         background: transparent;
     }
@@ -729,8 +731,8 @@ export const style = /*css*/ `
         min-height: 0;
     }
 
-    /* Un evento de un día es una fila DENTRO de la celda, no una barra posicionada: como barra
-       medía 2h/168h de la semana, o sea 7px, y solo se veía el punto. */
+    /* A single-day event is a row INSIDE the cell, not a positioned bar: as a bar it measured
+       2h/168h of the week, which is 7px, and all you saw was the dot. */
     .p-scheduler-month-event {
         display: flex;
         align-items: center;
@@ -766,7 +768,7 @@ export const style = /*css*/ `
         white-space: nowrap;
     }
 
-    /* La lista de la celda empieza por debajo de las barras que pisan ESE día. */
+    /* The cell's list starts below the bars that cross THAT day. */
     .p-scheduler-month-day-cell {
         margin-block-start: calc(var(--p-scheduler-bar-rows, 0) * dt('scheduler.all.day.row.height'));
     }
@@ -779,8 +781,8 @@ export const style = /*css*/ `
         background: dt('scheduler.event.border.accent');
     }
 
-    /* Justo debajo del último evento y no al fondo de la celda: con margin-top:auto el enlace se
-       despegaba de la lista que resume y quedaba flotando en el hueco. */
+    /* Right under the last event and not at the bottom of the cell: with margin-top:auto the link
+       drifted away from the list it summarises and floated in the gap. */
     .p-scheduler-month-more-link {
         align-self: flex-start;
         padding: 0 0.25rem;
@@ -791,7 +793,7 @@ export const style = /*css*/ `
         cursor: pointer;
     }
 
-    /* Cabecera de un grid de mes por recurso, y la etiqueta de recurso dentro de una celda. */
+    /* Header of a per-resource month grid, and the resource label inside a cell. */
     .p-scheduler-month-resource-header {
         display: flex;
         align-items: center;
@@ -802,8 +804,8 @@ export const style = /*css*/ `
         font-weight: 600;
     }
 
-    /* Los grids apilados necesitan una raya entre ellos, o el último día de uno y el primero del
-       siguiente se leen como la misma rejilla. */
+    /* Stacked grids need a rule between them, or the last day of one and the first of the next read
+       as the same grid. */
     .p-scheduler-view-month .p-scheduler-month + .p-scheduler-month {
         border-top: 2px solid dt('scheduler.border.color');
     }
@@ -875,12 +877,12 @@ export const style = /*css*/ `
         font-variant-numeric: tabular-nums;
     }
 
-    /* La fila es gutter + tarjeta, no una sola caja: el acento pegado al borde del contenedor se
-       leía como un borde del panel, y la lista quedaba desalineada respecto al gutter horario de
-       las vistas de día y semana.
-       Y ninguna de las dos lleva borde: con una línea bajo la fila y otra al lado del gutter, la
-       agenda se leía como una tabla de celdas vacías. Lo que separa las citas es el aire entre
-       tarjetas, y lo que separa los días es la cabecera pegajosa. */
+    /* The row is gutter + card and not a single box: the accent pressed against the container's
+       edge read as a border of the panel, and the list ended up misaligned with the time gutter of
+       the day and week views.
+       Neither of the two carries a border: with a line under the row and another beside the
+       gutter, the agenda read as a table of empty cells. What separates appointments is the air
+       between cards, and what separates days is the sticky header. */
     .p-scheduler-agenda-row {
         display: grid;
         grid-template-columns: dt('scheduler.agenda.gutter.width') minmax(0, 1fr);
@@ -895,8 +897,8 @@ export const style = /*css*/ `
         padding: dt('scheduler.agenda.row.padding');
         border-start-end-radius: dt('scheduler.event.border.radius');
         border-end-end-radius: dt('scheduler.event.border.radius');
-        /* Mismo relleno teñido que el evento de la rejilla: en la agenda el color de la categoría
-           es la única pista de qué es cada cita, porque no hay geometría que la sitúe. */
+        /* The same tinted fill as an event in the grid: in the agenda the category's colour is the
+           only hint of what each appointment is, because there is no geometry placing it. */
         border-inline-start: 3px solid var(--p-scheduler-event-border-accent, dt('scheduler.event.border.accent'));
         background: color-mix(in srgb, var(--p-scheduler-event-border-accent, dt('scheduler.event.border.accent')) dt('scheduler.event.fill.opacity'), dt('scheduler.background'));
         color: dt('scheduler.event.color');
@@ -911,8 +913,8 @@ export const style = /*css*/ `
         min-inline-size: 0;
     }
 
-    /* Al final de la fila y no pegada al título: la hora es un dato de apoyo y en una columna
-       propia se puede recorrer la lista en vertical leyendo solo horas. */
+    /* At the end of the row and not next to the title: the time is supporting information, and in a
+       column of its own the list can be scanned vertically reading nothing but times. */
     .p-scheduler-agenda-event-time {
         flex: 0 0 auto;
         margin-inline-start: auto;
@@ -928,14 +930,14 @@ export const style = /*css*/ `
         color: dt('scheduler.gutter.color');
     }
 
-    /* ── Año: doce minimeses ──────────────────────────────────────────────── */
+    /* ── Year: twelve mini-months ────────────────────────────────────────── */
 
-    /* auto-fill sobre el ancho mínimo de la tarjeta y no cuatro columnas fijas: con cuatro fijas,
-       un panel de 730px dejaba el minimes en 150px y la celda del día en 19px, o sea los números
-       tocándose. Así el año pone las columnas que caben —cuatro en pantalla ancha, tres en una
-       tarjeta de documentación, una en el móvil— y la celda del día no baja nunca de tamaño
-       legible. Sustituye al media query que había: el umbral lo pone el contenido, no el viewport,
-       que es lo que importa cuando el Scheduler vive dentro de un panel. */
+    /* auto-fill over the card's minimum width and not four fixed columns: with four fixed, a 730px
+       panel left the mini-month at 150px and the day cell at 19px, which is numbers touching. This
+       way the year lays out as many columns as fit — four on a wide screen, three in a docs card,
+       one on a phone — and the day cell never drops below a legible size. It replaces the media
+       query that was here: the threshold comes from the content and not from the viewport, which is
+       what matters when the Scheduler lives inside a panel. */
     .p-scheduler-year {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(dt('scheduler.mini.month.min.width'), 1fr));
@@ -944,8 +946,8 @@ export const style = /*css*/ `
         overflow: auto;
     }
 
-    /* Sin padding en la tarjeta: lo llevan la cabecera y la rejilla. Con padding aquí el interior
-       perdía 24px de ancho y el minimes salía apretado respecto a la referencia. */
+    /* No padding on the card: the header and the grid carry it. With padding here the interior lost
+       24px of width and the mini-month came out cramped. */
     .p-scheduler-mini-month {
         display: flex;
         flex-direction: column;
@@ -959,21 +961,22 @@ export const style = /*css*/ `
         align-items: center;
         justify-content: center;
         padding: dt('scheduler.mini.month.padding');
-        /* Separador bajo el nombre del mes: sin él la cabecera y la rejilla se leen como un bloque
-           y el minimes pierde el aire que lo hace parecer un calendario. */
+        /* A separator under the month's name: without it the header and the grid read as one block
+           and the mini-month loses the air that makes it look like a calendar. */
         border-bottom: 1px solid dt('scheduler.border.color');
         font-size: 1rem;
         font-weight: 600;
         text-align: center;
     }
 
-    /* Columnas a 1fr: ocupan TODO el ancho de la tarjeta. Clavarlas al tamaño del día dejaba la
-       rejilla más estrecha que la tarjeta y descentrada respecto a la cabecera. */
+    /* Columns at 1fr: they take up the WHOLE width of the card. Pinning them to the day's size left
+       the grid narrower than the card and off centre against the header. */
     .p-scheduler-mini-month-grid {
         display: grid;
-        /* minmax(0,1fr) y no 1fr a secas: 1fr equivale a minmax(auto,1fr) y el ancho mínimo del
-           número ensancha la columna, así que las siete sumaban más que la tarjeta. Con 0 dividen
-           exacto. OJO: nada de acentos graves en estos comentarios, cierran el template literal. */
+        /* minmax(0,1fr) and not a bare 1fr: 1fr is minmax(auto,1fr) and the number's minimum width
+           widens the column, so the seven of them added up to more than the card. With 0 they
+           divide it exactly. NOTE: no backticks in these comments, they close the template
+           literal. */
         grid-template-columns: repeat(7, minmax(0, 1fr));
         padding-block-start: dt('scheduler.mini.month.grid.padding');
     }
@@ -992,15 +995,14 @@ export const style = /*css*/ `
         display: flex;
         align-items: center;
         justify-content: center;
-        /* Celda CUADRADA: el ancho lo pone la columna (1fr del ancho de la tarjeta) y aspect-ratio
-           iguala el alto. Con un block-size fijo la celda salía rectangular y el badge de hoy, un
-           óvalo. El min-block-size solo entra en tarjetas muy estrechas, donde 1fr baja del tamaño
-           legible del número. */
+        /* A SQUARE cell: the column sets the width (1fr of the card's width) and aspect-ratio
+           matches the height to it. With a fixed block-size the cell came out rectangular and
+           today's badge an oval. The min-block-size only kicks in on very narrow cards, where 1fr
+           falls below a legible size for the number. */
         aspect-ratio: 1;
         min-block-size: dt('scheduler.mini.month.day.size');
         border: 0;
-        /* Radio al 50%: sobre una celda cuadrada da un círculo exacto, tanto en hover como en el
-           día de hoy. */
+        /* A 50% radius: over a square cell that gives an exact circle, both on hover and for today. */
         border-radius: 50%;
         padding: 0;
         background: transparent;
@@ -1015,23 +1017,22 @@ export const style = /*css*/ `
         background: dt('scheduler.day.hover.background');
     }
 
-    /* El fin de semana con su propio color: en una rejilla de 17px sin cabecera visible es lo que
-       deja encontrar el sábado sin contar columnas. No se aplica al mes ajeno, que ya va atenuado, ni
-       a hoy, que lleva su círculo. */
+    /* The weekend in a colour of its own: in a 17px grid with no visible header that is what lets
+       you find Saturday without counting columns. It does not apply to the neighbouring month,
+       which is already dimmed, nor to today, which has its circle. */
     .p-scheduler-mini-month-day-weekend:not(.p-scheduler-mini-month-day-other):not([data-today]) {
         color: dt('scheduler.mini.month.weekend.color');
     }
 
-    /* Vacía pero cuadrada como las demás: solo ocupa su hueco en la rejilla para que el mes empiece
-       en su columna correcta y las seis filas midan igual en los doce minimeses. */
+    /* Empty but square like the rest: it only holds its place in the grid so the month starts in
+       the right column and the six rows measure the same across all twelve mini-months. */
     .p-scheduler-mini-month-day-other {
         color: dt('scheduler.other.month.color');
         pointer-events: none;
     }
 
-    /* :not(-other) porque la rejilla es de 42 días fijos y arrastra días del mes siguiente: sin el
-       filtro, el 8 de septiembre pintaba también su círculo en la tarjeta de agosto, en una celda
-       vacía. */
+    /* :not(-other) because the grid is a fixed 42 days and carries days from the next month: without
+       the filter, 8 September also drew its circle on August's card, in an empty cell. */
     .p-scheduler-mini-month-day[data-selected]:not([data-today]):not(.p-scheduler-mini-month-day-other) {
         background: dt('scheduler.selected.background');
         color: dt('scheduler.selected.color');
@@ -1043,9 +1044,9 @@ export const style = /*css*/ `
         font-weight: 600;
     }
 
-    /* El indicador va DEBAJO del número, no al lado: a este tamaño un punto en línea empuja la
-       cifra y descuadra la rejilla del minimes. El offset va en % y no en px porque la celda crece
-       con el ancho de la tarjeta, y 1px fijo lo pegaba al borde del círculo. */
+    /* The indicator goes BELOW the number, not beside it: at this size an inline dot pushes the
+       figure and knocks the mini-month grid out of true. The offset is in % and not in px because
+       the cell grows with the card's width, and a fixed 1px pinned it to the edge of the circle. */
     .p-scheduler-mini-month-indicator {
         position: absolute;
         inset-block-end: 12%;
@@ -1059,7 +1060,7 @@ export const style = /*css*/ `
         background: currentColor;
     }
 
-    /* ── Timeline: el día en horizontal ───────────────────────────────────── */
+    /* ── Timeline: the day laid out horizontally ─────────────────────────── */
 
     .p-scheduler-timeline {
         display: flex;
@@ -1067,8 +1068,8 @@ export const style = /*css*/ `
         overflow: hidden;
     }
 
-    /* El carril de recursos va sticky y NO en su propio scroller: dos scrollers en paralelo hay que
-       sincronizarlos a mano y se desfasan en cuanto algo más mueve la página. */
+    /* The resource rail is sticky and NOT in a scroller of its own: two parallel scrollers have to
+       be synchronised by hand and drift apart as soon as anything else moves the page. */
     .p-scheduler-resource-area {
         position: sticky;
         inset-inline-start: 0;
@@ -1079,9 +1080,9 @@ export const style = /*css*/ `
         border-inline-end: 1px solid dt('scheduler.border.color');
     }
 
-    /* El hueco sobre el carril mide lo que mida la cabecera del eje: las bandas de contexto que
-       tenga la escala más la fila de columnas. Con un 3 fijo, un timeline de mes —que solo lleva la
-       banda del periodo— dejaba el carril desplazado una banda entera. */
+    /* The gap above the rail measures whatever the axis header measures: however many context bands
+       the scale has, plus the column row. With a fixed 3, a month timeline — which carries only the
+       period band — left the rail a whole band out of place. */
     .p-scheduler-timeline-resource .p-scheduler-resource-area-header {
         block-size: calc((var(--p-scheduler-timeline-tiers, 0) + 1) * dt('scheduler.timeline.header.height'));
     }
@@ -1138,9 +1139,9 @@ export const style = /*css*/ `
         grid-template-columns: repeat(var(--p-scheduler-timeline-cols, 1), minmax(dt('scheduler.timeline.slot.width'), 1fr));
     }
 
-    /* Las bandas comparten la plantilla de columnas del eje, y cada celda abarca las que le tocan
-       con grid-column: span. Es lo único que las mantiene cuadradas con las horas cuando el eje
-       mide 168 columnas y hay scroll horizontal. */
+    /* The bands share the axis's column template, and each cell spans the ones it owns through
+       grid-column: span. It is the only thing that keeps them squared with the hours when the axis
+       is 168 columns wide and scrolls horizontally. */
     .p-scheduler-timeline-tier {
         display: grid;
         grid-template-columns: repeat(var(--p-scheduler-timeline-cols, 1), minmax(dt('scheduler.timeline.slot.width'), 1fr));
@@ -1149,9 +1150,9 @@ export const style = /*css*/ `
         z-index: 1;
     }
 
-    /* SIN overflow: hidden. La etiqueta de dentro es pegajosa, y un ancestro con overflow recortado
-       se convierte en su contenedor de scroll: la etiqueta se quedaba pegada al borde izquierdo de su
-       propia celda —varias pantallas a la izquierda— en vez de al del eje, y la banda salía vacía. */
+    /* NO overflow: hidden. The label inside is sticky, and an ancestor with clipped overflow becomes
+       its scroll container: the label stuck to the leading edge of its own cell — several screens
+       away — instead of to the axis's, and the band came out empty. */
     .p-scheduler-timeline-tier-cell {
         grid-column: span var(--p-scheduler-timeline-span, 1);
         display: flex;
@@ -1162,8 +1163,8 @@ export const style = /*css*/ `
         white-space: nowrap;
     }
 
-    /* Pegajosa dentro de su propia celda: mientras el periodo siga a la vista, su nombre sigue a la
-       vista, aunque la celda empiece varias pantallas a la izquierda. */
+    /* Sticky within its own cell: as long as the period is still in view, so is its name, even when
+       the cell starts several screens back. */
     .p-scheduler-timeline-tier-label {
         position: sticky;
         inset-inline-start: 0;
@@ -1193,8 +1194,8 @@ export const style = /*css*/ `
         font-weight: 600;
     }
 
-    /* Pegada por debajo de las bandas, no en 0: si no, al hacer scroll vertical la fila de columnas
-       se monta encima del periodo. */
+    /* Stuck below the bands and not at 0: otherwise a vertical scroll rides the column row over the
+       period. */
     .p-scheduler-timeline-header {
         position: sticky;
         inset-block-start: calc(var(--p-scheduler-timeline-tiers, 0) * dt('scheduler.timeline.header.height'));
@@ -1214,9 +1215,9 @@ export const style = /*css*/ `
         white-space: nowrap;
     }
 
-    /* El carril mide lo mismo que el eje —no lo que el contenedor—, porque el ancho del evento va
-       en % y se resuelve contra su padre posicionado. Sin esto un evento de 4 h se pintaba a un
-       tercio de su tamaño en cuanto el timeline necesitaba scroll. */
+    /* The lane measures the same as the axis — not the same as the container — because an event's
+       width is a % and resolves against its positioned parent. Without this a 4 h event was drawn
+       at a third of its size as soon as the timeline needed to scroll. */
     .p-scheduler-timeline-lane,
     .p-scheduler-timeline-header,
     .p-scheduler-timeline-tier {
@@ -1242,8 +1243,8 @@ export const style = /*css*/ `
         border-inline-start-style: solid;
     }
 
-    /* Hoy se tiñe también en horizontal: es la única pista de dónde cae el día actual cuando el eje
-       abarca una semana, un mes o un año y hay que buscarlo con scroll. */
+    /* Today is tinted horizontally too: it is the only hint of where the current day falls when the
+       axis spans a week, a month or a year and you have to scroll to find it. */
     .p-scheduler-timeline-cell[data-today] {
         background: dt('scheduler.today.background');
     }
@@ -1280,7 +1281,7 @@ export const style = /*css*/ `
         color: dt('scheduler.gutter.color');
     }
 
-    /* ── Leyenda, selección y carga ───────────────────────────────────────── */
+    /* ── Legend, selection and loading ───────────────────────────────────── */
 
     .p-scheduler-category-legend {
         display: flex;
@@ -1407,11 +1408,11 @@ export const style = /*css*/ `
         opacity: 0.6;
     }
 
-    /* ── Impresión ────────────────────────────────────────────────────────── */
+    /* ── Printing ────────────────────────────────────────────────────────── */
 
-    /* Un Scheduler impreso no tiene scroll ni cabeceras pegajosas: lo que en pantalla es una ventana
-       con desplazamiento, en papel es todo el contenido de una vez. Sin esto se imprime el trozo
-       visible y nada más, que es el fallo clásico de imprimir un calendario. */
+    /* A printed Scheduler has neither scrolling nor sticky headers: what on screen is a scrolling
+       window is, on paper, all of the content at once. Without this you print the visible slice and
+       nothing else, which is the classic failure of printing a calendar. */
     @media print {
         .p-scheduler {
             border: 0;
@@ -1426,8 +1427,8 @@ export const style = /*css*/ `
             overflow: visible !important;
         }
 
-        /* Pegajoso en papel no significa nada, y encima superpone la cabecera sobre el contenido de
-           la primera página. */
+        /* Sticky means nothing on paper, and on top of that it lays the header over the content of
+           the first page. */
         .p-scheduler-time-grid-header,
         .p-scheduler-time-grid-groups,
         .p-scheduler-timeline-header,
@@ -1437,7 +1438,7 @@ export const style = /*css*/ `
             position: static !important;
         }
 
-        /* Los controles no se pueden pulsar en una hoja. */
+        /* The controls cannot be clicked on a sheet of paper. */
         .p-scheduler-navigation,
         .p-scheduler-view-selector,
         .p-scheduler-event-resize-handle,
@@ -1450,8 +1451,8 @@ export const style = /*css*/ `
             display: none !important;
         }
 
-        /* Una semana, un día de agenda o un carril de recurso partidos entre dos páginas son
-           ilegibles: es la unidad que hay que mantener entera. */
+        /* A week, an agenda day or a resource lane split across two pages is unreadable: that is the
+           unit to keep whole. */
         .p-scheduler-month-week,
         .p-scheduler-agenda-group,
         .p-scheduler-resource,
@@ -1459,8 +1460,8 @@ export const style = /*css*/ `
             break-inside: avoid;
         }
 
-        /* El color ES el dato: sin esto el navegador imprime los rellenos de categoría en blanco y
-           todos los eventos pasan a ser el mismo evento. */
+        /* The colour IS the data: without this the browser prints the category fills white and every
+           event becomes the same event. */
         .p-scheduler,
         .p-scheduler * {
             -webkit-print-color-adjust: exact;
@@ -1468,7 +1469,8 @@ export const style = /*css*/ `
         }
     }
 
-    /* Sin motion para quien lo pida: el indicador de "ahora" y los hovers no necesitan animación. */
+    /* No motion for anyone who asks for none: the "now" indicator and the hovers need no
+       animation. */
     @media (prefers-reduced-motion: reduce) {
         .p-scheduler * {
             transition: none !important;

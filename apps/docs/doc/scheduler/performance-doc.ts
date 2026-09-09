@@ -11,8 +11,8 @@ function busyWeek(): SchedulerEvent[] {
     const resources = DEMO_RESOURCES.map((resource) => resource.id);
     const categories = DEMO_CATEGORIES.map((category) => category.id);
 
-    // 48 huecos de 15 minutos entre las 7 y las 19, que es la misma retícula que el eje: con pasos
-    // de 12 minutos los eventos caían entre columnas.
+    // 48 slots of 15 minutes between 7 and 19, the same lattice as the axis: with 12-minute steps
+    // the events fell between columns.
     for (let day = 0; day < 7; day++) {
         for (let slot = 0; slot < 48; slot++) {
             const start = new Date(DEMO_DATE);

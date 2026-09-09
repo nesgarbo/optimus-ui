@@ -25,8 +25,8 @@ function bound<T extends SchedulerEvent>(events: T[], defaultDurationMinutes: nu
         .map((event) => {
             const start = toDate(event.start).getTime();
             const rawEnd = event.end != null ? toDate(event.end).getTime() : NaN;
-            // Un evento sin fin, o con un fin anterior al inicio, no puede desaparecer del calendario:
-            // se le da la duración por defecto en vez de pintarlo con tamaño cero o negativo.
+            // An event with no end, or with an end before its start, cannot vanish from the
+            // calendar: it gets the default duration instead of a zero or negative size.
             const end = Number.isFinite(rawEnd) && rawEnd > start ? rawEnd : start + defaultDurationMinutes * MINUTE_MS;
             return { event, start, end };
         })
@@ -72,9 +72,9 @@ export function layoutTimeGrid<T extends SchedulerEvent>(events: T[], options: T
     let columnEnds: number[] = [];
     let clusterStart = 0;
 
-    // El ancho de un clúster es su concurrencia MÁXIMA (cuántas columnas llegó a necesitar), no
-    // cuántos eventos contiene: en una cadena a-b-c donde a y c no se pisan, c reutiliza la columna
-    // de a y los tres se pintan a mitad de ancho en vez de a un tercio.
+    // A cluster's width is its PEAK concurrency (how many columns it ever needed), not how many
+    // events it holds: in an a-b-c chain where a and c do not overlap, c reuses a's column and all
+    // three are drawn at half width instead of a third.
     const closeCluster = () => {
         const width = columnEnds.length || 1;
         for (let i = clusterStart; i < items.length; i++) {
@@ -104,8 +104,8 @@ export function layoutTimeGrid<T extends SchedulerEvent>(events: T[], options: T
         items.push({
             event: b.event,
             offset,
-            // El mínimo no puede pasarse del final: una cita de un minuto a las 23:59 pedía 15
-            // minutos de alto y se salía de la rejilla. Lo que queda de contenedor es el techo.
+            // The minimum cannot run past the end: a one-minute appointment at 23:59 asked for 15
+            // minutes of height and drew outside the grid. What is left of the container is the cap.
             size: Math.min(Math.max((visibleEnd - visibleStart) / span, minSize), 1 - offset),
             column,
             columns: 1,
@@ -177,9 +177,9 @@ export function layoutRows<T extends SchedulerEvent>(events: T[], options: RowLa
         }
 
         if (row >= maxRows) {
-            // Días de CALENDARIO y no milisegundos entre 86.400.000: el día del cambio de hora dura
-            // 23 o 25 horas, y dividir desplazaba el índice de todos los días siguientes de la
-            // semana, colgando el "+N more" del día equivocado.
+            // CALENDAR days rather than milliseconds over 86,400,000: the day the clocks change is
+            // 23 or 25 hours long, and dividing shifted the index of every later day of the week,
+            // hanging the "+N more" off the wrong one.
             const dayIndex = daysBetween(range.start, new Date(visibleStart));
             const bucket = overflow.get(dayIndex) ?? [];
             bucket.push(b.event);
@@ -214,7 +214,7 @@ export function groupByDay<T extends SchedulerEvent>(events: T[], defaultEventDu
 
     for (const b of bound(events, defaultEventDuration)) {
         const start = new Date(b.start);
-        const last = new Date(b.end - 1); // -1ms: un evento que acaba a medianoche NO entra en el día siguiente
+        const last = new Date(b.end - 1); // -1ms: an event ending at midnight does NOT reach the next day
         for (let d = new Date(start.getFullYear(), start.getMonth(), start.getDate()); d <= last; d.setDate(d.getDate() + 1)) {
             const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
             const bucket = groups.get(key) ?? [];

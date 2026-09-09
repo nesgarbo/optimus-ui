@@ -48,7 +48,7 @@ function formatterFor(timeZone: string): Intl.DateTimeFormat | null {
         formatters.set(timeZone, formatter);
         return formatter;
     } catch {
-        // Una zona que la plataforma no conoce no puede tumbar el calendario: se cae a la local.
+        // A zone the platform does not know cannot bring the calendar down: it falls back to local.
         formatters.set(timeZone, null as unknown as Intl.DateTimeFormat);
         return null;
     }
@@ -77,7 +77,7 @@ function zoneParts(date: Date, timeZone: string): ZoneParts | null {
         year: read('year'),
         month: read('month'),
         day: read('day'),
-        // Algunas plataformas dan la medianoche como 24 con hour12:false.
+        // Some platforms report midnight as 24 with hour12:false.
         hour: hour === 24 ? 0 : hour,
         minute: read('minute'),
         second: read('second')
@@ -138,8 +138,8 @@ export function fromDisplayTime(date: Date, timeZone: string | undefined): Date 
 
     const asUtc = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds());
 
-    // Se sondea a ±14 h además del propio punto porque el desplazamiento de una zona llega a 14 h y
-    // el offset que se busca es el que rige en el instante RESULTADO, no en el sondeo.
+    // Probed at ±14 h as well as the point itself because a zone's shift reaches 14 h, and the
+    // offset being looked for is the one in force at the RESULTING instant, not at the probe.
     const probes = [asUtc, asUtc - 14 * 60 * MINUTE_MS, asUtc + 14 * 60 * MINUTE_MS];
     const offsets = [...new Set(probes.map((probe) => zoneOffsetMinutes(new Date(probe), timeZone)).filter((offset) => !Number.isNaN(offset)))];
 
@@ -150,8 +150,8 @@ export function fromDisplayTime(date: Date, timeZone: string | undefined): Date 
 
     if (matches.length) return matches[0];
 
-    // Hueco del salto de primavera: ningún candidato existe en la zona. El offset POSTERIOR al salto
-    // pone el resultado justo después del hueco.
+    // The spring-forward gap: no candidate exists in the zone. The offset AFTER the jump puts the
+    // result just past the gap.
     const after = Math.min(...offsets);
     return new Date(asUtc - after * MINUTE_MS);
 }

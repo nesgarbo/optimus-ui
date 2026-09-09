@@ -127,9 +127,9 @@ export abstract class SchedulerViewBase {
      * Builds the context of a date or time cell.
      */
     protected bindCell(date: Date, events: SchedulerEvent[], extra: Partial<SchedulerCellContext> = {}, kind = 'cell'): { key: unknown; context: SchedulerCellContext & { $implicit: SchedulerCellContext } } {
-        // El `kind` distingue superficies que caen en el MISMO instante: la cabecera del día, su
-        // celda de todo el día y la celda de medianoche son las tres medianoche, y con una sola
-        // clave se sobrescribían el contexto entre ellas.
+        // `kind` separates surfaces that fall on the SAME instant: the day header, its all-day cell
+        // and the midnight cell are all three midnight, and with one key they overwrote each other's
+        // context.
         const key = `${kind}|${dayKey(date)}|${date.getHours()}:${date.getMinutes()}${extra.resource ? `|${extra.resource.id}` : ''}`;
         const context: SchedulerCellContext = {
             date,
@@ -170,8 +170,8 @@ export abstract class SchedulerViewBase {
         const allDay: SchedulerEvent[] = [];
         const timed: SchedulerEvent[] = [];
         for (const event of events) {
-            // Un evento marcado allDay, y también el que cubre 24 h o más, van a la banda superior:
-            // dibujar una barra de 24 h en la rejilla horaria tapa todo lo demás del día.
+            // An event marked allDay, and one covering 24 h or more as well, belong in the top
+            // band: drawing a 24 h bar in the time grid buries everything else that day.
             const start = toDate(event.start);
             const end = event.end != null ? toDate(event.end) : start;
             (event.allDay || end.getTime() - start.getTime() >= 86_400_000 ? allDay : timed).push(event);
@@ -223,8 +223,8 @@ export abstract class SchedulerViewBase {
      * template — is a legitimate place to click the cell.
      */
     protected onSlotClick(originalEvent: MouseEvent | KeyboardEvent, start: Date, end: Date, disabled = false): void {
-        // Un hueco lleno se anuncia como aria-disabled: activarlo con el puntero seleccionaria el dia
-        // y emitiria slotClick de todas formas, que es justo lo que dice que no se puede hacer.
+        // A full slot is announced aria-disabled: activating it with the pointer would select the
+        // date and emit slotClick anyway, which is exactly what it says cannot be done.
         if (disabled || fromEventSurface(originalEvent)) return;
         this.state.handleSlotClick(originalEvent, start, end);
     }
@@ -266,7 +266,7 @@ export abstract class SchedulerViewBase {
      */
     protected onCellKeydown(originalEvent: KeyboardEvent, start: Date, end: Date): void {
         const cell = originalEvent.currentTarget as HTMLElement | null;
-        // Una tecla que viene de un evento del mes ya la ha manejado su propia superficie.
+        // A key that came from a month event has already been handled by its own surface.
         if (fromEventSurface(originalEvent)) return;
 
         if (originalEvent.key === 'Enter' || originalEvent.key === ' ') {

@@ -94,8 +94,8 @@ export abstract class SchedulerScope implements SchedulerScopeLike {
     selector: 'p-scheduler-content',
     standalone: true,
     imports: [SchedulerTimeGridView, SchedulerMonthView, SchedulerAgendaView, SchedulerYearView, SchedulerTimelineView],
-    // El <ng-content> son SOLO declaraciones: los scopes y los *...Def son plantillas y no pintan
-    // nada. Lo que se ve lo pinta el renderer de la vista activa, aquí debajo.
+    // The <ng-content> is declarations ONLY: the scopes and the *...Def are templates and draw
+    // nothing. What is seen is drawn by the active view's renderer, just below.
     template: `
         <ng-content />
         @switch (state.view()) {
@@ -133,9 +133,9 @@ export abstract class SchedulerScope implements SchedulerScopeLike {
                 <p-scheduler-year-view />
             }
             @default {
-                <!-- Los ocho timelines comparten renderer: el viewType le dice la escala y si lleva
-                     carril de recursos, así que enumerarlos como casos sería repetir ocho veces la
-                     misma línea. -->
+                <!-- The eight timelines share one renderer: viewType tells it the scale and whether
+                     it carries a resource rail, so listing them as cases would repeat the same line
+                     eight times over. -->
                 @if (timelineView(); as timeline) {
                     <p-scheduler-timeline-view [viewType]="timeline" />
                 } @else {
@@ -199,9 +199,9 @@ export class SchedulerContent extends SchedulerScope implements SchedulerDefReso
      * Hands the state the views the page declared, so the view selector can offer exactly those
      * instead of every view the build knows how to render.
      *
-     * Va en un effect y NO en `addScope`: un scope se registra desde el constructor de su clase
-     * base, o sea ANTES de que corran los inicializadores de campo de la subclase, así que ahí su
-     * propio `views` todavía es undefined.
+     * It lives in an effect and NOT in `addScope`: a scope registers itself from its base class's
+     * constructor, which is BEFORE the subclass field initialisers run, so its own `views` is still
+     * undefined at that point.
      */
     private readonly syncDeclaredViews = effect(() => {
         this.state.declaredViews.set(this.declaredViews());
@@ -245,7 +245,7 @@ export abstract class SchedulerViewScope extends SchedulerScope {
     }
 }
 
-// Decoradores literales, no generados: ver la nota en scheduler-parts.ts (NG2001).
+// Literal decorators, not generated: see the note in scheduler-parts.ts (NG2001).
 
 /**
  * Scope of the day view.

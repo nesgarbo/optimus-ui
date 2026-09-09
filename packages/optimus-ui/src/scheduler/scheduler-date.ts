@@ -230,9 +230,9 @@ export function viewRange(view: SchedulerViewType, date: Date, options: Schedule
             return { start, end: addDays(start, agendaDays) };
         }
         default: {
-            // Las cuatro escalas del timeline. El mes NO se rellena a semanas enteras como la
-            // rejilla del mes: un eje horizontal de "septiembre" que empiece el 30 de agosto miente
-            // sobre lo que está mostrando.
+            // The four timeline scales. The month is NOT padded to whole weeks the way the month
+            // grid is: a horizontal axis labelled "September" that starts on 30 August lies about
+            // what it is showing.
             switch (timelineScaleOf(view)) {
                 case 'week': {
                     const start = startOfWeek(date, firstDayOfWeek);

@@ -100,7 +100,7 @@ export const DEMO_RECURRING_EVENTS: SchedulerEvent[] = [
         end: at(0, 9, 45),
         categoryId: 'ops',
         rrule: 'FREQ=DAILY;COUNT=10',
-        // El día siguiente no hay: EXDATE se salta esa ocurrencia sin tocar la regla.
+        // Not on the following day: EXDATE skips that occurrence without touching the rule.
         exdate: [allDay(1)]
     },
     {
@@ -114,9 +114,9 @@ export const DEMO_RECURRING_EVENTS: SchedulerEvent[] = [
     {
         id: 'review-moved',
         title: 'Design review (moved)',
-        // Una excepción: apunta a la serie y al instante original, así que sustituye a esa copia en
-        // vez de duplicarla. El instante se calcula a partir de la REGLA y no a mano: con un offset
-        // fijo solo caía sobre una ocurrencia los días en que el ancla es martes.
+        // An override: it points at the series and at the original instant, so it replaces that
+        // copy rather than duplicating it. The instant is derived from the RULE and not by hand:
+        // with a fixed offset it only landed on an occurrence when the anchor was a Tuesday.
         recurrenceId: 'review',
         recurrenceStart: nextWeekday(at(0, 15), 4),
         start: nextWeekday(at(0, 11), 4),

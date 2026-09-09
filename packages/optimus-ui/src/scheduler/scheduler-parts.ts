@@ -19,9 +19,9 @@ import type { SchedulerViewType } from '@openng/optimus-ui/types/scheduler';
  * @module scheduler-parts
  */
 
-// Los decoradores van escritos a mano y no generados por un helper: el compilador AOT de Angular
-// tiene que poder LEER los metadatos estáticamente, y un objeto obtenido de una llamada (aunque sea
-// con spread) le deja el `template` invisible y falla con NG2001.
+// The decorators are written out by hand rather than produced by a helper: Angular's AOT compiler
+// has to READ the metadata statically, and an object that comes out of a call (even spread into
+// place) leaves the `template` invisible to it and fails with NG2001.
 
 /** Event surface used when no narrower definition exists. @group Components */
 @Component({
@@ -423,8 +423,8 @@ export class SchedulerTitle {
     standalone: true,
     template: `
         @if (single(); as view) {
-            <!-- Con una sola vista disponible no hay nada que seleccionar: un botón resaltado que no
-                 lleva a ningún sitio invita a pulsarlo y confunde. Se imprime el nombre. -->
+            <!-- With a single view available there is nothing to select: a highlighted button that
+                 leads nowhere invites a click and confuses. The name is printed instead. -->
             <span class="p-scheduler-view-label" data-slot="scheduler-view-label" [attr.data-view]="view">{{ label(view) }}</span>
         } @else {
             @for (view of context().views; track view) {

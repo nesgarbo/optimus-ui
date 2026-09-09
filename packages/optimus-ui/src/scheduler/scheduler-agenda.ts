@@ -35,9 +35,9 @@ import { SchedulerViewBase } from './scheduler-view-base';
                     </div>
 
                     @for (item of group.events; track item.key) {
-                        <!-- La fila envuelve gutter + tarjeta. El data-slot y el clic siguen en la
-                             TARJETA, que es la superficie que el consumidor sustituye y la que las
-                             pruebas y los selectores de estilo buscan. -->
+                        <!-- The row wraps gutter + card. The data-slot and the click stay on the
+                             CARD, which is the surface the consumer replaces and the one the tests
+                             and the style selectors look for. -->
                         <div class="p-scheduler-agenda-row">
                             <div class="p-scheduler-agenda-row-gutter" aria-hidden="true"></div>
                             <div
@@ -92,8 +92,9 @@ export class SchedulerAgendaView extends SchedulerViewBase {
 
         const result = [...byDay.entries()]
             .filter(([key]) => {
-                // groupByDay lista el evento en todos los días que toca, incluidos los de fuera del
-                // rango: un evento que empieza antes del inicio no puede colar su día anterior.
+                // groupByDay lists an event under every day it touches, the ones outside the range
+                // included: an event that starts before the range must not smuggle in its own
+                // earlier day.
                 const date = new Date(`${key}T00:00:00`);
                 return date >= start && date < end;
             })
@@ -122,9 +123,9 @@ export class SchedulerAgendaView extends SchedulerViewBase {
                     selected: this.state.isDateSelected(date),
                     disabled: false
                 });
-                // $implicit y context tienen que ser EL MISMO objeto, como en el resto de las
-                // superficies: con `let ctx` el consumidor recibía la mitad de los campos y con
-                // `let ctx="context"` la otra.
+                // $implicit and context have to be THE SAME object, as on every other surface:
+                // with `let ctx` the consumer got half the fields and with `let ctx="context"` the
+                // other half.
                 const merged = { ...binding.context, ...context };
 
                 return {
@@ -149,7 +150,7 @@ export class SchedulerAgendaView extends SchedulerViewBase {
         );
     }
 
-    /** Contexto de la cabecera de grupo: no es una celda de rejilla, así que lleva clave propia. */
+    /** Context of the group header: it is not a grid cell, so it carries a key of its own. */
     private bindCellRaw(key: string, context: any) {
         return { key, context: { ...context, $implicit: context, context } };
     }

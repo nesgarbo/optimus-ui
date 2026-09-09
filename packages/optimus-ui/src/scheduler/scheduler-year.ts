@@ -31,9 +31,9 @@ import { SchedulerViewBase } from './scheduler-view-base';
                         }
                     </div>
 
-                    <!-- Una ÚNICA rejilla con los nombres de día como primera fila: en dos rejillas
-                         separadas las columnas se calculan por separado y las iniciales dejan de
-                         cuadrar con los números. La referencia hace lo mismo. -->
+                    <!-- ONE grid with the weekday names as its first row: in two separate grids the
+                         columns are computed separately and the initials stop lining up with the
+                         numbers. -->
                     <div class="p-scheduler-mini-month-grid" role="grid">
                         @for (weekday of weekdayInitials(); track $index) {
                             <span class="p-scheduler-mini-month-weekday" aria-hidden="true">{{ weekday }}</span>
@@ -103,8 +103,8 @@ export class SchedulerYearView extends SchedulerViewBase {
             const monthEnd = new Date(year, monthIndex + 1, 1);
 
             const days: any[] = [];
-            // 42 días fijos, seis semanas: un mes que cabe en cinco haría el minimes más bajo y los
-            // doce dejarían de medir lo mismo, con la rejilla del año dando saltos de fila.
+            // A fixed 42 days, six weeks: a month that fits in five would make its mini-month
+            // shorter, the twelve would stop measuring the same and the year grid would jump a row.
             for (let i = 0, date = gridStart; i < 42; i++, date = addDays(date, 1)) {
                 void monthEnd;
                 const key = dayKey(date);
@@ -118,8 +118,8 @@ export class SchedulerYearView extends SchedulerViewBase {
                     end: addDays(date, 1),
                     today: isToday(date, this.state.now()),
                     count: dayEvents.length,
-                    // El punto lleva el color del primer evento del día, no un acento genérico: a
-                    // este zoom el color es la única pista de QUÉ pasa ese día.
+                    // The dot takes the colour of the day's first event rather than a generic
+                    // accent: at this zoom the colour is the only hint of WHAT happens that day.
                     indicatorColor: dayEvents.length ? this.state.accentColor(dayEvents[0]) : undefined,
                     label: `${date.toLocaleDateString(this.locale(), { day: 'numeric', month: 'long' })}${dayEvents.length ? `, ${dayEvents.length}` : ''}`,
                     binding: this.bindCell(date, dayEvents, {
@@ -130,9 +130,9 @@ export class SchedulerYearView extends SchedulerViewBase {
                 });
             }
 
-            // Un unico punto de entrada por minimes: con el tabindex por defecto los doce meses
-            // sumaban mas de cuatrocientas paradas de tabulador antes del siguiente control de la
-            // pagina. Se entra por el primer dia propio y las flechas hacen el resto.
+            // One entry point per mini-month: with the default tabindex the twelve months added up
+            // to more than four hundred tab stops before the next control on the page. Focus enters
+            // on the first day the month owns and the arrows do the rest.
             const firstOwn = days.find((day) => !day.otherMonth);
             if (firstOwn) firstOwn.tabbable = true;
 

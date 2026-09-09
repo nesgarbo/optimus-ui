@@ -121,10 +121,10 @@ export function toICalendar(events: readonly SchedulerEvent[], options: Schedule
         lines.push(`DTSTAMP:${toUtcStamp(new Date())}`);
 
         if (event.allDay) {
-            // DTEND es EXCLUSIVO en el formato: el dia siguiente al ultimo dia ocupado. Escribirlo tal
-            // cual exportaria un dia entero con duracion cero, que es como lo leeria cualquier otro
-            // calendario. El ultimo dia ocupado se saca igual que en la vista, restando un
-            // milisegundo, para que un final a medianoche no arrastre el dia siguiente.
+            // DTEND is EXCLUSIVE in the format: the day after the last occupied one. Writing it as
+            // it stands would export a whole day with zero duration, which is how any other calendar
+            // would read it. The last occupied day is derived the way the views derive it, by
+            // subtracting a millisecond, so an end at midnight does not drag the next day in.
             const lastMs = (end.getTime() > start.getTime() ? end.getTime() : start.getTime() + 1) - 1;
             const last = new Date(lastMs);
             const exclusive = new Date(last.getFullYear(), last.getMonth(), last.getDate() + 1);
@@ -149,8 +149,8 @@ export function toICalendar(events: readonly SchedulerEvent[], options: Schedule
             if (dates.length) lines.push(`${field.toUpperCase()}:${dates.join(',')}`);
         }
 
-        // Los recursos y la categoría viajan como CATEGORIES/X-: no hay campo estándar para "el
-        // recurso" y perderlos en la exportación convertiría un plan de equipo en una lista de citas.
+        // Resources and the category travel as CATEGORIES/X-: there is no standard field for "the
+        // resource", and losing them on export would turn a team plan into a list of appointments.
         if (event.resourceId != null) lines.push(`X-OPTIMUS-RESOURCE:${escapeText(String(event.resourceId))}`);
         const categoryId = event['categoryId'];
         if (categoryId != null) lines.push(`CATEGORIES:${escapeText(String(categoryId))}`);
@@ -169,7 +169,7 @@ export function toICalendar(events: readonly SchedulerEvent[], options: Schedule
  * ignored rather than fatal: half a calendar is more useful than an exception.
  */
 export function parseICalendar(text: string): SchedulerICalendarResult {
-    // El desdoblado va primero: una propiedad partida en dos líneas no se puede leer por líneas.
+    // Unfolding comes first: a property split across two lines cannot be read line by line.
     const unfolded = text.replace(/\r?\n[ \t]/g, '');
     const lines = unfolded.split(/\r?\n/);
 
@@ -186,7 +186,7 @@ export function parseICalendar(text: string): SchedulerICalendarResult {
         if (line === 'END:VEVENT') {
             if (current) {
                 const start = current['start'];
-                // Sin DTSTART no hay cita: un VEVENT sin instante no se puede colocar en ningún sitio.
+                // No DTSTART, no appointment: a VEVENT without an instant cannot be placed anywhere.
                 if (start) events.push({ id: current['id'] ?? `ics-${index++}`, ...current } as SchedulerEvent);
             }
             current = null;

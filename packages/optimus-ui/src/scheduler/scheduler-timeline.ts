@@ -31,7 +31,7 @@ import { SchedulerViewBase } from './scheduler-view-base';
     imports: [NgTemplateOutlet],
     template: `
         <div class="p-scheduler-timeline" [class.p-scheduler-timeline-resource]="grouped()" [attr.data-view]="view" [attr.data-scale]="scale()">
-            <!-- ── Carril de recursos, pegado al inicio de la línea ───────────────────────────── -->
+            <!-- ── Resource rail, stuck to the start of the line ───────────────────────────────── -->
             @if (grouped()) {
                 <div class="p-scheduler-resource-area" data-slot="scheduler-resource-area" [style.--p-scheduler-timeline-tiers]="tiers().length">
                     <div class="p-scheduler-resource-area-header" data-slot="scheduler-resource-area-header">
@@ -61,16 +61,16 @@ import { SchedulerViewBase } from './scheduler-view-base';
 
             <!-- ── Eje horizontal + carriles ──────────────────────────────────────────────────── -->
             <div #scroll class="p-scheduler-timeline-scroll" [attr.data-virtual]="virtualized() ? '' : null" [style.--p-scheduler-timeline-cols]="slots().length" [style.--p-scheduler-timeline-tiers]="tiers().length" (scroll)="onScroll()">
-                <!-- Las bandas de contexto sobre las columnas: sin ellas un eje de horas no dice de
-                     qué día son, y uno de días no dice de qué mes. Cada celda abarca las columnas
-                     que le tocan a través de una plantilla de rejilla compartida, que es lo que las
-                     mantiene cuadradas con el eje. -->
+                <!-- The context bands above the columns: without them an axis of hours does not
+                     say which day they belong to, and one of days does not say which month. Each
+                     cell spans the columns it owns through a shared grid template, which is what
+                     keeps them squared with the axis. -->
                 @for (tier of tiers(); track tier.key) {
                     <div class="p-scheduler-timeline-tier" [attr.data-tier]="tier.key" [style.--p-scheduler-timeline-tier-index]="$index">
                         @for (cell of tier.cells; track cell.key) {
-                            <!-- La etiqueta va en un span pegajoso, no suelta en la celda: una celda
-                                 de periodo abarca treinta columnas y su texto se salía de la vista en
-                                 cuanto el eje se desplazaba, dejando la banda en blanco. -->
+                            <!-- The label goes in a sticky span rather than loose in the cell: a
+                                 period cell spans thirty columns and its text scrolled out of view as
+                                 soon as the axis moved, leaving the band blank. -->
                             <div class="p-scheduler-timeline-tier-cell" [attr.data-today]="cell.today && multiDay() ? '' : null" [style.--p-scheduler-timeline-span]="cell.span">
                                 <span class="p-scheduler-timeline-tier-label">{{ cell.label }}</span>
                             </div>
@@ -79,9 +79,9 @@ import { SchedulerViewBase } from './scheduler-view-base';
                 }
 
                 <div class="p-scheduler-timeline-header">
-                    <!-- Con virtualización solo se monta la ventana visible, así que cada celda dice
-                         en qué columna va: sin grid-column-start, la primera celda montada caería en
-                         la columna 1 y el eje entero se desplazaría al hacer scroll. -->
+                    <!-- With virtualization only the visible window is mounted, so every cell says
+                         which column it goes in: without grid-column-start the first mounted cell
+                         would land in column 1 and the whole axis would slide as you scroll. -->
                     @for (slot of visibleSlots(); track slot.key) {
                         <div
                             class="p-scheduler-timeline-header-cell"
@@ -164,9 +164,9 @@ import { SchedulerViewBase } from './scheduler-view-base';
                                         <span class="p-scheduler-event-time">{{ item.context.timeText }}</span>
                                     }
                                     @if (item.context.resizable) {
-                                        <!-- Los tiradores viven DENTRO de la superficie del evento, así que su
-                                             pointerdown tiene que parar la propagación o el mismo gesto arrancaría
-                                             también un movimiento. Lo hace el controlador. -->
+                                        <!-- The handles live INSIDE the event's surface, so their
+                                             pointerdown has to stop propagation or the same gesture
+                                             would start a move as well. The controller does it. -->
                                         <span class="p-scheduler-event-resize-handle" data-slot="scheduler-event-resize-handle" data-edge="start" aria-hidden="true" (pointerdown)="onResizePointerDown($event, item.context.event, 'start')"></span>
                                         <span class="p-scheduler-event-resize-handle" data-slot="scheduler-event-resize-handle" data-edge="end" aria-hidden="true" (pointerdown)="onResizePointerDown($event, item.context.event, 'end')"></span>
                                     }
@@ -332,8 +332,8 @@ export class SchedulerTimelineView extends SchedulerViewBase {
             : [{ key: '__all', title: '', depth: 0, events }];
 
         return groups.map((group) => {
-            // El reparto en filas por solape sigue siendo aritmética de tiempo y se calcula sobre el
-            // rango completo; lo que se reemplaza es la geometría, que la pone el eje.
+            // Packing the rows by overlap is still time arithmetic and is computed over the whole
+            // range; what gets replaced is the geometry, and that comes from the axis.
             const packed = layoutTimeGrid(group.events, {
                 range,
                 defaultEventDuration: duration,
@@ -359,8 +359,8 @@ export class SchedulerTimelineView extends SchedulerViewBase {
             return {
                 ...group,
                 cells,
-                // En horizontal el solape se resuelve apilando filas, no partiendo el ancho: cortar
-                // una barra de tiempo por la mitad a lo alto la vuelve ilegible.
+                // Laid out horizontally, overlap is resolved by stacking rows and not by splitting
+                // the width: halving the height of a time bar makes it unreadable.
                 rowCount: Math.max(
                     laid.reduce((max, item) => Math.max(max, item.column + 1), 1),
                     1
@@ -368,9 +368,9 @@ export class SchedulerTimelineView extends SchedulerViewBase {
                 items: laid.map((item) => ({
                     offset: item.offset,
                     size: item.size,
-                    // La barra que se arrastra se queda en la primera fila y flota por encima (lo hace
-                    // el z-index de data-dragging): recolocarla de fila cada vez que roza otra cita
-                    // la hacía saltar en vertical mientras el puntero iba en horizontal.
+                    // The dragged bar stays in the first row and floats above (data-dragging's
+                    // z-index does that): re-packing its row every time it brushed another
+                    // appointment made it jump vertically while the pointer moved horizontally.
                     row: item.event.id === interacting ? 0 : item.column,
                     ...this.bindEvent(item.event, { continuesBefore: item.continuesBefore, continuesAfter: item.continuesAfter }, group.key)
                 })),
@@ -433,16 +433,16 @@ export class SchedulerTimelineView extends SchedulerViewBase {
     /**
      * Reads the scroll offset back on every scroll of the axis.
      *
-     * ONLY the offset. Desplazar dispara un evento por frame y `measure` lee geometria, asi que
-     * medir aqui forzaba un reflow por frame y, al escribir `viewportWidth`/`columnWidth`, invalidaba
-     * las senales de la ventana virtual en mitad del desplazamiento. El tamano lo trae un
-     * ResizeObserver, que es quien sabe cuando ha cambiado de verdad.
+     * ONLY the offset. Scrolling fires an event per frame and `measure` reads geometry, so measuring
+     * here forced a reflow per frame and, by writing `viewportWidth`/`columnWidth`, invalidated the
+     * virtual window's signals mid-scroll. The size comes from a `ResizeObserver`, which is what
+     * actually knows when it changed.
      */
     protected onScroll(): void {
         const host = this.scroll()?.nativeElement;
         if (!host || !this.browser) return;
-        // Math.abs porque en RTL scrollLeft es negativo en los navegadores basados en Chromium: la
-        // ventana se calcula sobre la distancia recorrida, que no tiene signo.
+        // Math.abs because scrollLeft is negative in RTL on Chromium-based browsers: the window is
+        // computed from the distance travelled, which has no sign.
         this.scrollOffset.set(Math.abs(host.scrollLeft));
     }
 
@@ -483,17 +483,17 @@ export class SchedulerTimelineView extends SchedulerViewBase {
             lanes.flatMap((lane) => lane.cells.map((cell) => cell.binding))
         );
 
-        // Ni medir ni auto-desplazar mientras se arrastra: las dos cosas leen geometría, y el
-        // arrastre provoca un ciclo de detección por frame. Medir ahí es forzar un reflow por frame
-        // justo cuando lo que hace falta es soltar el hilo.
+        // Neither measure nor auto-scroll while dragging: both read geometry, and a drag causes one
+        // change-detection cycle per frame. Measuring there forces a reflow per frame exactly when
+        // what is needed is to let go of the thread.
         if (this.state.drag.active) return;
 
         const host = this.scroll()?.nativeElement;
         if (host) {
             this.observe(host);
-            // Se mide cuando cambia el NUMERO de columnas, no en cada ciclo de deteccion: el ancho de
-            // columna es minmax(slotWidth, 1fr), asi que depende del recuento y del ancho del
-            // contenedor, y del segundo se encarga el observer.
+            // Measured when the NUMBER of columns changes, not on every detection cycle: the column
+            // width is minmax(slotWidth, 1fr), so it depends on the count and on the container's
+            // width, and the observer takes care of the second.
             if (this.measuredColumns !== this.slots().length) {
                 this.measuredColumns = this.slots().length;
                 this.measure(host);
@@ -521,8 +521,8 @@ export class SchedulerTimelineView extends SchedulerViewBase {
 
         const index = axis.slots.findIndex((slot) => slot.today);
         if (index < 0) {
-            // Hoy no está en el rango: no hay nada que buscar, y darlo por hecho evita repetir la
-            // búsqueda en cada pasada de detección de cambios.
+            // Today is not in the range: there is nothing to look for, and settling that once
+            // avoids repeating the search on every change-detection pass.
             this.scrolledKey = key;
             return;
         }
@@ -534,14 +534,14 @@ export class SchedulerTimelineView extends SchedulerViewBase {
             return;
         }
 
-        // La columna de hoy no está montada, que es justo lo que pasa cuando la ventana virtual está
-        // en otra parte del eje: buscarla en el DOM no puede encontrarla y reintentar tampoco
-        // movería la ventana. Se salta por índice, que es información que el eje ya tiene.
+        // Today's column is not mounted, which is exactly what happens when the virtual window sits
+        // elsewhere on the axis: looking for it in the DOM cannot find it, and retrying would not
+        // move the window either. It jumps by index instead, which the axis already knows.
         const width = this.columnWidth();
         if (!width) return;
 
-        // En RTL el desplazamiento va en negativo en los navegadores que siguen la especificación,
-        // así que la distancia se mide desde el inicio de la línea y se le pone el signo al final.
+        // In RTL the scroll runs negative on browsers that follow the spec, so the distance is
+        // measured from the start of the line and the sign is applied at the end.
         const distance = index * width;
         host.scrollLeft = this.state.rtl() ? -distance : distance;
         this.scrolledKey = key;

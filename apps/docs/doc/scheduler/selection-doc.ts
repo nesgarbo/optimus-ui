@@ -66,7 +66,7 @@ export class SelectionDoc {
 
     limit = signal<number | null>(null);
 
-    /** El aviso del tope se borra en cuanto la selección vuelve a cambiar: si no, se queda pegado. */
+    /** The limit notice clears as soon as the selection changes again, or it stays stuck on screen. */
     onSelectionChange(events: SchedulerEvent[]): void {
         this.selected.set(events);
         this.limit.set(null);

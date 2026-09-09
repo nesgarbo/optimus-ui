@@ -30,9 +30,9 @@ export const gutter: SchedulerTokenSections.Gutter = {
 };
 
 export const day: SchedulerTokenSections.Day = {
-    // Suelo y no ancho: en un contenedor ancho la columna crece con 1fr. A 8rem, una semana pedía
-    // 840px y aparecía scroll horizontal dentro de un panel de 730px —siete días cortados por la
-    // mitad se leen peor que siete días estrechos—.
+    // A floor and not a width: in a wide container the column grows with 1fr. At 8rem a week asked
+    // for 840px and produced horizontal scroll inside a 730px panel — seven days cut in half read
+    // worse than seven narrow days.
     minWidth: '6rem',
     hoverBackground: '{content.hover.background}',
     headerPadding: '0.5rem'
@@ -62,8 +62,8 @@ export const event: SchedulerTokenSections.Event = {
     timeFontSize: '0.6875rem',
     paddingX: '0.375rem',
     paddingY: '0.125rem',
-    // 18 % del color del evento sobre el fondo: suficiente para distinguir categorías de un vistazo
-    // y bajo de sobra para que el texto siga cumpliendo contraste en claro y en oscuro.
+    // 18% of the event's colour over the background: enough to tell categories apart at a glance
+    // and low enough that the text keeps its contrast in both light and dark.
     fillOpacity: '18%'
 };
 
@@ -72,13 +72,13 @@ export const business: SchedulerTokenSections.Business = {
 };
 
 /**
- * El hueco bloqueado no lleva un color plano sino un rayado: un relleno sólido se confunde con el
- * de fuera de horario o con el tinte de hoy, y "aquí no se puede" tiene que leerse distinto de
- * "aquí no se suele".
+ * A blocked window is hatched rather than filled with a flat colour: a solid fill reads like the
+ * out-of-hours shading or like today's tint, and "this cannot happen here" has to look different
+ * from "this does not usually happen here".
  */
 /**
- * El hueco disponible se tiñe con el acento a muy baja opacidad: tiene que verse por DEBAJO de los
- * eventos sin competir con ellos, y un color propio lo convertiría en una tercera cosa que aprender.
+ * An available window is tinted with the accent at very low opacity: it has to be visible BELOW the
+ * events without competing with them, and a colour of its own would make it a third thing to learn.
  */
 export const slotAvailable: SchedulerTokenSections.SlotAvailable = {
     background: 'color-mix(in srgb, {primary.color}, transparent 94%)'
@@ -96,17 +96,17 @@ export const month: SchedulerTokenSections.Month = {
     numberHeight: '1.5rem'
 };
 
-// Geometría en PX y no en rem, medida sobre la referencia: estas cifras son decisiones de layout
-// (ancho del carril, alto de fila, hueco de la rejilla) y tienen que salir iguales aunque la app
-// anfitriona use una base tipográfica distinta —el docs usa 14px y la referencia 16px—. Los tamaños
-// de FUENTE sí van en rem, para que sigan escalando con el anfitrión.
+// Geometry in PX and not in rem: these numbers are layout decisions (rail width, row height, grid
+// gap) and have to come out the same even when the host application uses a different typographic
+// base — this documentation site runs at 14px where most run at 16px. FONT sizes do stay in rem, so
+// they keep scaling with the host.
 export const miniMonth: SchedulerTokenSections.MiniMonth = {
     gap: '16px',
     padding: '8px',
     gridPadding: '6px',
-    // Ancho MÍNIMO de la tarjeta, no fijo: la rejilla del año es auto-fill, así que en un panel
-    // estrecho baja de columnas en vez de apretar los doce minimeses. Con cuatro columnas fijas la
-    // celda del día bajaba a 19px y los números se tocaban.
+    // The card's MINIMUM width, not a fixed one: the year grid is auto-fill, so in a narrow panel it
+    // drops a column instead of squeezing all twelve mini-months. With four fixed columns the day
+    // cell fell to 19px and the numbers touched.
     minWidth: '180px',
     daySize: '17px',
     fontSize: '1rem',
@@ -114,9 +114,9 @@ export const miniMonth: SchedulerTokenSections.MiniMonth = {
 };
 
 /**
- * El fin de semana del minimes va en el color primario, como en la referencia. Es el único sitio
- * donde se distingue: en el mes hay columnas y cabecera para saber qué día es, pero en una rejilla
- * de 17px sin cabecera visible el color es lo que deja encontrar el sábado de un vistazo.
+ * The mini-month weekend is drawn in the primary colour. It is the only place that needs it: the
+ * month view has columns and a header to tell you which day you are on, but in a 17px grid with no
+ * visible header the colour is what lets you find Saturday at a glance.
  */
 export const miniMonthWeekend: SchedulerTokenSections.MiniMonthWeekend = {
     color: '{primary.color}'
@@ -127,8 +127,7 @@ export const timeline: SchedulerTokenSections.Timeline = {
     rowHeight: '48px',
     headerHeight: '36px',
     eventHeight: '36px',
-    // Cuadrado, como la referencia: en un eje horizontal las esquinas redondeadas de barras
-    // contiguas dejan un diente entre ellas.
+    // Square: on a horizontal axis, rounded corners on adjacent bars leave a notch between them.
     eventBorderRadius: '0'
 };
 
@@ -143,8 +142,8 @@ export const resourceArea: SchedulerTokenSections.ResourceArea = {
 export const agenda: SchedulerTokenSections.Agenda = {
     headerPadding: '0.5rem 0.75rem',
     rowPadding: '0.5rem 0.75rem',
-    // La franja vacía a la izquierda de cada fila: alinea la lista con el gutter horario de las
-    // vistas de día y semana, para que cambiar de vista no desplace el contenido. A 0 desaparece.
+    // The empty strip at the start of each row: it lines the list up with the time gutter of the day
+    // and week views, so switching view does not shift the content sideways. At 0 it disappears.
     gutterWidth: '5rem'
 };
 
@@ -162,44 +161,44 @@ export const moreLink: SchedulerTokenSections.MoreLink = {
 };
 
 export const nowIndicator: SchedulerTokenSections.NowIndicator = {
-    // Literal a propósito: `red` es una paleta primitiva y un tema que sustituya las primitivas
-    // dejaría la línea de "ahora" sin resolver, o sea negra y confundible con un borde.
+    // Literal on purpose: `red` is a primitive palette, and a theme that replaces the primitives
+    // would leave the "now" line unresolved — black, and mistakable for a border.
     color: '#ef4444'
 };
 
 /**
- * Todo lo que depende de la superficie va aquí y NO en el cuerpo: `{surface.50}` es un primitivo y
- * no cambia con el tema, así que en oscuro dejaba las columnas de fin de semana en blanco. Los
- * tokens del cuerpo son los que sí son válidos en los dos modos (semánticos o medidas).
+ * Everything that depends on the surface goes here and NOT in the body: `{surface.50}` is a
+ * primitive and does not change with the scheme, so in dark mode it left the weekend columns white.
+ * The tokens in the body are the ones that hold in both modes — semantic values or measurements.
  */
 export const colorScheme: SchedulerTokenSections.ColorScheme = {
     light: {
         weekday: { background: '{surface.50}' },
-        // Los días del mes vecino sí llevan tinte: es lo que hace que la rejilla se lea como UN mes
-        // con relleno a los lados, y no como seis semanas sueltas. Con el número atenuado a secas,
-        // la primera fila parecía parte de septiembre.
+        // The neighbouring month's days do get a tint: that is what makes the grid read as ONE
+        // month with padding at both ends rather than six loose weeks. With nothing but a dimmed
+        // number, the first row looked like part of the month itself.
         otherMonth: { background: '{surface.50}' },
-        // El fin de semana NO se tiñe. Con la columna del sábado y el domingo en gris, el gris de
-        // "hoy" y el de las horas no laborables dejaban de decir nada: tres cosas distintas con el
-        // mismo tinte. El token se queda para quien quiera recuperarlo.
+        // The weekend is NOT tinted. With Saturday and Sunday shaded grey, the grey of "today" and
+        // the grey of out-of-hours stopped meaning anything: three different things with the same
+        // tint. The token stays for anyone who wants it back.
         weekend: { background: 'transparent' },
         nonBusiness: { background: '{surface.50}' },
         today: {
-            // El primario a baja opacidad, no `{highlight.background}`: highlight es el relleno de
-            // "seleccionado" y hay temas (el de esta documentación entre ellos) que lo definen como
-            // un sólido oscuro, con lo que hoy salía como una banda negra. Un color-mix contra
-            // `transparent` compone sobre el fondo que tenga la celda debajo y sale tinte en claro y
-            // en oscuro sin dos valores distintos. Y un gris plano no servía: dejaba hoy igual que
-            // el fin de semana y que una hora no laborable.
+            // The primary at low opacity, not `{highlight.background}`: highlight is the fill for
+            // "selected", and some themes (this documentation's among them) define it as a dark
+            // solid, which turned today into a black band. A color-mix against `transparent`
+            // composites over whatever background the cell has and gives a tint in light and in dark
+            // without two separate values. A flat grey would not do either: it left today looking
+            // exactly like a weekend and like an out-of-hours slot.
             background: 'color-mix(in srgb, {primary.color}, transparent 90%)',
             color: '{primary.color}',
-            // El círculo del número pide algo más de cuerpo que el tinte de la columna, porque mide
-            // 24px y no una columna entera.
+            // The circle around the number needs a little more body than the column's tint, because
+            // it is 24px across and not a whole column.
             badgeBackground: 'color-mix(in srgb, {primary.color}, transparent 85%)',
             badgeColor: '{primary.color}'
         },
-        // La selección va un paso por encima del realce de hoy, no al mismo nivel: si las dos
-        // usaran `highlight.background`, el día seleccionado y el día de hoy serían la misma celda.
+        // Selection sits one step above today's highlight rather than level with it: were both to
+        // use `highlight.background`, the selected day and today would be the same cell.
         selected: { background: '{highlight.focus.background}', color: '{highlight.focus.color}' },
         event: { background: '{surface.50}', hoverBackground: '{surface.100}' }
     },
