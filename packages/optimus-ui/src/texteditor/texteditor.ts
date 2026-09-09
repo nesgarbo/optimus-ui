@@ -48,6 +48,7 @@ import { textEditorKeymap } from './core/keymap';
 import { placeholderPlugin } from './core/placeholder';
 import { printHtml } from './core/print';
 import { createTextEditorSchema } from './core/schema';
+import { isSafeLinkHref } from './core/sanitize';
 import { parseBlocks, parseHtml, parseHtmlSlice, serializeBlocks, serializeHtml, serializeMarkdown, serializeText } from './core/serialize';
 import { createTableCellCommands, createTableColumnCommands, createTableControlsCommands, createTableRowCommands, isCellMerged, isMultiCellSelected, tableActiveState, tableOverlayRect } from './core/tables';
 import { TypeaheadState, caretPositionAt, clearTypeahead, dismissTypeahead, typeaheadPlugin } from './core/typeahead';
@@ -611,10 +612,7 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
             this.imageUploads.set(entries);
             this.imageUploadStateChange.emit(entries);
         },
-        onUploaded: (_file, url) => {
-            this.removePlaceholder('imageUploadPlaceholder');
-            this.commands().insertImage(url);
-        },
+        onUploaded: (_file, url) => this.insertUploaded('imageUploadPlaceholder', (schema) => schema.nodes['image']?.createAndFill({ src: url }) ?? null),
         onError: (file, error) => {
             this.imageUploadError.emit({ file, error });
             this.uploadOptions.image?.onError({ file, error });
@@ -634,10 +632,15 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
             this.documentUploads.set(entries);
             this.documentUploadStateChange.emit(entries);
         },
-        onUploaded: (file, url) => {
-            this.removePlaceholder('documentUploadPlaceholder');
-            this.commands().insertLink(url, file.name);
-        },
+        onUploaded: (file, url) =>
+            this.insertUploaded('documentUploadPlaceholder', (schema) => {
+                const link = schema.marks['link'];
+                const paragraph = schema.nodes['paragraph'];
+
+                if (!link || !paragraph || !isSafeLinkHref(url)) return null;
+
+                return paragraph.create(null, schema.text(file.name, [link.create({ href: url })]));
+            }),
         onError: (file, error) => {
             this.documentUploadError.emit({ file, error });
             this.uploadOptions.document?.onError({ file, error });
@@ -2215,6 +2218,36 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
         if (!this.view || !type) return;
 
         this.view.dispatch(this.view.state.tr.replaceSelectionWith(type.create()));
+    }
+
+    /**
+     * Turns the placeholder into the uploaded content, in place.
+     *
+     * Replacing the node is what makes the result land where the user started the upload: inserting
+     * at the selection instead meant inserting at whatever position was left after the placeholder
+     * was removed, which for a document was a position where text is not even allowed.
+     */
+    private insertUploaded(nodeName: 'imageUploadPlaceholder' | 'documentUploadPlaceholder', build: (schema: Schema) => ProseMirrorNode | null): void {
+        if (!this.view || !this.schema) return;
+
+        const node = build(this.schema);
+
+        if (!node) return;
+
+        let placeholder = -1;
+
+        this.view.state.doc.descendants((child, pos) => {
+            if (placeholder >= 0) return false;
+
+            if (child.type.name === nodeName) placeholder = pos;
+
+            return placeholder < 0;
+        });
+
+        const transaction = placeholder >= 0 ? this.view.state.tr.replaceWith(placeholder, placeholder + 1, node) : this.view.state.tr.replaceSelectionWith(node, false);
+        const after = TextSelection.near(transaction.doc.resolve(Math.min(transaction.selection.to + 1, transaction.doc.content.size)));
+
+        this.view.dispatch(transaction.setSelection(after).scrollIntoView());
     }
 
     private removePlaceholder(nodeName: 'imageUploadPlaceholder' | 'documentUploadPlaceholder'): void {

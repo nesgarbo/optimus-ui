@@ -15,7 +15,7 @@ import { TextEditorModule } from './texteditor.module';
     standalone: false,
     changeDetection: ChangeDetectionStrategy.Eager,
     template: `
-        <p-text-editor-root #editor [(value)]="value" [mode]="mode()" [disabled]="disabled()" [readonly]="readonly()" [ariaLabel]="ariaLabel()" [name]="name()" [placeholder]="placeholder()">
+        <p-text-editor-root #editor [(value)]="value" [mode]="mode()" [disabled]="disabled()" [readonly]="readonly()" [ariaLabel]="ariaLabel()" [name]="name()" [placeholder]="placeholder()" [uploadHandler]="uploadHandler">
             <p-text-editor-toolbar>
                 <ng-template pTextEditorToolbarDef let-commands="commands" let-state="state">
                     <button type="button" class="bold" [attr.aria-pressed]="state.bold" (click)="commands.bold()">B</button>
@@ -42,6 +42,11 @@ class TestHost {
     readonly name = signal<string | undefined>(undefined);
 
     readonly placeholder = signal<string | null>(null);
+
+    /** Resolved by the test, so the placeholder can be observed while the upload is in flight. */
+    finishUpload: (url: string) => void = () => undefined;
+
+    readonly uploadHandler = (): Promise<string> => new Promise<string>((resolve) => (this.finishUpload = resolve));
 }
 
 @Component({
@@ -217,6 +222,28 @@ describe('TextEditor', () => {
         await fixture.whenStable();
 
         expect(editor.getBlocks()).toEqual(['<p>Two</p>', '<p>One</p>', '<p>Three</p>']);
+    });
+
+    it('turns an upload placeholder into the uploaded content', async () => {
+        const editor = host.editor();
+
+        editor.startDocumentUploads([new File(['%PDF'], 'report.pdf', { type: 'application/pdf' })]);
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        // The placeholder holds the spot while the transport runs.
+        expect(editor.getHTML()).toContain('data-p-document-upload-placeholder');
+
+        host.finishUpload('https://example.com/report.pdf');
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        const html = editor.getHTML();
+
+        expect(html).not.toContain('placeholder');
+        expect(html).toContain('<a href="https://example.com/report.pdf"');
+        expect(html).toContain('report.pdf</a>');
     });
 
     it('drives the document from a form control, and disables with it', async () => {
