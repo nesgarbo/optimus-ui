@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { AppCode } from '@/components/doc/app.code';
 import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
 import { SchedulerModule } from '@openng/optimus-ui/scheduler';
+import type { SchedulerViewType } from '@openng/optimus-ui/types/scheduler';
 import { DEMO_CATEGORIES, DEMO_DATE, DEMO_EVENTS, DEMO_RESOURCES } from './demo-data';
 
 @Component({
@@ -21,7 +22,7 @@ import { DEMO_CATEGORIES, DEMO_DATE, DEMO_EVENTS, DEMO_RESOURCES } from './demo-
             </p>
         </app-docsectiontext>
         <div class="card">
-            <p-scheduler-root locale="en-US" view="week" [events]="events" [resources]="resources" [categories]="categories" categoryField="categoryId" [date]="date" [dayStartHour]="7" [dayEndHour]="19">
+            <p-scheduler-root locale="en-US" view="week" [views]="views" [events]="events" [resources]="resources" [categories]="categories" categoryField="categoryId" [date]="date" [dayStartHour]="7" [dayEndHour]="19">
                 <p-scheduler-header>
                     <p-scheduler-navigation />
                     <p-scheduler-title />
@@ -49,6 +50,34 @@ import { DEMO_CATEGORIES, DEMO_DATE, DEMO_EVENTS, DEMO_RESOURCES } from './demo-
                             }
                         </p-scheduler-all-day-event>
                     </p-scheduler-week>
+                    <p-scheduler-agenda>
+                        <p-scheduler-agenda-date-header *pSchedulerAgendaDateHeaderDef="let ctx">
+                            <span class="flex items-baseline gap-2">
+                                <strong [class.text-primary]="ctx.today">{{ ctx.formattedDate }}</strong>
+                                <span class="text-xs uppercase opacity-60">{{ ctx.dayName }}</span>
+                                <span class="text-xs opacity-60">{{ ctx.count }}</span>
+                            </span>
+                        </p-scheduler-agenda-date-header>
+                        <p-scheduler-agenda-event *pSchedulerAgendaEventDef="let ctx">
+                            <span class="flex items-center gap-2 min-w-0">
+                                <span class="inline-block w-1.5 h-4 rounded-sm shrink-0" [style.background]="ctx.accentColor"></span>
+                                <strong class="truncate">{{ ctx.title }}</strong>
+                                @if (ctx.category) {
+                                    <span class="text-xs opacity-60 truncate">{{ ctx.category.name }}</span>
+                                }
+                            </span>
+                        </p-scheduler-agenda-event>
+                    </p-scheduler-agenda>
+                    <p-scheduler-timeline>
+                        <p-scheduler-timeline-event *pSchedulerTimelineEventDef="let ctx">
+                            <span class="flex items-center gap-1 min-w-0 px-1">
+                                <strong class="truncate">{{ ctx.title }}</strong>
+                                @if (ctx.availableWidth && ctx.availableWidth > 120) {
+                                    <span class="opacity-70 truncate">{{ ctx.timeText }}</span>
+                                }
+                            </span>
+                        </p-scheduler-timeline-event>
+                    </p-scheduler-timeline>
                 </p-scheduler-content>
             </p-scheduler-root>
         </div>
@@ -56,6 +85,8 @@ import { DEMO_CATEGORIES, DEMO_DATE, DEMO_EVENTS, DEMO_RESOURCES } from './demo-
     `
 })
 export class EventUiDoc {
+    views: SchedulerViewType[] = ['week', 'agenda', 'timeline'];
+
     events = DEMO_EVENTS;
 
     resources = DEMO_RESOURCES;

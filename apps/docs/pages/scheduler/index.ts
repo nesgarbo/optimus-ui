@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { AppDoc } from '@/components/doc/app.doc';
+import { ArchitectureDoc } from '@/doc/scheduler/architecture-doc';
 import { AccessibilityDoc } from '@/doc/scheduler/accessibility-doc';
 import { AdaptiveDoc } from '@/doc/scheduler/adaptive-doc';
 import { AgendaDoc } from '@/doc/scheduler/agenda-doc';
@@ -7,10 +8,13 @@ import { AvailabilityDoc } from '@/doc/scheduler/availability-doc';
 import { BasicDoc } from '@/doc/scheduler/basic-doc';
 import { BusinessHoursDoc } from '@/doc/scheduler/business-hours-doc';
 import { CategoriesDoc } from '@/doc/scheduler/categories-doc';
+import { CellsDoc } from '@/doc/scheduler/cells-doc';
 import { ControlledDoc } from '@/doc/scheduler/controlled-doc';
 import { DataAttributesDoc } from '@/doc/scheduler/data-attributes-doc';
 import { DayDoc } from '@/doc/scheduler/day-doc';
 import { DefinitionsDoc } from '@/doc/scheduler/definitions-doc';
+import { EditingDoc } from '@/doc/scheduler/editing-doc';
+import { EventDataDoc } from '@/doc/scheduler/event-data-doc';
 import { EventUiDoc } from '@/doc/scheduler/event-ui-doc';
 import { GroupingDoc } from '@/doc/scheduler/grouping-doc';
 import { ImportDoc } from '@/doc/scheduler/import-doc';
@@ -21,10 +25,13 @@ import { OverlaysDoc } from '@/doc/scheduler/overlays-doc';
 import { PerformanceDoc } from '@/doc/scheduler/performance-doc';
 import { RecurrenceDoc } from '@/doc/scheduler/recurrence-doc';
 import { ResourceTimelineDoc } from '@/doc/scheduler/resource-timeline-doc';
+import { ResourceUiDoc } from '@/doc/scheduler/resource-ui-doc';
+import { ResponsiveDoc } from '@/doc/scheduler/responsive-doc';
 import { ResourcesDoc } from '@/doc/scheduler/resources-doc';
 import { RtlDoc } from '@/doc/scheduler/rtl-doc';
 import { SelectionDoc } from '@/doc/scheduler/selection-doc';
 import { SlotsDoc } from '@/doc/scheduler/slots-doc';
+import { SpanningDoc } from '@/doc/scheduler/spanning-doc';
 import { TimezoneDoc } from '@/doc/scheduler/timezone-doc';
 import { TransferDoc } from '@/doc/scheduler/transfer-doc';
 import { TimelineDoc } from '@/doc/scheduler/timeline-doc';
@@ -55,6 +62,11 @@ export class SchedulerDemo {
             id: 'basic',
             label: 'Basic',
             component: BasicDoc
+        },
+        {
+            id: 'architecture',
+            label: 'Architecture',
+            component: ArchitectureDoc
         },
         {
             id: 'views',
@@ -97,6 +109,16 @@ export class SchedulerDemo {
             component: ResourceTimelineDoc
         },
         {
+            id: 'eventdata',
+            label: 'Event Data',
+            component: EventDataDoc
+        },
+        {
+            id: 'spanning',
+            label: 'All-Day and Spanning',
+            component: SpanningDoc
+        },
+        {
             id: 'resources',
             label: 'Resources',
             component: ResourcesDoc
@@ -132,6 +154,11 @@ export class SchedulerDemo {
             component: InteractionDoc
         },
         {
+            id: 'editing',
+            label: 'Add, Edit and Delete',
+            component: EditingDoc
+        },
+        {
             id: 'recurrence',
             label: 'Recurring Events',
             component: RecurrenceDoc
@@ -162,6 +189,16 @@ export class SchedulerDemo {
             component: EventUiDoc
         },
         {
+            id: 'cells',
+            label: 'Cells and Headers',
+            component: CellsDoc
+        },
+        {
+            id: 'resourceui',
+            label: 'Resource UI',
+            component: ResourceUiDoc
+        },
+        {
             id: 'controlled',
             label: 'Controlled State',
             component: ControlledDoc
@@ -185,6 +222,11 @@ export class SchedulerDemo {
             id: 'transfer',
             label: 'Import, Export and Print',
             component: TransferDoc
+        },
+        {
+            id: 'responsive',
+            label: 'Responsive Behaviour',
+            component: ResponsiveDoc
         },
         {
             id: 'performance',

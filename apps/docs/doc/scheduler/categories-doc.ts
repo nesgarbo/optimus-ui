@@ -16,7 +16,7 @@ import { DEMO_CATEGORIES, DEMO_DATE, DEMO_EVENTS } from './demo-data';
             </p>
         </app-docsectiontext>
         <div class="card">
-            <p-scheduler-root locale="en-US" [events]="events" [categories]="categories" categoryField="categoryId" [date]="date" view="month">
+            <p-scheduler-root locale="en-US" [events]="events" [categories]="categories" categoryField="categoryId" [date]="date" view="month" [categoryFilterable]="true">
                 <p-scheduler-header>
                     <p-scheduler-navigation />
                     <p-scheduler-title />

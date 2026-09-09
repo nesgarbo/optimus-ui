@@ -20,12 +20,26 @@ import { DEMO_CATEGORIES, DEMO_DATE, DEMO_EVENTS } from './demo-data';
                 splitting the height, because a half-height bar on a horizontal axis is unreadable.
             </p>
             <p>
-                <i>timelineSlotDuration</i> sets the minutes per column on the two time-based scales, and <i>timelineSlotWidth</i> its width in pixels — a week of hours and a year of months want very different numbers. A long axis only mounts the
-                columns near the viewport; the Performance section below covers the windowing options.
+                <i>timelineSlotDuration</i> sets the minutes per column on the two time-based scales, and <i>timelineSlotWidth</i> its width in pixels — a week of hours and a year of months want very different numbers. <i>timelineSnapDuration</i> is
+                the step a drag or an arrow key rounds to here, falling back to <i>snapDuration</i>: an hour-wide column laid out horizontally does not want the same step as a half-hour row laid out vertically. A long axis only mounts the columns
+                near the viewport; the Performance section below covers the windowing options.
             </p>
         </app-docsectiontext>
         <div class="card">
-            <p-scheduler-root locale="en-US" [events]="events" [categories]="categories" categoryField="categoryId" [date]="date" [(view)]="view" [dayStartHour]="7" [dayEndHour]="19" [timelineSlotDuration]="60" [timelineSlotWidth]="84">
+            <p-scheduler-root
+                locale="en-US"
+                [events]="events"
+                [categories]="categories"
+                categoryField="categoryId"
+                [date]="date"
+                [(view)]="view"
+                [dayStartHour]="7"
+                [dayEndHour]="19"
+                [timelineSlotDuration]="60"
+                [timelineSlotWidth]="84"
+                [timelineSnapDuration]="30"
+                [editable]="true"
+            >
                 <p-scheduler-header>
                     <p-scheduler-navigation />
                     <p-scheduler-title />
