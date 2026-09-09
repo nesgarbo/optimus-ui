@@ -1,0 +1,1939 @@
+import { NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
+import { ChangeDetectionStrategy, Component, ElementRef, ViewEncapsulation, booleanAttribute, computed, contentChild, effect, forwardRef, inject, input, model, numberAttribute, output, signal, untracked, viewChild } from '@angular/core';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
+import { PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
+import { BaseEditableHolder } from '@openng/optimus-ui/baseeditableholder';
+import { Bind } from '@openng/optimus-ui/bind';
+import type {
+    CaretPosition,
+    TableActiveState,
+    TableOverlayRect,
+    TextEditorBlockMenuCommands,
+    TextEditorCommands,
+    TextEditorFormatState,
+    TextEditorHeadingEntry,
+    TextEditorMentionCommands,
+    TextEditorMentionHandler,
+    TextEditorMentionTemplate,
+    TextEditorMode,
+    TextEditorPassThrough,
+    TextEditorPluginCommands,
+    TextEditorPluginRegistration,
+    TextEditorSlashMenuCommands,
+    TextEditorTableCellCommands,
+    TextEditorTableColumnCommands,
+    TextEditorTableRowCommands,
+    TextEditorUploadErrorEvent,
+    TextEditorUploadHandler,
+    TextEditorUploadKind,
+    TextEditorUploadRejectEvent,
+    TextEditorValue,
+    UploadSlotEntry
+} from '@openng/optimus-ui/types/texteditor';
+import type { MarkSpec, Node as ProseMirrorNode, NodeSpec, Schema } from 'prosemirror-model';
+import { dropCursor } from 'prosemirror-dropcursor';
+import { gapCursor } from 'prosemirror-gapcursor';
+import { history } from 'prosemirror-history';
+import type { Command, Plugin } from 'prosemirror-state';
+import { EditorState, TextSelection } from 'prosemirror-state';
+import { columnResizing, tableEditing } from 'prosemirror-tables';
+import { EditorView } from 'prosemirror-view';
+import { addBlockAfter, blockModePlugin, blockTypeAt, createBlockMenuCommands, moveBlock } from './core/block-mode';
+import { CheckListItemView } from './core/checklist';
+import { createTextEditorCommands } from './core/commands';
+import { deriveFormatState } from './core/format-state';
+import { collectHeadings, headingsPlugin } from './core/headings';
+import { markdownInputRules } from './core/input-rules';
+import { textEditorKeymap } from './core/keymap';
+import { placeholderPlugin } from './core/placeholder';
+import { printHtml } from './core/print';
+import { createTextEditorSchema } from './core/schema';
+import { parseBlocks, parseHtml, serializeBlocks, serializeHtml, serializeMarkdown, serializeText } from './core/serialize';
+import { createTableCellCommands, createTableColumnCommands, createTableControlsCommands, createTableRowCommands, isCellMerged, isMultiCellSelected, tableActiveState, tableOverlayRect } from './core/tables';
+import { TypeaheadState, caretPositionAt, clearTypeahead, dismissTypeahead, typeaheadPlugin } from './core/typeahead';
+import { DEFAULT_DOCUMENT_TYPES, DEFAULT_IMAGE_TYPES, TEXT_EDITOR_FILE_SIZE, UploadQueue, validateFiles } from './core/uploads';
+import { TEXT_EDITOR_CONTEXT } from './texteditor-contexts';
+import { TextEditorRootDef } from './texteditor-defs';
+import { installPlugins } from './texteditor-plugin';
+import { TextEditorStyle } from './style/texteditorstyle';
+
+/**
+ * Per-instance id. A counter rather than a random value, because the same tree renders on the
+ * server and on the client and `data-id` has to match across both.
+ */
+let instanceCount = 0;
+
+export const TEXT_EDITOR_VALUE_ACCESSOR: any = {
+    provide: NG_VALUE_ACCESSOR,
+    useExisting: forwardRef(() => TextEditorRoot),
+    multi: true
+};
+
+/**
+ * Which parts are mounted. Mounting a part is what turns its feature on, so the runtime reads this
+ * set rather than a list of boolean inputs.
+ */
+/**
+ * The placeholder overrides `p-text-editor-content` can set locally, so a demo can put the
+ * checklist placeholder on the content part instead of the root.
+ */
+export interface TextEditorContentOptions {
+    /**
+     * Placeholder for the empty editor.
+     */
+    placeholder: () => string | null;
+    /**
+     * Placeholder for empty checklist items.
+     */
+    checklistPlaceholder: () => string | null;
+}
+
+/**
+ * The mention inputs `p-text-editor-mention-menu` carries, which take precedence over the root's
+ * own so a page can configure the popover where it mounts it.
+ */
+export interface TextEditorMentionOptions {
+    /**
+     * Resolves candidates for the current query.
+     */
+    handler: () => TextEditorMentionHandler | undefined;
+    /**
+     * Field the candidates are filtered on.
+     */
+    filterField: () => string | undefined;
+    /**
+     * Renders the text inserted for a selected candidate.
+     */
+    template: () => TextEditorMentionTemplate | undefined;
+}
+
+/**
+ * The upload inputs an overlay carries, which take precedence over the root's own.
+ */
+export interface TextEditorUploadOptions {
+    /**
+     * The upload transport.
+     */
+    handler: () => TextEditorUploadHandler | undefined;
+    /**
+     * Accepted file types.
+     */
+    allowedTypes: () => string | undefined;
+    /**
+     * Maximum number of files per selection.
+     */
+    maxFileCount: () => number | null | undefined;
+    /**
+     * Maximum size per file, in bytes.
+     */
+    maxFileSize: () => number | null | undefined;
+    /**
+     * Called with the files client-side validation turned away.
+     */
+    onReject: (event: TextEditorUploadRejectEvent) => void;
+    /**
+     * Called when the transport rejects.
+     */
+    onError: (event: TextEditorUploadErrorEvent) => void;
+    /**
+     * Called when the queue drains.
+     */
+    onComplete: () => void;
+}
+
+export type TextEditorPartName = 'toolbar' | 'content' | 'context-toolbar' | 'block-controls' | 'block-menu' | 'slash-menu' | 'mention-menu' | 'image-upload' | 'document-upload' | 'table-controls' | 'navigator';
+
+/**
+ * TextEditor is a compound rich text editor: the root owns the document, the commands and the
+ * state, and every visible surface is a part the application fills with its own widgets.
+ *
+ * @group Components
+ */
+@Component({
+    selector: 'p-text-editor-root',
+    standalone: true,
+    imports: [NgTemplateOutlet],
+    template: `
+        @if (rootDef(); as def) {
+            <ng-container *ngTemplateOutlet="def.template; context: rootSlotContext()" />
+        } @else {
+            <ng-content />
+        }
+        @if (name()) {
+            <input type="hidden" [attr.name]="name()" [attr.required]="required() ? '' : null" [value]="hiddenInputValue()" />
+        }
+        <input #filePicker type="file" multiple class="p-text-editor-file-input" [attr.accept]="pickerAccept()" (change)="onFilesPicked($event)" />
+    `,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    encapsulation: ViewEncapsulation.None,
+    providers: [
+        TextEditorStyle,
+        TEXT_EDITOR_VALUE_ACCESSOR,
+        { provide: PARENT_INSTANCE, useExisting: TextEditorRoot },
+        {
+            provide: TEXT_EDITOR_CONTEXT,
+            useFactory: () => {
+                const root = inject(TextEditorRoot);
+
+                return {
+                    commands: root.commands,
+                    state: root.state,
+                    pluginCommands: root.pluginCommands,
+                    headings: root.headings,
+                    value: root.value,
+                    disabled: root.$disabled,
+                    readonly: root.readonly,
+                    getHTML: () => root.getHTML(),
+                    getJSON: () => root.getJSON(),
+                    getBlocks: () => root.getBlocks(),
+                    getText: () => root.getText(),
+                    getMarkdown: () => root.getMarkdown(),
+                    setValue: (value: TextEditorValue) => root.setValue(value)
+                };
+            }
+        }
+    ],
+    host: {
+        '[class]': 'cx("root")',
+        'data-scope': 'texteditor',
+        'data-part': 'root',
+        '[attr.data-id]': 'instanceId',
+        '[attr.data-mode]': 'mode()',
+        '[attr.data-disabled]': '$disabled() ? "" : null',
+        '[attr.data-readonly]': 'readonly() ? "" : null'
+    },
+    hostDirectives: [Bind]
+})
+export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
+    componentName = 'TextEditor';
+
+    /** @internal */
+    _componentStyle = inject(TextEditorStyle);
+
+    private readonly bindDirectiveInstance = inject(Bind, { self: true });
+
+    /**
+     * Per-instance id, stable across server and client renders.
+     */
+    readonly instanceId = `p-text-editor-${++instanceCount}`;
+
+    onAfterViewChecked(): void {
+        this.bindDirectiveInstance.setAttrs(this.ptms(['host', 'root']));
+    }
+
+    /**
+     * Editor value: an HTML string in classic mode, one HTML string per block in block mode.
+     * Supports `[(value)]`.
+     * @group Props
+     */
+    readonly value = model<TextEditorValue | undefined>(undefined);
+    /**
+     * Editor mode: `classic` for a toolbar editor, `block` for a Notion-like block editor.
+     * @defaultValue 'classic'
+     * @group Props
+     */
+    readonly mode = input<TextEditorMode>('classic');
+    /**
+     * Enables markdown input rules (e.g. `#` heading, `**bold**`, `-` list).
+     * @defaultValue false
+     * @group Props
+     */
+    readonly markdown = input(false, { transform: booleanAttribute });
+    /**
+     * Placeholder text displayed inside an empty editor.
+     * @group Props
+     */
+    readonly placeholder = input<string | null>(null);
+    /**
+     * Placeholder text displayed inside empty checklist items.
+     * @group Props
+     */
+    readonly checklistPlaceholder = input<string | null>(null);
+    /**
+     * Placeholder text displayed after `/` when slash commands are active.
+     * @group Props
+     */
+    readonly slashPlaceholder = input<string | null>(null);
+    /**
+     * Keeps content selectable and copyable but blocks edits.
+     * @defaultValue false
+     * @group Props
+     */
+    readonly readonly = input(false, { transform: booleanAttribute });
+    /**
+     * Enables the document navigator minimap.
+     * @defaultValue false
+     * @group Props
+     */
+    readonly navigator = input(false, { transform: booleanAttribute });
+    /**
+     * Array of editor plugins. The set is frozen when the editor state is built, so every plugin
+     * must be present on the initial render.
+     * @group Props
+     */
+    readonly plugins = input<TextEditorPluginRegistration[]>([]);
+    /**
+     * Accessible name for the editor region (WCAG 4.1.2).
+     * @group Props
+     */
+    readonly ariaLabel = input<string | undefined>(undefined);
+    /**
+     * ID(s) of the element(s) labelling the editor region.
+     * @group Props
+     */
+    readonly ariaLabelledby = input<string | undefined>(undefined);
+    /**
+     * Upload handler fallback used when the image and document handlers are not set.
+     * @group Props
+     */
+    readonly uploadHandler = input<TextEditorUploadHandler | undefined>(undefined);
+    /**
+     * Image upload handler; takes precedence over `uploadHandler`.
+     * @group Props
+     */
+    readonly imageUploadHandler = input<TextEditorUploadHandler | undefined>(undefined);
+    /**
+     * Document upload handler; takes precedence over `uploadHandler`.
+     * @group Props
+     */
+    readonly documentUploadHandler = input<TextEditorUploadHandler | undefined>(undefined);
+    /**
+     * Accepted file types for image uploads.
+     * @defaultValue 'image/*'
+     * @group Props
+     */
+    readonly allowedImageTypes = input<string>(DEFAULT_IMAGE_TYPES);
+    /**
+     * Accepted file types for document uploads.
+     * @defaultValue '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip'
+     * @group Props
+     */
+    readonly allowedDocumentTypes = input<string>(DEFAULT_DOCUMENT_TYPES);
+    /**
+     * Maximum number of images allowed per upload selection.
+     * @group Props
+     */
+    readonly imageMaxFileCount = input<number | null>(null, { transform: (value: unknown) => (value == null ? null : numberAttribute(value)) });
+    /**
+     * Maximum image file size in bytes per file.
+     * @group Props
+     */
+    readonly imageMaxFileSize = input<number | null>(null, { transform: (value: unknown) => (value == null ? null : numberAttribute(value)) });
+    /**
+     * Maximum number of documents allowed per upload selection.
+     * @group Props
+     */
+    readonly documentMaxFileCount = input<number | null>(null, { transform: (value: unknown) => (value == null ? null : numberAttribute(value)) });
+    /**
+     * Maximum document file size in bytes per file.
+     * @defaultValue TEXT_EDITOR_FILE_SIZE.TEN_MB
+     * @group Props
+     */
+    readonly documentMaxFileSize = input<number | null>(TEXT_EDITOR_FILE_SIZE.TEN_MB, { transform: (value: unknown) => (value == null ? null : numberAttribute(value)) });
+    /**
+     * Handler for fetching mention suggestions. Receives the current query.
+     * @group Props
+     */
+    readonly mentionHandler = input<TextEditorMentionHandler | undefined>(undefined);
+    /**
+     * Field name used to filter mention items.
+     * @defaultValue 'name'
+     * @group Props
+     */
+    readonly mentionFilterField = input<string>('name');
+    /**
+     * Template function rendering the text inserted for a selected mention.
+     * @group Props
+     */
+    readonly mentionTemplate = input<TextEditorMentionTemplate | undefined>(undefined);
+    /**
+     * Minimum column width in pixels for table column resize.
+     * @defaultValue 40
+     * @group Props
+     */
+    readonly minTableColumnWidth = input(40, { transform: numberAttribute });
+    /**
+     * Default column width in pixels when inserting a new table or adding columns.
+     * @defaultValue 120
+     * @group Props
+     */
+    readonly defaultTableColumnWidth = input(120, { transform: numberAttribute });
+    /**
+     * Color applied by the one-click highlight toggle and the `==` input rule.
+     * @defaultValue 'rgba(250, 204, 21, 0.4)'
+     * @group Props
+     */
+    readonly defaultHighlightColor = input<string>('rgba(250, 204, 21, 0.4)');
+    /**
+     * Debounce, in milliseconds, applied to `valueChange`.
+     * @defaultValue 0
+     * @group Props
+     */
+    readonly valueChangeDebounce = input(0, { transform: numberAttribute });
+
+    /**
+     * Emitted once when the editor view is created and ready.
+     * @group Emits
+     */
+    readonly editorCreate = output<void>();
+    /**
+     * Emitted when the editor gains focus.
+     * @group Emits
+     */
+    readonly editorFocus = output<void>();
+    /**
+     * Emitted when the editor loses focus.
+     * @group Emits
+     */
+    readonly editorBlur = output<void>();
+    /**
+     * Emitted when the selection changes without a document edit.
+     * @group Emits
+     */
+    readonly selectionUpdate = output<void>();
+    /**
+     * Emitted when editor format state changes.
+     * @group Emits
+     */
+    readonly formatStateChange = output<TextEditorFormatState>();
+    /**
+     * Emitted when an incoming value cannot be parsed; the editor falls back to an empty document.
+     * @group Emits
+     */
+    readonly parseError = output<{ error: unknown }>();
+    /**
+     * Emitted when the context toolbar should be shown.
+     * @group Emits
+     */
+    readonly contextToolbarRequest = output<CaretPosition>();
+    /**
+     * Emitted on every transaction while the slash menu is active.
+     * @group Emits
+     */
+    readonly slashMenuRequest = output<{ active: boolean; text: string; position: CaretPosition | null }>();
+    /**
+     * Emitted on every transaction while a mention is active.
+     * @group Emits
+     */
+    readonly mentionRequest = output<{ active: boolean; text: string; items: unknown[]; position: CaretPosition | null }>();
+    /**
+     * Emitted when document headings change.
+     * @group Emits
+     */
+    readonly navigatorHeadingsChange = output<TextEditorHeadingEntry[]>();
+    /**
+     * Emitted when the navigator's active heading index changes during scrolling.
+     * @group Emits
+     */
+    readonly navigatorActiveIndexChange = output<number>();
+    /**
+     * Emitted when the hovered block changes (block mode).
+     * @group Emits
+     */
+    readonly blockHoverChange = output<{ element: HTMLElement | null; index: number }>();
+    /**
+     * Emitted when a block drag starts (block mode).
+     * @group Emits
+     */
+    readonly blockDragStart = output<number>();
+    /**
+     * Emitted when a block drag ends (block mode).
+     * @group Emits
+     */
+    readonly blockDragEnd = output<void>();
+    /**
+     * Emitted when the image upload placeholder is inserted and the upload UI should be shown.
+     * @group Emits
+     */
+    readonly imageUploadRequest = output<void>();
+    /**
+     * Emitted when image upload entries change.
+     * @group Emits
+     */
+    readonly imageUploadStateChange = output<UploadSlotEntry[]>();
+    /**
+     * Emitted when an image upload handler rejects.
+     * @group Emits
+     */
+    readonly imageUploadError = output<TextEditorUploadErrorEvent>();
+    /**
+     * Emitted when all image uploads complete.
+     * @group Emits
+     */
+    readonly imageUploadComplete = output<void>();
+    /**
+     * Emitted when images are rejected by client-side validation.
+     * @group Emits
+     */
+    readonly imageReject = output<TextEditorUploadRejectEvent>();
+    /**
+     * Emitted when the document upload placeholder is inserted and the upload UI should be shown.
+     * @group Emits
+     */
+    readonly documentUploadRequest = output<void>();
+    /**
+     * Emitted when document upload entries change.
+     * @group Emits
+     */
+    readonly documentUploadStateChange = output<UploadSlotEntry[]>();
+    /**
+     * Emitted when a document upload handler rejects.
+     * @group Emits
+     */
+    readonly documentUploadError = output<TextEditorUploadErrorEvent>();
+    /**
+     * Emitted when all document uploads complete.
+     * @group Emits
+     */
+    readonly documentUploadComplete = output<void>();
+    /**
+     * Emitted when documents are rejected by client-side validation.
+     * @group Emits
+     */
+    readonly documentReject = output<TextEditorUploadRejectEvent>();
+    /**
+     * Emitted when the table active state changes.
+     * @group Emits
+     */
+    readonly tableActiveStateChange = output<TableActiveState | null>();
+    /**
+     * Emitted when the table overlay rect changes.
+     * @group Emits
+     */
+    readonly tableOverlayRectChange = output<TableOverlayRect | null>();
+    /**
+     * Emitted when the table column trigger dot is clicked.
+     * @group Emits
+     */
+    readonly tableColumnMenuRequest = output<{ colIndex: number; event: MouseEvent }>();
+    /**
+     * Emitted when the table row trigger dot is clicked.
+     * @group Emits
+     */
+    readonly tableRowMenuRequest = output<{ rowIndex: number; event: MouseEvent }>();
+    /**
+     * Emitted when the table cell trigger dot is clicked.
+     * @group Emits
+     */
+    readonly tableCellMenuRequest = output<MouseEvent>();
+
+    readonly rootDef = contentChild(TextEditorRootDef);
+
+    private readonly filePicker = viewChild<ElementRef<HTMLInputElement>>('filePicker');
+
+    /**
+     * The live view. Everything that touches the document goes through it, and everything is a
+     * no-op until it exists - which is also what makes the whole surface safe to call during SSR.
+     */
+    private view: EditorView | null = null;
+
+    private schema: Schema | null = null;
+
+    private contentElement: HTMLElement | null = null;
+
+    private contentOptions: TextEditorContentOptions | null = null;
+
+    private mentionOptions: TextEditorMentionOptions | null = null;
+
+    private readonly uploadOptions: Partial<Record<TextEditorUploadKind, TextEditorUploadOptions>> = {};
+
+    private readonly mountedParts = signal(new Set<TextEditorPartName>());
+
+    private readonly focused = signal(false);
+
+    private readonly formatState = signal<TextEditorFormatState>({});
+
+    private readonly headingEntries = signal<TextEditorHeadingEntry[]>([]);
+
+    private readonly pluginCommandMap = signal<TextEditorPluginCommands>({});
+
+    private readonly hoveredBlock = signal(-1);
+
+    private readonly hoveredElement = signal<HTMLElement | null>(null);
+
+    private readonly blockMenuRequest = signal<{ index: number; anchor: HTMLElement | null } | null>(null);
+
+    private readonly draggedBlock = signal<number | null>(null);
+
+    private readonly dropIndicator = signal<number | null>(null);
+
+    private readonly typeahead = signal<{ trigger: 'slash' | 'mention' | null; active: boolean; text: string; position: CaretPosition | null }>({ trigger: null, active: false, text: '', position: null });
+
+    private readonly mentionItems = signal<unknown[]>([]);
+
+    private readonly overlayRect = signal<TableOverlayRect | null>(null);
+
+    private readonly contextCaret = signal<CaretPosition | null>(null);
+
+    private readonly tableState = signal<TableActiveState | null>(null);
+
+    private readonly tableColumnMenu = signal<{ colIndex: number; anchor: HTMLElement | null } | null>(null);
+
+    private readonly tableRowMenu = signal<{ rowIndex: number; anchor: HTMLElement | null } | null>(null);
+
+    private readonly tableCellMenu = signal<{ anchor: HTMLElement | null } | null>(null);
+
+    private readonly imageUploads = signal<UploadSlotEntry[]>([]);
+
+    private readonly documentUploads = signal<UploadSlotEntry[]>([]);
+
+    private pickerKind: TextEditorUploadKind = 'image';
+
+    /**
+     * File types the shared native picker accepts, switched with the overlay it was opened for.
+     *
+     * @internal
+     */
+    readonly pickerAccept = signal<string>(DEFAULT_IMAGE_TYPES);
+
+    private lastEmitted: TextEditorValue | undefined;
+
+    private valueChangeTimer: ReturnType<typeof setTimeout> | null = null;
+
+    private pluginCleanups: Array<() => void> = [];
+
+    private readonly imageQueue = new UploadQueue({
+        kind: 'image',
+        handler: () => this.uploadOptions.image?.handler() ?? this.imageUploadHandler() ?? this.uploadHandler(),
+        onChange: (entries) => {
+            this.imageUploads.set(entries);
+            this.imageUploadStateChange.emit(entries);
+        },
+        onUploaded: (_file, url) => {
+            this.removePlaceholder('imageUploadPlaceholder');
+            this.commands().insertImage(url);
+        },
+        onError: (file, error) => {
+            this.imageUploadError.emit({ file, error });
+            this.uploadOptions.image?.onError({ file, error });
+        },
+        onComplete: () => {
+            this.removePlaceholder('imageUploadPlaceholder');
+            this.imageUploadComplete.emit();
+            this.uploadOptions.image?.onComplete();
+        }
+    });
+
+    private readonly documentQueue = new UploadQueue({
+        kind: 'document',
+        handler: () => this.uploadOptions.document?.handler() ?? this.documentUploadHandler() ?? this.uploadHandler(),
+        onChange: (entries) => {
+            this.documentUploads.set(entries);
+            this.documentUploadStateChange.emit(entries);
+        },
+        onUploaded: (file, url) => {
+            this.removePlaceholder('documentUploadPlaceholder');
+            this.commands().insertLink(url, file.name);
+        },
+        onError: (file, error) => {
+            this.documentUploadError.emit({ file, error });
+            this.uploadOptions.document?.onError({ file, error });
+        },
+        onComplete: () => {
+            this.removePlaceholder('documentUploadPlaceholder');
+            this.documentUploadComplete.emit();
+            this.uploadOptions.document?.onComplete();
+        }
+    });
+
+    /**
+     * The imperative command surface, rebuilt only when the view is replaced.
+     */
+    readonly commands = signal<TextEditorCommands>(
+        createTextEditorCommands({
+            getView: () => this.view,
+            requestImageUpload: () => this.openUpload('image'),
+            requestDocumentUpload: () => this.openUpload('document'),
+            print: () => this.printDocument(),
+            defaultHighlightColor: () => this.defaultHighlightColor(),
+            defaultTableColumnWidth: () => this.defaultTableColumnWidth()
+        })
+    );
+
+    /**
+     * The formatting snapshot at the current selection.
+     */
+    readonly state = this.formatState.asReadonly();
+
+    /**
+     * The document's heading outline.
+     */
+    readonly headings = this.headingEntries.asReadonly();
+
+    /**
+     * Commands contributed by plugins, namespaced by plugin name.
+     */
+    readonly pluginCommands = this.pluginCommandMap.asReadonly();
+
+    /**
+     * Value carried by the hidden input a native `<form>` submits.
+     */
+    readonly hiddenInputValue = computed(() => {
+        const value = this.value();
+
+        return Array.isArray(value) ? value.join('') : (value ?? '');
+    });
+
+    /**
+     * The slot surface handed to `pTextEditorRootDef`.
+     */
+    readonly rootSlotContext = computed(() => {
+        const props = {
+            state: this.formatState(),
+            commands: this.commands(),
+            pluginCommands: this.pluginCommandMap(),
+            headings: this.headingEntries(),
+            value: this.value(),
+            disabled: !!this.$disabled(),
+            readonly: this.readonly(),
+            getHTML: () => this.getHTML(),
+            getJSON: () => this.getJSON(),
+            getBlocks: () => this.getBlocks(),
+            getText: () => this.getText(),
+            getMarkdown: () => this.getMarkdown(),
+            setValue: (value: TextEditorValue) => this.setValue(value)
+        };
+
+        return { ...props, $implicit: props };
+    });
+
+    constructor() {
+        super();
+
+        /* A value set from the outside lands in the document; the value the editor itself just
+           emitted does not, or the round trip would loop. */
+        effect(() => {
+            const value = this.value();
+
+            untracked(() => {
+                if (!this.view || this.sameAsEmitted(value)) return;
+
+                this.applyValue(value);
+            });
+        });
+
+        effect(() => {
+            const disabled = !!this.$disabled();
+            const readonly = this.readonly();
+
+            untracked(() => {
+                void disabled;
+                void readonly;
+                this.refreshEditable();
+            });
+        });
+
+        effect(() => {
+            const markdown = this.markdown();
+
+            untracked(() => {
+                void markdown;
+                this.refreshMarkdown();
+            });
+        });
+
+        /* Mode decides the shape of the value and the plugin set, so it is the one input that
+           genuinely needs the view rebuilt. */
+        effect(() => {
+            const mode = this.mode();
+
+            untracked(() => {
+                void mode;
+
+                if (this.view) this.createView();
+            });
+        });
+    }
+
+    onDestroy(): void {
+        this.destroyView();
+    }
+
+    /**
+     * Called by `p-text-editor-content` once its editable region exists. The view is created here
+     * rather than in the root's own lifecycle, because the root has no DOM of its own to mount in.
+     *
+     * @internal
+     */
+    registerContentElement(element: HTMLElement | null, options?: TextEditorContentOptions): void {
+        this.contentElement = element;
+        this.contentOptions = options ?? null;
+
+        if (element && isPlatformBrowser(this.platformId)) this.createView();
+        else if (!element) this.destroyView();
+    }
+
+    /**
+     * Registers a mounted part. A part turns its feature on by existing, so the runtime reads the
+     * mounted set instead of a parallel list of inputs.
+     *
+     * @internal
+     */
+    registerPart(part: TextEditorPartName): () => void {
+        this.mountedParts.update((parts) => new Set(parts).add(part));
+
+        return () =>
+            this.mountedParts.update((parts) => {
+                const next = new Set(parts);
+
+                next.delete(part);
+
+                return next;
+            });
+    }
+
+    /**
+     * Registers the mention popover's own inputs.
+     *
+     * @internal
+     */
+    registerMentionOptions(options: TextEditorMentionOptions | null): void {
+        this.mentionOptions = options;
+    }
+
+    /**
+     * Registers one upload overlay's own inputs.
+     *
+     * @internal
+     */
+    registerUploadOptions(kind: TextEditorUploadKind, options: TextEditorUploadOptions | null): void {
+        if (options) this.uploadOptions[kind] = options;
+        else delete this.uploadOptions[kind];
+    }
+
+    /**
+     * Whether the given part is mounted.
+     *
+     * @internal
+     */
+    hasPart(part: TextEditorPartName): boolean {
+        return this.mountedParts().has(part);
+    }
+
+    /******************** Public API ********************/
+
+    /**
+     * Returns the live ProseMirror EditorView, or null before mount.
+     */
+    getView(): EditorView | null {
+        return this.view;
+    }
+
+    /**
+     * Returns the current ProseMirror EditorState, or null before mount.
+     */
+    getState(): EditorState | null {
+        return this.view?.state ?? null;
+    }
+
+    /**
+     * Returns the editor's content DOM element, or null before mount.
+     */
+    getEditorElement(): HTMLElement | null {
+        return (this.view?.dom as HTMLElement | undefined) ?? null;
+    }
+
+    /**
+     * Returns the full set of imperative editing commands.
+     */
+    getCommands(): TextEditorCommands {
+        return this.commands();
+    }
+
+    /**
+     * Serializes the current document to HTML.
+     */
+    getHTML(): string {
+        if (!this.view || !this.schema) return typeof this.value() === 'string' ? (this.value() as string) : '';
+
+        return serializeHtml(this.schema, this.view.state.doc, this.document);
+    }
+
+    /**
+     * The ProseMirror document as JSON (loss-less).
+     */
+    getJSON(): unknown {
+        return this.view?.state.doc.toJSON() ?? { type: 'doc', content: [] };
+    }
+
+    /**
+     * Serializes as the array-of-block-HTML representation used by block mode.
+     */
+    getBlocks(): string[] {
+        if (!this.view || !this.schema) return Array.isArray(this.value()) ? (this.value() as string[]) : [];
+
+        return serializeBlocks(this.schema, this.view.state.doc, this.document);
+    }
+
+    /**
+     * Plain-text projection of the document.
+     */
+    getText(): string {
+        return this.view ? serializeText(this.view.state.doc) : '';
+    }
+
+    /**
+     * Markdown projection of the document.
+     */
+    getMarkdown(): string {
+        return this.view ? serializeMarkdown(this.view.state.doc) : '';
+    }
+
+    /**
+     * Returns the plain text of the current selection.
+     */
+    getSelectedText(): string {
+        if (!this.view) return '';
+
+        const { from, to } = this.view.state.selection;
+
+        return this.view.state.doc.textBetween(from, to, ' ');
+    }
+
+    /**
+     * Replaces the editor content with the given value.
+     */
+    setValue(value: TextEditorValue): void {
+        this.applyValue(value);
+    }
+
+    /**
+     * Replaces the current selection with the given content, optionally interpreted as HTML.
+     */
+    replaceSelection(content: string, asHtml = false): void {
+        if (!this.view || !this.schema) return;
+
+        const { state } = this.view;
+
+        if (!asHtml) {
+            this.view.dispatch(state.tr.insertText(content));
+
+            return;
+        }
+
+        const parsed = parseHtml(this.schema, content, this.document);
+
+        this.view.dispatch(state.tr.replaceSelectionWith(parsed, false).scrollIntoView());
+    }
+
+    /**
+     * Runs a ProseMirror command against the editor; returns whether it applied.
+     */
+    runCommand(command: Command): boolean {
+        if (!this.view) return false;
+
+        return command(this.view.state, this.view.dispatch, this.view);
+    }
+
+    /**
+     * Attaches a ProseMirror plugin to the live editor; returns a remover function.
+     */
+    registerProseMirrorPlugin(plugin: Plugin): () => void {
+        if (!this.view) return () => undefined;
+
+        const view = this.view;
+
+        view.updateState(view.state.reconfigure({ plugins: [...view.state.plugins, plugin] }));
+
+        return () => {
+            if (!this.view) return;
+
+            this.view.updateState(this.view.state.reconfigure({ plugins: this.view.state.plugins.filter((entry) => entry !== plugin) }));
+        };
+    }
+
+    /**
+     * Re-applies the ProseMirror `editable` predicate after `disabled` or `readonly` changed.
+     */
+    refreshEditable(): void {
+        this.view?.setProps({ editable: () => this.isEditable() });
+    }
+
+    /**
+     * Adds or removes the markdown input-rules plugin live after the `markdown` input changed.
+     */
+    refreshMarkdown(): void {
+        if (!this.view || !this.schema) return;
+
+        const rules = markdownInputRules(this.schema, () => this.defaultHighlightColor());
+        const withoutRules = this.view.state.plugins.filter((plugin) => !(plugin.spec as { markdownRules?: boolean }).markdownRules);
+
+        if (!this.markdown()) {
+            this.view.updateState(this.view.state.reconfigure({ plugins: withoutRules }));
+
+            return;
+        }
+
+        (rules.spec as { markdownRules?: boolean }).markdownRules = true;
+        this.view.updateState(this.view.state.reconfigure({ plugins: [...withoutRules, rules] }));
+    }
+
+    /**
+     * Visually preserves the current selection while focus moves to external UI, such as a colour
+     * input in the toolbar.
+     */
+    preserveSelection(): void {
+        this.getEditorElement()?.classList.add('p-text-editor-selection-preserved');
+    }
+
+    /**
+     * Points the editor's `aria-activedescendant` at the active option of an open type-ahead menu.
+     */
+    setComboboxActiveDescendant(id: string | null): void {
+        const element = this.getEditorElement();
+
+        if (!element) return;
+
+        /* While a type-ahead is open the editing region is a combobox pointing at the highlighted
+           option; when it closes it goes back to being a plain textbox. */
+        if (id) {
+            element.setAttribute('aria-activedescendant', id);
+            element.setAttribute('role', 'combobox');
+            element.setAttribute('aria-autocomplete', 'list');
+            element.setAttribute('aria-expanded', 'true');
+
+            return;
+        }
+
+        element.removeAttribute('aria-activedescendant');
+        element.removeAttribute('aria-autocomplete');
+        element.removeAttribute('aria-expanded');
+        element.setAttribute('role', 'textbox');
+    }
+
+    /**
+     * Returns all headings in the document, used by the navigator minimap.
+     */
+    getDocumentHeadings(): TextEditorHeadingEntry[] {
+        return this.view ? collectHeadings(this.view.state.doc) : [];
+    }
+
+    /**
+     * Scrolls the heading at the given position into view.
+     */
+    scrollToHeading(pos: number, headings: TextEditorHeadingEntry[] = this.headingEntries()): void {
+        if (!this.view) return;
+
+        const node = this.view.nodeDOM(pos) as HTMLElement | null;
+
+        node?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        this.updateActiveHeading(headings);
+    }
+
+    /**
+     * Moves focus to the heading at the given document position.
+     */
+    focusHeading(pos: number): void {
+        if (!this.view) return;
+
+        this.view.dispatch(this.view.state.tr.setSelection(TextSelection.near(this.view.state.doc.resolve(pos + 1))));
+        this.view.focus();
+    }
+
+    /**
+     * Recomputes which heading is currently active based on scroll position.
+     */
+    updateActiveHeading(headings: TextEditorHeadingEntry[] = this.headingEntries()): void {
+        if (!this.view || !headings.length) return;
+
+        const top = this.getEditorElement()?.getBoundingClientRect().top ?? 0;
+        let active = 0;
+
+        headings.forEach((heading, index) => {
+            const node = this.view?.nodeDOM(heading.pos) as HTMLElement | null;
+
+            if (node && node.getBoundingClientRect().top - top <= 8) active = index;
+        });
+
+        if (active !== this.activeHeadingIndex()) {
+            this.activeHeading.set(active);
+            this.navigatorActiveIndexChange.emit(active);
+        }
+    }
+
+    /**
+     * Internal handler invoked on navigator scroll to sync the active heading.
+     */
+    onNavigatorScroll(headings: TextEditorHeadingEntry[] = this.headingEntries()): void {
+        this.updateActiveHeading(headings);
+    }
+
+    private readonly activeHeading = signal(0);
+
+    /**
+     * Index of the heading currently in view.
+     *
+     * @internal
+     */
+    readonly activeHeadingIndex = this.activeHeading.asReadonly();
+
+    /******************** Block mode ********************/
+
+    /**
+     * Returns the block type name at the given index (block mode).
+     */
+    getBlockType(index: number): string {
+        return this.view ? blockTypeAt(this.view, index) : 'text';
+    }
+
+    /**
+     * Inserts a new empty block immediately after the block at the given index (block mode).
+     */
+    addBlockAfter(index: number): void {
+        if (this.view) addBlockAfter(this.view, index);
+    }
+
+    /**
+     * Moves a block from one index to another, reordering the document (block mode).
+     */
+    moveBlock(fromIndex: number, toIndex: number): void {
+        if (this.view) moveBlock(this.view, fromIndex, toIndex);
+    }
+
+    /**
+     * Internal handler invoked when a block drag starts (block mode).
+     */
+    onBlockDragStart(index: number, event: DragEvent): void {
+        this.draggedBlock.set(index);
+        event.dataTransfer?.setData('text/plain', String(index));
+
+        if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
+
+        this.blockDragStart.emit(index);
+    }
+
+    /**
+     * Internal handler invoked when a block drag ends (block mode).
+     */
+    onBlockDragEnd(): void {
+        const from = this.draggedBlock();
+        const to = this.dropIndicator();
+
+        if (from != null && to != null) this.moveBlock(from, to);
+
+        this.draggedBlock.set(null);
+        this.dropIndicator.set(null);
+        this.blockDragEnd.emit();
+    }
+
+    /**
+     * Returns the command set for the block handle menu at the given block index (block mode).
+     */
+    getBlockMenuCommands(blockIndex: number, onDismiss: () => void): TextEditorBlockMenuCommands {
+        return createBlockMenuCommands(
+            () => this.view,
+            () => blockIndex,
+            onDismiss
+        );
+    }
+
+    /******************** Type-ahead menus ********************/
+
+    /**
+     * Returns the command set for the slash menu at the given block index.
+     */
+    getSlashMenuCommands(blockIndex: number, onDismiss: () => void): TextEditorSlashMenuCommands {
+        const withClear = (action: () => void) => () => {
+            if (this.view) clearTypeahead(this.view);
+
+            action();
+            onDismiss();
+        };
+        const commands = this.commands();
+
+        void blockIndex;
+
+        return {
+            text: withClear(() => commands.paragraph()),
+            heading: (level: number) => withClear(() => commands.heading(level))(),
+            bulletList: withClear(() => commands.bulletList()),
+            orderedList: withClear(() => commands.orderedList()),
+            checkList: withClear(() => commands.checkList()),
+            blockquote: withClear(() => commands.blockquote()),
+            code: withClear(() => commands.codeBlock()),
+            divider: withClear(() => commands.insertHorizontalRule()),
+            table: withClear(() => commands.table()),
+            uploadImages: withClear(() => commands.uploadImages()),
+            uploadDocuments: withClear(() => commands.uploadDocuments())
+        };
+    }
+
+    /**
+     * Returns the command set for the mention popup.
+     */
+    getMentionCommands(onDismiss: () => void, options: { filterField: string; template: (data: unknown) => string }): TextEditorMentionCommands {
+        return {
+            select: (data: unknown) => {
+                if (!this.view || !this.schema) return;
+
+                const label = options.template(data);
+                const mention = this.schema.nodes['mention'];
+
+                clearTypeahead(this.view);
+
+                if (mention) {
+                    const node = mention.create({ label, data });
+
+                    this.view.dispatch(this.view.state.tr.replaceSelectionWith(node, false).insertText(' '));
+                }
+
+                onDismiss();
+                this.view.focus();
+            }
+        };
+    }
+
+    /**
+     * Filters mention items by the given field and filter text.
+     */
+    getFilteredMentionItems(items: unknown[], filterField: string, filterText: string): unknown[] {
+        const query = (filterText ?? '').toLowerCase();
+
+        if (!query) return items;
+
+        return items.filter((item) =>
+            String((item as Record<string, unknown>)?.[filterField] ?? '')
+                .toLowerCase()
+                .includes(query)
+        );
+    }
+
+    /******************** Tables ********************/
+
+    /**
+     * Returns the active table state when the cursor is inside a table, or null otherwise.
+     */
+    getTableActiveState(): TableActiveState | null {
+        return this.view ? tableActiveState(this.view) : null;
+    }
+
+    /**
+     * Returns the geometry used to position the table editing overlay, or null when not in a table.
+     */
+    getTableOverlayRect(): TableOverlayRect | null {
+        return this.overlayRect();
+    }
+
+    /**
+     * Recomputes and emits the table overlay rect.
+     */
+    updateTableOverlayRect(): void {
+        const rect = this.view ? tableOverlayRect(this.view) : null;
+
+        this.overlayRect.set(rect);
+        this.tableOverlayRectChange.emit(rect);
+    }
+
+    /**
+     * Returns true when more than one table cell is currently selected.
+     */
+    getIsMultiCellSelected(): boolean {
+        return this.view ? isMultiCellSelected(this.view.state) : false;
+    }
+
+    /**
+     * Returns true when the active cell is a merged cell.
+     */
+    getIsCellMerged(): boolean {
+        return this.view ? isCellMerged(this.view.state) : false;
+    }
+
+    /**
+     * Returns the command set for the active table column.
+     */
+    getTableColumnCommands(colIndex: number, onDismiss: () => void): TextEditorTableColumnCommands {
+        return createTableColumnCommands(
+            () => this.view,
+            () => colIndex,
+            onDismiss
+        );
+    }
+
+    /**
+     * Returns the command set for the active table row.
+     */
+    getTableRowCommands(rowIndex: number, onDismiss: () => void): TextEditorTableRowCommands {
+        return createTableRowCommands(
+            () => this.view,
+            () => rowIndex,
+            onDismiss
+        );
+    }
+
+    /**
+     * Returns the command set for the active table cell (or multi-cell selection).
+     */
+    getTableCellCommands(onDismiss: () => void): TextEditorTableCellCommands {
+        return createTableCellCommands(() => this.view, onDismiss);
+    }
+
+    /**
+     * Adds a row to the given table element at the current cursor position.
+     */
+    onTableAddRow(table: HTMLTableElement): void {
+        void table;
+        createTableControlsCommands(() => this.view).addRow();
+    }
+
+    /**
+     * Adds a column to the given table element at the current cursor position.
+     */
+    onTableAddColumn(table: HTMLTableElement): void {
+        void table;
+        createTableControlsCommands(() => this.view).addColumn();
+    }
+
+    /******************** Uploads ********************/
+
+    /**
+     * Filters out files that fail image validation, returning the accepted ones.
+     */
+    validateImageFiles(files: File[]): File[] {
+        const options = this.uploadOptions.image;
+        const result = validateFiles(files, {
+            allowedTypes: options?.allowedTypes() ?? this.allowedImageTypes(),
+            maxFileCount: options?.maxFileCount() ?? this.imageMaxFileCount(),
+            maxFileSize: options?.maxFileSize() ?? this.imageMaxFileSize()
+        });
+
+        if (result.reason) {
+            this.imageReject.emit({ files: result.rejected, reason: result.reason });
+            options?.onReject({ files: result.rejected, reason: result.reason });
+        }
+
+        return result.accepted;
+    }
+
+    /**
+     * Filters out files that fail document validation, returning the accepted ones.
+     */
+    validateDocumentFiles(files: File[]): File[] {
+        const options = this.uploadOptions.document;
+        const result = validateFiles(files, {
+            allowedTypes: options?.allowedTypes() ?? this.allowedDocumentTypes(),
+            maxFileCount: options?.maxFileCount() ?? this.documentMaxFileCount(),
+            maxFileSize: options?.maxFileSize() ?? this.documentMaxFileSize()
+        });
+
+        if (result.reason) {
+            this.documentReject.emit({ files: result.rejected, reason: result.reason });
+            options?.onReject({ files: result.rejected, reason: result.reason });
+        }
+
+        return result.accepted;
+    }
+
+    /**
+     * Starts uploading the given image files and inserts an upload placeholder.
+     */
+    startImageUploads(files: File[]): void {
+        const accepted = this.validateImageFiles(files);
+
+        if (!accepted.length) return;
+
+        this.insertPlaceholder('imageUploadPlaceholder');
+        this.imageUploadRequest.emit();
+        this.imageQueue.start(accepted);
+    }
+
+    /**
+     * Starts uploading the given document files and inserts an upload placeholder.
+     */
+    startDocumentUploads(files: File[]): void {
+        const accepted = this.validateDocumentFiles(files);
+
+        if (!accepted.length) return;
+
+        this.insertPlaceholder('documentUploadPlaceholder');
+        this.documentUploadRequest.emit();
+        this.documentQueue.start(accepted);
+    }
+
+    /**
+     * Cancels any in-progress image uploads and clears the upload UI.
+     */
+    dismissImageUpload(): void {
+        this.imageQueue.dismiss();
+        this.removePlaceholder('imageUploadPlaceholder');
+    }
+
+    /**
+     * Cancels any in-progress document uploads and clears the upload UI.
+     */
+    dismissDocumentUpload(): void {
+        this.documentQueue.dismiss();
+        this.removePlaceholder('documentUploadPlaceholder');
+    }
+
+    /**
+     * The upload entries of one overlay.
+     *
+     * @internal
+     */
+    uploadEntries(kind: TextEditorUploadKind) {
+        return kind === 'image' ? this.imageUploads : this.documentUploads;
+    }
+
+    /**
+     * Opens the file picker for one overlay.
+     *
+     * @internal
+     */
+    openUpload(kind: TextEditorUploadKind): void {
+        this.pickerKind = kind;
+        const options = this.uploadOptions[kind];
+
+        this.pickerAccept.set(options?.allowedTypes() ?? (kind === 'image' ? this.allowedImageTypes() : this.allowedDocumentTypes()));
+
+        if (kind === 'image') this.imageUploadRequest.emit();
+        else this.documentUploadRequest.emit();
+
+        /* The picker opens only when the host has not mounted an upload overlay: with a dropzone on
+           screen the overlay owns the interaction, and opening a native dialog on top of it would
+           fight the UI the application chose. */
+        if (this.hasPart(kind === 'image' ? 'image-upload' : 'document-upload')) return;
+
+        this.filePicker()?.nativeElement.click();
+    }
+
+    /**
+     * Handles a file selection from the shared native picker.
+     *
+     * @internal
+     */
+    onFilesPicked(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        const files = Array.from(input.files ?? []);
+
+        input.value = '';
+
+        if (!files.length) return;
+
+        if (this.pickerKind === 'image') this.startImageUploads(files);
+        else this.startDocumentUploads(files);
+    }
+
+    /******************** Internal state readers ********************/
+
+    /**
+     * State of the open type-ahead, read by the slash and mention parts.
+     *
+     * @internal
+     */
+    readonly typeaheadState = this.typeahead.asReadonly();
+
+    /**
+     * Candidates resolved for the open mention.
+     *
+     * @internal
+     */
+    readonly mentionCandidates = this.mentionItems.asReadonly();
+
+    /**
+     * Index of the hovered block, read by the block controls.
+     *
+     * @internal
+     */
+    readonly hoveredBlockIndex = this.hoveredBlock.asReadonly();
+
+    /**
+     * The hovered block's element, which the hover bar positions itself against.
+     *
+     * @internal
+     */
+    readonly hoveredBlockElement = this.hoveredElement.asReadonly();
+
+    /**
+     * Which block the handle menu was opened from, and the handle it is anchored to.
+     *
+     * @internal
+     */
+    readonly blockMenuAnchor = this.blockMenuRequest.asReadonly();
+
+    /**
+     * Opens the block handle menu for one block.
+     *
+     * @internal
+     */
+    openBlockMenu(index: number, anchor: HTMLElement | null): void {
+        this.blockMenuRequest.set({ index, anchor });
+    }
+
+    /**
+     * Closes the block handle menu.
+     *
+     * @internal
+     */
+    closeBlockMenu(): void {
+        this.blockMenuRequest.set(null);
+    }
+
+    /**
+     * Geometry of the active table, read by the table parts.
+     *
+     * @internal
+     */
+    readonly tableRect = this.overlayRect.asReadonly();
+
+    /**
+     * Caret the floating context toolbar anchors to, or null when there is no selection to format.
+     *
+     * @internal
+     */
+    readonly contextToolbarPosition = this.contextCaret.asReadonly();
+
+    /**
+     * Row and column geometry of the active table, read by the overlay and the table menus.
+     *
+     * @internal
+     */
+    readonly activeTable = this.tableState.asReadonly();
+
+    /**
+     * Which column menu is open, and the trigger it is anchored to.
+     *
+     * @internal
+     */
+    readonly columnMenuAnchor = this.tableColumnMenu.asReadonly();
+
+    /**
+     * Which row menu is open, and the trigger it is anchored to.
+     *
+     * @internal
+     */
+    readonly rowMenuAnchor = this.tableRowMenu.asReadonly();
+
+    /**
+     * Whether the cell menu is open, and the trigger it is anchored to.
+     *
+     * @internal
+     */
+    readonly cellMenuAnchor = this.tableCellMenu.asReadonly();
+
+    /**
+     * Opens the column menu from its trigger dot.
+     *
+     * @internal
+     */
+    openTableColumnMenu(colIndex: number, event: MouseEvent): void {
+        this.tableColumnMenu.set({ colIndex, anchor: event.currentTarget as HTMLElement });
+        this.tableColumnMenuRequest.emit({ colIndex, event });
+    }
+
+    /**
+     * Opens the row menu from its trigger dot.
+     *
+     * @internal
+     */
+    openTableRowMenu(rowIndex: number, event: MouseEvent): void {
+        this.tableRowMenu.set({ rowIndex, anchor: event.currentTarget as HTMLElement });
+        this.tableRowMenuRequest.emit({ rowIndex, event });
+    }
+
+    /**
+     * Opens the cell menu from its trigger dot.
+     *
+     * @internal
+     */
+    openTableCellMenu(event: MouseEvent): void {
+        this.tableCellMenu.set({ anchor: event.currentTarget as HTMLElement });
+        this.tableCellMenuRequest.emit(event);
+    }
+
+    /**
+     * Closes every table menu.
+     *
+     * @internal
+     */
+    closeTableMenus(): void {
+        this.tableColumnMenu.set(null);
+        this.tableRowMenu.set(null);
+        this.tableCellMenu.set(null);
+    }
+
+    /**
+     * Whether the editor accepts edits.
+     *
+     * @internal
+     */
+    isEditable(): boolean {
+        return !this.$disabled() && !this.readonly();
+    }
+
+    /******************** View lifecycle ********************/
+
+    private createView(): void {
+        if (!this.contentElement || !isPlatformBrowser(this.platformId)) return;
+
+        this.destroyView();
+
+        const pluginNodes: Record<string, NodeSpec> = {};
+        const pluginMarks: Record<string, MarkSpec> = {};
+        const registrations = this.plugins() ?? [];
+
+        for (const registration of registrations) {
+            const plugin = Array.isArray(registration) ? registration[0] : registration;
+
+            Object.assign(pluginNodes, plugin.options?.schema?.nodes ?? {});
+            Object.assign(pluginMarks, plugin.options?.schema?.marks ?? {});
+        }
+
+        const schema = createTextEditorSchema(pluginNodes, pluginMarks);
+
+        this.schema = schema;
+
+        const doc = this.parseValue(this.value(), schema);
+        const plugins = this.buildPlugins(schema, registrations);
+        const state = EditorState.create({ doc, plugins });
+
+        this.view = new EditorView(this.contentElement, {
+            state,
+            editable: () => this.isEditable(),
+            attributes: {
+                class: 'p-text-editor-content',
+                'data-scope': 'texteditor',
+                'data-part': 'content',
+                role: 'textbox',
+                'aria-multiline': 'true',
+                ...(this.ariaLabel() ? { 'aria-label': this.ariaLabel()! } : {}),
+                ...(this.ariaLabelledby() ? { 'aria-labelledby': this.ariaLabelledby()! } : {}),
+                ...(this.isEditable() ? {} : { 'aria-readonly': 'true' })
+            },
+            nodeViews: {
+                checkListItem: (node, view, getPos) => new CheckListItemView(node, view, getPos)
+            },
+            handleDOMEvents: {
+                focus: () => {
+                    this.focused.set(true);
+                    this.getEditorElement()?.classList.remove('p-text-editor-selection-preserved');
+                    this.editorFocus.emit();
+
+                    return false;
+                },
+                blur: () => {
+                    this.focused.set(false);
+                    this.editorBlur.emit();
+
+                    return false;
+                },
+                drop: (view, event) => this.handleDrop(event),
+                dragover: (view, event) => this.handleDragOver(event)
+            },
+            dispatchTransaction: (transaction) => {
+                if (!this.view) return;
+
+                const previous = this.view.state;
+                const next = previous.apply(transaction);
+
+                this.view.updateState(next);
+                this.afterTransaction(previous, next, transaction.docChanged);
+            }
+        });
+
+        this.pluginCleanups = installPlugins(registrations, {
+            getSelectedText: () => this.getSelectedText(),
+            replaceSelection: (content, asHtml) => this.replaceSelection(content, asHtml),
+            getEditorElement: () => this.getEditorElement(),
+            getState: () => this.getState(),
+            getView: () => this.getView(),
+            registerProseMirrorPlugin: (plugin) => this.registerProseMirrorPlugin(plugin),
+            runCommand: (command) => this.runCommand(command),
+            setCommands: (commands) => this.pluginCommandMap.set(commands)
+        });
+
+        this.lastEmitted = this.serializeValue();
+        this.afterTransaction(state, state, false);
+        this.editorCreate.emit();
+    }
+
+    private destroyView(): void {
+        for (const cleanup of this.pluginCleanups) cleanup();
+
+        this.pluginCleanups = [];
+        this.view?.destroy();
+        this.view = null;
+    }
+
+    /**
+     * The plugin stack. Order matters: the keymap has to see keys before the base keymap, and the
+     * type-ahead has to see them before either.
+     */
+    private buildPlugins(schema: Schema, registrations: TextEditorPluginRegistration[]): Plugin[] {
+        const plugins: Plugin[] = [
+            typeaheadPlugin({
+                slashEnabled: () => this.hasPart('slash-menu'),
+                mentionEnabled: () => this.hasPart('mention-menu'),
+                onUpdate: (trigger, active, text, position) => this.onTypeaheadUpdate(trigger, active, text, position),
+                onKeyDown: (event, state) => this.onTypeaheadKeyDown(event, state)
+            }),
+            ...textEditorKeymap(schema, () => this.defaultHighlightColor()),
+            history(),
+            dropCursor({ class: 'p-text-editor-drop-cursor' }),
+            gapCursor(),
+            placeholderPlugin({
+                placeholder: () => this.contentOptions?.placeholder() ?? this.placeholder(),
+                checklistPlaceholder: () => this.contentOptions?.checklistPlaceholder() ?? this.checklistPlaceholder(),
+                slashPlaceholder: () => (this.hasPart('slash-menu') ? this.slashPlaceholder() : null),
+                blockMode: () => this.mode() === 'block'
+            }),
+            headingsPlugin((headings) => {
+                this.headingEntries.set(headings);
+                this.navigatorHeadingsChange.emit(headings);
+            })
+        ];
+
+        if (schema.nodes['table']) {
+            plugins.push(columnResizing({ cellMinWidth: this.minTableColumnWidth(), defaultCellMinWidth: this.defaultTableColumnWidth() }), tableEditing({ allowTableNodeSelection: true }));
+        }
+
+        if (this.mode() === 'block') {
+            plugins.push(
+                blockModePlugin({
+                    onHoverChange: (element, index) => {
+                        this.hoveredBlock.set(index);
+                        this.hoveredElement.set(element);
+                        this.blockHoverChange.emit({ element, index });
+                    },
+                    dropIndicatorIndex: () => this.dropIndicator(),
+                    draggedIndex: () => this.draggedBlock()
+                })
+            );
+        }
+
+        if (this.markdown()) {
+            const rules = markdownInputRules(schema, () => this.defaultHighlightColor());
+
+            (rules.spec as { markdownRules?: boolean }).markdownRules = true;
+            plugins.push(rules);
+        }
+
+        for (const registration of registrations) {
+            const plugin = Array.isArray(registration) ? registration[0] : registration;
+            const options = Array.isArray(registration) ? registration[1] : undefined;
+
+            plugins.push(...(plugin.options?.prosemirrorPlugins?.(schema, options) ?? []));
+        }
+
+        return plugins;
+    }
+
+    /**
+     * Everything that has to happen after a transaction: the derived state, the emitted value, and
+     * the geometry the floating surfaces are positioned from.
+     */
+    private afterTransaction(previous: EditorState, next: EditorState, docChanged: boolean): void {
+        const state = deriveFormatState(next, this.focused());
+
+        this.formatState.set(state);
+        this.formatStateChange.emit(state);
+        this.updateTableOverlayRect();
+
+        const table = this.getTableActiveState();
+
+        this.tableState.set(table);
+        this.tableActiveStateChange.emit(table);
+
+        /* The floating toolbar tracks the selection and closes on any document edit: a bar hovering
+           over text the user is still changing gets in the way of the change. */
+        if (docChanged || next.selection.empty) this.contextCaret.set(null);
+        else if (this.view) {
+            const caret = caretPositionAt(this.view, next.selection.from);
+
+            this.contextCaret.set(caret);
+
+            if (!previous.selection.eq(next.selection) && this.hasPart('context-toolbar')) this.contextToolbarRequest.emit(caret);
+        }
+
+        if (!docChanged && !previous.selection.eq(next.selection)) this.selectionUpdate.emit();
+
+        if (docChanged) this.emitValue();
+    }
+
+    private emitValue(): void {
+        const value = this.serializeValue();
+
+        this.lastEmitted = value;
+
+        /* `value` is a model, so setting it is what emits `valueChange`: a second output would
+           fire twice for one edit. */
+        const emit = () => {
+            this.value.set(value);
+            this.onModelChange(value);
+            this.onModelTouched();
+        };
+
+        if (this.valueChangeTimer) clearTimeout(this.valueChangeTimer);
+
+        if (!this.valueChangeDebounce()) {
+            emit();
+
+            return;
+        }
+
+        this.valueChangeTimer = setTimeout(emit, this.valueChangeDebounce());
+    }
+
+    private serializeValue(): TextEditorValue {
+        return this.mode() === 'block' ? this.getBlocks() : this.getHTML();
+    }
+
+    private sameAsEmitted(value: TextEditorValue | undefined): boolean {
+        if (Array.isArray(value) && Array.isArray(this.lastEmitted)) return value.length === this.lastEmitted.length && value.every((entry, index) => entry === (this.lastEmitted as string[])[index]);
+
+        return value === this.lastEmitted;
+    }
+
+    /**
+     * Turns the bound value into a document. A value the schema cannot make sense of falls back to
+     * an empty document and surfaces through `parseError` rather than throwing into the render.
+     */
+    private parseValue(value: TextEditorValue | undefined, schema: Schema): ProseMirrorNode {
+        try {
+            if (Array.isArray(value)) return parseBlocks(schema, value, this.document);
+
+            return parseHtml(schema, value ?? '', this.document);
+        } catch (error) {
+            this.parseError.emit({ error });
+
+            return schema.topNodeType.createAndFill()!;
+        }
+    }
+
+    private applyValue(value: TextEditorValue | undefined): void {
+        if (!this.view || !this.schema) return;
+
+        const doc = this.parseValue(value, this.schema);
+        const transaction = this.view.state.tr.replaceWith(0, this.view.state.doc.content.size, doc.content);
+
+        transaction.setMeta('addToHistory', false);
+        this.lastEmitted = value;
+        this.view.dispatch(transaction);
+    }
+
+    /******************** Type-ahead plumbing ********************/
+
+    private onTypeaheadUpdate(trigger: 'slash' | 'mention', active: boolean, text: string, position: CaretPosition | null): void {
+        this.typeahead.set({ trigger: active ? trigger : null, active, text, position });
+
+        if (trigger === 'slash') {
+            this.slashMenuRequest.emit({ active, text, position });
+
+            return;
+        }
+
+        if (!active) {
+            this.mentionItems.set([]);
+            this.mentionRequest.emit({ active, text, items: [], position });
+
+            return;
+        }
+
+        const handler = this.mentionOptions?.handler() ?? this.mentionHandler();
+        const filterField = this.mentionOptions?.filterField() ?? this.mentionFilterField();
+
+        void Promise.resolve(handler?.(text) ?? []).then((items) => {
+            const filtered = this.getFilteredMentionItems(items, filterField, text);
+
+            this.mentionItems.set(filtered);
+            this.mentionRequest.emit({ active, text, items: filtered, position });
+        });
+    }
+
+    private onTypeaheadKeyDown(event: KeyboardEvent, state: TypeaheadState): boolean {
+        void state;
+
+        if (event.key !== 'Escape') return false;
+
+        if (this.view) dismissTypeahead(this.view);
+
+        return true;
+    }
+
+    /**
+     * Closes the open type-ahead, the `dismiss` both menu parts expose.
+     *
+     * @internal
+     */
+    dismissTypeahead(): void {
+        if (this.view) dismissTypeahead(this.view);
+    }
+
+    /******************** Drag and drop ********************/
+
+    private handleDragOver(event: DragEvent): boolean {
+        if (this.draggedBlock() == null || this.mode() !== 'block') return false;
+
+        event.preventDefault();
+
+        const target = (event.target as HTMLElement | null)?.closest?.('[data-block-index]') as HTMLElement | null;
+
+        if (!target) return false;
+
+        const rect = target.getBoundingClientRect();
+        const index = Number(target.getAttribute('data-block-index'));
+
+        this.dropIndicator.set(event.clientY > rect.top + rect.height / 2 ? index + 1 : index);
+
+        return true;
+    }
+
+    private handleDrop(event: DragEvent): boolean {
+        const files = Array.from(event.dataTransfer?.files ?? []);
+
+        if (!files.length) return false;
+
+        event.preventDefault();
+
+        const images = files.filter((file) => file.type.startsWith('image/'));
+        const documents = files.filter((file) => !file.type.startsWith('image/'));
+
+        if (images.length) this.startImageUploads(images);
+
+        if (documents.length) this.startDocumentUploads(documents);
+
+        return true;
+    }
+
+    /******************** Upload placeholders ********************/
+
+    private insertPlaceholder(nodeName: 'imageUploadPlaceholder' | 'documentUploadPlaceholder'): void {
+        const type = this.schema?.nodes[nodeName];
+
+        if (!this.view || !type) return;
+
+        this.view.dispatch(this.view.state.tr.replaceSelectionWith(type.create()));
+    }
+
+    private removePlaceholder(nodeName: 'imageUploadPlaceholder' | 'documentUploadPlaceholder'): void {
+        if (!this.view) return;
+
+        const positions: number[] = [];
+
+        this.view.state.doc.descendants((node, pos) => {
+            if (node.type.name === nodeName) positions.push(pos);
+        });
+
+        if (!positions.length) return;
+
+        const transaction = this.view.state.tr;
+
+        for (const pos of positions.reverse()) transaction.delete(transaction.mapping.map(pos), transaction.mapping.map(pos + 1));
+
+        this.view.dispatch(transaction);
+    }
+
+    private printDocument(): void {
+        printHtml(this.getHTML(), this.document);
+    }
+
+    /******************** Angular Forms ********************/
+
+    /**
+     * Writes a value coming from a form control into the document.
+     */
+    override writeControlValue(value: TextEditorValue): void {
+        this.value.set(value);
+
+        if (this.view) this.applyValue(value);
+    }
+}
