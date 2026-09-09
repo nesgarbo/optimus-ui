@@ -11538,6 +11538,12 @@ export default {
                 description: 'Color of root'
             },
             {
+                name: 'taskboard.root.borderColor',
+                token: 'taskboard.border.color',
+                variable: '--p-taskboard-border-color',
+                description: 'Border color of root'
+            },
+            {
                 name: 'taskboard.root.borderRadius',
                 token: 'taskboard.border.radius',
                 variable: '--p-taskboard-border-radius',

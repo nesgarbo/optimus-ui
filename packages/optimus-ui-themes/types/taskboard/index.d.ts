@@ -26,6 +26,12 @@ export declare namespace TaskBoardTokenSections {
          */
         color?: string;
         /**
+         * Border color of root
+         *
+         * @designToken taskboard.border.color
+         */
+        borderColor?: string;
+        /**
          * Border radius of root
          *
          * @designToken taskboard.border.radius

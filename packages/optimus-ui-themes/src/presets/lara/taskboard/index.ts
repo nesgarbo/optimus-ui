@@ -82,7 +82,8 @@ export const colorScheme: TaskBoardTokenSections.ColorScheme = {
         root: {
             // The board is the ground and the columns sit on it: surface.50 behind, surface.100 in
             // front. The other way round the columns would disappear into the background.
-            background: '{surface.50}'
+            background: '{surface.50}',
+            borderColor: '{surface.200}'
         },
         hover: {
             background: '{surface.100}'
@@ -119,7 +120,8 @@ export const colorScheme: TaskBoardTokenSections.ColorScheme = {
     },
     dark: {
         root: {
-            background: '{surface.950}'
+            background: '{surface.950}',
+            borderColor: '{surface.700}'
         },
         hover: {
             background: '{surface.800}'

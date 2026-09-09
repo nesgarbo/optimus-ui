@@ -25,6 +25,11 @@ import { demoColumns, demoTasks } from './demo-data';
     imports: [Avatar, AvatarGroup, BarsIcon, Button, FilterIcon, FormsModule, InputTextModule, PlusIcon, StarIcon, UndoIcon],
     changeDetection: ChangeDetectionStrategy.OnPush,
     styles: `
+        /* A shade above the board ground, so the bar reads as chrome and not as the first column. */
+        .taskboard-doc-header {
+            background: var(--p-content-background, #fff);
+        }
+
         /* The group's default overlap eats half of every set of initials; 0.375rem shows both letters
            and still reads as a stack. */
         .taskboard-doc-header-owners .p-avatar {
@@ -38,7 +43,7 @@ import { demoColumns, demoTasks } from './demo-data';
         }
     `,
     template: `
-        <header class="flex flex-wrap items-center gap-x-4 gap-y-3 border-b border-surface-200 dark:border-surface-700 px-4 py-3">
+        <header class="taskboard-doc-header flex flex-wrap items-center gap-x-4 gap-y-3 border-b border-surface-200 px-4 py-3 dark:border-surface-700">
             <div class="flex min-w-[12rem] flex-1 items-center gap-3">
                 <span class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     <svg data-p-icon="bars" aria-hidden="true" width="16" height="16"></svg>
@@ -129,7 +134,10 @@ export class TaskBoardDocHeader {
     changeDetection: ChangeDetectionStrategy.OnPush,
     styles: `
         .taskboard-doc-add {
-            display: block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
             width: 100%;
             padding: 0.5rem;
             border: 0;
@@ -137,8 +145,10 @@ export class TaskBoardDocHeader {
             background: transparent;
             color: var(--p-taskboard-empty-color);
             font-size: 0.8125rem;
-            text-align: start;
             cursor: pointer;
+            transition:
+                background 0.15s ease,
+                color 0.15s ease;
         }
 
         .taskboard-doc-add:hover {
@@ -148,6 +158,7 @@ export class TaskBoardDocHeader {
 
         .taskboard-doc-add-lane {
             margin-top: 0.5rem;
+            border: 1px dashed var(--p-taskboard-swimlane-border-color);
         }
     `,
     template: `

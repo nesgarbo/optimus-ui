@@ -6,6 +6,7 @@ export const style = /*css*/ `
         position: relative;
         background: dt('taskboard.background');
         color: dt('taskboard.color');
+        border: 1px solid dt('taskboard.border.color');
         border-radius: dt('taskboard.border.radius');
         font-family: inherit;
         overflow: hidden;
@@ -303,6 +304,20 @@ export const style = /*css*/ `
         flex-direction: column;
         min-width: dt('taskboard.column.min.width');
         flex: 0 0 dt('taskboard.column.min.width');
+    }
+
+    /* Centred by default, because that is what an add action at the foot of a list reads as: a
+       full-width target with its label in the middle, not a stray link hugging the left edge. */
+    .p-taskboard-card-add {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .p-taskboard-card-add > * {
+        flex: 1 1 auto;
+        text-align: center;
     }
 
     .p-taskboard-empty-column {
