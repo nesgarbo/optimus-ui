@@ -16,14 +16,19 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
         </app-docsectiontext>
         <app-code [code]="install" [hideToggleCode]="true"></app-code>
         <app-docsectiontext>
-            <p><i>TextEditorModule</i> re-exports every part, so a single entry in <i>imports</i> registers the whole editor.</p>
+            <p class="mt-4"><i>TextEditorModule</i> re-exports every part, so a single entry in <i>imports</i> registers the whole editor.</p>
         </app-docsectiontext>
         <app-code [code]="code" [hideToggleCode]="true"></app-code>
     `
 })
 export class ImportDoc {
     install: Code = {
-        command: `npm install prosemirror-commands prosemirror-dropcursor prosemirror-gapcursor prosemirror-history prosemirror-inputrules prosemirror-keymap prosemirror-model prosemirror-schema-list prosemirror-state prosemirror-tables prosemirror-transform prosemirror-view`
+        command: `npm install prosemirror-commands prosemirror-dropcursor \\
+    prosemirror-gapcursor prosemirror-history \\
+    prosemirror-inputrules prosemirror-keymap \\
+    prosemirror-model prosemirror-schema-list \\
+    prosemirror-state prosemirror-tables \\
+    prosemirror-transform prosemirror-view`
     };
 
     code: Code = {
