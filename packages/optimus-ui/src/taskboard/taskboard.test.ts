@@ -411,11 +411,38 @@ describe('TaskBoard', () => {
         expect(seen[0].body).toBe(true);
         expect(seen[0].ancestors).toBeGreaterThan(0);
 
-        // Y se limpia aunque el navegador no llegue a emitir `afterprint`.
+        // Y se limpia aunque el navegador no llegue a emitir `afterprint`: el stub no dispara
+        // `beforeprint`, así que no se ha entrado en modo impresión y no hay nada que esperar.
         const root = one('[data-part="root"]')!;
 
         expect(root.hasAttribute('data-print-target')).toBe(false);
         expect(root.classList.contains('p-taskboard-printing')).toBe(false);
+        expect(document.body.classList.contains('p-taskboard-print-active')).toBe(false);
+        expect(document.querySelectorAll('.p-taskboard-print-ancestor').length).toBe(0);
+    });
+
+    it('si el navegador SÍ entra en modo impresión, los ganchos esperan a afterprint', () => {
+        const view = fixture.nativeElement.ownerDocument.defaultView!;
+        const original = view.print;
+
+        // Un `print()` que no bloquea: quitar los ganchos al volver de la llamada dejaría la hoja en
+        // blanco, así que mientras el navegador esté imprimiendo tienen que quedarse puestos.
+        view.print = () => view.dispatchEvent(new Event('beforeprint'));
+
+        try {
+            host.board().print();
+        } finally {
+            view.print = original;
+        }
+
+        const root = one('[data-part="root"]')!;
+
+        expect(root.getAttribute('data-print-target')).toBe('true');
+        expect(document.body.classList.contains('p-taskboard-print-active')).toBe(true);
+
+        view.dispatchEvent(new Event('afterprint'));
+
+        expect(root.hasAttribute('data-print-target')).toBe(false);
         expect(document.body.classList.contains('p-taskboard-print-active')).toBe(false);
         expect(document.querySelectorAll('.p-taskboard-print-ancestor').length).toBe(0);
     });

@@ -835,11 +835,12 @@ export class TaskBoard<T extends TaskBoardItem = TaskBoardItem> extends BaseComp
         host.classList.add('p-taskboard-printing');
         host.scrollTop = 0;
 
-        // El repuesto importa: la hoja de impresión esconde TODO lo que no sea el tablero marcado, así
-        // que un `afterprint` que no llegue —lo cancela el usuario de una forma que no lo dispara, o
-        // el navegador simplemente no lo emite— dejaría la página entera invisible. `print()` es
-        // sincrónico y vuelve al cerrarse el diálogo, así que se limpia también ahí, una sola vez.
         let restored = false;
+        let entered = false;
+
+        const onBeforePrint = (): void => {
+            entered = true;
+        };
 
         const restore = (): void => {
             if (restored) return;
@@ -851,15 +852,24 @@ export class TaskBoard<T extends TaskBoardItem = TaskBoardItem> extends BaseComp
             host.removeAttribute('data-print-target');
             host.classList.remove('p-taskboard-printing');
 
+            view.removeEventListener('beforeprint', onBeforePrint);
             view.removeEventListener('afterprint', restore);
         };
 
+        view.addEventListener('beforeprint', onBeforePrint);
         view.addEventListener('afterprint', restore);
 
         try {
             view.print();
         } finally {
-            restore();
+            // El repuesto importa en las dos direcciones. Los ganchos esconden TODO lo que no sea el
+            // tablero marcado, así que un `afterprint` que no llegue —el diálogo se cierra de una
+            // forma que no lo dispara— dejaría la página entera invisible; pero limpiar aquí sin más
+            // rompería lo contrario, un `print()` que no bloquea, quitando los ganchos antes de que el
+            // navegador fotografíe la página. `beforeprint` distingue los dos casos: si ha llegado,
+            // el navegador está imprimiendo y `afterprint` vendrá detrás; si no, no se imprimió nada
+            // y limpiar ahora es lo correcto.
+            if (!entered) restore();
         }
     }
 
