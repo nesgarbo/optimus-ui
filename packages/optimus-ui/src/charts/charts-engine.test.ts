@@ -183,7 +183,7 @@ describe('accessors', () => {
     });
 
     it('falls back to the series default when a callback returns undefined', () => {
-        expect(resolveScalarAccessor(() => undefined, ctx(0), 12)).toBe(12);
+        expect(resolveScalarAccessor<Record<string, unknown>, number>(() => undefined, ctx(0), 12)).toBe(12);
     });
 
     it('resolves a named dash pattern to pixels', () => {
