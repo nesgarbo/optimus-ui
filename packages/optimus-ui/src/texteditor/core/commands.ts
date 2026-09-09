@@ -5,6 +5,7 @@ import type { Attrs, MarkType, Node as ProseMirrorNode, NodeType, Schema } from 
 import { liftListItem, wrapInList } from 'prosemirror-schema-list';
 import type { Command, EditorState, Transaction } from 'prosemirror-state';
 import { TextSelection } from 'prosemirror-state';
+import { Mapping } from 'prosemirror-transform';
 import type { EditorView } from 'prosemirror-view';
 import { isSafeLinkHref } from './sanitize';
 
@@ -112,7 +113,9 @@ export function toggleList(listType: NodeType | undefined, itemType: NodeType | 
 
             for (const step of transaction.steps) merged.step(step);
 
-            merged.setSelection(transaction.selection.map(merged.doc, merged.mapping.invert()));
+            /* The wrap transaction's selection is already in the final coordinate space - it only
+               has to be resolved against the merged document, which is what an empty mapping does. */
+            merged.setSelection(transaction.selection.map(merged.doc, new Mapping()));
             dispatch?.(merged.scrollIntoView());
         });
     };

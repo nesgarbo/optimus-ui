@@ -201,7 +201,9 @@ export type TextEditorPartName = 'toolbar' | 'content' | 'context-toolbar' | 'bl
         '[attr.data-id]': 'instanceId',
         '[attr.data-mode]': 'mode()',
         '[attr.data-disabled]': '$disabled() ? "" : null',
-        '[attr.data-readonly]': 'readonly() ? "" : null'
+        '[attr.data-readonly]': 'readonly() ? "" : null',
+        '(dragover)': 'onRootDragOver($event)',
+        '(drop)': 'onRootDrop($event)'
     },
     hostDirectives: [Bind]
 })
@@ -1188,12 +1190,15 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
      * @group Method
      */
     onBlockDragEnd(): void {
-        const from = this.draggedBlock();
+        /* A drop applies the move; reaching here with the drag still open means the drag was
+           cancelled - Escape, or a release outside the editor - and the last indicator the pointer
+           happened to travel over must not reorder anything. */
+        if (this.draggedBlock() == null) return;
 
-        /* Already applied on drop in the common case; this is the fallback for a drag that ends
-           outside the content, where no drop event ever reaches the editor. */
-        if (from != null) this.applyBlockDrop(from);
-        else this.blockDragEnd.emit();
+        this.draggedBlock.set(null);
+        this.dropIndicator.set(null);
+        this.refreshDecorations();
+        this.blockDragEnd.emit();
     }
 
     /**
@@ -2189,6 +2194,29 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
      */
     private refreshDecorations(): void {
         this.view?.setProps({});
+    }
+
+    /**
+     * A block dropped anywhere on the component: the gutter the hover bar lives in and the padding
+     * around the content are outside the content element, so the view's own `drop` never sees them.
+     * The move is applied once - whichever handler runs first clears the drag.
+     *
+     * @internal
+     */
+    onRootDragOver(event: DragEvent): void {
+        this.handleDragOver(event);
+    }
+
+    /**
+     * @internal
+     */
+    onRootDrop(event: DragEvent): void {
+        const dragged = this.draggedBlock();
+
+        if (dragged == null || this.mode() !== 'block') return;
+
+        event.preventDefault();
+        this.applyBlockDrop(dragged, event.clientY);
     }
 
     private handleDrop(event: DragEvent): boolean {

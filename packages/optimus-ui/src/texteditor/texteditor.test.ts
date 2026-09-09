@@ -224,6 +224,27 @@ describe('TextEditor', () => {
         expect(editor.getBlocks()).toEqual(['<p>Two</p>', '<p>One</p>', '<p>Three</p>']);
     });
 
+    it('leaves the blocks alone when the drag is cancelled instead of dropped', async () => {
+        host.value.set(['<p>One</p>', '<p>Two</p>', '<p>Three</p>']);
+        host.mode.set('block');
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        const editor = host.editor();
+        const dataTransfer = new DataTransfer();
+        const target = content().querySelector('[data-block-index="0"]') as HTMLElement;
+        const rect = target.getBoundingClientRect();
+
+        editor.onBlockDragStart(1, new DragEvent('dragstart', { dataTransfer }));
+        target.dispatchEvent(new DragEvent('dragover', { bubbles: true, cancelable: true, dataTransfer, clientX: rect.left + 4, clientY: rect.top + 2 }));
+        // Escape, or a release outside the window: `dragend` arrives without a `drop`.
+        editor.onBlockDragEnd();
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        expect(editor.getBlocks()).toEqual(['<p>One</p>', '<p>Two</p>', '<p>Three</p>']);
+    });
+
     it('turns an upload placeholder into the uploaded content', async () => {
         const editor = host.editor();
 
