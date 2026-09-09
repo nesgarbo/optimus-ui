@@ -116,25 +116,17 @@ export class Scheduler extends BaseComponent<SchedulerPassThrough> {
         copy.setAttribute('data-print-scale', scale);
         if (pageChrome === false) copy.setAttribute('data-print-chrome', 'false');
 
-        // WebKit no implementa @page { size }, asi que en Safari la orientacion la pone el dialogo del
-        // sistema y no el CSS. Con `fit` se rota la hoja aqui —el contenido cabe en una pagina por
-        // construccion, que es lo que hace segura la rotacion— y asi sale horizontal en todas partes.
-        const rotate = orientation === 'landscape' && scale === 'fit';
-
-        if (rotate) container.setAttribute('data-print-rotate', '');
-
-        // `fit` se calcula, no se adivina: lo que hay que encoger es el tamano REAL del componente
-        // contra el util de la hoja, y ese es lo unico que el navegador no cuenta. Se toma A4 a 96dpi
-        // menos margenes, que es el papel de casi todo el mundo y falla por poco en Letter. Rotando,
-        // el ancho disponible es el LARGO de la hoja, y se mira tambien el alto: una pagina rotada no
-        // desborda a la siguiente, recorta.
+        // `fit` encoge contra el lado CORTO de la hoja y no contra el de la orientacion pedida. Suena
+        // conservador y es lo unico que no falla: la orientacion se pide con una regla @page que
+        // WebKit no implementa —en Safari la elige el dialogo del sistema—, asi que dar por hecha la
+        // hoja horizontal deja el horario desbordando a una segunda pagina justo en el navegador que
+        // no obedece. Ajustado al lado corto entra en las dos, y en horizontal sobra papel, que es el
+        // fallo bueno. A4 a 96dpi menos margenes; en Letter falla por poco.
         if (scale === 'fit') {
-            const printable = rotate || orientation === 'landscape' ? 1000 : 700;
-            const ratio = printable / Math.max(host.scrollWidth, 1);
-            const vertical = rotate ? 700 / Math.max(host.scrollHeight, 1) : 1;
-            const zoom = Math.max(Math.min(ratio, vertical, 1), 0.3);
+            const printable = 700;
+            const needed = Math.max(host.scrollWidth, 1);
 
-            if (zoom < 1) copy.style.zoom = String(zoom);
+            if (needed > printable) copy.style.zoom = String(Math.max(printable / needed, 0.3));
         }
 
         container.appendChild(copy);

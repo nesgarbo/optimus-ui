@@ -424,8 +424,6 @@ describe('Scheduler', () => {
             expect(copy).toBeTruthy();
             expect(copy?.getAttribute('data-print-color')).toBe('false');
             expect(copy?.getAttribute('data-print-scale')).toBe('fit');
-            // Horizontal + fit se rota aqui, porque WebKit ignora @page { size }.
-            expect(container?.hasAttribute('data-print-rotate')).toBe(true);
             // Y el componente vivo se queda como estaba: lo que se imprime no es el que se ve.
             expect(document.querySelectorAll('.p-scheduler[data-printing]').length).toBe(1);
         };

@@ -34,9 +34,9 @@ import { DEMO_CATEGORIES, DEMO_DATE, DEMO_RECURRING_EVENTS } from './demo-data';
                 week of resource columns gets onto a page. <i>pageChrome</i> fills in <i>p-scheduler-print-header</i>, which is invisible on screen and is what stops a printed sheet from being a grid with nothing saying what it is.
             </p>
             <p>
-                Landscape is the one that needs a word of warning. It is asked for with an <i>&#64;page</i> rule, which Chrome and Firefox honour and WebKit does not — in Safari the orientation comes from the system dialog and CSS cannot touch it. So
-                <i>landscape</i> together with <i>fit</i> rotates the sheet itself, which comes out landscape everywhere; that pairing is deliberate, because a rotated page cannot overflow onto the next one, it clips, and <i>fit</i> is what
-                guarantees there is only one.
+                Orientation is the one to be careful with. It is asked for with an <i>&#64;page</i> rule, which Chrome and Firefox honour and WebKit does not: in Safari the orientation comes from the print dialog and no stylesheet can reach it. So
+                <i>fit</i> deliberately shrinks against the SHORT side of the sheet rather than against the orientation you asked for — landscape then leaves paper spare, which is the harmless failure, where assuming landscape would overflow onto a
+                second page in exactly the browser that ignored the request.
             </p>
         </app-docsectiontext>
         <div class="card">
@@ -45,7 +45,7 @@ import { DEMO_CATEGORIES, DEMO_DATE, DEMO_RECURRING_EVENTS } from './demo-data';
                 <button type="button" class="px-2 py-1 text-sm rounded border" (click)="roundTrip()">Round-trip it back</button>
                 <button type="button" class="px-2 py-1 text-sm rounded border" (click)="exportJson()">Export JSON</button>
                 <button type="button" class="px-2 py-1 text-sm rounded border" (click)="print()">Print</button>
-                <button type="button" class="px-2 py-1 text-sm rounded border" (click)="printFitted()">Print fitted, no colour</button>
+                <button type="button" class="px-2 py-1 text-sm rounded border" (click)="printFitted()">Print on one page, no colour</button>
             </div>
             <p-scheduler-root #scheduler locale="en-US" view="week" [events]="events()" [categories]="categories" categoryField="categoryId" [date]="date" [dayStartHour]="8" [dayEndHour]="19">
                 <p-scheduler-print-header />

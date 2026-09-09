@@ -374,7 +374,10 @@ export interface SchedulerPrintOptions {
      */
     layout?: {
         /**
-         * Page orientation. `auto` leaves it to the browser's dialog.
+         * Page orientation, asked for with an `@page` rule.
+         *
+         * Honoured by Chrome and Firefox. WebKit does not implement it, so in Safari the orientation
+         * is whatever the print dialog says and this is ignored. `auto` leaves it alone everywhere.
          * @defaultValue auto
          */
         orientation?: 'auto' | 'portrait' | 'landscape';
@@ -382,6 +385,10 @@ export interface SchedulerPrintOptions {
          * How the schedule is sized to the page. `standard` prints it as it stands, `compact` prints
          * it at the compact density, and `fit` shrinks it until its full width lands on the sheet —
          * which is the only one that can get a week of resource columns onto one page.
+         *
+         * `fit` measures against the SHORT side of the paper whatever the orientation, because
+         * `orientation` is a request an engine can ignore: assuming the wide side would overflow onto
+         * a second page in the browser that ignored it.
          * @defaultValue standard
          */
         scale?: 'standard' | 'compact' | 'fit';

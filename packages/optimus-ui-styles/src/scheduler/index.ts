@@ -1559,16 +1559,6 @@ export const style = /*css*/ `
             margin: 0;
         }
 
-        /* Horizontal sin @page: la caja se declara del tamano de la hoja GIRADA —ancho igual al largo
-           del papel— y se rota noventa grados sobre su esquina. Es lo unico que sale horizontal en
-           WebKit, que no implementa @page { size }. Solo se usa con fit, porque una hoja rotada no
-           desborda a la siguiente: recorta. */
-        html[data-p-scheduler-printing] #p-scheduler-print-root[data-print-rotate] {
-            inline-size: 100vh;
-            block-size: 100vw;
-            transform-origin: top left;
-            transform: rotate(90deg) translate(0, -100%);
-        }
 
         /* Sin color el navegador imprime los rellenos en blanco, que es lo que convierte cuarenta
            citas distintas en cuarenta citas iguales. Se puede pedir en gris a proposito. */
