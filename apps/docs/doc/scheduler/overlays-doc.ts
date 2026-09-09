@@ -12,7 +12,10 @@ import { DEMO_CATEGORIES, DEMO_DATE, DEMO_EVENTS } from './demo-data';
         <app-docsectiontext>
             <p>There are four overlays, and each one is opt-in through both a flag on the root and the part in the tree — the flag decides when it opens, the part decides what it contains.</p>
             <ul>
-                <li><i>p-scheduler-more-popover</i> lists the events a dense month cell could not fit. It needs no flag: the "+N more" link opens it.</li>
+                <li>
+                    <i>p-scheduler-more-popover</i> lists the events a dense month cell could not fit, and the "+N more" link opens it. <i>[showMorePopover]="false"</i> keeps the link and the <i>(moreClick)</i> output but not the panel, for a page
+                    that opens its own day view instead.
+                </li>
                 <li><i>[quickInfo]</i> plus <i>p-scheduler-quick-info</i> opens a compact summary when an event is clicked.</li>
                 <li><i>[eventPopover]</i> plus <i>p-scheduler-popover</i> opens on hover AND on focus, so it is reachable without a mouse.</li>
                 <li><i>[contextMenu]</i> plus <i>p-scheduler-context-menu</i> opens on right click over an event or a cell. The native menu is only suppressed when the Scheduler has one to show.</li>

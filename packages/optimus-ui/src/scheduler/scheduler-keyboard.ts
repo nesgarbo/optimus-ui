@@ -45,6 +45,26 @@ function cellsOf(container: HTMLElement): HTMLElement[] {
 }
 
 /**
+ * Whether a cell can actually take the focus.
+ *
+ * The padding days of a mini-month are `disabled` buttons, and they stay in the ring on purpose: the
+ * seven-wide arithmetic is what makes "down" mean "same weekday, next week", and removing cells from
+ * the list would break it. So they are skipped when landing on them instead — moving the single tab
+ * stop onto a disabled button would leave the grid unreachable by tab.
+ */
+function focusable(cell: HTMLElement): boolean {
+    return !cell.hasAttribute('disabled') && cell.getAttribute('aria-disabled') !== 'true';
+}
+
+/** The first cell that can take the focus, scanning from `index` in `step`s of the same size. */
+function firstFocusable(cells: HTMLElement[], index: number, step: number): HTMLElement | null {
+    for (let at = index; at >= 0 && at < cells.length; at += step) {
+        if (focusable(cells[at])) return cells[at];
+    }
+    return null;
+}
+
+/**
  * Which cell an arrow key should land on.
  *
  * `null` when the key is not a movement or the move would leave the grid — in which case the event
@@ -62,14 +82,16 @@ function targetFor(cell: HTMLElement, key: string, rtl: boolean): HTMLElement | 
     const horizontal = rtl ? (key === 'ArrowLeft' ? 1 : key === 'ArrowRight' ? -1 : 0) : key === 'ArrowLeft' ? -1 : key === 'ArrowRight' ? 1 : 0;
     const vertical = key === 'ArrowUp' ? -1 : key === 'ArrowDown' ? 1 : 0;
 
-    if (key === 'Home') return cells[0] ?? null;
-    if (key === 'End') return cells[cells.length - 1] ?? null;
+    if (key === 'Home') return firstFocusable(cells, 0, 1);
+    if (key === 'End') return firstFocusable(cells, cells.length - 1, -1);
     if (!horizontal && !vertical) return null;
 
     // Dentro del contenedor: por su eje.
     const within = container.axis === 'column' ? vertical : container.axis === 'row' ? horizontal : horizontal + vertical * container.columns;
     if (within) {
-        const next = cells[index + within];
+        // Se sigue en la misma direccion mientras las celdas no puedan recibir el foco, de forma que
+        // el relleno de un minimes no se coma la pulsacion.
+        const next = firstFocusable(cells, index + within, within);
         if (next) return next;
         // Fuera de rango en una rejilla de siete: el borde del minimes es el borde, no la semana
         // siguiente, porque ahí empieza otro mes.
@@ -87,7 +109,11 @@ function targetFor(cell: HTMLElement, key: string, rtl: boolean): HTMLElement | 
     if (!neighbour) return null;
 
     const neighbourCells = cellsOf(neighbour);
-    return neighbourCells[Math.min(index, neighbourCells.length - 1)] ?? null;
+    const landing = Math.min(index, neighbourCells.length - 1);
+    if (landing < 0) return null;
+    // Desde el mismo indice hacia dentro, y si no hay nada, hacia atras: el vecino puede ser mas
+    // corto o empezar con relleno.
+    return firstFocusable(neighbourCells, landing, 1) ?? firstFocusable(neighbourCells, landing, -1);
 }
 
 /**

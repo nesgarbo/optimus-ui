@@ -17,7 +17,14 @@ import type { SchedulerCategory, SchedulerEvent, SchedulerResource, SchedulerVie
  * Context of any event surface.
  */
 export interface SchedulerEventContext<T extends SchedulerEvent = SchedulerEvent> {
-    /** The event being rendered. */
+    /**
+     * The event being rendered.
+     *
+     * With a `timeZone` set this is the RENDERED copy, whose `start` and `end` read as the wall clock
+     * of that zone so a template can format them directly. It is not the instant to persist: every
+     * output — `eventClick`, `eventChange`, the drag payloads — hands over the bound event with its
+     * real instants instead.
+     */
     event: T;
     /** Text of the event, already resolved from `titleField`. */
     title: string;

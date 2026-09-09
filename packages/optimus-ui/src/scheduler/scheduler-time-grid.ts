@@ -31,59 +31,65 @@ import { SchedulerViewBase } from './scheduler-view-base';
             [style.--p-scheduler-columns]="columns().length"
             [style.--p-scheduler-column-min-width]="columnMinWidth()"
         >
-            <!-- ── Banda de grupos: el recurso sobre sus fechas, o la fecha sobre sus recursos.
-                 Cada celda abarca las columnas que le tocan, igual que las bandas del timeline. -->
-            @if (groups().length) {
-                <div class="p-scheduler-time-grid-groups">
-                    <div class="p-scheduler-time-gutter-spacer"></div>
-                    @for (group of groups(); track group.key) {
-                        <div
-                            class="p-scheduler-resource-column-header"
-                            data-slot="scheduler-resource-column-header"
-                            [attr.data-resource-id]="group.resource?.id"
-                            [attr.data-date]="group.dateKey"
-                            [attr.data-event-count]="group.count"
-                            [style.--p-scheduler-column-span]="group.span"
-                        >
-                            @if (resourceColumnHeaderDef(); as tpl) {
-                                <ng-container *ngTemplateOutlet="tpl; context: group.context" />
-                            } @else {
-                                @if (group.resource) {
-                                    <span class="p-scheduler-resource-dot" [style.background]="group.resource.color" aria-hidden="true"></span>
+            <!-- ── Cabecera pegada: la banda de grupos y la de columnas van DENTRO de un solo
+                 elemento sticky. Dos hermanos sticky con el mismo inset-block-start ocupan el mismo
+                 sitio, asi que la banda de grupos tapaba la de columnas al desplazar; pegando el
+                 envoltorio se apilan por flujo y el alto lo mide el navegador. -->
+            <div class="p-scheduler-time-grid-head">
+                <!-- ── Banda de grupos: el recurso sobre sus fechas, o la fecha sobre sus recursos.
+                     Cada celda abarca las columnas que le tocan, igual que las bandas del timeline. -->
+                @if (groups().length) {
+                    <div class="p-scheduler-time-grid-groups">
+                        <div class="p-scheduler-time-gutter-spacer"></div>
+                        @for (group of groups(); track group.key) {
+                            <div
+                                class="p-scheduler-resource-column-header"
+                                data-slot="scheduler-resource-column-header"
+                                [attr.data-resource-id]="group.resource?.id"
+                                [attr.data-date]="group.dateKey"
+                                [attr.data-event-count]="group.count"
+                                [style.--p-scheduler-column-span]="group.span"
+                            >
+                                @if (resourceColumnHeaderDef(); as tpl) {
+                                    <ng-container *ngTemplateOutlet="tpl; context: group.context" />
+                                } @else {
+                                    @if (group.resource) {
+                                        <span class="p-scheduler-resource-dot" [style.background]="group.resource.color" aria-hidden="true"></span>
+                                    }
+                                    <span class="p-scheduler-resource-label">{{ group.label }}</span>
                                 }
-                                <span class="p-scheduler-resource-label">{{ group.label }}</span>
+                            </div>
+                        }
+                    </div>
+                }
+
+                <!-- ── Cabecera: hueco del gutter + una columna por unidad de agrupación ──────── -->
+                <div class="p-scheduler-time-grid-header">
+                    <div class="p-scheduler-time-gutter-spacer">{{ timeZoneLabel() }}</div>
+                    @for (column of columns(); track column.key) {
+                        <div
+                            class="p-scheduler-day-header-cell"
+                            data-slot="scheduler-day-header"
+                            [attr.data-date]="column.dateKey"
+                            [attr.data-resource-id]="column.resource?.id"
+                            [attr.data-today]="column.today ? '' : null"
+                            [attr.data-weekend]="column.weekend ? '' : null"
+                        >
+                            @if (dayHeaderDef(); as tpl) {
+                                <ng-container *ngTemplateOutlet="tpl; context: column.cell.context; injector: cellInjector(column.cell.key)" />
+                            } @else if (showResourceInHeader()) {
+                                <!-- La fecha ya está arriba —en la banda o en el título—: aquí manda el recurso. -->
+                                @if (column.resource) {
+                                    <span class="p-scheduler-resource-dot" [style.background]="column.resource.color" aria-hidden="true"></span>
+                                }
+                                <span class="p-scheduler-day-header-resource">{{ column.resourceLabel }}</span>
+                            } @else {
+                                <span class="p-scheduler-day-header-number">{{ column.date.getDate() }}</span>
+                                <span class="p-scheduler-day-header-weekday">{{ column.weekdayLabel }}</span>
                             }
                         </div>
                     }
                 </div>
-            }
-
-            <!-- ── Cabecera: hueco del gutter + una columna por unidad de agrupación ──────── -->
-            <div class="p-scheduler-time-grid-header">
-                <div class="p-scheduler-time-gutter-spacer">{{ timeZoneLabel() }}</div>
-                @for (column of columns(); track column.key) {
-                    <div
-                        class="p-scheduler-day-header-cell"
-                        data-slot="scheduler-day-header"
-                        [attr.data-date]="column.dateKey"
-                        [attr.data-resource-id]="column.resource?.id"
-                        [attr.data-today]="column.today ? '' : null"
-                        [attr.data-weekend]="column.weekend ? '' : null"
-                    >
-                        @if (dayHeaderDef(); as tpl) {
-                            <ng-container *ngTemplateOutlet="tpl; context: column.cell.context; injector: cellInjector(column.cell.key)" />
-                        } @else if (showResourceInHeader()) {
-                            <!-- La fecha ya está arriba —en la banda o en el título—: aquí manda el recurso. -->
-                            @if (column.resource) {
-                                <span class="p-scheduler-resource-dot" [style.background]="column.resource.color" aria-hidden="true"></span>
-                            }
-                            <span class="p-scheduler-day-header-resource">{{ column.resourceLabel }}</span>
-                        } @else {
-                            <span class="p-scheduler-day-header-number">{{ column.date.getDate() }}</span>
-                            <span class="p-scheduler-day-header-weekday">{{ column.weekdayLabel }}</span>
-                        }
-                    </div>
-                }
             </div>
 
             <!-- ── Banda de todo el día ───────────────────────────────────────────────────── -->
@@ -197,7 +203,12 @@ import { SchedulerViewBase } from './scheduler-view-base';
                                 [attr.data-resource-id]="column.resource?.id"
                                 [style.inset-block-start.%]="slot.offset * 100"
                                 [style.block-size.%]="slot.size * 100"
+                                role="button"
+                                [attr.aria-label]="slot.ariaLabel"
+                                [attr.aria-disabled]="slot.full ? 'true' : null"
+                                [attr.tabindex]="slot.full ? -1 : 0"
                                 (click)="onSlotClick($event, slot.slot.start, slot.slot.end)"
+                                (keydown)="onSlotKeydown($event, slot.slot.start, slot.slot.end)"
                             >
                                 @if (slot.label) {
                                     <span class="p-scheduler-appointment-slot-label">{{ slot.label }}</span>

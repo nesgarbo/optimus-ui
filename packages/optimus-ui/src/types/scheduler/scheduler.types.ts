@@ -210,9 +210,10 @@ export interface SchedulerRangeChangeEvent {
  */
 export interface SchedulerEventClickEvent {
     /**
-     * Browser event that triggered it.
+     * Browser event that triggered it: a mouse event from a click, a keyboard event when the
+     * surface was activated with Enter or space.
      */
-    originalEvent: Event;
+    originalEvent: MouseEvent | KeyboardEvent;
     /**
      * The appointment that was clicked.
      */
@@ -384,9 +385,10 @@ export interface SchedulerDragPayload {
  */
 export interface SchedulerSlotClickEvent {
     /**
-     * Browser event that triggered it.
+     * Browser event that triggered it: a mouse event from a click, a keyboard event when the cell
+     * was activated with Enter or space.
      */
-    originalEvent: Event;
+    originalEvent: MouseEvent | KeyboardEvent;
     /**
      * Start of the clicked slot.
      */

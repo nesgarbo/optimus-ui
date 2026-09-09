@@ -276,7 +276,11 @@ describe('escalas del timeline', () => {
     });
 
     it('la hora se imprime sin cero de relleno y con guion', () => {
-        expect(formatTimeRange(new Date(2026, 8, 8, 8, 30), new Date(2026, 8, 8, 9, 30), 'en-US')).toBe('8:30 AM - 9:30 AM');
+        // Algunas versiones de ICU separan el AM con U+202F en vez de un espacio normal: se normaliza
+        // antes de comparar, porque lo que se prueba es el rango y no el espacio que use la plataforma.
+        const range = formatTimeRange(new Date(2026, 8, 8, 8, 30), new Date(2026, 8, 8, 9, 30), 'en-US');
+
+        expect(range.replace(/\u202f/g, ' ')).toBe('8:30 AM - 9:30 AM');
     });
 });
 
@@ -477,13 +481,33 @@ describe('zonas horarias', () => {
     });
 
     it('la hora que el salto de primavera SE COME resuelve justo después del hueco', () => {
-        // En Madrid las 02:30 del 29 de marzo de 2026 no existen: el reloj salta de 02:00 a 03:00.
-        const missing = new Date(2026, 2, 29, 2, 30);
-        const resolved = fromDisplayTime(missing, 'Europe/Madrid');
+        // Las 02:30 del día del salto no existen en la zona destino. El caso se prueba en varias
+        // zonas cuyos saltos caen en fechas DISTINTAS y se descartan las que la máquina que corre el
+        // test no puede ni expresar: `new Date(y, m, d, 2, 30)` normaliza a 03:30 si el anfitrión
+        // salta ese mismo día, así que con la zona clavada el test no probaba nada fuera de Madrid.
+        const gaps = [
+            { zone: 'Europe/Madrid', date: [2026, 2, 29] as const },
+            { zone: 'America/New_York', date: [2026, 2, 8] as const },
+            { zone: 'Australia/Sydney', date: [2026, 9, 4] as const }
+        ];
+        const wallClock = (date: Date, zone: string) => new Intl.DateTimeFormat('en-US', { timeZone: zone, hour12: false, hour: '2-digit', minute: '2-digit' }).format(date);
+        let tested = 0;
 
-        // Cae en el primer instante que sí existe, que es la misma hora UTC que las 03:30 locales.
-        expect(zoneOffsetMinutes(resolved, 'Europe/Madrid')).toBe(120);
-        expect(resolved.getTime()).toBe(Date.UTC(2026, 2, 29, 1, 30));
+        for (const { zone, date } of gaps) {
+            const missing = new Date(date[0], date[1], date[2], 2, 30);
+            if (missing.getHours() !== 2) continue;
+
+            const resolved = fromDisplayTime(missing, zone);
+
+            // El instante existe —el offset de la zona lo confirma— y su reloj de pared en la zona
+            // es el primero después del hueco, no una hora inventada dentro de él.
+            expect(Number.isNaN(zoneOffsetMinutes(resolved, zone))).toBe(false);
+            expect(wallClock(resolved, zone)).toBe('03:30');
+            tested++;
+        }
+
+        // Un anfitrión sólo puede colisionar con uno de los tres saltos: siempre queda algo probado.
+        expect(tested).toBeGreaterThan(0);
     });
 
     it('sin zona destino las dos conversiones son la identidad, por referencia', () => {
@@ -537,6 +561,29 @@ describe('importar y exportar', () => {
         expect(parsed[1].allDay).toBe(true);
     });
 
+    it('el día completo lleva un DTEND EXCLUSIVO, también sin final propio', () => {
+        // Un día entero del 10 al 12 acaba, en el formato, el 13; y uno sin final ocupa su día, no cero.
+        expect(toICalendar(events)).toContain('DTEND;VALUE=DATE:20260913');
+
+        const single = toICalendar([{ id: 's', title: 'Feriado', start: new Date(2026, 8, 8), allDay: true }]);
+        expect(single).toContain('DTSTART;VALUE=DATE:20260908');
+        expect(single).toContain('DTEND;VALUE=DATE:20260909');
+    });
+
+    it('un final a medianoche no arrastra el día siguiente', () => {
+        // [start, end) es la convención del motor: acabar el 11 a las 00:00 ocupa el 10 y nada más.
+        const ics = toICalendar([{ id: 'm', title: 'Un día', start: new Date(2026, 8, 10), end: new Date(2026, 8, 11), allDay: true }]);
+        expect(ics).toContain('DTEND;VALUE=DATE:20260911');
+    });
+
+    it('el desescapado va en UNA pasada, así que una ruta de Windows sobrevive', () => {
+        const ics = toICalendar([{ id: 'w', title: 'Copia', start: new Date(2026, 8, 8, 9), location: 'C:\\network\\share' }]);
+        const { events: parsed } = parseICalendar(ics);
+
+        // Desescapar por pasos convertiría la barra escapada mas la n siguiente en un salto de línea.
+        expect(parsed[0].location).toBe('C:\\network\\share');
+    });
+
     it('un calendario roto da lo que se pueda leer, no una excepción', () => {
         const { events: parsed } = parseICalendar('BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nSUMMARY:No start\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nDTSTART:20260908T090000Z\r\nSUMMARY:Fine\r\nEND:VEVENT\r\nEND:VCALENDAR');
         // El VEVENT sin DTSTART no se puede colocar en ningún sitio y se descarta; el otro entra.
@@ -583,6 +630,22 @@ describe('navegación por celdas', () => {
         // Cambiar de columna conserva la fila, que es lo que hace útil moverse en horizontal.
         expect(moveCellFocus(at('a2'), 'ArrowRight')).toBe(true);
         expect(document.activeElement?.getAttribute('aria-label')).toBe('b2');
+    });
+
+    it('el relleno deshabilitado de un minimes se salta, sin perder la columna del día', () => {
+        const disabled = (label: string) => `<button data-nav-cell="" tabindex="-1" disabled aria-label="${label}"></button>`;
+        const cells7 = (week: number) => Array.from({ length: 7 }, (_, day) => (week === 1 && day < 3 ? disabled(`w${week}d${day}`) : cell(`w${week}d${day}`))).join('');
+        const root = grid(`<div class="p-scheduler-mini-month-grid">${cells7(1)}${cells7(2)}</div>`);
+        const cells = [...root.querySelectorAll<HTMLElement>('[data-nav-cell]')];
+        const at = (label: string) => cells.find((node) => node.getAttribute('aria-label') === label)!;
+
+        // Bajar sigue moviéndose de siete en siete: el mismo día de la semana, no el siguiente hueco.
+        expect(moveCellFocus(at('w1d3'), 'ArrowDown')).toBe(true);
+        expect(document.activeElement?.getAttribute('aria-label')).toBe('w2d3');
+        // Home no puede dejar el único punto de entrada en un botón deshabilitado.
+        expect(moveCellFocus(at('w1d3'), 'Home')).toBe(true);
+        expect(document.activeElement?.getAttribute('aria-label')).toBe('w1d3');
+        expect(at('w1d0').getAttribute('tabindex')).toBe('-1');
     });
 
     it('en una semana de mes es al contrario, y bajar salta a la semana siguiente', () => {
@@ -651,13 +714,41 @@ describe('correcciones de colocación', () => {
     });
 
     it('el desborde se cuelga del día de CALENDARIO, también el día del cambio de hora', () => {
-        // La semana del 29 de marzo de 2026 en Europa: el domingo dura 23 horas, así que dividir por
-        // 86.400.000 desplazaba el índice de todos los días siguientes.
-        const range = { start: new Date(2026, 2, 29), end: new Date(2026, 3, 5) };
-        // Se solapan a propósito: sin solape los dos caben en la misma fila y no hay desborde.
-        const { overflow } = layoutRows([ev('a', '2026-03-30T08:00', '2026-03-30T10:00'), ev('b', '2026-03-30T09:00', '2026-03-30T11:00')], { range, maxRows: 1 });
+        // El día del cambio de hora dura 23 o 25 horas, así que dividir por 86.400.000 desplazaba el
+        // índice de los días siguientes y el "+N more" colgaba del día equivocado.
+        //
+        // El día corto se BUSCA en la zona de la máquina en vez de clavar una fecha de Madrid: con la
+        // fecha fija, un anfitrión sin ese cambio —UTC en el CI— medía días de 24 horas exactas y la
+        // regresión no se veía. Donde no hay ningún cambio de hora se prueba la semana normal, que es
+        // todo lo que esa zona puede distinguir.
+        const shortDay = (() => {
+            for (let month = 0; month < 24; month++) {
+                const year = 2026 + Math.floor(month / 12);
+                for (let day = 1; day <= 31; day++) {
+                    const start = new Date(year, month % 12, day);
+                    if (start.getDate() !== day) break;
+                    const next = new Date(year, month % 12, day + 1);
+                    if (next.getTime() - start.getTime() < 24 * 3_600_000) return start;
+                }
+            }
+            return null;
+        })();
 
-        // El segundo evento del lunes desborda, y el lunes es el índice 1 de la semana.
+        const first = shortDay ?? new Date(2026, 2, 29);
+        const second = new Date(first.getFullYear(), first.getMonth(), first.getDate() + 1);
+        const range = { start: first, end: new Date(first.getFullYear(), first.getMonth(), first.getDate() + 7) };
+        // Justo pasada la medianoche del día siguiente: ahí es donde las 23 horas del día anterior
+        // dejaban el cociente por debajo de 1 y el desborde caía en el índice 0. Y se solapan a
+        // propósito, porque sin solape los dos caben en la misma fila y no hay desborde.
+        const at = (hour: number, minute: number) => new Date(second.getFullYear(), second.getMonth(), second.getDate(), hour, minute);
+        const { overflow } = layoutRows(
+            [
+                { id: 'a', start: at(0, 15), end: at(1, 15) },
+                { id: 'b', start: at(0, 45), end: at(1, 45) }
+            ],
+            { range, maxRows: 1 }
+        );
+
         expect([...overflow.keys()]).toEqual([1]);
     });
 

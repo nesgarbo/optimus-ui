@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, PLATFORM_ID, ViewEncapsulation, computed, inject, input, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, PLATFORM_ID, ViewEncapsulation, computed, inject, input, signal, viewChild } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { NgTemplateOutlet } from '@angular/common';
 import type { SchedulerEvent, SchedulerResource, SchedulerTimelineScale, SchedulerViewType } from '@openng/optimus-ui/types/scheduler';
@@ -422,14 +422,40 @@ export class SchedulerTimelineView extends SchedulerViewBase {
      */
     private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
 
-    /** Reads the scroll offset back on every scroll of the axis. */
+    private readonly destroyRef = inject(DestroyRef);
+
+    /** Watches the axis for size changes, so the geometry is not read on the scroll path. */
+    private observer: ResizeObserver | null = null;
+
+    /** Number of columns the current `columnWidth` was measured for. */
+    private measuredColumns = -1;
+
+    /**
+     * Reads the scroll offset back on every scroll of the axis.
+     *
+     * ONLY the offset. Desplazar dispara un evento por frame y `measure` lee geometria, asi que
+     * medir aqui forzaba un reflow por frame y, al escribir `viewportWidth`/`columnWidth`, invalidaba
+     * las senales de la ventana virtual en mitad del desplazamiento. El tamano lo trae un
+     * ResizeObserver, que es quien sabe cuando ha cambiado de verdad.
+     */
     protected onScroll(): void {
         const host = this.scroll()?.nativeElement;
         if (!host || !this.browser) return;
         // Math.abs porque en RTL scrollLeft es negativo en los navegadores basados en Chromium: la
         // ventana se calcula sobre la distancia recorrida, que no tiene signo.
         this.scrollOffset.set(Math.abs(host.scrollLeft));
-        this.measure(host);
+    }
+
+    /** Attaches the observer once the axis exists. */
+    private observe(host: HTMLElement): void {
+        if (this.observer || !this.browser || typeof ResizeObserver === 'undefined') return;
+
+        this.observer = new ResizeObserver(() => this.measure(host));
+        this.observer.observe(host);
+        this.destroyRef.onDestroy(() => {
+            this.observer?.disconnect();
+            this.observer = null;
+        });
     }
 
     /**
@@ -463,7 +489,16 @@ export class SchedulerTimelineView extends SchedulerViewBase {
         if (this.state.drag.active) return;
 
         const host = this.scroll()?.nativeElement;
-        if (host) this.measure(host);
+        if (host) {
+            this.observe(host);
+            // Se mide cuando cambia el NUMERO de columnas, no en cada ciclo de deteccion: el ancho de
+            // columna es minmax(slotWidth, 1fr), asi que depende del recuento y del ancho del
+            // contenedor, y del segundo se encarga el observer.
+            if (this.measuredColumns !== this.slots().length) {
+                this.measuredColumns = this.slots().length;
+                this.measure(host);
+            }
+        }
         this.scrollToToday();
     }
 

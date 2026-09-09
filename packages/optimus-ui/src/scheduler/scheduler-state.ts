@@ -183,14 +183,16 @@ export interface SchedulerStateInputs {
     emitResizeStop: (payload: SchedulerDragPayload) => void;
     eventPopoverEnabled: Signal<boolean>;
     contextMenuEnabled: Signal<boolean>;
+    morePopoverEnabled: Signal<boolean>;
+    emitMoreClick: (date: Date, events: SchedulerEvent[]) => void;
     maxSelection: Signal<number>;
     setView: (view: SchedulerViewType) => void;
     setDate: (date: Date) => void;
     bulkDelete: (events: SchedulerEvent[]) => void;
     eventChange: (event: SchedulerEvent) => void;
     eventRemove: (event: SchedulerEvent) => void;
-    emitEventClick: (originalEvent: MouseEvent, event: SchedulerEvent) => void;
-    emitSlotClick: (originalEvent: MouseEvent, start: Date, end: Date) => void;
+    emitEventClick: (originalEvent: MouseEvent | KeyboardEvent, event: SchedulerEvent) => void;
+    emitSlotClick: (originalEvent: MouseEvent | KeyboardEvent, start: Date, end: Date) => void;
     emitSelectionLimit: (max: number) => void;
     emitSelectionChange: (events: SchedulerEvent[]) => void;
 }
@@ -391,7 +393,7 @@ export class SchedulerState {
      * Each one comes back with the fraction of the rendered hours it covers, so a view can draw it
      * without redoing the geometry the time grid already knows.
      */
-    slotsForColumn(date: Date, resourceId: string | number | undefined, bounds: { start: number; end: number }): { key: string; offset: number; size: number; label: string; full: boolean; slot: SchedulerAppointmentSlot }[] {
+    slotsForColumn(date: Date, resourceId: string | number | undefined, bounds: { start: number; end: number }): { key: string; offset: number; size: number; label: string; ariaLabel: string; full: boolean; slot: SchedulerAppointmentSlot }[] {
         const slots = this.appointmentSlots();
         if (!slots.length) return [];
 
@@ -406,11 +408,16 @@ export class SchedulerState {
             .map((slot, index) => {
                 const visibleStart = Math.max(slot.start.getTime(), from);
                 const visibleEnd = Math.min(slot.end.getTime(), to);
+                const label = slot.capacity != null ? `${Math.max(slot.capacity - slot.booked, 0)}/${slot.capacity}` : '';
+                const range = formatTimeRange(slot.start, slot.end, this.locale());
                 return {
                     key: `${dayKey(date)}|${resourceId ?? ''}|${index}`,
                     offset: (visibleStart - from) / span,
                     size: (visibleEnd - visibleStart) / span,
-                    label: slot.capacity != null ? `${Math.max(slot.capacity - slot.booked, 0)}/${slot.capacity}` : '',
+                    label,
+                    // El hueco es accionable, asi que necesita nombre: la hora, y la ocupacion cuando
+                    // la hay. Sin el, un lector de pantalla anuncia un boton sin contenido.
+                    ariaLabel: label ? `${range}, ${label}` : range,
                     full: slot.full,
                     slot
                 };
@@ -915,7 +922,7 @@ export class SchedulerState {
      * `eventClick` already sees the new selection, and a rejected click (the selection cap) emits
      * `eventSelectionLimitReached` instead of silently doing nothing.
      */
-    handleEventClick(originalEvent: MouseEvent, event: SchedulerEvent): void {
+    handleEventClick(originalEvent: MouseEvent | KeyboardEvent, event: SchedulerEvent): void {
         // El clic que cierra un arrastre no es un clic: sin esto, mover una cita la seleccionaría y
         // abriría su quick info al soltar.
         if (this.drag.consumeClickSuppression()) return;
@@ -998,7 +1005,7 @@ export class SchedulerState {
      * `dateClick` already sees the selection the click produced. The instants are converted out of
      * the rendered zone first.
      */
-    handleSlotClick(originalEvent: MouseEvent, start: Date, end: Date): void {
+    handleSlotClick(originalEvent: MouseEvent | KeyboardEvent, start: Date, end: Date): void {
         this.selectDate(start);
         this.inputs.emitSlotClick(originalEvent, this.fromDisplay(start), this.fromDisplay(end));
     }
@@ -1023,11 +1030,25 @@ export class SchedulerState {
 
     /** Opens the overflow popover for a cell. */
     openMorePopover(date: Date, events: SchedulerEvent[], anchor?: HTMLElement): void {
+        // El aviso sale siempre, tambien con el popover apagado: apagarlo es quedarse con el enlace
+        // para abrir lo que la pagina quiera, no perder el evento.
+        this.inputs.emitMoreClick(
+            date,
+            events.map((event) => this.realOf(event))
+        );
+        if (!this.inputs.morePopoverEnabled()) return;
         this.morePopover.set({ date, events, anchor });
     }
 
     /** Minutes one keyboard step moves or resizes an event: the same rounding a drag uses. */
-    readonly snapMinutes = computed(() => this.inputs.snapDuration());
+    /**
+     * Snap step of the active view, in minutes.
+     *
+     * The timeline scales get their own step when the root declared one, exactly like a pointer
+     * drag does: reading `snapDuration` here made the arrow keys move by a different amount than the
+     * mouse in the same view.
+     */
+    readonly snapMinutes = computed(() => (timelineScaleOf(this.inputs.view()) ? (this.inputs.timelineSnapDuration() ?? this.inputs.snapDuration()) : this.inputs.snapDuration()));
     /**
      * Whether an event may be moved.
      *

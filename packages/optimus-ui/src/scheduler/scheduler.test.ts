@@ -36,7 +36,19 @@ const EVENTS: SchedulerEvent[] = [
     standalone: false,
     changeDetection: ChangeDetectionStrategy.Eager,
     template: `
-        <p-scheduler-root [events]="events()" [categories]="categories" categoryField="categoryId" [view]="view()" (viewChange)="view.set($event)" [date]="date" [resources]="resources" [maxEventsPerCell]="2" [views]="allViews">
+        <p-scheduler-root
+            [events]="events()"
+            [categories]="categories"
+            categoryField="categoryId"
+            [view]="view()"
+            (viewChange)="view.set($event)"
+            [date]="date"
+            [resources]="resources"
+            [maxEventsPerCell]="2"
+            [views]="allViews"
+            [showMorePopover]="showMorePopover()"
+            (moreClick)="more.push($event)"
+        >
             <p-scheduler-header>
                 <p-scheduler-navigation />
                 <p-scheduler-title />
@@ -74,6 +86,9 @@ class TestHost {
     view = signal<SchedulerViewType>('month');
 
     resources: any[] = [];
+
+    showMorePopover = signal(true);
+    more: { date: Date; events: SchedulerEvent[]; view: SchedulerViewType }[] = [];
 
     allViews: SchedulerViewType[] = ['day', 'week', 'month', 'agenda', 'year', 'timeline', 'resourceTimeline'];
     date = DAY;
@@ -220,6 +235,20 @@ describe('Scheduler', () => {
 
         (q('.p-scheduler-more-popover-close')[0].nativeElement as HTMLElement).click();
         await fixture.whenStable();
+        expect(q('[data-slot="scheduler-more-popover"] .p-scheduler-more-popover-panel').length).toBe(0);
+    });
+
+    it('el "+N more" avisa siempre, y con el popover apagado NO abre el panel', async () => {
+        host.showMorePopover.set(false);
+        await fixture.whenStable();
+
+        (q('[data-slot="scheduler-month-more-link"]')[0].nativeElement as HTMLElement).click();
+        await fixture.whenStable();
+
+        // Apagar el popover deja el aviso: la página abre lo que quiera con los eventos del día.
+        expect(host.more.length).toBe(1);
+        expect(host.more[0].view).toBe('month');
+        expect(host.more[0].events.length).toBeGreaterThan(0);
         expect(q('[data-slot="scheduler-more-popover"] .p-scheduler-more-popover-panel').length).toBe(0);
     });
 

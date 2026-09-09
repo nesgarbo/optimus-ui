@@ -196,18 +196,15 @@ function timeTiers(scale: SchedulerTimelineScale, slots: SchedulerTimelineSlot[]
         },
         {
             key: 'day',
-            cells:
-                scale === 'week'
-                    ? groupSlots(
-                          slots,
-                          (slot) => dayKey(slot.start),
-                          (slot) => slot.start.toLocaleDateString(locale, { day: 'numeric', weekday: 'short' })
-                      )
-                    : groupSlots(
-                          slots,
-                          () => 'single',
-                          (slot) => slot.start.toLocaleDateString(locale, { day: 'numeric', weekday: 'short' })
-                      )
+            // Por dia en las dos escalas: el rango de buildTimelineAxis no esta limitado a un dia, ni
+            // en la escala de dia, y una unica celda etiquetada con el primero mentia sobre el resto
+            // de las columnas. Con un solo dia agrupar por dia da exactamente una celda, que es lo
+            // que se pintaba antes.
+            cells: groupSlots(
+                slots,
+                (slot) => dayKey(slot.start),
+                (slot) => slot.start.toLocaleDateString(locale, { day: 'numeric', weekday: 'short' })
+            )
         }
     ];
 }

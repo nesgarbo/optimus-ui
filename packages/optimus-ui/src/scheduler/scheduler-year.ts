@@ -52,7 +52,7 @@ import { SchedulerViewBase } from './scheduler-view-base';
                                 [attr.data-event-count]="day.count"
                                 [attr.aria-label]="day.label"
                                 data-nav-cell=""
-                                [attr.tabindex]="day.otherMonth ? -1 : null"
+                                [attr.tabindex]="day.tabbable ? 0 : -1"
                                 [disabled]="day.otherMonth"
                                 (keydown)="onCellKeydown($event, day.date, day.end)"
                                 (click)="openDay(day.date)"
@@ -113,6 +113,7 @@ export class SchedulerYearView extends SchedulerViewBase {
                     key: `${monthIndex}|${key}`,
                     date,
                     otherMonth: date.getMonth() !== monthIndex,
+                    tabbable: false,
                     weekend: date.getDay() === 0 || date.getDay() === 6,
                     end: addDays(date, 1),
                     today: isToday(date, this.state.now()),
@@ -128,6 +129,12 @@ export class SchedulerYearView extends SchedulerViewBase {
                     })
                 });
             }
+
+            // Un unico punto de entrada por minimes: con el tabindex por defecto los doce meses
+            // sumaban mas de cuatrocientas paradas de tabulador antes del siguiente control de la
+            // pagina. Se entra por el primer dia propio y las flechas hacen el resto.
+            const firstOwn = days.find((day) => !day.otherMonth);
+            if (firstOwn) firstOwn.tabbable = true;
 
             const name = monthDate.toLocaleDateString(this.locale(), { month: 'long' });
             return {

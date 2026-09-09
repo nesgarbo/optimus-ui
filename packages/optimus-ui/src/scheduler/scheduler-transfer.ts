@@ -52,9 +52,29 @@ function escapeText(value: string): string {
     return value.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
 }
 
-/** Undoes {@link escapeText}. */
+/**
+ * Undoes {@link escapeText}, in a single left-to-right pass.
+ *
+ * Sequential replaces cannot do this: decoding `\\n` first turns the escaped backslash of
+ * `C:\\\\network` into a real one and then reads the following `n` as a newline, so a Windows path
+ * comes back split in two. Consuming two characters at a time is the only order that is correct,
+ * because an escape can only be read once its own backslash has been consumed.
+ */
 function unescapeText(value: string): string {
-    return value.replace(/\\n/gi, '\n').replace(/\\,/g, ',').replace(/\\;/g, ';').replace(/\\\\/g, '\\');
+    let result = '';
+
+    for (let index = 0; index < value.length; index++) {
+        const character = value[index];
+        if (character !== '\\' || index + 1 >= value.length) {
+            result += character;
+            continue;
+        }
+
+        const escaped = value[++index];
+        result += escaped === 'n' || escaped === 'N' ? '\n' : escaped;
+    }
+
+    return result;
 }
 
 /** An instant as `YYYYMMDDTHHMMSSZ`, which is the only form every calendar agrees on. */
@@ -101,8 +121,16 @@ export function toICalendar(events: readonly SchedulerEvent[], options: Schedule
         lines.push(`DTSTAMP:${toUtcStamp(new Date())}`);
 
         if (event.allDay) {
+            // DTEND es EXCLUSIVO en el formato: el dia siguiente al ultimo dia ocupado. Escribirlo tal
+            // cual exportaria un dia entero con duracion cero, que es como lo leeria cualquier otro
+            // calendario. El ultimo dia ocupado se saca igual que en la vista, restando un
+            // milisegundo, para que un final a medianoche no arrastre el dia siguiente.
+            const lastMs = (end.getTime() > start.getTime() ? end.getTime() : start.getTime() + 1) - 1;
+            const last = new Date(lastMs);
+            const exclusive = new Date(last.getFullYear(), last.getMonth(), last.getDate() + 1);
+
             lines.push(`DTSTART;VALUE=DATE:${toDateStamp(start)}`);
-            lines.push(`DTEND;VALUE=DATE:${toDateStamp(end)}`);
+            lines.push(`DTEND;VALUE=DATE:${toDateStamp(exclusive)}`);
         } else {
             lines.push(`DTSTART:${toUtcStamp(start)}`);
             lines.push(`DTEND:${toUtcStamp(end)}`);

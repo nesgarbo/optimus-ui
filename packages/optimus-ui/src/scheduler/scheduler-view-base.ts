@@ -8,6 +8,18 @@ import { SCHEDULER_DEF_RESOLVER, type SchedulerSlot } from './scheduler-resolver
 import { SCHEDULER_STATE } from './scheduler-state';
 
 /**
+ * Whether a gesture started on an event surface rather than on the cell that contains it.
+ *
+ * Every rendered event carries `data-event-id`, so one `closest` answers it for all six views
+ * without the cell handlers having to know what a view puts inside a cell.
+ */
+function fromEventSurface(originalEvent: Event): boolean {
+    const target = originalEvent.target as HTMLElement | null;
+    if (!target || target === originalEvent.currentTarget) return false;
+    return typeof target.closest === 'function' && !!target.closest('[data-event-id]');
+}
+
+/**
  * What every view renderer shares: access to the state, template resolution against the definition
  * registry, and the per-surface context hosts.
  *
@@ -187,7 +199,7 @@ export abstract class SchedulerViewBase {
     }
 
     /** Handles a click on an event surface. */
-    protected onEventClick(originalEvent: MouseEvent, event: SchedulerEvent): void {
+    protected onEventClick(originalEvent: MouseEvent | KeyboardEvent, event: SchedulerEvent): void {
         this.state.handleEventClick(originalEvent, event);
     }
 
@@ -201,8 +213,30 @@ export abstract class SchedulerViewBase {
         this.state.drag.startResize(originalEvent, event, edge);
     }
 
-    /** Handles a click on an empty slot. */
-    protected onSlotClick(originalEvent: MouseEvent, start: Date, end: Date): void {
+    /**
+     * Handles a click on an empty slot.
+     *
+     * Ignores a gesture that came from an event surface inside the cell. A month event lives INSIDE
+     * its day cell, so clicking it also reached here and fired `dateClick` on top of `eventClick` —
+     * one gesture, two unrelated outputs. The test is the surface it came from and not
+     * `target !== currentTarget`, because the cell's own content — the day number, a custom cell
+     * template — is a legitimate place to click the cell.
+     */
+    protected onSlotClick(originalEvent: MouseEvent | KeyboardEvent, start: Date, end: Date): void {
+        if (fromEventSurface(originalEvent)) return;
+        this.state.handleSlotClick(originalEvent, start, end);
+    }
+
+    /**
+     * Keyboard activation of a standalone slot surface, such as an appointment window.
+     *
+     * It is announced as a button, so Enter and space have to do what a click does. Nothing else is
+     * handled: the slot is not part of the arrow ring, and swallowing the arrows there would break
+     * out of the grid it floats over.
+     */
+    protected onSlotKeydown(originalEvent: KeyboardEvent, start: Date, end: Date): void {
+        if (originalEvent.key !== 'Enter' && originalEvent.key !== ' ') return;
+        originalEvent.preventDefault();
         this.state.handleSlotClick(originalEvent, start, end);
     }
 
@@ -230,10 +264,12 @@ export abstract class SchedulerViewBase {
      */
     protected onCellKeydown(originalEvent: KeyboardEvent, start: Date, end: Date): void {
         const cell = originalEvent.currentTarget as HTMLElement | null;
+        // Una tecla que viene de un evento del mes ya la ha manejado su propia superficie.
+        if (fromEventSurface(originalEvent)) return;
 
         if (originalEvent.key === 'Enter' || originalEvent.key === ' ') {
             originalEvent.preventDefault();
-            this.onSlotClick(originalEvent as unknown as MouseEvent, start, end);
+            this.state.handleSlotClick(originalEvent, start, end);
             return;
         }
 
@@ -268,7 +304,7 @@ export abstract class SchedulerViewBase {
 
         if (originalEvent.key === 'Enter' || originalEvent.key === ' ') {
             originalEvent.preventDefault();
-            this.state.handleEventClick(originalEvent as unknown as MouseEvent, event);
+            this.state.handleEventClick(originalEvent, event);
         }
     }
 

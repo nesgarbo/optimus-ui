@@ -188,10 +188,18 @@ export const style = /*css*/ `
         grid-template-columns: dt('scheduler.gutter.width') repeat(var(--p-scheduler-columns, 1), minmax(var(--p-scheduler-column-min-width, dt('scheduler.day.min.width')), 1fr));
     }
 
-    .p-scheduler-time-grid-groups {
+    /* La cabecera entera se pega como una unidad y las dos bandas se apilan dentro por flujo. Con
+       una banda sticky sobre otra, ambas a inset-block-start: 0, las dos aterrizan en el mismo sitio
+       y la de encima tapa a la de abajo; con el envoltorio pegado el alto lo mide el navegador y no
+       hay ningun calculo que dependa de la interlinea del anfitrion. */
+    .p-scheduler-time-grid-head {
         position: sticky;
         inset-block-start: 0;
         z-index: 2;
+        background: dt('scheduler.weekday.background');
+    }
+
+    .p-scheduler-time-grid-groups {
         background: dt('scheduler.weekday.background');
         border-bottom: 1px solid dt('scheduler.border.color');
     }
@@ -210,27 +218,7 @@ export const style = /*css*/ `
         overflow: hidden;
     }
 
-    /* La banda de grupos se pega arriba y la cabecera de columnas justo debajo, sin calcular su alto:
-       un top deducido de padding + 1.2em asumía una interlínea que el anfitrión puede cambiar, y
-       cualquier desajuste solapaba las dos bandas o dejaba un hueco. Con la banda en el flujo sticky
-       y la cabecera pegada a su propio borde inferior, lo mide el navegador. */
-    .p-scheduler-time-grid[data-grouping='resource'] .p-scheduler-time-grid-header,
-    .p-scheduler-time-grid[data-grouping='date'] .p-scheduler-time-grid-header {
-        top: 0;
-        position: sticky;
-    }
-
-    .p-scheduler-time-grid[data-grouping='resource'],
-    .p-scheduler-time-grid[data-grouping='date'] {
-        /* El contenedor de pegado es la vista, y las dos bandas se apilan por orden de documento
-           gracias a sus z-index: la de grupos (2) por encima de la de columnas (1). */
-        position: relative;
-    }
-
     .p-scheduler-time-grid-header {
-        position: sticky;
-        top: 0;
-        z-index: 1;
         background: dt('scheduler.weekday.background');
         border-bottom: 1px solid dt('scheduler.border.color');
     }

@@ -615,6 +615,8 @@ export class Scheduler extends BaseComponent<SchedulerPassThrough> {
         emitResizeStop: (payload) => this.eventResizeStop.emit(payload),
         eventPopoverEnabled: this.eventPopover,
         contextMenuEnabled: this.contextMenu,
+        morePopoverEnabled: this.showMorePopover,
+        emitMoreClick: (date, events) => this.moreClick.emit({ date, events, view: this.view() }),
         maxSelection: this.maxSelection,
         setView: (view) => {
             this.view.set(view);
