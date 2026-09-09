@@ -77,6 +77,7 @@ function makeConfig(overrides: Partial<TaskBoardStateConfig<Card>> = {}) {
         rtl: signal(false),
         disabled: signal(false),
         readonly: signal(false),
+        loading: signal(false),
         virtualScroll: signal(false),
         virtualScrollItemHeight: signal(100),
         virtualScrollBuffer: signal(2),

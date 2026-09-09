@@ -50,6 +50,22 @@ export const style = /*css*/ `
         flex-shrink: 0;
     }
 
+    /* Encima del tablero y no en su flujo: mientras carga, lo que hay debajo sigue midiendo lo mismo,
+       así que las columnas no dan un salto al llegar los datos. */
+    .p-taskboard-loading {
+        position: absolute;
+        inset: 0;
+        z-index: 30;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: dt('taskboard.background');
+    }
+
+    .p-taskboard-loading[hidden] {
+        display: none;
+    }
+
     .p-taskboard-body {
         flex: 1;
         display: flex;
@@ -577,6 +593,12 @@ export const style = /*css*/ `
        Arrastre
        ---------------------------------------------------------------------------------------------- */
 
+    /* La pulsación empieza antes que el arrastre, y el navegador ya está seleccionando texto para
+       entonces: sin esto cada gesto deja una franja de texto resaltado en la tarjeta. */
+    .p-taskboard-pressing {
+        user-select: none;
+    }
+
     .p-taskboard-dragging {
         cursor: grabbing;
         user-select: none;
@@ -597,6 +619,10 @@ export const style = /*css*/ `
         box-shadow: dt('taskboard.drag.preview.shadow');
         will-change: transform;
         isolation: isolate;
+    }
+
+    .p-taskboard-drag-preview-body {
+        display: contents;
     }
 
     .p-taskboard-drag-preview-badge {

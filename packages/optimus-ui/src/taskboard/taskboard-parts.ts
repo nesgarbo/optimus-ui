@@ -308,7 +308,9 @@ export class TaskBoardSwimlaneColumnHeader {
 /**
  * The board's loading surface.
  *
- * Shown only while `loading` is on, so a page can leave it declared and let the board decide.
+ * Shown only while `loading` is on, so a page can leave it declared and let the board decide when it
+ * appears. It is `aria-hidden` because the root already carries `aria-busy` — announcing the same
+ * state twice is worse than announcing it once.
  *
  * @group Components
  */
@@ -321,8 +323,13 @@ export class TaskBoardSwimlaneColumnHeader {
     host: {
         'data-scope': 'taskboard',
         'data-part': 'loading',
+        'aria-hidden': 'true',
         class: 'p-taskboard-loading',
-        '[attr.aria-hidden]': 'true'
+        '[hidden]': '!loading()'
     }
 })
-export class TaskBoardLoading {}
+export class TaskBoardLoading {
+    private readonly state = inject(TASKBOARD_STATE);
+
+    protected readonly loading = computed(() => this.state.loading());
+}

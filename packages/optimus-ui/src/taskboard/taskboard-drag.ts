@@ -51,6 +51,16 @@ export class TaskBoardDrag<T extends TaskBoardItem = TaskBoardItem> {
     /** Width the preview should take, copied off the source card so it does not jump. */
     readonly previewWidth = signal<number | null>(null);
 
+    /**
+     * A copy of the source card's visible body, for the preview to show when nothing was projected
+     * into it.
+     *
+     * A preview has to look like the card being dragged, and the runtime cannot know what the
+     * application's card component renders — so it takes the rendered nodes. Cloned, never moved:
+     * the real card stays in its column, dimmed, until the drop is decided.
+     */
+    readonly previewClone = signal<HTMLElement[] | null>(null);
+
     /** Where the runtime insertion line should sit, when the target has no authored marker. */
     readonly runtimeIndicator = signal<{ top: number; left: number; width: number } | null>(null);
 
@@ -111,6 +121,7 @@ export class TaskBoardDrag<T extends TaskBoardItem = TaskBoardItem> {
         this.candidateElement = element;
         this.started = false;
         this.clickFromDrag = false;
+        this.state.pressing.set(true);
 
         this.attachWindow();
     }
@@ -147,12 +158,41 @@ export class TaskBoardDrag<T extends TaskBoardItem = TaskBoardItem> {
         this.state.beginCardDrag(item);
         this.snapshot();
 
+        // Lo que el navegador haya alcanzado a seleccionar antes de cruzar el umbral se descarta: si
+        // no, el gesto arrastra la tarjeta y deja una franja de texto resaltado detrás.
+        this.document?.getSelection()?.removeAllRanges();
+
         const source = this.candidateElement?.getBoundingClientRect();
         this.previewWidth.set(source ? source.width : null);
+        this.previewClone.set(this.cloneBody(this.candidateElement));
 
         const columnValue = this.state.columnOf(item);
         this.state.emitDragStart(item, columnValue == null ? undefined : this.state.columnById(columnValue), event);
-        this.host?.classList.add('p-taskboard-dragging');
+    }
+
+    /**
+     * The visible body of a card, cloned and stripped of everything that made it interactive.
+     *
+     * The wrapper's own element children are taken and not the wrapper itself: the wrapper carries
+     * the drag state classes, and `p-taskboard-card-dragging` would render the preview at the same
+     * 35% the real card is showing.
+     */
+    private cloneBody(element: HTMLElement | null): HTMLElement[] | null {
+        if (!element) return null;
+
+        const clones = Array.from(element.children).map((child) => child.cloneNode(true) as HTMLElement);
+        if (clones.length === 0) return null;
+
+        for (const clone of clones) {
+            for (const node of [clone, ...Array.from(clone.querySelectorAll<HTMLElement>('*'))]) {
+                node.removeAttribute('id');
+                node.removeAttribute('tabindex');
+                node.setAttribute('aria-hidden', 'true');
+                if (node instanceof HTMLInputElement || node instanceof HTMLButtonElement || node instanceof HTMLSelectElement || node instanceof HTMLTextAreaElement) node.disabled = true;
+            }
+        }
+
+        return clones;
     }
 
     private onPointerUp = (event: PointerEvent): void => {
@@ -207,11 +247,10 @@ export class TaskBoardDrag<T extends TaskBoardItem = TaskBoardItem> {
     };
 
     private resetCard(): void {
-        if (this.started) {
-            this.state.endCardDrag();
-            this.host?.classList.remove('p-taskboard-dragging');
-        }
+        if (this.started) this.state.endCardDrag();
 
+        this.state.pressing.set(false);
+        this.previewClone.set(null);
         this.pointerId = null;
         this.origin = null;
         this.candidate = null;
@@ -490,6 +529,7 @@ export class TaskBoardDrag<T extends TaskBoardItem = TaskBoardItem> {
         this.origin = { x: event.clientX, y: event.clientY };
         this.columnCandidate = { id, index, element };
         this.columnStarted = false;
+        this.state.pressing.set(true);
 
         this.attachWindow();
     }
@@ -503,7 +543,7 @@ export class TaskBoardDrag<T extends TaskBoardItem = TaskBoardItem> {
 
             this.columnStarted = true;
             this.state.beginColumnDrag(candidate.id);
-            this.host?.classList.add('p-taskboard-column-reordering');
+            this.document?.getSelection()?.removeAllRanges();
             this.measureColumns();
         }
 
@@ -518,7 +558,6 @@ export class TaskBoardDrag<T extends TaskBoardItem = TaskBoardItem> {
         const pointer = this.edgePointer;
 
         candidate?.element.classList.remove('p-taskboard-column-dragging');
-        this.host?.classList.remove('p-taskboard-column-reordering');
         this.state.endColumnDrag();
 
         this.columnCandidate = null;
@@ -526,6 +565,7 @@ export class TaskBoardDrag<T extends TaskBoardItem = TaskBoardItem> {
         this.columnRects = [];
         this.pointerId = null;
         this.origin = null;
+        this.state.pressing.set(false);
 
         this.detachWindow();
         this.stopEdgeScroll();

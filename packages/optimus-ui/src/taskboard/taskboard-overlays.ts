@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, ViewEncapsulation, computed, contentChild, inject, input, numberAttribute } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, ViewEncapsulation, computed, contentChild, effect, inject, input, numberAttribute, viewChild } from '@angular/core';
 import type { TaskBoardItem } from '@openng/optimus-ui/types/taskboard';
 import { TASKBOARD_COLUMN_CONTEXT, TASKBOARD_DROP_INDICATOR_CONTEXT, type TaskBoardColumnContext, type TaskBoardDropIndicatorContext } from './taskboard-context';
 import { TASKBOARD_DRAG } from './taskboard-drag';
@@ -145,7 +145,7 @@ export class TaskBoardDropIndicator {
             @if (definition()) {
                 <ng-container [ngTemplateOutlet]="definition()!.template" [ngTemplateOutletContext]="definitionContext()" />
             } @else {
-                <ng-content />
+                <div #body class="p-taskboard-drag-preview-body"><ng-content /></div>
             }
         }
     `,
@@ -169,6 +169,42 @@ export class TaskBoardDragPreview<T extends TaskBoardItem = TaskBoardItem> {
 
     /** The template, when the preview's content was declared as a definition. */
     protected readonly definition = contentChild(TaskBoardDragPreviewDef<T>);
+
+    private readonly body = viewChild<ElementRef<HTMLElement>>('body');
+
+    private mountedClone = false;
+
+    /**
+     * Falls back to a copy of the dragged card when the preview has no body of its own.
+     *
+     * `<p-taskboard-drag-preview />` on its own is the common case, and an empty preview means the
+     * card appears to vanish while it travels. The emptiness is measured rather than declared
+     * because Angular gives no way to ask whether anything was projected; a wrapper with no element
+     * children is the answer.
+     */
+    private readonly mountClone = effect(() => {
+        const host = this.body()?.nativeElement;
+        const clone = this.drag.previewClone();
+
+        if (!host) {
+            this.mountedClone = false;
+            return;
+        }
+
+        if (!clone || !this.visible()) {
+            if (this.mountedClone) {
+                host.replaceChildren();
+                this.mountedClone = false;
+            }
+
+            return;
+        }
+
+        if (this.mountedClone || host.childElementCount > 0) return;
+
+        host.append(...clone.map((element) => element.cloneNode(true)));
+        this.mountedClone = true;
+    });
 
     protected readonly visible = computed(() => this.state.dragging() && this.drag.previewPosition() !== null);
 

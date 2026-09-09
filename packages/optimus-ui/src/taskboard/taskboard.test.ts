@@ -58,6 +58,7 @@ function cards(): Card[] {
             [swimlaneField]="swimlaneField()"
             [selectionMode]="'multiple'"
             [density]="density()"
+            [loading]="loading()"
         >
             <p-taskboard-header><span class="toolbar">Toolbar</span></p-taskboard-header>
             <p-taskboard-content>
@@ -85,6 +86,7 @@ function cards(): Card[] {
             </p-taskboard-content>
             <p-taskboard-drag-preview />
             <p-taskboard-drag-confirm />
+            <p-taskboard-loading><span class="loading-copy">Loading</span></p-taskboard-loading>
         </p-taskboard-root>
     `
 })
@@ -97,6 +99,7 @@ class TestHost {
     readonly swimlanes = signal<TaskBoardSwimlane[]>([]);
     readonly swimlaneField = signal<string | undefined>(undefined);
     readonly density = signal<'compact' | 'standard' | 'comfortable'>('standard');
+    readonly loading = signal(false);
 }
 
 @Component({
@@ -316,5 +319,104 @@ describe('TaskBoard', () => {
     it('las superficies de arrastre existen y están escondidas en reposo', () => {
         expect(one('[data-part="drag-preview"]')?.hasAttribute('hidden')).toBe(true);
         expect(one('[data-part="drag-confirm"]')?.hasAttribute('hidden')).toBe(true);
+    });
+
+    it('arrastrar suprime la selección de texto desde la pulsación, no desde el arrastre', async () => {
+        const card = one('[data-task-id="a"]')!;
+        const root = one('[data-part="root"]')!;
+
+        card.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId: 1, button: 0, clientX: 10, clientY: 10 }));
+        await fixture.whenStable();
+
+        // Antes de cruzar el umbral ya hay que estar suprimiendo: el navegador empieza a seleccionar
+        // texto en cuanto el puntero se mueve con el botón bajado.
+        expect(root.className).toContain('p-taskboard-pressing');
+        expect(root.className).not.toContain('p-taskboard-dragging');
+
+        document.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, pointerId: 1, clientX: 10, clientY: 60 }));
+        await fixture.whenStable();
+
+        expect(root.className).toContain('p-taskboard-dragging');
+
+        document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerId: 1, clientX: 10, clientY: 60 }));
+        await fixture.whenStable();
+
+        expect(root.className).not.toContain('p-taskboard-pressing');
+        expect(root.className).not.toContain('p-taskboard-dragging');
+    });
+
+    it('el preview sin contenido propio muestra una copia de la tarjeta que viaja', async () => {
+        const card = one('[data-task-id="a"]')!;
+
+        card.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId: 2, button: 0, clientX: 10, clientY: 10 }));
+        document.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, pointerId: 2, clientX: 10, clientY: 80 }));
+        await fixture.whenStable();
+
+        const preview = one('[data-part="drag-preview"]')!;
+
+        expect(preview.hasAttribute('hidden')).toBe(false);
+        // Una copia, no la tarjeta movida: la original se queda en su columna atenuada.
+        expect(preview.textContent).toContain('Alpha');
+        expect(q('[data-task-id="a"]').length).toBe(1);
+
+        document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerId: 2, clientX: 10, clientY: 80 }));
+        await fixture.whenStable();
+
+        expect(one('[data-part="drag-preview"]')?.hasAttribute('hidden')).toBe(true);
+    });
+
+    it('la superficie de carga se declara siempre y solo se ve mientras loading está puesto', async () => {
+        const surface = one('[data-part="loading"]')!;
+
+        expect(surface.hasAttribute('hidden')).toBe(true);
+        expect(one('[data-part="root"]')?.getAttribute('aria-busy')).toBeNull();
+
+        host.loading.set(true);
+        await fixture.whenStable();
+
+        expect(one('[data-part="loading"]')?.hasAttribute('hidden')).toBe(false);
+        expect(one('[data-part="root"]')?.getAttribute('aria-busy')).toBe('true');
+        // El anuncio lo da aria-busy en la raíz; decirlo dos veces es peor que decirlo una.
+        expect(one('[data-part="loading"]')?.getAttribute('aria-hidden')).toBe('true');
+    });
+
+    it('print marca el tablero y el body ANTES de abrir el diálogo, y lo deja limpio', () => {
+        const seen: { target: boolean; printing: boolean; body: boolean; ancestors: number }[] = [];
+        const view = fixture.nativeElement.ownerDocument.defaultView!;
+        const original = view.print;
+
+        // La hoja de impresión esconde todo lo que no sea el tablero marcado, así que los ganchos han
+        // de estar puestos en el instante en que el navegador fotografía la página. Un atributo que
+        // esperase al siguiente ciclo de detección saldría en blanco.
+        view.print = () => {
+            const root = fixture.nativeElement.querySelector('[data-part="root"]') as HTMLElement;
+
+            seen.push({
+                target: root.getAttribute('data-print-target') === 'true',
+                printing: root.classList.contains('p-taskboard-printing'),
+                body: document.body.classList.contains('p-taskboard-print-active'),
+                ancestors: document.querySelectorAll('.p-taskboard-print-ancestor').length
+            });
+        };
+
+        try {
+            host.board().print();
+        } finally {
+            view.print = original;
+        }
+
+        expect(seen).toHaveLength(1);
+        expect(seen[0].target).toBe(true);
+        expect(seen[0].printing).toBe(true);
+        expect(seen[0].body).toBe(true);
+        expect(seen[0].ancestors).toBeGreaterThan(0);
+
+        // Y se limpia aunque el navegador no llegue a emitir `afterprint`.
+        const root = one('[data-part="root"]')!;
+
+        expect(root.hasAttribute('data-print-target')).toBe(false);
+        expect(root.classList.contains('p-taskboard-printing')).toBe(false);
+        expect(document.body.classList.contains('p-taskboard-print-active')).toBe(false);
+        expect(document.querySelectorAll('.p-taskboard-print-ancestor').length).toBe(0);
     });
 });

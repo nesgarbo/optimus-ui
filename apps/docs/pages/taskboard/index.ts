@@ -14,6 +14,7 @@ import { ExportDoc } from '@/doc/taskboard/export-doc';
 import { ExternalDoc } from '@/doc/taskboard/external-doc';
 import { FilteringDoc } from '@/doc/taskboard/filtering-doc';
 import { GroupsDoc } from '@/doc/taskboard/groups-doc';
+import { HeaderDoc } from '@/doc/taskboard/header-doc';
 import { HistoryDoc } from '@/doc/taskboard/history-doc';
 import { ImportDoc } from '@/doc/taskboard/import-doc';
 import { IndicatorsDoc } from '@/doc/taskboard/indicators-doc';
@@ -47,6 +48,7 @@ export class TaskBoardDemo {
         { id: 'groups', label: 'Column Groups', component: GroupsDoc },
         { id: 'swimlanes', label: 'Swimlanes', component: SwimlanesDoc },
         { id: 'cards', label: 'Card Content', component: CardsDoc },
+        { id: 'header', label: 'Board Header', component: HeaderDoc },
         { id: 'selection', label: 'Selection', component: SelectionDoc },
         { id: 'drag', label: 'Drag and Drop', component: DragDoc },
         { id: 'indicators', label: 'Drop Indicators', component: IndicatorsDoc },

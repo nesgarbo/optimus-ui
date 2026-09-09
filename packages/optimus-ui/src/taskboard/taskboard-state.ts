@@ -155,6 +155,8 @@ export interface TaskBoardStateConfig<T extends TaskBoardItem = TaskBoardItem> {
     disabled: Signal<boolean>;
     /** Whether the board is read-only. */
     readonly: Signal<boolean>;
+    /** Whether the board is showing a loading state. */
+    loading: Signal<boolean>;
     /** Whether only the cards near the viewport are mounted. */
     virtualScroll: Signal<boolean>;
     /** Estimated card height, until one has been measured. */
@@ -355,6 +357,9 @@ export class TaskBoardState<T extends TaskBoardItem = TaskBoardItem> {
 
     /** Whether the board is read-only. */
     readonly readonly = computed(() => this.config.readonly());
+
+    /** Whether the board is showing a loading state. */
+    readonly loading = computed(() => this.config.loading());
 
     /** Whether the board is grouped into rows. */
     readonly grouped = computed(() => this.config.swimlaneField() != null && this.swimlanes().length > 0 && this.features().swimlanes);
@@ -791,6 +796,16 @@ export class TaskBoardState<T extends TaskBoardItem = TaskBoardItem> {
 
     /** Whether a card drag is in progress. */
     readonly dragging = this.dragActive.asReadonly();
+
+    /**
+     * Whether a press on a card is being tracked, drag or not.
+     *
+     * Separate from `dragging` because it starts EARLIER: the browser begins selecting text the
+     * moment the pointer moves with the button down, which is before the drag threshold is crossed.
+     * Suppressing selection only once the drag starts leaves a stripe of highlighted card text
+     * behind every gesture.
+     */
+    readonly pressing = signal(false);
 
     /** The card the drag started from. */
     readonly draggingItem = computed<T | undefined>(() => {

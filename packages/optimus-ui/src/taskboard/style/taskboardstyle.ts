@@ -2,6 +2,9 @@ import { Injectable } from '@angular/core';
 import { style } from '@openng/optimus-ui-styles/taskboard';
 import { BaseStyle } from '@openng/optimus-ui/base';
 
+// Los estados de interacción salen de aquí y no de un classList imperativo: la raíz lleva un
+// binding [class], y escribirle clases por detrás deja el resultado a merced de cuándo vuelva a
+// evaluarse ese binding.
 const classes = {
     root: ({ instance }) => [
         'p-taskboard p-component',
@@ -11,7 +14,10 @@ const classes = {
             'p-taskboard-readonly': instance.readonly(),
             'p-taskboard-non-scrollable': !instance.scrollable(),
             'p-taskboard-rtl': instance.rtl(),
-            'p-taskboard-loading-active': instance.loading()
+            'p-taskboard-loading-active': instance.loading(),
+            'p-taskboard-pressing': instance.taskBoardState.pressing(),
+            'p-taskboard-dragging': instance.taskBoardState.dragging(),
+            'p-taskboard-column-reordering': instance.taskBoardState.reorderingColumnId() != null
         }
     ]
 };

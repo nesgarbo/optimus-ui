@@ -119,7 +119,6 @@ const LIVE_REGION_STYLE = 'position:absolute;width:1px;height:1px;overflow:hidde
         '[attr.aria-label]': 'ariaLabel()',
         '[attr.aria-keyshortcuts]': 'keyShortcuts',
         '[attr.dir]': 'rtl() ? "rtl" : null',
-        '[attr.data-print-target]': 'printing() ? "true" : null',
         '[attr.aria-busy]': 'loading() ? true : null',
         '[style.--p-taskboard-column-min-width]': 'columnWidthValue()',
         '[style.--p-taskboard-column-max-width]': 'columnWidthValue()',
@@ -438,9 +437,6 @@ export class TaskBoard<T extends TaskBoardItem = TaskBoardItem> extends BaseComp
         return overrides ? { ...TASKBOARD_DEFAULT_LABELS, ...overrides } : TASKBOARD_DEFAULT_LABELS;
     });
 
-    /** @internal Whether the print hooks are currently on the root. */
-    readonly printing = signal(false);
-
     /** @internal The shared state every child part reads. */
     readonly taskBoardState: TaskBoardState<T> = new TaskBoardState<T>({
         tasks: this.tasks,
@@ -465,6 +461,7 @@ export class TaskBoard<T extends TaskBoardItem = TaskBoardItem> extends BaseComp
         rtl: this.rtl,
         disabled: this.disabled,
         readonly: this.readonly,
+        loading: this.loading,
         virtualScroll: this.virtualScroll,
         virtualScrollItemHeight: this.virtualScrollItemHeight,
         virtualScrollBuffer: this.virtualScrollBuffer,
@@ -812,10 +809,11 @@ export class TaskBoard<T extends TaskBoardItem = TaskBoardItem> extends BaseComp
     print(): void {
         const view = this.document?.defaultView;
         const body = this.document?.body;
+        const host = this.hostElement.nativeElement;
         if (!view || !body) return;
 
         const marked: HTMLElement[] = [];
-        let ancestor = this.hostElement.nativeElement.parentElement;
+        let ancestor = host.parentElement;
 
         while (ancestor && ancestor !== body) {
             if (!ancestor.classList.contains('p-taskboard-print-ancestor')) {
@@ -829,22 +827,40 @@ export class TaskBoard<T extends TaskBoardItem = TaskBoardItem> extends BaseComp
         const bodyAlready = body.classList.contains('p-taskboard-print-active');
         if (!bodyAlready) body.classList.add('p-taskboard-print-active');
 
-        this.printing.set(true);
-        this.hostElement.nativeElement.classList.add('p-taskboard-printing');
-        this.hostElement.nativeElement.scrollTop = 0;
+        // Los ganchos se escriben en el DOM aquí y no a través de una señal: `window.print()` es
+        // sincrónico, así que un atributo que esperase al siguiente ciclo de detección no estaría
+        // puesto cuando el navegador fotografía la página — y la hoja de impresión, que esconde
+        // todo lo que no sea el tablero marcado, saldría en blanco.
+        host.setAttribute('data-print-target', 'true');
+        host.classList.add('p-taskboard-printing');
+        host.scrollTop = 0;
+
+        // El repuesto importa: la hoja de impresión esconde TODO lo que no sea el tablero marcado, así
+        // que un `afterprint` que no llegue —lo cancela el usuario de una forma que no lo dispara, o
+        // el navegador simplemente no lo emite— dejaría la página entera invisible. `print()` es
+        // sincrónico y vuelve al cerrarse el diálogo, así que se limpia también ahí, una sola vez.
+        let restored = false;
 
         const restore = (): void => {
+            if (restored) return;
+            restored = true;
+
             for (const element of marked) element.classList.remove('p-taskboard-print-ancestor');
             if (!bodyAlready) body.classList.remove('p-taskboard-print-active');
 
-            this.hostElement.nativeElement.classList.remove('p-taskboard-printing');
-            this.printing.set(false);
+            host.removeAttribute('data-print-target');
+            host.classList.remove('p-taskboard-printing');
 
             view.removeEventListener('afterprint', restore);
         };
 
         view.addEventListener('afterprint', restore);
-        view.print();
+
+        try {
+            view.print();
+        } finally {
+            restore();
+        }
     }
 
     /** The UI state, as a snapshot. */
