@@ -5,7 +5,7 @@
  * roots call it, so there is exactly one answer to "what does this chart look like" and the
  * renderers only differ in how they put it on screen.
  */
-import type { AxisPosition, AxisType, BarSeriesProps, BaseAxisProps, ChartHoverProps, ColorValue, LineSeriesProps, SvgNode } from '@openng/optimus-ui/types/charts';
+import type { AxisPosition, AxisType, BarSeriesProps, BaseAxisProps, ChartHoverProps, ChartTooltipProps, ColorValue, CrosshairConfig, LineSeriesProps, SvgNode } from '@openng/optimus-ui/types/charts';
 import { isGradient, isLinearGradient } from '../core/color';
 import type { ChartContext } from '../charts-registry';
 import type { ResolvedSeries } from '../charts-state';
@@ -32,7 +32,7 @@ export interface BuiltScene {
 }
 
 /** Builds the draw context a painter reads. */
-export function buildDrawContext(context: ChartContext, chartId: string, measureText: DrawContext['measureText']): DrawContext {
+export function buildDrawContext(context: ChartContext, chartId: string, measureText: DrawContext['measureText'], seriesColor: DrawContext['seriesColor']): DrawContext {
     const hoverFeature = context.feature<ChartHoverProps>('hover')();
     const hoverProps = hoverFeature?.props();
 
@@ -61,7 +61,8 @@ export function buildDrawContext(context: ChartContext, chartId: string, measure
             : null,
         isItemVisible: (datasetId, index) => context.isItemVisible(datasetId, index),
         chartId,
-        measureText
+        measureText,
+        seriesColor
     };
 }
 
@@ -129,7 +130,52 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
         if (gradient) defs.push(gradient);
     }
 
+    /* --- Crosshair ---------------------------------------------------------------------------- */
+
+    const tooltip = context.feature<ChartTooltipProps>('tooltip')()?.props();
+
+    if (tooltip?.crosshair && drawContext.hover) {
+        scene.add('crosshair', ...paintCrosshair(drawContext, tooltip.crosshair));
+    }
+
     return { layers: scene.toLayers(), defs, axisRenders };
+}
+
+/**
+ * Paints the crosshair at the hovered position.
+ *
+ * It is drawn from the hover's own pixel coordinates rather than re-derived from the scales,
+ * because the hover already resolved which mark it snapped to -- recomputing would risk the line
+ * and the tooltip disagreeing by a pixel.
+ */
+function paintCrosshair(ctx: DrawContext, config: true | CrosshairConfig): SvgNode[] {
+    const hover = ctx.hover as { x?: number; y?: number } | null;
+
+    if (!hover) return [];
+
+    const options: CrosshairConfig = config === true ? {} : config;
+    const color = options.color ?? ctx.theme.crosshairColor ?? 'currentColor';
+    const width = options.width ?? 1;
+    const dash = (options.dashArray ?? [4, 4]).join(' ');
+    const nodes: SvgNode[] = [];
+
+    if ((options.x ?? true) && Number.isFinite(hover.x)) {
+        nodes.push({
+            tag: 'line',
+            attrs: { class: 'p-chart-crosshair', 'data-slot': 'chart-crosshair', 'data-axis': 'x', x1: hover.x!, y1: ctx.area.y, x2: hover.x!, y2: ctx.area.y + ctx.area.height, stroke: color, 'stroke-width': width, 'stroke-dasharray': dash },
+            children: []
+        });
+    }
+
+    if ((options.y ?? true) && Number.isFinite(hover.y)) {
+        nodes.push({
+            tag: 'line',
+            attrs: { class: 'p-chart-crosshair', 'data-slot': 'chart-crosshair', 'data-axis': 'y', x1: ctx.area.x, y1: hover.y!, x2: ctx.area.x + ctx.area.width, y2: hover.y!, stroke: color, 'stroke-width': width, 'stroke-dasharray': dash },
+            children: []
+        });
+    }
+
+    return nodes;
 }
 
 /** Builds the gradient definition a series' colour needs, when it is a gradient rather than a colour. */

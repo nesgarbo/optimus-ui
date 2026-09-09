@@ -16,6 +16,7 @@ import { Bind } from '@openng/optimus-ui/bind';
 import type { ChartExportOptions, ChartOverlaySurface, RendererType } from '@openng/optimus-ui/types/charts';
 import { buildPdf, dataUrlToBytes, downloadBlob, markupToBlob, recanvas, resolveExportBackground, wrapRasterInSvg } from './core/export';
 import { measureTextWidth } from './core/layout';
+import { seriesColorAt } from './core/palette';
 import { paintSvgNode } from './core/svg-node';
 import { ChartRootBase } from './chart-root-base';
 import { CHART_CONTEXT } from './charts-registry';
@@ -130,6 +131,15 @@ export class ChartCanvas extends ChartRootBase {
     private readonly measureText = (text: string, fontSize: number, fontFamily?: string): number => measureTextWidth(text, fontSize, fontFamily ?? this.$fontFamily(), this.ctx);
 
     /**
+     * A palette slot as a literal colour.
+     *
+     * Canvas has no DOM to resolve a custom property against, so the theme object is the only
+     * palette it can read -- which is exactly why `theme` is the documented way to restyle a Canvas
+     * chart.
+     */
+    private readonly seriesColor = (seriesIndex: number): string => seriesColorAt(this.context.theme().series ?? [], seriesIndex);
+
+    /**
      * Paints the scene.
      *
      * The whole canvas is cleared and repainted each frame. There is no partial-invalidation path
@@ -144,7 +154,7 @@ export class ChartCanvas extends ChartRootBase {
 
         const width = this.$width();
         const height = this.$height();
-        const drawContext = buildDrawContext(this.context, this.chartId, this.measureText);
+        const drawContext = buildDrawContext(this.context, this.chartId, this.measureText, this.seriesColor);
         const scene = buildScene(this.context, this.chartState.resolvedSeries(), drawContext);
 
         ctx.clearRect(0, 0, width, height);

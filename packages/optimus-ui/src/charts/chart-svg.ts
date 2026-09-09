@@ -12,6 +12,7 @@ import { Bind } from '@openng/optimus-ui/bind';
 import type { BoxArea, ChartExportOptions, ChartOverlaySurface, RendererType, SvgNode } from '@openng/optimus-ui/types/charts';
 import { buildPdf, dataUrlToBytes, downloadBlob, markupToBlob, rasterizeSvg, resolveExportBackground, serializeSvg } from './core/export';
 import { measureTextWidth } from './core/layout';
+import { seriesColorAt, seriesColorVariable } from './core/palette';
 import { createSvgElement } from './core/svg-node';
 import { ChartRootBase } from './chart-root-base';
 import { CHART_CONTEXT } from './charts-registry';
@@ -137,6 +138,19 @@ export class ChartSvg extends ChartRootBase {
     };
 
     /**
+     * A palette slot as a CSS custom property with the theme colour as its fallback.
+     *
+     * This is what makes the documented override work: setting `--p-chart-color-0` anywhere above
+     * the chart restyles it without the chart knowing, and the fallback keeps it correct when
+     * nothing has been set.
+     */
+    private readonly seriesColor = (seriesIndex: number): string => {
+        const palette = this.context.theme().series ?? [];
+
+        return `var(${seriesColorVariable(seriesIndex, palette.length || undefined)}, ${seriesColorAt(palette, seriesIndex)})`;
+    };
+
+    /**
      * Materializes the scene into SVG elements.
      *
      * The plot group is rebuilt wholesale each frame rather than diffed. That sounds wasteful, but a
@@ -150,7 +164,7 @@ export class ChartSvg extends ChartRootBase {
 
         if (!plot || !defs) return;
 
-        const drawContext = buildDrawContext(this.context, this.chartId, this.measureText);
+        const drawContext = buildDrawContext(this.context, this.chartId, this.measureText, this.seriesColor);
         const scene = buildScene(this.context, this.chartState.resolvedSeries(), drawContext);
         const doc = plot.ownerDocument;
         const fragment = doc.createDocumentFragment();

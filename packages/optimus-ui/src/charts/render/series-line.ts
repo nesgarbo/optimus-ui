@@ -11,7 +11,7 @@ import { itemContext, resolveColorAccessor, resolveDashAccessor, resolveDashPatt
 import { isGradient } from '../core/color';
 import { areaPath, curvePath, splitAtGaps, type PathPoint } from '../core/curve';
 import { isMarkerShapeName, markerPath } from '../core/geometry';
-import { seriesColorAt, seriesColorClass } from '../core/palette';
+import { seriesColorClass } from '../core/palette';
 import type { ResolvedSeries } from '../charts-state';
 import { baselineOn, isHovered, markOpacity, scaleFor, slotGroup, type DrawContext } from './scene';
 
@@ -31,8 +31,7 @@ export function projectLine(ctx: DrawContext, series: ResolvedSeries, props: Lin
     const xScale = scaleFor(ctx, 'x', series.xAxisId);
     const yScale = scaleFor(ctx, 'y', series.yAxisId);
     const baseline = baselineOn(yScale);
-    const palette = ctx.theme.series ?? [];
-    const color = typeof props.color === 'string' ? props.color : seriesColorAt(palette, series.seriesIndex);
+    const color = typeof props.color === 'string' ? props.color : ctx.seriesColor(series.seriesIndex);
 
     const points: ComputedPoint[] = series.points.map((point) => {
         const visible = ctx.isItemVisible(series.id, point.dataIndex);

@@ -85,12 +85,12 @@ export function seriesColorAt(palette: readonly string[], index: number): string
  * The CSS custom property an SVG series reads its color from. The Canvas renderer has no DOM to
  * resolve these against and goes through the theme object instead.
  */
-export function seriesColorVariable(index: number, paletteSize = LIGHT_SERIES_PALETTE.length): string {
+export function seriesColorVariable(index: number, paletteSize: number = LIGHT_SERIES_PALETTE.length): string {
     return `--p-chart-color-${((index % paletteSize) + paletteSize) % paletteSize}`;
 }
 
 /** The stable class an SVG mark carries so a stylesheet can reach it by series index. */
-export function seriesColorClass(index: number, paletteSize = LIGHT_SERIES_PALETTE.length): string {
+export function seriesColorClass(index: number, paletteSize: number = LIGHT_SERIES_PALETTE.length): string {
     return `p-chart-color-${((index % paletteSize) + paletteSize) % paletteSize}`;
 }
 

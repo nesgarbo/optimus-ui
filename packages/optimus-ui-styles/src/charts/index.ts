@@ -1,5 +1,61 @@
 export const style = /*css*/ `
+    /*
+     * The chart's public styling surface.
+     *
+     * Every visual value is aliased onto a --p-chart-* custom property here, and everything below
+     * consumes only those aliases. That indirection is the point: an application overrides
+     * --p-chart-color-0 or --p-chart-grid at any scope -- :root, a section, a single chart wrapper --
+     * and the SVG restyles with no JavaScript re-render, while the theme preset still supplies the
+     * default through the design tokens. The Canvas renderer cannot read any of this, which is why
+     * it is themed through the 'theme' input instead.
+     */
     .p-chart {
+        --p-chart-color-0: dt('charts.palette.color0');
+        --p-chart-color-1: dt('charts.palette.color1');
+        --p-chart-color-2: dt('charts.palette.color2');
+        --p-chart-color-3: dt('charts.palette.color3');
+        --p-chart-color-4: dt('charts.palette.color4');
+        --p-chart-color-5: dt('charts.palette.color5');
+        --p-chart-color-6: dt('charts.palette.color6');
+        --p-chart-color-7: dt('charts.palette.color7');
+        --p-chart-color-8: dt('charts.palette.color8');
+        --p-chart-color-9: dt('charts.palette.color9');
+        --p-chart-color-10: dt('charts.palette.color10');
+        --p-chart-color-11: dt('charts.palette.color11');
+        --p-chart-color-12: dt('charts.palette.color12');
+        --p-chart-color-13: dt('charts.palette.color13');
+
+        --p-chart-axis: dt('charts.axis.color');
+        --p-chart-axis-title-color: dt('charts.axis.title.color');
+        --p-chart-grid: dt('charts.grid.color');
+        --p-chart-grid-minor: dt('charts.grid.minor.color');
+        --p-chart-tick-label-color: dt('charts.tick.label.color');
+        --p-chart-data-label-color: dt('charts.data.label.color');
+        --p-chart-annotation-color: dt('charts.annotation.color');
+        --p-chart-title-color: dt('charts.title.color');
+        --p-chart-caption-color: dt('charts.caption.color');
+        --p-chart-band-fill: dt('charts.band.fill');
+        --p-chart-crosshair-color: dt('charts.crosshair.color');
+        --p-chart-legend-color: dt('charts.legend.color');
+
+        --p-chart-tooltip-background: dt('charts.tooltip.background');
+        --p-chart-tooltip-color: dt('charts.tooltip.color');
+        --p-chart-tooltip-border-color: dt('charts.tooltip.border.color');
+        --p-chart-tooltip-shadow: dt('charts.tooltip.shadow');
+
+        --p-chart-positive: dt('charts.direction.positive');
+        --p-chart-negative: dt('charts.direction.negative');
+
+        --p-chart-hover-brightness: dt('charts.hover.brightness');
+        --p-chart-dim-opacity: dt('charts.dim.opacity');
+
+        --p-chart-zoom-button-bg: dt('charts.zoom.button.background');
+        --p-chart-zoom-button-color: dt('charts.zoom.button.color');
+        --p-chart-zoom-button-border-color: dt('charts.zoom.button.border.color');
+        --p-chart-zoom-button-disabled-color: dt('charts.zoom.button.disabled.color');
+        --p-chart-zoom-button-disabled-border-color: dt('charts.zoom.button.disabled.border.color');
+        --p-chart-zoom-button-radius: dt('charts.zoom.button.border.radius');
+
         display: block;
         position: relative;
         color: dt('charts.color');
@@ -25,34 +81,58 @@ export const style = /*css*/ `
         overflow: visible;
     }
 
-    /*
-     * Every mark reads its colour from a custom property rather than carrying a literal, so a
-     * stylesheet can restyle a chart at any scope without the chart re-rendering. The Canvas
-     * renderer has no DOM to resolve these against and goes through the theme object instead.
-     */
+    /* The series palette. A mark carries its slot class, and the class supplies the colour. */
+    .p-chart-color-0 { color: var(--p-chart-color-0); }
+    .p-chart-color-1 { color: var(--p-chart-color-1); }
+    .p-chart-color-2 { color: var(--p-chart-color-2); }
+    .p-chart-color-3 { color: var(--p-chart-color-3); }
+    .p-chart-color-4 { color: var(--p-chart-color-4); }
+    .p-chart-color-5 { color: var(--p-chart-color-5); }
+    .p-chart-color-6 { color: var(--p-chart-color-6); }
+    .p-chart-color-7 { color: var(--p-chart-color-7); }
+    .p-chart-color-8 { color: var(--p-chart-color-8); }
+    .p-chart-color-9 { color: var(--p-chart-color-9); }
+    .p-chart-color-10 { color: var(--p-chart-color-10); }
+    .p-chart-color-11 { color: var(--p-chart-color-11); }
+    .p-chart-color-12 { color: var(--p-chart-color-12); }
+    .p-chart-color-13 { color: var(--p-chart-color-13); }
+
     .p-chart-axis-line,
     .p-chart-axis-tick {
-        stroke: dt('charts.axis.color');
+        stroke: var(--p-chart-axis);
     }
 
     .p-chart-tick-label {
-        fill: dt('charts.tick.label.color');
+        fill: var(--p-chart-tick-label-color);
     }
 
     .p-chart-axis-title {
-        fill: dt('charts.axis.title.color');
+        fill: var(--p-chart-axis-title-color);
     }
 
     .p-chart-grid-line {
-        stroke: dt('charts.grid.color');
+        stroke: var(--p-chart-grid);
     }
 
     .p-chart-grid-line-minor {
-        stroke: dt('charts.grid.minor.color');
+        stroke: var(--p-chart-grid-minor);
     }
 
     .p-chart-band {
-        fill: dt('charts.band.fill');
+        fill: var(--p-chart-band-fill);
+    }
+
+    .p-chart-data-label {
+        fill: var(--p-chart-data-label-color);
+    }
+
+    .p-chart-annotation,
+    .p-chart-reference-label {
+        fill: var(--p-chart-annotation-color);
+    }
+
+    .p-chart-crosshair {
+        stroke: var(--p-chart-crosshair-color);
     }
 
     /*
@@ -61,12 +141,12 @@ export const style = /*css*/ `
      * no fade -- because fading every other mark on each pointer move makes a dense chart flicker.
      */
     .p-chart-point-hover {
-        filter: brightness(dt('charts.hover.brightness'));
+        filter: brightness(var(--p-chart-hover-brightness));
     }
 
     .p-chart-point-inactive,
     .p-chart-series-inactive {
-        opacity: dt('charts.dim.opacity');
+        opacity: var(--p-chart-dim-opacity);
     }
 
     .p-chart-marker,
@@ -76,7 +156,10 @@ export const style = /*css*/ `
         transition: filter dt('charts.transition.duration'), opacity dt('charts.transition.duration');
     }
 
-    /* The chrome that has to stay real DOM: it needs focus, text selection and hit targets. */
+    /*
+     * The chrome that has to stay real DOM: it needs focus, text selection and hit targets, none of
+     * which survive being painted into a canvas.
+     */
     .p-chart-overlays {
         position: absolute;
         inset: 0;
@@ -85,6 +168,78 @@ export const style = /*css*/ `
 
     .p-chart-overlays > * {
         pointer-events: auto;
+    }
+
+    .p-chart-legend {
+        color: var(--p-chart-legend-color);
+    }
+
+    .p-chart-legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: dt('charts.legend.item.gap');
+        padding: 0;
+        border: 0;
+        background: none;
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+        transition: opacity dt('charts.transition.duration');
+    }
+
+    .p-chart-legend-item:disabled {
+        cursor: default;
+    }
+
+    .p-chart-legend-item:focus-visible {
+        outline: dt('charts.focus.ring.width') dt('charts.focus.ring.style') dt('charts.focus.ring.color');
+        outline-offset: dt('charts.focus.ring.offset');
+        border-radius: dt('charts.legend.item.border.radius');
+    }
+
+    .p-chart-legend-swatch {
+        flex: none;
+        display: inline-block;
+    }
+
+    .p-chart-legend-label {
+        white-space: nowrap;
+    }
+
+    .p-chart-tooltip {
+        background: var(--p-chart-tooltip-background);
+        color: var(--p-chart-tooltip-color);
+        border: 1px solid var(--p-chart-tooltip-border-color);
+        border-radius: dt('charts.tooltip.border.radius');
+        box-shadow: var(--p-chart-tooltip-shadow);
+        padding: dt('charts.tooltip.padding');
+        font-size: dt('charts.tooltip.font.size');
+        line-height: 1.4;
+        max-width: dt('charts.tooltip.max.width');
+    }
+
+    .p-chart-tooltip-header {
+        font-weight: 600;
+        margin-bottom: dt('charts.tooltip.header.gap');
+    }
+
+    .p-chart-tooltip-row {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: dt('charts.tooltip.row.gap');
+    }
+
+    .p-chart-tooltip-swatch {
+        width: dt('charts.tooltip.swatch.size');
+        height: dt('charts.tooltip.swatch.size');
+        border-radius: 2px;
+    }
+
+    .p-chart-tooltip-value {
+        /* Tabular figures so the values in a shared tooltip line up column-wise. */
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
     }
 
     .p-chart-sr-only {

@@ -9,7 +9,7 @@
 import type { BarSeriesProps, BorderRadius, ItemContext, SvgNode } from '@openng/optimus-ui/types/charts';
 import { itemContext, resolveColorAccessor, resolveDashAccessor, resolveScalarAccessor } from '../core/accessor';
 import { roundedRectPath } from '../core/geometry';
-import { seriesColorAt, seriesColorClass } from '../core/palette';
+import { seriesColorClass } from '../core/palette';
 import type { ResolvedSeries } from '../charts-state';
 import { baselineOn, isHovered, markOpacity, scaleFor, slotGroup, type DrawContext } from './scene';
 import { dashAttr } from './series-line';
@@ -125,14 +125,13 @@ export function projectBars(ctx: DrawContext, series: ResolvedSeries, props: Bar
 /** Paints a bar series. */
 export function paintBarSeries(ctx: DrawContext, series: ResolvedSeries, props: BarSeriesProps, slot: BandSlot, horizontal: boolean): SvgNode[] {
     const bars = projectBars(ctx, series, props, slot, horizontal);
-    const palette = ctx.theme.series ?? [];
     const data = props.data ?? [];
     const nodes: SvgNode[] = [];
 
     for (const bar of bars) {
         const context: ItemContext<unknown> = itemContext(data[bar.dataIndex], bar.dataIndex, series.seriesIndex, series.id, bar.value, bar.category);
         const hovered = isHovered(ctx, series.id, bar.dataIndex);
-        const fallback = seriesColorAt(palette, series.seriesIndex);
+        const fallback = ctx.seriesColor(series.seriesIndex);
         const hoverFill = hovered ? (resolveColorAccessor(props.hoverColor, context) as string | undefined) : undefined;
         const fill = hoverFill ?? (resolveColorAccessor(props.color, context, fallback) as string) ?? fallback;
         const stroke = hovered

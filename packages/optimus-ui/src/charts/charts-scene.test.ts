@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { computed, signal, type Signal } from '@angular/core';
 import type { AxisScale, BarSeriesProps, BaseAxisProps, ChartTheme, LineSeriesProps, SvgNode } from '@openng/optimus-ui/types/charts';
 import { bandScale, linearScale } from './core/scale';
-import { defaultLightTheme } from './core/palette';
+import { defaultLightTheme, LIGHT_SERIES_PALETTE, seriesColorAt } from './core/palette';
 import { serializeSvgNode } from './core/svg-node';
 import type { ChartContext, SeriesRegistration } from './charts-registry';
 import type { ResolvedSeries, SeriesPoint } from './charts-state';
@@ -37,6 +37,7 @@ function drawContext(overrides: Partial<DrawContext> = {}): DrawContext {
         // A fixed width per character keeps the collision assertions deterministic, which a real
         // font measurement in a headless environment would not be.
         measureText: (text, fontSize) => text.length * fontSize * 0.6,
+        seriesColor: (seriesIndex) => seriesColorAt(LIGHT_SERIES_PALETTE, seriesIndex),
         ...overrides
     };
 }

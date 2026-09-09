@@ -68,6 +68,15 @@ export interface DrawContext {
      */
     chartId: string;
     /**
+     * Resolves a series' palette colour into something this renderer can use.
+     *
+     * The two renderers need different things from the same palette slot. SVG wants
+     * `var(--p-chart-color-3, #4ecdc4)`, so an application overriding that custom property restyles
+     * the chart with no re-render, as the theming docs promise. Canvas has no DOM to resolve a
+     * `var()` against and needs the literal. One painter, one call, two answers.
+     */
+    seriesColor: (seriesIndex: number) => string;
+    /**
      * Measures text, so a painter can place a label it has not drawn yet.
      */
     measureText: (text: string, fontSize: number, fontFamily?: string) => number;
