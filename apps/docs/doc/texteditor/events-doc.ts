@@ -3,7 +3,6 @@ import { TextEditorModule, TextEditorRoot } from '@openng/optimus-ui/texteditor'
 import { AppCode } from '@/components/doc/app.code';
 import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
 import { ToolbarUI } from '@/components/texteditor';
-import { DEMO_HTML } from './demo-data';
 
 @Component({
     selector: 'events-doc',
@@ -48,7 +47,7 @@ import { DEMO_HTML } from './demo-data';
 export class EventsDoc {
     readonly editor = viewChild<TextEditorRoot>('editor');
 
-    readonly value = signal<string | undefined>(DEMO_HTML);
+    readonly value = signal<string | undefined>('<h2>Events &amp; Output</h2><p>Type, move the caret, focus and blur - the log on the right reacts. Click <strong>Get Markdown</strong> to serialize.</p>');
 
     readonly log = signal<string[]>([]);
 

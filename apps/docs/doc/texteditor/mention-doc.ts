@@ -29,7 +29,7 @@ import { MENTION_USERS } from './demo-data';
     `
 })
 export class MentionDoc {
-    readonly value = signal<string | undefined>('<p>Type @ to mention someone.</p>');
+    readonly value = signal<string | undefined>(undefined);
 
     readonly mentionHandler = () => MENTION_USERS;
 

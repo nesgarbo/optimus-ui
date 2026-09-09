@@ -31,5 +31,5 @@ import { ToolbarRedoUI, ToolbarUndoUI } from '@/components/texteditor';
     `
 })
 export class HistoryDoc {
-    readonly value = signal<string | undefined>('<p>Type something, then step back and forward.</p>');
+    readonly value = signal<string | undefined>(undefined);
 }

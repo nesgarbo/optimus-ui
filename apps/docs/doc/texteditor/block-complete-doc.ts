@@ -3,7 +3,7 @@ import { TEXT_EDITOR_FILE_SIZE, TextEditorModule } from '@openng/optimus-ui/text
 import { AppCode } from '@/components/doc/app.code';
 import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
 import { TextEditorUIModule } from '@/components/texteditor';
-import { DEMO_BLOCKS, MENTION_USERS, demoUploadHandler } from './demo-data';
+import { MENTION_USERS, demoUploadHandler } from './demo-data';
 
 @Component({
     selector: 'block-complete-doc',
@@ -84,7 +84,7 @@ import { DEMO_BLOCKS, MENTION_USERS, demoUploadHandler } from './demo-data';
     `
 })
 export class BlockCompleteDoc {
-    readonly blocks = signal<string[] | undefined>([...DEMO_BLOCKS, '<p>Type @ to mention someone, or / to insert a table.</p>']);
+    readonly blocks = signal<string[] | undefined>(['<h2>Welcome</h2>', '<p>Start editing to explore the features. Type <code>/</code> for slash commands.</p>']);
 
     readonly oneMB = TEXT_EDITOR_FILE_SIZE.ONE_MB;
 

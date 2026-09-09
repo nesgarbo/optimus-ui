@@ -33,5 +33,5 @@ import { ContextToolbarMoreUI, ContextToolbarUI, ToolbarUI } from '@/components/
     `
 })
 export class ContextToolbarDoc {
-    readonly value = signal<string | undefined>('<p>Select any part of this sentence and the floating toolbar appears above it.</p>');
+    readonly value = signal<string | undefined>('<p>Double-click on any word or select some text to see the context toolbar appear.</p>');
 }

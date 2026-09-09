@@ -47,7 +47,7 @@ import { demoUploadHandler } from './demo-data';
     `
 })
 export class ImageDoc {
-    readonly value = signal<string | undefined>('<p>Upload an image, or insert one by URL.</p>');
+    readonly value = signal<string | undefined>(undefined);
 
     readonly oneMB = TEXT_EDITOR_FILE_SIZE.ONE_MB;
 

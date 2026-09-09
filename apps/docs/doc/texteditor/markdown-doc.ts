@@ -28,5 +28,5 @@ import { ToolbarUI } from '@/components/texteditor';
     `
 })
 export class MarkdownDoc {
-    readonly value = signal<string | undefined>('<p>Start a new line and type <code>## </code> or <code>- </code>.</p>');
+    readonly value = signal<string | undefined>(undefined);
 }

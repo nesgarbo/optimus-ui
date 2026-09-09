@@ -249,3 +249,27 @@
 .p-text-editor-ui-navigator-item[aria-current='true'] {
     color: var(--p-texteditor-accent-color);
 }
+
+/* Decorations the example plugins render. */
+.p-text-editor-focus-dimmed {
+    opacity: 0.35;
+    transition: opacity 0.15s;
+}
+
+.p-text-editor-invisible {
+    color: var(--p-texteditor-muted-color);
+    opacity: 0.6;
+    pointer-events: none;
+    user-select: none;
+}
+
+.p-text-editor-content details {
+    border: 1px solid var(--p-texteditor-border-color);
+    border-radius: var(--p-texteditor-border-radius);
+    padding: 0.5rem 0.75rem;
+}
+
+.p-text-editor-content summary {
+    cursor: pointer;
+    font-weight: 600;
+}

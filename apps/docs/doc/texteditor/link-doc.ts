@@ -30,5 +30,5 @@ import { ToolbarLinkUI } from '@/components/texteditor';
     `
 })
 export class LinkDoc {
-    readonly value = signal<string | undefined>('<p>Select a few words and turn them into a <a href="https://www.openng.org/">link</a>.</p>');
+    readonly value = signal<string | undefined>(undefined);
 }

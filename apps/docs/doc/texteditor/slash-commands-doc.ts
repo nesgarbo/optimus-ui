@@ -31,5 +31,5 @@ import { BlockControlsUI, SlashMenuUI } from '@/components/texteditor';
     `
 })
 export class SlashCommandsDoc {
-    readonly blocks = signal<string[] | undefined>(['<h2>Slash commands</h2>', '<p>Type / on an empty line to open the palette.</p>', '<p></p>']);
+    readonly blocks = signal<string[] | undefined>(['<h2>Block Editor</h2>', '<p>Type / for slash commands.</p>']);
 }

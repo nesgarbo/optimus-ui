@@ -39,7 +39,7 @@ import { demoUploadHandler } from './demo-data';
     `
 })
 export class DocumentDoc {
-    readonly value = signal<string | undefined>('<p>Drop a PDF on the editor, or use the toolbar button.</p>');
+    readonly value = signal<string | undefined>(undefined);
 
     readonly tenMB = TEXT_EDITOR_FILE_SIZE.TEN_MB;
 

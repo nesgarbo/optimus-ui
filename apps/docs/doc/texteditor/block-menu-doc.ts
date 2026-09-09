@@ -40,5 +40,5 @@ import { BlockColorSubmenuUI, BlockControlsUI, BlockMenuUI, BlockTurnIntoSubmenu
     `
 })
 export class BlockMenuDoc {
-    readonly blocks = signal<string[] | undefined>(['<h2>Welcome to the Block Editor</h2>', '<p>Click the drag handle to open the menu.</p>']);
+    readonly blocks = signal<string[] | undefined>(['<h2>Welcome to the Block Editor</h2>', '<p>Click the drag handle to display the menu.</p>']);
 }

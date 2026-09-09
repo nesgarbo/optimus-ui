@@ -10,19 +10,19 @@ export const DEMO_HTML =
     '<blockquote><p>Blockquotes are great for emphasizing key information or quoting external sources.</p></blockquote>' +
     '<ul><li><p>Bullet lists for unordered items</p></li><li><p>Supports nesting with Tab and Shift+Tab</p></li></ul>';
 
-export const DEMO_BLOCKS = ['<h2>Welcome to the Block Editor</h2>', '<p>This is an editor where each section is its own editable block.</p>', '<p>Hover a block to reveal its handle, or type / to insert something new.</p>'];
+export const DEMO_BLOCKS = ['<h2>Welcome to the Block Editor</h2>', '<p>This is an editor where each section is its own editable block.</p>'];
 
 export const DEMO_OUTLINE =
     '<h1>Introduction</h1><p>This is the opening section of the document.</p>' +
     '<h2>Getting Started</h2><p>Learn how to set up and configure the editor.</p>' +
     '<h3>Installation</h3><p>Install the package using your preferred package manager.</p>' +
-    '<h3>Configuration</h3><p>Configure the editor with inputs and templates.</p>' +
+    '<h3>Configuration</h3><p>Configure the editor with props and templates.</p>' +
     '<h2>Features</h2><p>Explore the available editing features.</p>' +
     '<h3>Formatting</h3><p>Apply bold, italic, underline, and more.</p>' +
     '<h3>Lists</h3><p>Create bullet lists, ordered lists, and checklists.</p>' +
     '<h2>Advanced</h2><p>Learn about advanced editor capabilities.</p>' +
     '<h3>Plugins</h3><p>Extend the editor with custom plugins.</p>' +
-    '<h3>Theming</h3><p>Customize the editor appearance with design tokens.</p>';
+    '<h3>Theming</h3><p>Customize the editor appearance with CSS variables.</p>';
 
 export const MENTION_USERS = [
     { id: 1, name: 'Amy Elsner', image: 'https://primefaces.org/cdn/primeng/images/demo/avatar/amyelsner.png' },

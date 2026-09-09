@@ -2,32 +2,32 @@ import { Component, signal } from '@angular/core';
 import { TextEditorModule } from '@openng/optimus-ui/texteditor';
 import { AppCode } from '@/components/doc/app.code';
 import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
-import { ToolbarPrintUI } from '@/components/texteditor';
+import { ToolbarStrikethroughUI } from '@/components/texteditor';
 
 @Component({
-    selector: 'print-doc',
+    selector: 'strikethrough-doc',
     standalone: true,
-    imports: [TextEditorModule, ToolbarPrintUI, AppCode, AppDocSectionText],
+    imports: [TextEditorModule, ToolbarStrikethroughUI, AppCode, AppDocSectionText],
     template: `
         <app-docsectiontext>
             <p>
-                <i>commands.print()</i> hands the editor content to the browser print flow. It is always available, so the button needs no disabled binding. The content is rendered into a sandboxed frame without <i>allow-scripts</i>, and the HTML it
-                receives has already been through the sanitizing serializer.
+                <i>commands.strikethrough()</i> toggles strikethrough on the current selection and <i>state.strikethrough</i> reflects it. The mark round-trips as <i>&lt;s&gt;</i>, and <i>&lt;del&gt;</i> and <i>&lt;strike&gt;</i> are read back into
+                it.
             </p>
         </app-docsectiontext>
         <div class="card">
-            <p-text-editor-root [(value)]="value" ariaLabel="Printable document">
+            <p-text-editor-root [(value)]="value" ariaLabel="Strikethrough">
                 <p-text-editor-toolbar>
                     <div class="p-text-editor-ui-toolbar">
-                        <print-ui />
+                        <strikethrough-ui />
                     </div>
                 </p-text-editor-toolbar>
-                <p-text-editor-content height="12rem" />
+                <p-text-editor-content height="12rem" placeholder="Type here..." />
             </p-text-editor-root>
         </div>
         <app-code></app-code>
     `
 })
-export class PrintDoc {
+export class StrikethroughDoc {
     readonly value = signal<string | undefined>(undefined);
 }

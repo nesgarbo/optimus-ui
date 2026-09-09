@@ -43,7 +43,7 @@ import { ToolbarBoldUI, ToolbarItalicUI, ToolbarStrikethroughUI, ToolbarUnderlin
                         <strikethrough-ui />
                     </div>
                 </p-text-editor-toolbar>
-                <p-text-editor-content height="12rem" />
+                <p-text-editor-content height="12rem" placeholder="Type here..." />
             </p-text-editor-root>
         </div>
         <app-code></app-code>
@@ -52,5 +52,5 @@ import { ToolbarBoldUI, ToolbarItalicUI, ToolbarStrikethroughUI, ToolbarUnderlin
 export class StaticToolbarDoc {
     readonly value = signal<string | undefined>(undefined);
 
-    readonly second = signal<string | undefined>('<p>The same surface, filled with the shipped widgets.</p>');
+    readonly second = signal<string | undefined>(undefined);
 }

@@ -1908,6 +1908,11 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
     private afterTransaction(previous: EditorState, next: EditorState, docChanged: boolean): void {
         const state = deriveFormatState(next, this.focused());
 
+        /* ProseMirror dispatches outside Angular's own event paths, and in a zoneless application a
+           selection-only transaction otherwise leaves every toolbar showing the previous state:
+           marking the editor notifies the scheduler, and the tick then refreshes the widgets whose
+           templates read the signals below. */
+        this.cd.markForCheck();
         this.formatState.set(state);
         this.formatStateChange.emit(state);
         this.updateTableOverlayRect();
