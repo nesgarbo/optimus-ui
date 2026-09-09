@@ -42,12 +42,21 @@ const EVENTS: SchedulerEvent[] = [
             categoryField="categoryId"
             [view]="view()"
             (viewChange)="view.set($event)"
-            [date]="date"
+            [date]="date()"
             [resources]="resources"
             [maxEventsPerCell]="2"
             [views]="allViews"
             [showMorePopover]="showMorePopover()"
             (moreClick)="more.push($event)"
+            [density]="density()"
+            [nowIndicator]="nowIndicator()"
+            [showEmptyDays]="showEmptyDays()"
+            [resourcesExpandable]="true"
+            [showAggregatedEvents]="showAggregatedEvents()"
+            [appointmentSlots]="slots()"
+            [timeFormat]="timeFormat()"
+            (slotBook)="booked.push($event)"
+            (slotCancel)="cancelled.push($event)"
         >
             <p-scheduler-header>
                 <p-scheduler-navigation />
@@ -88,10 +97,18 @@ class TestHost {
     resources: any[] = [];
 
     showMorePopover = signal(true);
+    density = signal<'comfortable' | 'compact'>('comfortable');
+    nowIndicator = signal(true);
+    showEmptyDays = signal(false);
+    showAggregatedEvents = signal(false);
+    timeFormat = signal<{ format?: '12h' | '24h' | 'auto' } | undefined>(undefined);
+    slots = signal<any[]>([]);
+    booked: any[] = [];
+    cancelled: any[] = [];
     more: { date: Date; events: SchedulerEvent[]; view: SchedulerViewType }[] = [];
 
     allViews: SchedulerViewType[] = ['day', 'week', 'month', 'agenda', 'year', 'timeline', 'resourceTimeline'];
-    date = DAY;
+    date = signal(DAY);
 }
 
 describe('Scheduler', () => {
@@ -291,6 +308,97 @@ describe('Scheduler', () => {
         expect(labels).toContain('Drum 1');
         expect(labels).toContain('Drum 2');
         expect(labels).toContain('Unassigned');
+    });
+
+    it('a resource group collapses, and its lane keeps counting what is under it', async () => {
+        host.resources = [
+            { id: 'field', name: 'Field teams' },
+            { id: 'north-crew', name: 'Survey Crew', parentId: 'field' },
+            { id: 'harbor-crew', name: 'Civil Crew', parentId: 'field' }
+        ];
+        host.showAggregatedEvents.set(true);
+        host.view.set('resourceTimeline');
+        await fixture.whenStable();
+
+        // Tres carriles: el grupo y sus dos hijos, mas el de los eventos sin recurso.
+        const lanes = () => q('[data-slot="scheduler-resource"]').map((el) => (el.nativeElement as HTMLElement).getAttribute('data-resource-id'));
+        expect(lanes()).toContain('north-crew');
+
+        const toggle = q('[data-slot="scheduler-resource-toggle"]')[0];
+        expect(toggle).toBeTruthy();
+        expect((toggle.nativeElement as HTMLElement).getAttribute('aria-expanded')).toBe('true');
+
+        (toggle.nativeElement as HTMLElement).click();
+        await fixture.whenStable();
+
+        // Colapsado: los hijos desaparecen del carril y el grupo sigue ahi.
+        expect(lanes()).not.toContain('north-crew');
+        expect(lanes()).toContain('field');
+        expect((q('[data-slot="scheduler-resource-toggle"]')[0].nativeElement as HTMLElement).getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('activating an appointment window reports a booking, and a taken one a cancellation', async () => {
+        const at = (hour: number) => new Date(2026, 8, 8, hour);
+
+        host.slots.set([
+            { id: 'free', start: at(9), end: at(10), capacity: 2, booked: 0 },
+            { id: 'mine', start: at(11), end: at(12), capacity: 2, booked: 1, status: 'booked' }
+        ]);
+        host.view.set('day');
+        await fixture.whenStable();
+
+        const windows = q('[data-slot="scheduler-appointment-slot"]');
+        expect(windows.length).toBe(2);
+
+        (windows[0].nativeElement as HTMLElement).click();
+        await fixture.whenStable();
+        expect(host.booked.length).toBe(1);
+        expect(host.booked[0].slot.id).toBe('free');
+
+        (windows[1].nativeElement as HTMLElement).click();
+        await fixture.whenStable();
+        // El estado del hueco es lo unico que distingue reservar de cancelar: la capacidad no lo sabe.
+        expect(host.cancelled.length).toBe(1);
+        expect(host.cancelled[0].slot.id).toBe('mine');
+    });
+
+    it('the now indicator can be turned off, and the density reaches the DOM', async () => {
+        // El ancla se mueve a HOY: la linea de ahora solo existe en la columna del dia actual, que es
+        // justamente lo que la hace util.
+        host.date.set(new Date());
+        host.view.set('day');
+        await fixture.whenStable();
+        expect(q('.p-scheduler-now-indicator').length).toBe(1);
+
+        host.nowIndicator.set(false);
+        await fixture.whenStable();
+        expect(q('.p-scheduler-now-indicator').length).toBe(0);
+
+        host.density.set('compact');
+        await fixture.whenStable();
+        expect((q('.p-scheduler')[0].nativeElement as HTMLElement).getAttribute('data-density')).toBe('compact');
+    });
+
+    it('the agenda lists empty days only when asked to', async () => {
+        host.view.set('agenda');
+        await fixture.whenStable();
+
+        const groups = () => q('.p-scheduler-agenda-group').length;
+        const withEvents = groups();
+
+        host.showEmptyDays.set(true);
+        await fixture.whenStable();
+        expect(groups()).toBeGreaterThan(withEvents);
+    });
+
+    it('timeFormat decides the clock the gutter and the events print', async () => {
+        host.view.set('day');
+        host.timeFormat.set({ format: '24h' });
+        await fixture.whenStable();
+
+        const gutter = text('.p-scheduler-time-gutter-slot').filter(Boolean).join(' ');
+        // 24h no lleva meridiem en ninguna parte de la reticula.
+        expect(gutter).not.toMatch(/[AP]M/i);
     });
 
     it('a click on an event selects it', async () => {

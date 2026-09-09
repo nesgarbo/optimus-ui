@@ -42,6 +42,10 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
         </p>
         <h3>Reduced Motion</h3>
         <p>The stylesheet disables its transitions under <i>prefers-reduced-motion</i>.</p>
+        <p>
+            <i>ariaLabel</i> names the whole Scheduler, which matters as soon as a page holds more than one of them or when nothing around it says which schedule this is: a screen reader announces a region, and a region without a name is just
+            "application".
+        </p>
     </app-docsectiontext>`
 })
 export class AccessibilityDoc {}

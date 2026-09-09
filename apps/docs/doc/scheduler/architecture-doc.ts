@@ -41,7 +41,7 @@ import { DEMO_CATEGORIES, DEMO_DATE, DEMO_EVENTS } from './demo-data';
             </p>
         </app-docsectiontext>
         <div class="card">
-            <p-scheduler-root locale="en-US" view="week" [events]="events" [categories]="categories" categoryField="categoryId" [date]="date" [dayStartHour]="8" [dayEndHour]="18" [quickInfo]="true">
+            <p-scheduler-root locale="en-US" view="week" [events]="events" [categories]="categories" categoryField="categoryId" [date]="date" [dayStartHour]="8" [dayEndHour]="18" [quickInfo]="true" ariaLabel="Crew schedule">
                 <p-scheduler-header>
                     <p-scheduler-navigation />
                     <p-scheduler-title />

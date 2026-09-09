@@ -1,4 +1,4 @@
-import type { SchedulerTimelineScale, SchedulerViewType } from '@openng/optimus-ui/types/scheduler';
+import type { SchedulerTimeFormatOptions, SchedulerTimelineScale, SchedulerViewType } from '@openng/optimus-ui/types/scheduler';
 
 /**
  * Date arithmetic for the Scheduler. Everything here is pure and works on LOCAL time on purpose:
@@ -298,16 +298,61 @@ export function navigate(view: SchedulerViewType, date: Date, direction: -1 | 1,
  * `hour: 'numeric'` and not `'2-digit'`: en-US pads to `09:00 AM`, which is two characters of noise
  * per label in a gutter that repeats it every half hour, and no calendar prints it that way.
  */
-export function formatTime(date: Date, locale?: string): string {
-    return date.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' });
+export function formatTime(date: Date, locale?: string, options?: SchedulerTimeFormatOptions): string {
+    const { format = 'auto', showMinutes = 'always', showAMPM = true } = options ?? {};
+    const minutes = date.getMinutes();
+    const printMinutes = showMinutes === 'always' || minutes !== 0;
+
+    // 'auto' deja decidir al locale, que es lo que sabe si esa cultura escribe 14:00 o 2 PM.
+    const hour12 = format === 'auto' ? undefined : format === '12h';
+    const text = date.toLocaleTimeString(locale, {
+        hour: 'numeric',
+        ...(printMinutes ? { minute: '2-digit' as const } : {}),
+        ...(hour12 == null ? {} : { hour12 })
+    });
+
+    // El AM/PM se quita del resultado y no pidiendo hour12:false, que cambiaria tambien el reloj:
+    // "2 PM" sin sufijo es "2", no "14".
+    return showAMPM ? text : text.replace(/\s*[APap]\.?\s?[Mm]\.?/u, '').trim();
 }
 
 /**
  * The `start - end` an event prints. A plain hyphen, not an en dash: it is the separator every
  * calendar uses, and an en dash in a 6rem event cell is a pixel of ambiguity.
+ *
+ * `rangeDisplay` decides how much of it survives. `compact` drops the repeated meridiem — `9 - 10 AM`
+ * rather than `9 AM - 10 AM`, which is what fits in a month cell — and `locale` hands the whole range
+ * to `Intl` so a culture that writes it its own way gets its own way.
  */
-export function formatTimeRange(start: Date, end: Date, locale?: string): string {
-    return `${formatTime(start, locale)} - ${formatTime(end, locale)}`;
+export function formatTimeRange(start: Date, end: Date, locale?: string, options?: SchedulerTimeFormatOptions): string {
+    const display = options?.rangeDisplay ?? 'full';
+
+    if (display === 'locale') {
+        const format = options?.format ?? 'auto';
+        try {
+            const formatter = new Intl.DateTimeFormat(locale, {
+                hour: 'numeric',
+                minute: '2-digit',
+                ...(format === 'auto' ? {} : { hour12: format === '12h' })
+            });
+            // formatRange es lo unico que sabe donde pone cada cultura el separador de un rango.
+            return formatter.formatRange(start, end);
+        } catch {
+            // Una plataforma sin formatRange cae al formato completo en vez de quedarse sin hora.
+        }
+    }
+
+    const from = formatTime(start, locale, options);
+    const to = formatTime(end, locale, options);
+
+    if (display === 'compact') {
+        const meridiem = /\s*[APap]\.?\s?[Mm]\.?$/u;
+        const tail = to.match(meridiem)?.[0];
+        // Solo se recorta cuando los dos extremos llevan el MISMO sufijo: 11 AM - 1 PM los necesita.
+        if (tail && from.endsWith(tail.trim())) return `${from.replace(meridiem, '').trim()} - ${to}`;
+    }
+
+    return `${from} - ${to}`;
 }
 
 /**

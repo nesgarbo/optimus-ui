@@ -37,8 +37,22 @@ abstract class SchedulerOverlayBase {
     /** Closes it. */
     abstract close(): void;
 
+    /**
+     * Where this overlay opens.
+     *
+     * Only the event popover takes it from the root: an overflow list or a context menu opens where
+     * it was asked for, and a page that wanted to move those would be moving them for a reason the
+     * component cannot guess.
+     */
+    protected placement(): SchedulerOverlayPlacement {
+        return 'auto';
+    }
+
     /** @internal Where the panel sits, relative to the surface it was opened from. */
-    readonly offset = computed(() => anchorOffset(this.el.nativeElement, this.target()?.anchor ?? undefined));
+    readonly offset = computed(() => anchorOffset(this.el.nativeElement, this.target()?.anchor ?? undefined, this.placement()));
+
+    /** @internal Whether the panel is drawn above its anchor, which CSS has to translate. */
+    readonly above = computed(() => this.placement() === 'top');
 
     /** @internal Chrome labels, so the default actions are not hard-coded English. */
     readonly labels = computed(() => this.state.labels());
@@ -71,7 +85,7 @@ abstract class SchedulerOverlayBase {
  * `null` when there is no anchor, which leaves the panel wherever the part was placed — the fallback
  * the "+N more" list used before it had one.
  */
-function anchorOffset(host: HTMLElement, anchor?: HTMLElement): { top: number; start: number } | null {
+function anchorOffset(host: HTMLElement, anchor?: HTMLElement, placement: SchedulerOverlayPlacement = 'auto'): { top: number; start: number } | null {
     // getBoundingClientRect and getComputedStyle do not exist outside the browser: the server has
     // an element tree but no layout engine, and an unpositioned overlay is exactly what belongs in
     // the prerendered HTML.
@@ -81,12 +95,34 @@ function anchorOffset(host: HTMLElement, anchor?: HTMLElement): { top: number; s
     const anchorBox = anchor.getBoundingClientRect();
     const parentBox = parent.getBoundingClientRect();
     const rtl = getComputedStyle(host).direction === 'rtl';
+    const gap = 4;
 
-    return {
-        top: anchorBox.bottom - parentBox.top + 4,
-        start: rtl ? parentBox.right - anchorBox.right : anchorBox.left - parentBox.left
-    };
+    const top = anchorBox.top - parentBox.top;
+    const bottom = anchorBox.bottom - parentBox.top;
+    const start = rtl ? parentBox.right - anchorBox.right : anchorBox.left - parentBox.left;
+    const end = rtl ? parentBox.right - anchorBox.left : anchorBox.right - parentBox.left;
+
+    // 'auto' abre por debajo salvo que no quepa, que es lo que hace un popover util en la fila de
+    // abajo de una rejilla: ahi la unica opcion es abrir hacia arriba.
+    const room = (typeof window !== 'undefined' ? window.innerHeight : parentBox.height) - anchorBox.bottom;
+    const resolved = placement === 'auto' ? (room < 160 ? 'top' : 'bottom') : placement;
+
+    switch (resolved) {
+        case 'top':
+            // El alto del panel no se conoce todavia, asi que se ancla su BASE al borde superior del
+            // evento con una traslacion en CSS y no con una medida que habria que volver a leer.
+            return { top: top - gap, start };
+        case 'left':
+            return { top, start: Math.max(0, start - gap) };
+        case 'right':
+            return { top, start: end + gap };
+        default:
+            return { top: bottom + gap, start };
+    }
 }
+
+/** Where an overlay opens relative to what opened it. */
+export type SchedulerOverlayPlacement = 'top' | 'bottom' | 'left' | 'right' | 'auto';
 
 /**
  * Overflow list of a dense cell, opened by the "+N more" link.
@@ -165,7 +201,7 @@ export class SchedulerMorePopover extends SchedulerOverlayBase {
     standalone: true,
     template: `
         @if (context().visible) {
-            <div class="p-scheduler-overlay-panel" role="dialog" tabindex="-1" (keydown)="onKeydown($event)" [style.inset-block-start.px]="offset()?.top" [style.inset-inline-start.px]="offset()?.start">
+            <div class="p-scheduler-overlay-panel" role="dialog" tabindex="-1" [attr.data-placement]="above() ? 'top' : null" (keydown)="onKeydown($event)" [style.inset-block-start.px]="offset()?.top" [style.inset-inline-start.px]="offset()?.start">
                 <ng-content>
                     <div class="p-scheduler-overlay-title">{{ title() }}</div>
                     <div class="p-scheduler-overlay-time">{{ timeText() }}</div>
@@ -202,8 +238,8 @@ export class SchedulerQuickInfo extends SchedulerOverlayBase {
             event: target?.event,
             visible: target != null,
             close: () => this.state.quickInfo.set(null),
-            edit: () => this.state.requestEdit(target?.event),
-            remove: () => this.state.requestRemove(target?.event)
+            edit: () => this.state.requestQuickInfoEdit(target?.event),
+            remove: () => this.state.requestQuickInfoDelete(target?.event)
         };
     });
 
@@ -229,7 +265,7 @@ export class SchedulerQuickInfo extends SchedulerOverlayBase {
     standalone: true,
     template: `
         @if (context().visible) {
-            <div class="p-scheduler-overlay-panel" role="dialog" tabindex="-1" (keydown)="onKeydown($event)" [style.inset-block-start.px]="offset()?.top" [style.inset-inline-start.px]="offset()?.start">
+            <div class="p-scheduler-overlay-panel" role="dialog" tabindex="-1" [attr.data-placement]="above() ? 'top' : null" (keydown)="onKeydown($event)" [style.inset-block-start.px]="offset()?.top" [style.inset-inline-start.px]="offset()?.start">
                 <ng-content>
                     <div class="p-scheduler-overlay-title">{{ title() }}</div>
                 </ng-content>
@@ -248,6 +284,11 @@ export class SchedulerQuickInfo extends SchedulerOverlayBase {
 export class SchedulerPopover extends SchedulerOverlayBase {
     protected override target() {
         return this.state.eventPopover();
+    }
+
+    /** The event popover is the one the root places, through `eventPopoverPosition`. */
+    protected override placement() {
+        return this.state.eventPopoverPosition();
     }
 
     override close(): void {

@@ -277,7 +277,178 @@ export interface SchedulerAppointmentSlot {
      * How many are already taken. A slot with `booked >= capacity` is drawn as full.
      */
     booked?: number;
+    /**
+     * Identifier of the window, so a booking output can name the slot it came from.
+     */
+    id?: string | number;
+    /**
+     * What the viewer's own relationship with the window is.
+     *
+     * `booked` is the one the component cannot work out for itself — capacity says how many places
+     * are left, not whether THIS person already took one — and it is what turns an activation into a
+     * cancellation instead of a second booking.
+     */
+    status?: 'available' | 'booked' | 'closed';
+    /**
+     * Free-form payload, handed straight back on `(slotBook)` and `(slotCancel)`.
+     */
+    meta?: Record<string, unknown>;
 }
+
+/**
+ * What `(slotBook)` and `(slotCancel)` hand over.
+ *
+ * @group Interface
+ */
+export interface SchedulerSlotBookEvent {
+    /**
+     * Browser event that triggered it: a mouse event from a click, a keyboard event when the slot
+     * was activated with Enter or space.
+     */
+    originalEvent: MouseEvent | KeyboardEvent;
+    /**
+     * The window, as it was bound.
+     */
+    slot: SchedulerAppointmentSlot;
+    /**
+     * Start of the window, with the target timezone undone.
+     */
+    start: Date;
+    /**
+     * End of the window, with the target timezone undone.
+     */
+    end: Date;
+}
+
+/**
+ * How the hour is written.
+ *
+ * A calendar's locale decides this most of the time, and `auto` leaves it to the locale on purpose.
+ * The rest of the options exist because a product sometimes has to override the culture — an
+ * airline's 24-hour clock in an American office — or because a surface is too small for the full
+ * form: a month cell has room for `9 - 10 AM` and not for `9:00 AM - 10:00 AM`.
+ *
+ * @group Interface
+ */
+export interface SchedulerTimeFormatOptions {
+    /**
+     * `12h`, `24h`, or `auto` to let the locale decide.
+     * @defaultValue auto
+     */
+    format?: '12h' | '24h' | 'auto';
+    /**
+     * Whether a whole hour prints its minutes: `9 AM` or `9:00 AM`.
+     * @defaultValue always
+     */
+    showMinutes?: 'always' | 'non-zero';
+    /**
+     * Whether the meridiem is printed at all. Dropping it does not change the clock — a 12-hour
+     * format without AM stays `2`, it does not become `14`.
+     * @defaultValue true
+     */
+    showAMPM?: boolean;
+    /**
+     * How a `start - end` range is written. `compact` drops the repeated meridiem, `locale` hands the
+     * whole range to `Intl`.
+     * @defaultValue full
+     */
+    rangeDisplay?: 'full' | 'compact' | 'locale';
+}
+
+/**
+ * How dense the chrome is drawn.
+ *
+ * Not a font size: it changes the paddings and the row heights, which is what decides how many rows
+ * fit on a screen. `compact` is for an operations wall, `comfortable` for a page a person reads.
+ *
+ * @group Types
+ */
+export type SchedulerDensity = 'comfortable' | 'compact';
+
+/**
+ * Which occurrences of a series an edit is meant to touch.
+ *
+ * @group Types
+ */
+export type SchedulerRecurrenceScope = 'occurrence' | 'series' | 'following';
+
+/**
+ * How the Scheduler behaves when an interaction changes an event that belongs to a series.
+ *
+ * @group Interface
+ */
+export interface SchedulerRecurrenceEditOptions {
+    /**
+     * Scope reported when the page does not choose one.
+     * @defaultValue occurrence
+     */
+    defaultScope?: SchedulerRecurrenceScope;
+    /**
+     * Whether a drag or a resize on an occurrence asks before it is applied. With it on, the change
+     * is held and `(recurrenceEdit)` is emitted so the page can ask the question; with it off the
+     * change is applied under `defaultScope`.
+     * @defaultValue true
+     */
+    askOnDrag?: boolean;
+    /**
+     * Whether deleting an occurrence reports through `(recurrenceDelete)` rather than
+     * `(eventRemove)`.
+     * @defaultValue true
+     */
+    askOnDelete?: boolean;
+}
+
+/**
+ * What `(recurrenceEdit)` and `(recurrenceDelete)` hand over.
+ *
+ * @group Interface
+ */
+export interface SchedulerRecurrenceEditEvent {
+    /**
+     * The occurrence the user acted on, with its own instants.
+     */
+    occurrence: SchedulerEvent;
+    /**
+     * The series it belongs to, as it was bound — the event that carries the `rrule`.
+     */
+    series: SchedulerEvent;
+    /**
+     * Instant the occurrence was generated for, which is the key an exception is stored under.
+     *
+     * Not the same as an occurrence's own `recurrenceId` field, which holds the id of its series.
+     */
+    occurrenceStart: Date;
+    /**
+     * Scope the Scheduler is reporting under, from `recurrenceEdit.defaultScope`.
+     */
+    scope: SchedulerRecurrenceScope;
+    /**
+     * Proposed start, when the report comes from a drag or a resize.
+     */
+    start?: Date;
+    /**
+     * Proposed end, when the report comes from a drag or a resize.
+     */
+    end?: Date;
+    /**
+     * Applies the change under a scope, which is what the page calls once it has asked.
+     */
+    apply: (scope: SchedulerRecurrenceScope) => void;
+    /**
+     * Drops the held change and puts the occurrence back where it was.
+     */
+    revert: () => void;
+}
+
+/**
+ * How the columns of the grouped resource views are sized.
+ *
+ * `auto` fits them to the container until there are more than the overflow threshold, and scrolls
+ * from there; `fit` always divides the container; `fixed` always uses the declared width.
+ *
+ * @group Types
+ */
+export type SchedulerHorizontalResourceColumnMode = 'auto' | 'fit' | 'fixed';
 
 /**
  * How available slots are drawn.

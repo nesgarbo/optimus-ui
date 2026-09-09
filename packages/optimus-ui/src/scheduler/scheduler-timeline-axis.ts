@@ -1,4 +1,4 @@
-import type { SchedulerEvent, SchedulerLayoutItem, SchedulerTimelineScale } from '@openng/optimus-ui/types/scheduler';
+import type { SchedulerEvent, SchedulerLayoutItem, SchedulerTimeFormatOptions, SchedulerTimelineScale } from '@openng/optimus-ui/types/scheduler';
 import { addDays, addMinutes, dayKey, eachDay, formatTime, isToday, startOfDay, startOfMonth, timeSlots, type SchedulerRange } from './scheduler-date';
 
 /**
@@ -85,6 +85,8 @@ export interface SchedulerTimelineAxisOptions {
     firstDayOfWeek: number;
     /** Locale every label is formatted in. */
     locale?: string;
+    /** How the hour is written on the time-based scales. */
+    timeFormat?: SchedulerTimeFormatOptions;
     /**
      * Now, in the zone being rendered.
      *
@@ -130,7 +132,7 @@ function timeColumns(options: SchedulerTimelineAxisOptions): SchedulerTimelineSl
                 key: `${dayKey(day)}|${slot.minutes}`,
                 start,
                 end: addMinutes(start, slotMinutes),
-                label: formatTime(start, locale),
+                label: formatTime(start, locale, options.timeFormat),
                 major: slot.major,
                 today: isToday(day, options.now)
             });

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import type { SchedulerViewType } from '@openng/optimus-ui/types/scheduler';
-import { dayKey, isToday, toDate } from './scheduler-date';
+import type { SchedulerEvent, SchedulerViewType } from '@openng/optimus-ui/types/scheduler';
+import { dayKey, eachDay, isToday, toDate } from './scheduler-date';
 import { groupByDay } from './scheduler-layout';
 import { SchedulerViewBase } from './scheduler-view-base';
 
@@ -90,7 +90,11 @@ export class SchedulerAgendaView extends SchedulerViewBase {
         const { start, end } = this.state.range();
         const byDay = groupByDay(this.state.visibleEvents(), this.state.defaultEventDuration());
 
-        const result = [...byDay.entries()]
+        // Con showEmptyDays cada dia del rango entra, tenga algo o no: un hueco explicito dice "aqui
+        // no hay nada" donde una lista que salta el dia deja al lector contando fechas.
+        const entries = this.state.showEmptyDays() ? withEmptyDays(byDay, start, end) : [...byDay.entries()];
+
+        const result = entries
             .filter(([key]) => {
                 // groupByDay lists an event under every day it touches, the ones outside the range
                 // included: an event that starts before the range must not smuggle in its own
@@ -154,4 +158,21 @@ export class SchedulerAgendaView extends SchedulerViewBase {
     private bindCellRaw(key: string, context: any) {
         return { key, context: { ...context, $implicit: context, context } };
     }
+}
+
+/**
+ * The days of a range, each with whatever the grouping found for it.
+ *
+ * Built from the range and not from the events, which is the whole point: a day nothing happens on
+ * has no entry to iterate, and it is exactly the day `showEmptyDays` wants to draw.
+ */
+function withEmptyDays(byDay: Map<string, SchedulerEvent[]>, start: Date, end: Date): [string, SchedulerEvent[]][] {
+    const entries: [string, SchedulerEvent[]][] = [];
+
+    for (const day of eachDay(start, end)) {
+        const key = dayKey(day);
+        entries.push([key, byDay.get(key) ?? []]);
+    }
+
+    return entries;
 }

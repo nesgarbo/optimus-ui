@@ -24,6 +24,11 @@ import { DEMO_CATEGORIES, DEMO_DATE, DEMO_EVENTS, DEMO_RESOURCES } from './demo-
                 trailing "Unassigned" column instead of disappearing. <i>resourceColumnMinWidth</i> sets the floor for a resource column, which needs to be narrower than a day column: a week of six resources is 42 of them.
             </p>
             <p>The same grouping is available on a plain <i>day</i> or <i>week</i> view through <i>groupByResource</i> and <i>groupByDate</i>, for a page that switches between "my week" and "the team's week" without changing the view name.</p>
+            <p>
+                How wide those columns get is <i>horizontalResourceColumnMode</i>: <i>auto</i> divides the container until there are more columns than <i>horizontalResourceOverflowThreshold</i> and then falls back to
+                <i>horizontalResourceMinColumnWidth</i> and scrolls, <i>fit</i> always divides, <i>fixed</i> always uses <i>horizontalResourceColumnWidth</i>. <i>horizontalResourceDayMinWidth</i> is the floor for the DATE columns inside a resource,
+                which are a different measurement from the resource columns themselves.
+            </p>
         </app-docsectiontext>
         <div class="card">
             <p-scheduler-root
@@ -38,6 +43,10 @@ import { DEMO_CATEGORIES, DEMO_DATE, DEMO_EVENTS, DEMO_RESOURCES } from './demo-
                 [dayEndHour]="18"
                 resourceColumnMinWidth="4.5rem"
                 [maxEventsPerCell]="3"
+                horizontalResourceColumnMode="auto"
+                [horizontalResourceOverflowThreshold]="6"
+                [horizontalResourceMinColumnWidth]="150"
+                [horizontalResourceDayMinWidth]="120"
             >
                 <p-scheduler-header>
                     <p-scheduler-navigation />

@@ -1101,7 +1101,7 @@ export const style = /*css*/ `
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        min-block-size: calc(var(--p-scheduler-timeline-rows, 1) * dt('scheduler.resource.area.row.height'));
+        min-block-size: calc(var(--p-scheduler-timeline-rows, 1) * var(--p-scheduler-timeline-row-height, dt('scheduler.resource.area.row.height')));
         padding: dt('scheduler.resource.area.row.padding');
         border-bottom: 1px solid dt('scheduler.border.color');
     }
@@ -1220,13 +1220,20 @@ export const style = /*css*/ `
        at a third of its size as soon as the timeline needed to scroll. */
     .p-scheduler-timeline-lane,
     .p-scheduler-timeline-header,
-    .p-scheduler-timeline-tier {
+    .p-scheduler-timeline-tier,
+    .p-scheduler-timeline-body {
         inline-size: max(100%, calc(var(--p-scheduler-timeline-cols, 1) * dt('scheduler.timeline.slot.width')));
+    }
+
+    /* El cuerpo es el contenedor de posicion de la linea de ahora: sin esto el absolute se escapa al
+       primer ancestro posicionado —la pagina— y la linea cruza el documento entero. */
+    .p-scheduler-timeline-body {
+        position: relative;
     }
 
     .p-scheduler-timeline-lane {
         position: relative;
-        min-block-size: calc(var(--p-scheduler-timeline-rows, 1) * dt('scheduler.timeline.row.height'));
+        min-block-size: calc(var(--p-scheduler-timeline-rows, 1) * var(--p-scheduler-timeline-row-height, dt('scheduler.timeline.row.height')));
         border-bottom: 1px solid dt('scheduler.border.color');
     }
 
@@ -1406,6 +1413,125 @@ export const style = /*css*/ `
     .p-scheduler-disabled {
         pointer-events: none;
         opacity: 0.6;
+    }
+
+    /* Con data-placement=top el panel se ancla por su BASE al borde de arriba del evento: su alto no
+       se conoce al calcular el offset, y trasladarlo el 100% de si mismo lo resuelve sin medir. */
+    .p-scheduler-overlay-panel[data-placement='top'] {
+        transform: translateY(-100%);
+    }
+
+    /* La vertical de ahora en el timeline: mismo color que la horizontal de la rejilla, porque son
+       el mismo hecho en otro eje. Por encima de las celdas y por debajo de los eventos. */
+    .p-scheduler-timeline-now-indicator {
+        position: absolute;
+        inset-block: 0;
+        inline-size: 0;
+        border-inline-start: 2px solid dt('scheduler.now.indicator.color');
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    /* eventShell=none quita la CAJA del evento y nada mas: la superficie sigue posicionada, sigue
+       siendo enfocable y sigue anclando los overlays, porque eso es del componente. Lo que se va es
+       lo que la pagina va a dibujar ella. */
+    .p-scheduler[data-event-shell='none'] .p-scheduler-time-grid-event,
+    .p-scheduler[data-event-shell='none'] .p-scheduler-all-day-event,
+    .p-scheduler[data-event-shell='none'] .p-scheduler-month-event,
+    .p-scheduler[data-event-shell='none'] .p-scheduler-timeline-event,
+    .p-scheduler[data-event-shell='none'] .p-scheduler-agenda-event {
+        background: transparent;
+        border: 0;
+        padding: 0;
+        box-shadow: none;
+        color: inherit;
+    }
+
+    /* ── Density and lane sizing ──────────────────────────────────────────── */
+
+    /* compact does not change the type, it changes the HEIGHTS, which is what decides how many rows
+       fit on a screen. The measurements are written out here rather than declared as custom
+       properties, because in this repo a stylesheet consumes variables and a component host is what
+       sets them. */
+    .p-scheduler[data-density='compact'] .p-scheduler-time-gutter-slot,
+    .p-scheduler[data-density='compact'] .p-scheduler-time-grid-cell,
+    .p-scheduler[data-density='compact'] .p-scheduler-work-cell {
+        block-size: 1.375rem;
+    }
+
+    .p-scheduler[data-density='compact'] .p-scheduler-all-day-row {
+        min-height: calc(var(--p-scheduler-all-day-rows, 1) * 1.125rem);
+    }
+
+    .p-scheduler[data-density='compact'] .p-scheduler-agenda-event {
+        padding: 0.25rem 0.5rem;
+        margin-block: 0.125rem;
+    }
+
+    .p-scheduler[data-density='compact'] .p-scheduler-month-cell {
+        min-height: calc(dt('scheduler.month.cell.min.height') * 0.75 + var(--p-scheduler-month-rows, 1) * 1.125rem);
+    }
+
+    .p-scheduler[data-density='compact'] .p-scheduler-day-header-cell,
+    .p-scheduler[data-density='compact'] .p-scheduler-resource-column-header,
+    .p-scheduler[data-density='compact'] .p-scheduler-resource {
+        padding-block: 0.125rem;
+    }
+
+    /* Without rowAutoHeight a lane is ONE row tall and the rest is clipped: that is what keeps every
+       resource the same height on an operations wall, where comparing lanes matters more than seeing
+       every overlap. */
+    .p-scheduler:not([data-row-auto-height]) .p-scheduler-timeline-lane {
+        min-block-size: var(--p-scheduler-timeline-row-height, dt('scheduler.timeline.row.height'));
+        block-size: var(--p-scheduler-timeline-row-height, dt('scheduler.timeline.row.height'));
+        overflow: hidden;
+    }
+
+    .p-scheduler:not([data-row-auto-height]) .p-scheduler-resource {
+        min-block-size: var(--p-scheduler-timeline-row-height, dt('scheduler.resource.area.row.height'));
+        block-size: var(--p-scheduler-timeline-row-height, dt('scheduler.resource.area.row.height'));
+    }
+
+    /* A group lane reads differently from a resource lane: without that, a collapsible hierarchy
+       looks like a flat list with indentation. */
+    .p-scheduler-resource[data-group] {
+        font-weight: 600;
+        background: dt('scheduler.weekday.background');
+    }
+
+    .p-scheduler-resource-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        inline-size: 1rem;
+        block-size: 1rem;
+        flex: 0 0 auto;
+        border: 0;
+        padding: 0;
+        background: transparent;
+        color: inherit;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .p-scheduler-resource-toggle::before {
+        content: '';
+        inline-size: 0.375rem;
+        block-size: 0.375rem;
+        border-inline-end: 2px solid currentColor;
+        border-block-end: 2px solid currentColor;
+        /* The tip rotates rather than swapping glyph: one arrow per state is two things to keep in
+           step, and in RTL the closed one points the wrong way. */
+        transform: rotate(-45deg);
+        transition: transform 0.15s ease;
+    }
+
+    .p-scheduler-resource-toggle[aria-expanded='true']::before {
+        transform: rotate(45deg);
+    }
+
+    .p-scheduler[data-rtl] .p-scheduler-resource-toggle[aria-expanded='false']::before {
+        transform: rotate(135deg);
     }
 
     /* ── Printing ────────────────────────────────────────────────────────── */

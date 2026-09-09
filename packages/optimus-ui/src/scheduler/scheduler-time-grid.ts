@@ -29,7 +29,7 @@ import { SchedulerViewBase } from './scheduler-view-base';
             [attr.data-grouping]="grouping()"
             [attr.data-business-hours]="hasBusinessHours() ? '' : null"
             [style.--p-scheduler-columns]="columns().length"
-            [style.--p-scheduler-column-min-width]="columnMinWidth()"
+            [style.--p-scheduler-column-min-width]="dayMinWidth() ?? columnMinWidth()"
         >
             <!-- ── Sticky head: the groups band and the column band live INSIDE one sticky
                  element. Two sticky siblings with the same inset-block-start land in the same
@@ -93,7 +93,7 @@ import { SchedulerViewBase } from './scheduler-view-base';
             </div>
 
             <!-- ── All-day band ───────────────────────────────────────────────────────────── -->
-            @if (allDayRows().length || alwaysShowAllDay()) {
+            @if (allDayRows().length || state.alwaysShowAllDay()) {
                 <div class="p-scheduler-all-day-row" data-slot="scheduler-all-day-row" [style.--p-scheduler-all-day-rows]="allDayRowCount()">
                     <div class="p-scheduler-all-day-gutter">{{ labels().allDay }}</div>
                     <div class="p-scheduler-all-day-lanes">
@@ -207,8 +207,8 @@ import { SchedulerViewBase } from './scheduler-view-base';
                                 [attr.aria-label]="slot.ariaLabel"
                                 [attr.aria-disabled]="slot.full ? 'true' : null"
                                 [attr.tabindex]="slot.full ? -1 : 0"
-                                (click)="onSlotClick($event, slot.slot.start, slot.slot.end, slot.full)"
-                                (keydown)="onSlotKeydown($event, slot.slot.start, slot.slot.end, slot.full)"
+                                (click)="onSlotActivate($event, slot)"
+                                (keydown)="onSlotActivateKeydown($event, slot)"
                             >
                                 @if (slot.label) {
                                     <span class="p-scheduler-appointment-slot-label">{{ slot.label }}</span>
@@ -259,7 +259,7 @@ import { SchedulerViewBase } from './scheduler-view-base';
                             </div>
                         }
 
-                        @if (column.today) {
+                        @if (column.today && state.nowIndicator()) {
                             <div class="p-scheduler-now-indicator" aria-hidden="true" [style.inset-block-start.%]="nowOffset() * 100"></div>
                         }
                     </div>
@@ -276,6 +276,12 @@ export class SchedulerTimeGridView extends SchedulerViewBase {
     readonly viewType = input.required<SchedulerViewType>();
 
     /** Whether the all-day strip stays visible even with nothing in it. */
+    /**
+     * Whether the all-day band stays visible when it is empty.
+     *
+     * @deprecated Set `alwaysShowAllDay` on `p-scheduler-root` instead. The renderer is internal, so
+     * this input was never reachable from an application; it is the root's value that is used.
+     */
     readonly alwaysShowAllDay = input(true);
 
     /** @internal */
@@ -314,7 +320,7 @@ export class SchedulerTimeGridView extends SchedulerViewBase {
         const minutes = this.state.slotMinutes();
         return timeSlots(start, end, minutes).map((slot) => {
             const date = addMinutes(startOfDay(this.state.date()), slot.minutes);
-            const label = formatTime(date, this.locale());
+            const label = formatTime(date, this.locale(), this.state.timeFormat());
             return {
                 ...slot,
                 label,
@@ -372,7 +378,25 @@ export class SchedulerTimeGridView extends SchedulerViewBase {
     private readonly dateCount = computed(() => eachDay(this.state.range().start, this.state.range().end).length);
 
     /** Minimum width of a column: resource columns are narrower than day columns by nature. */
-    readonly columnMinWidth = computed(() => (this.grouping() === 'none' ? null : (this.state.resourceColumnMinWidth() ?? '5rem')));
+    readonly columnMinWidth = computed(() => {
+        if (this.grouping() === 'none') return null;
+
+        // El modo horizontal decide: ajustar al contenedor mientras las columnas quepan, y pasar al
+        // minimo —o sea, desbordar y desplazar— cuando son mas que el umbral.
+        return this.state.horizontalResourceColumnWidth(this.columns().length) ?? '5rem';
+    });
+
+    /**
+     * Minimum width of a DATE column in a resource-first grouped view.
+     *
+     * A resource with five dates inside it is five columns that have to stay readable on their own,
+     * and they are not the same measurement as the resource columns of a date-first view.
+     */
+    readonly dayMinWidth = computed(() => {
+        const value = this.state.horizontalResourceDayMinWidth();
+
+        return this.grouping() === 'resource' && value != null ? `${value}px` : null;
+    });
 
     /** @internal */
     readonly resourceColumnHeaderDef = computed(() => this.def('resourceColumnHeader'));
@@ -435,10 +459,10 @@ export class SchedulerTimeGridView extends SchedulerViewBase {
                     key: `${dateKey}|${resource?.id ?? ''}|${slot.minutes}`,
                     start: cellStart,
                     end: cellEnd,
-                    label: formatTime(cellStart, this.locale()),
+                    label: formatTime(cellStart, this.locale(), this.state.timeFormat()),
                     // The empty cell is focusable, so it needs a name: without one a screen reader
                     // announces "button" forty times per column.
-                    ariaLabel: `${cellStart.toLocaleDateString(this.locale(), { weekday: 'long', day: 'numeric', month: 'long' })} ${formatTime(cellStart, this.locale())}${resource ? ` · ${resource.name ?? resource.id}` : ''}`,
+                    ariaLabel: `${cellStart.toLocaleDateString(this.locale(), { weekday: 'long', day: 'numeric', month: 'long' })} ${formatTime(cellStart, this.locale(), this.state.timeFormat())}${resource ? ` · ${resource.name ?? resource.id}` : ''}`,
                     major: slot.major,
                     business: inBusiness,
                     binding: this.bindCell(cellStart, [], { ...cellExtra, label: '' })

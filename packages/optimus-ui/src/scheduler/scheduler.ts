@@ -8,14 +8,20 @@ import type {
     SchedulerBlockedInterval,
     SchedulerCategory,
     SchedulerDateSelectionMode,
+    SchedulerDensity,
     SchedulerDragPayload,
     SchedulerDropInfo,
     SchedulerEvent,
     SchedulerEventClickEvent,
+    SchedulerHorizontalResourceColumnMode,
     SchedulerPassThrough,
     SchedulerRangeChangeEvent,
+    SchedulerRecurrenceEditEvent,
+    SchedulerRecurrenceEditOptions,
     SchedulerResource,
+    SchedulerSlotBookEvent,
     SchedulerSlotClickEvent,
+    SchedulerTimeFormatOptions,
     SchedulerViewType
 } from '@openng/optimus-ui/types/scheduler';
 import { startOfDay } from './scheduler-date';
@@ -43,6 +49,11 @@ import { SchedulerStyle } from './style/schedulerstyle';
         '[attr.data-rtl]': 'rtl() ? "" : null',
         '[attr.data-interacting]': 'schedulerState.interactingEventId() != null ? "" : null',
         '[style.--p-scheduler-timeline-slot-width]': 'timelineSlotWidth() != null ? timelineSlotWidth() + "px" : null',
+        '[attr.data-density]': 'density()',
+        '[attr.data-event-shell]': 'eventShell()',
+        '[attr.aria-label]': 'ariaLabel()',
+        '[style.--p-scheduler-timeline-row-height]': 'resourceRowHeight() != null ? resourceRowHeight() + "px" : null',
+        '[attr.data-row-auto-height]': 'rowAutoHeight() ? "" : null',
         '[attr.data-disabled]': 'disabled() ? "" : null',
         '[attr.aria-busy]': 'loading()'
     },
@@ -422,10 +433,204 @@ export class Scheduler extends BaseComponent<SchedulerPassThrough> {
      */
     readonly eventClick = output<SchedulerEventClickEvent>();
     /**
+     * How the hour is written across the gutter, the event labels and the overlays.
+     *
+     * Left unset the locale decides, which is right nearly always. It is here for the cases where a
+     * product has to override the culture, or where a surface is too small for the full form.
+     * @group Props
+     */
+    readonly timeFormat = input<SchedulerTimeFormatOptions | undefined>(undefined);
+    /**
+     * Calendar the dates are formatted in, as a Unicode calendar identifier: `islamic`, `buddhist`,
+     * `hebrew`, `japanese`. The arithmetic stays Gregorian; what changes is what the labels say.
+     * @group Props
+     */
+    readonly calendar = input<string | undefined>(undefined);
+    /**
+     * Accessible name of the whole Scheduler.
+     *
+     * Worth setting when a page holds more than one, or when nothing around it says which schedule
+     * this is: a screen reader announces a region, and "application" is not a name.
+     * @group Props
+     */
+    readonly ariaLabel = input<string | undefined>(undefined);
+    /**
+     * How the range title is written, as `Intl.DateTimeFormat` options.
+     *
+     * Unset, each view titles itself the way it reads best — a week as `8 - 14 September`, a month as
+     * `September 2026`. Set it when the product has its own wording for that line.
+     * @group Props
+     */
+    readonly dateDisplay = input<Intl.DateTimeFormatOptions | undefined>(undefined);
+    /**
+     * Whether the Scheduler draws the visible box around an event.
+     *
+     * `none` removes the background, the border and the padding and keeps everything else — the
+     * positioning, the pointer and keyboard activation, the focus ring, the selected and dragging
+     * state, the resize handles and the overlay anchor — which is what a page wants when its own
+     * component draws the card.
+     * @defaultValue default
+     * @group Props
+     */
+    readonly eventShell = input<'default' | 'none'>('default');
+    /**
+     * Numbering system the digits are printed in, as a Unicode identifier: `arab`, `deva`, `latn`.
+     * @group Props
+     */
+    readonly numberingSystem = input<string | undefined>(undefined);
+    /**
+     * How dense the chrome is drawn. `compact` trades padding for rows on screen.
+     * @defaultValue comfortable
+     * @group Props
+     */
+    readonly density = input<SchedulerDensity>('comfortable');
+    /**
+     * Whether the line marking the current time is drawn in the time grid and the timeline.
+     * @defaultValue true
+     * @group Props
+     */
+    readonly nowIndicator = input(true, { transform: booleanAttribute });
+    /**
+     * Whether the agenda lists days that hold nothing.
+     * @defaultValue false
+     * @group Props
+     */
+    readonly showEmptyDays = input(false, { transform: booleanAttribute });
+    /**
+     * Whether the all-day band stays visible when it is empty, so the grid does not shift as you
+     * navigate between days.
+     * @defaultValue true
+     * @group Props
+     */
+    readonly alwaysShowAllDay = input(true, { transform: booleanAttribute });
+    /**
+     * Whether a resource group can be collapsed, which needs a `parentId` on the resources to mean
+     * anything.
+     * @defaultValue false
+     * @group Props
+     */
+    readonly resourcesExpandable = input(false, { transform: booleanAttribute });
+    /**
+     * Whether the groups start expanded. Only read until the user collapses something.
+     * @defaultValue true
+     * @group Props
+     */
+    readonly resourcesInitiallyExpanded = input(true, { transform: booleanAttribute });
+    /**
+     * Whether a group lane also draws the events of the resources under it, so a collapsed group
+     * still says how busy it is.
+     * @defaultValue false
+     * @group Props
+     */
+    readonly showAggregatedEvents = input(false, { transform: booleanAttribute });
+    /**
+     * Height of one timeline lane in pixels. Unset, the theme's token decides.
+     * @group Props
+     */
+    readonly resourceRowHeight = input<number | undefined>(undefined, { transform: (value: unknown) => (value == null ? undefined : numberAttribute(value)) });
+    /**
+     * Whether a lane grows to fit however many rows its overlapping events need, instead of
+     * scrolling inside a fixed height.
+     * @defaultValue false
+     * @group Props
+     */
+    readonly rowAutoHeight = input(false, { transform: booleanAttribute });
+    /**
+     * How the columns of the grouped resource views are sized.
+     * @defaultValue auto
+     * @group Props
+     */
+    readonly horizontalResourceColumnMode = input<SchedulerHorizontalResourceColumnMode>('auto');
+    /**
+     * Width of a resource column in pixels, used by the `fixed` mode.
+     * @group Props
+     */
+    readonly horizontalResourceColumnWidth = input<number | undefined>(undefined, { transform: (value: unknown) => (value == null ? undefined : numberAttribute(value)) });
+    /**
+     * Smallest a resource column may get before the view scrolls, in pixels.
+     * @group Props
+     */
+    readonly horizontalResourceMinColumnWidth = input<number | undefined>(undefined, { transform: (value: unknown) => (value == null ? undefined : numberAttribute(value)) });
+    /**
+     * Smallest a DATE column may get in a resource-first grouped view, in pixels.
+     * @group Props
+     */
+    readonly horizontalResourceDayMinWidth = input<number | undefined>(undefined, { transform: (value: unknown) => (value == null ? undefined : numberAttribute(value)) });
+    /**
+     * How many columns the `auto` mode fits before it stops dividing the container and scrolls.
+     * @defaultValue 6
+     * @group Props
+     */
+    readonly horizontalResourceOverflowThreshold = input(6, { transform: numberAttribute });
+    /**
+     * Where the event popover opens relative to the event.
+     * @defaultValue auto
+     * @group Props
+     */
+    readonly eventPopoverPosition = input<'top' | 'bottom' | 'left' | 'right' | 'auto'>('auto');
+    /**
+     * Whether the event popover opens on a coarse pointer, where there is no hover to open it with.
+     * @defaultValue false
+     * @group Props
+     */
+    readonly eventPopoverShowOnMobile = input(false, { transform: booleanAttribute });
+    /**
+     * How an interaction on an occurrence of a recurring series is reported.
+     *
+     * `true` turns on the default flow: an edit, a delete, a drop or a resize on an occurrence is
+     * reported through `(recurrenceEdit)`/`(recurrenceDelete)` with the series, the occurrence and an
+     * `apply(scope)`, so the page can ask "this appointment or the whole series?" — which is a
+     * question only the page can put to a user. Pass an object to choose the default scope or to
+     * exclude a flow.
+     * @defaultValue false
+     * @group Props
+     */
+    readonly recurrenceEdit = input<boolean | SchedulerRecurrenceEditOptions>(false);
+    /**
      * Fires when an empty slot is activated, which is how a new appointment starts.
      * @group Emits
      */
     readonly dateClick = output<SchedulerSlotClickEvent>();
+    /**
+     * Fires when an available appointment window is activated.
+     * @group Emits
+     */
+    readonly slotBook = output<SchedulerSlotBookEvent>();
+    /**
+     * Fires when a window the viewer already holds is activated, which is a cancellation.
+     * @group Emits
+     */
+    readonly slotCancel = output<SchedulerSlotBookEvent>();
+    /**
+     * Fires when the quick info opens for an event.
+     * @group Emits
+     */
+    readonly quickInfoShow = output<{ event: SchedulerEvent }>();
+    /**
+     * Fires when the quick info's edit action is used.
+     * @group Emits
+     */
+    readonly quickInfoEdit = output<{ event: SchedulerEvent }>();
+    /**
+     * Fires when the quick info's delete action is used.
+     * @group Emits
+     */
+    readonly quickInfoDelete = output<{ event: SchedulerEvent }>();
+    /**
+     * Fires when the context menu opens, with whatever it was opened over.
+     * @group Emits
+     */
+    readonly contextMenuShow = output<{ event?: SchedulerEvent; date?: Date; events?: SchedulerEvent[] }>();
+    /**
+     * Fires when a change touches an occurrence of a series and the scope has to be decided.
+     * @group Emits
+     */
+    readonly recurrenceEditRequest = output<SchedulerRecurrenceEditEvent>({ alias: 'recurrenceEdit' });
+    /**
+     * Fires when a delete touches an occurrence of a series.
+     * @group Emits
+     */
+    readonly recurrenceDelete = output<SchedulerRecurrenceEditEvent>();
     /**
      * Fires when the set of selected events changes.
      * @group Emits
@@ -630,7 +835,37 @@ export class Scheduler extends BaseComponent<SchedulerPassThrough> {
         emitEventClick: (originalEvent, event) => this.eventClick.emit({ originalEvent, event }),
         emitSlotClick: (originalEvent, start, end) => this.dateClick.emit({ originalEvent, start, end }),
         emitSelectionLimit: (maxSelection) => this.eventSelectionLimitReached.emit({ selectedIds: [...this.schedulerState.selectedEventIds()], maxSelection }),
-        emitSelectionChange: (events) => this.eventSelectionChange.emit({ selectedIds: events.map((event) => event.id), events })
+        emitSelectionChange: (events) => this.eventSelectionChange.emit({ selectedIds: events.map((event) => event.id), events }),
+        timeFormat: this.timeFormat,
+        dateDisplay: this.dateDisplay,
+        eventShell: this.eventShell,
+        calendar: this.calendar,
+        numberingSystem: this.numberingSystem,
+        density: this.density,
+        nowIndicator: this.nowIndicator,
+        showEmptyDays: this.showEmptyDays,
+        alwaysShowAllDay: this.alwaysShowAllDay,
+        resourcesExpandable: this.resourcesExpandable,
+        resourcesInitiallyExpanded: this.resourcesInitiallyExpanded,
+        showAggregatedEvents: this.showAggregatedEvents,
+        resourceRowHeight: this.resourceRowHeight,
+        rowAutoHeight: this.rowAutoHeight,
+        horizontalResourceColumnMode: this.horizontalResourceColumnMode,
+        horizontalResourceColumnWidth: this.horizontalResourceColumnWidth,
+        horizontalResourceMinColumnWidth: this.horizontalResourceMinColumnWidth,
+        horizontalResourceDayMinWidth: this.horizontalResourceDayMinWidth,
+        horizontalResourceOverflowThreshold: this.horizontalResourceOverflowThreshold,
+        eventPopoverPosition: this.eventPopoverPosition,
+        eventPopoverShowOnMobile: this.eventPopoverShowOnMobile,
+        recurrenceEdit: this.recurrenceEdit,
+        emitSlotBook: (payload) => this.slotBook.emit(payload),
+        emitSlotCancel: (payload) => this.slotCancel.emit(payload),
+        emitQuickInfoShow: (event) => this.quickInfoShow.emit({ event }),
+        emitQuickInfoEdit: (event) => this.quickInfoEdit.emit({ event }),
+        emitQuickInfoDelete: (event) => this.quickInfoDelete.emit({ event }),
+        emitContextMenuShow: (target) => this.contextMenuShow.emit({ event: target.event, date: target.date, events: target.events }),
+        emitRecurrenceEdit: (payload) => this.recurrenceEditRequest.emit(payload),
+        emitRecurrenceDelete: (payload) => this.recurrenceDelete.emit(payload)
     });
 
     /**

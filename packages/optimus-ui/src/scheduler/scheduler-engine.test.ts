@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { SchedulerEvent } from '@openng/optimus-ui/types/scheduler';
-import { addDays, addMonths, dayKey, daysBetween, formatTimeRange, navigate, startOfWeek, timeSlots, timelineScaleOf, toDate, viewRange } from './scheduler-date';
+import { addDays, addMonths, dayKey, daysBetween, formatTime, formatTimeRange, navigate, startOfWeek, timeSlots, timelineScaleOf, toDate, viewRange } from './scheduler-date';
 import { groupByDay, groupByResource, layoutRows, layoutTimeGrid } from './scheduler-layout';
 import { buildTimelineAxis, placeOnAxis } from './scheduler-timeline-axis';
 import { applyPendingChanges, readCellTarget, snapInstant } from './scheduler-drag';
@@ -599,6 +599,43 @@ describe('import and export', () => {
         const back = parseSchedule(JSON.stringify(payload));
         expect(back.events[0].start instanceof Date).toBe(true);
         expect(toDate(back.events[0].start).getTime()).toBe(new Date(2026, 8, 8, 9, 30).getTime());
+    });
+});
+
+describe('time format', () => {
+    const morning = new Date(2026, 8, 8, 9, 0);
+    const halfPast = new Date(2026, 8, 8, 9, 30);
+    const afternoon = new Date(2026, 8, 8, 14, 15);
+    // Algunas versiones de ICU separan el meridiem con U+202F: se normaliza antes de comparar.
+    const plain = (value: string) => value.replace(/\u202f/g, ' ');
+
+    it('24h prints the hour of the day and 12h the meridiem', () => {
+        expect(plain(formatTime(afternoon, 'en-US', { format: '24h' }))).toBe('14:15');
+        expect(plain(formatTime(afternoon, 'en-US', { format: '12h' }))).toBe('2:15 PM');
+    });
+
+    it('non-zero drops the minutes of a whole hour and keeps the rest', () => {
+        expect(plain(formatTime(morning, 'en-US', { format: '12h', showMinutes: 'non-zero' }))).toBe('9 AM');
+        expect(plain(formatTime(halfPast, 'en-US', { format: '12h', showMinutes: 'non-zero' }))).toBe('9:30 AM');
+    });
+
+    it('dropping the meridiem does NOT turn a 12-hour clock into a 24-hour one', () => {
+        // Lo que se quita es el sufijo: las 2 de la tarde siguen siendo "2", no "14".
+        expect(plain(formatTime(afternoon, 'en-US', { format: '12h', showAMPM: false }))).toBe('2:15');
+    });
+
+    it('a compact range drops the repeated meridiem, and keeps it when they differ', () => {
+        const sameHalf = plain(formatTimeRange(morning, new Date(2026, 8, 8, 10), 'en-US', { format: '12h', rangeDisplay: 'compact' }));
+        const crossing = plain(formatTimeRange(new Date(2026, 8, 8, 11), new Date(2026, 8, 8, 13), 'en-US', { format: '12h', rangeDisplay: 'compact' }));
+
+        expect(sameHalf).toBe('9:00 - 10:00 AM');
+        // 11 AM - 1 PM necesita los dos: recortarlo diria que la cita acaba a la una de la mañana.
+        expect(crossing).toBe('11:00 AM - 1:00 PM');
+    });
+
+    it('without options the locale decides, which is the behaviour that was there before', () => {
+        expect(plain(formatTimeRange(morning, halfPast, 'en-US'))).toBe('9:00 AM - 9:30 AM');
+        expect(formatTimeRange(morning, halfPast, 'es-ES')).toBe('9:00 - 9:30');
     });
 });
 

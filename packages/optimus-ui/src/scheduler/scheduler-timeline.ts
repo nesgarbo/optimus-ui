@@ -6,6 +6,7 @@ import { isResourceTimeline, timelineScaleOf, toDate } from './scheduler-date';
 import { layoutTimeGrid } from './scheduler-layout';
 import { buildTimelineAxis, placeOnAxis } from './scheduler-timeline-axis';
 import { SchedulerViewBase } from './scheduler-view-base';
+import type { SchedulerState } from './scheduler-state';
 
 /**
  * The timeline: time laid out left to right instead of top to bottom.
@@ -43,14 +44,33 @@ import { SchedulerViewBase } from './scheduler-view-base';
                     </div>
                     <div class="p-scheduler-resource-list" data-slot="scheduler-resource-list">
                         @for (lane of lanes(); track lane.key) {
-                            <div class="p-scheduler-resource" data-slot="scheduler-resource" [attr.data-resource-id]="lane.resource?.id" [attr.data-depth]="lane.depth" [attr.data-event-count]="lane.events.length">
-                                @if (resourceRowDef() ?? resourceDef(); as tpl) {
+                            <div
+                                class="p-scheduler-resource"
+                                data-slot="scheduler-resource"
+                                [attr.data-resource-id]="lane.resource?.id"
+                                [attr.data-depth]="lane.depth"
+                                [attr.data-event-count]="lane.events.length"
+                                [attr.data-group]="lane.context.group ? '' : null"
+                                [attr.data-expanded]="lane.context.group ? (lane.context.expanded ? '' : null) : null"
+                                [style.padding-inline-start.rem]="lane.depth ? lane.depth * 0.75 : null"
+                            >
+                                <!-- El desplegable va FUERA de la definicion: es el control del
+                                     componente y una plantilla propia no tiene que reimplementarlo
+                                     para no perderlo. -->
+                                @if (expandable() && lane.context.group) {
+                                    <button type="button" class="p-scheduler-resource-toggle" data-slot="scheduler-resource-toggle" [attr.aria-expanded]="lane.context.expanded" [attr.aria-label]="lane.title" (click)="lane.context.toggle()"></button>
+                                }
+                                @if (resourceRowDef() ?? (lane.context.group ? (resourceGroupDef() ?? resourceDef()) : resourceDef()); as tpl) {
                                     <ng-container *ngTemplateOutlet="tpl; context: lane.context" />
                                 } @else {
                                     <span class="p-scheduler-resource-dot" [style.background]="lane.resource?.color" aria-hidden="true"></span>
                                     <span class="p-scheduler-resource-label">{{ lane.title }}</span>
-                                    @if (lane.events.length) {
-                                        <span class="p-scheduler-resource-count" data-slot="scheduler-resource-aggregate-badge">{{ lane.events.length }}</span>
+                                    @if (lane.context.aggregateCount) {
+                                        @if (aggregateBadgeDef(); as badge) {
+                                            <ng-container *ngTemplateOutlet="badge; context: lane.context" />
+                                        } @else {
+                                            <span class="p-scheduler-resource-count" data-slot="scheduler-resource-aggregate-badge">{{ lane.context.aggregateCount }}</span>
+                                        }
                                     }
                                 }
                             </div>
@@ -102,6 +122,12 @@ import { SchedulerViewBase } from './scheduler-view-base';
                 </div>
 
                 <div class="p-scheduler-timeline-body" data-slot="scheduler-timeline-body">
+                    <!-- La linea de ahora cruza TODOS los carriles y va en el cuerpo, no dentro de
+                         uno: en horizontal el instante actual es una vertical, y repetirla por
+                         carril la partiria en los bordes de cada fila. -->
+                    @if (state.nowIndicator() && nowOffset() != null) {
+                        <div class="p-scheduler-timeline-now-indicator" data-slot="scheduler-now-indicator" aria-hidden="true" [style.inset-inline-start.%]="nowOffset()! * 100"></div>
+                    }
                     @for (lane of visibleLanes(); track lane.key) {
                         <div class="p-scheduler-timeline-lane" data-slot="scheduler-timeline-lane" [attr.data-resource-id]="lane.resource?.id" [style.--p-scheduler-timeline-rows]="lane.rowCount">
                             <div class="p-scheduler-timeline-cells">
@@ -214,6 +240,28 @@ export class SchedulerTimelineView extends SchedulerViewBase {
     readonly resourceRowDef = computed(() => this.def('resourceRow'));
     /** @internal */
     readonly resourceDef = computed(() => this.def('resource'));
+    /** @internal */
+    readonly resourceGroupDef = computed(() => this.def('resourceGroup'));
+    /** @internal */
+    readonly aggregateBadgeDef = computed(() => this.def('resourceAggregateBadge'));
+
+    /**
+     * Where the current instant sits along the axis, or `null` when it is outside the range.
+     *
+     * `position` and not a fraction of the range: the day and week scales skip the nights, so
+     * 22:00 on an axis that draws 07:00 to 19:00 is not 92% of the way across it.
+     */
+    readonly nowOffset = computed(() => {
+        const now = this.state.now();
+        const { start, end } = this.state.range();
+
+        if (now < start || now >= end) return null;
+
+        return this.axis().position(now);
+    });
+
+    /** Whether the rail offers the collapse gesture, which needs a hierarchy to mean anything. */
+    readonly expandable = computed(() => this.state.resourcesExpandable() && this.state.resources().some((resource) => resource.parentId != null));
 
     /** The axis of the active scale. */
     readonly axis = computed(() =>
@@ -223,6 +271,7 @@ export class SchedulerTimelineView extends SchedulerViewBase {
             slotMinutes: this.state.timelineSlotMinutes(),
             firstDayOfWeek: this.state.firstDayOfWeek(),
             locale: this.locale(),
+            timeFormat: this.state.timeFormat(),
             now: this.state.now()
         })
     );
@@ -314,15 +363,26 @@ export class SchedulerTimelineView extends SchedulerViewBase {
         const duration = this.state.defaultEventDuration();
         const interacting = this.state.interactingEventId();
 
-        const groups: { key: string; resource?: SchedulerResource; title: string; depth: number; events: SchedulerEvent[] }[] = this.grouped()
+        const groups: { key: string; resource?: SchedulerResource; title: string; depth: number; events: SchedulerEvent[]; aggregateCount?: number }[] = this.grouped()
             ? [
-                  ...this.state.resources().map((resource) => ({
-                      key: String(resource.id),
-                      resource,
-                      title: resource.name ?? String(resource.id),
-                      depth: resource.parentId != null ? 1 : 0,
-                      events: events.filter((event) => event.resourceId === resource.id)
-                  })),
+                  ...this.state.visibleResources().map((resource) => {
+                      const own = events.filter((event) => this.state.resourceIdsOf(event).includes(resource.id));
+                      const isGroup = this.state.isResourceGroup(resource.id);
+                      // Un grupo cuenta lo suyo Y lo de sus descendientes, que es lo que hace util un
+                      // grupo colapsado: dice cuanto hay debajo sin abrirlo. Y con showAggregatedEvents
+                      // tambien lo PINTA, en vez de dejar el carril del grupo vacio.
+                      const descendants = isGroup ? this.state.descendantResourceIds(resource.id) : [resource.id];
+                      const aggregated = isGroup ? events.filter((event) => this.state.resourceIdsOf(event).some((id) => descendants.includes(id))) : own;
+
+                      return {
+                          key: String(resource.id),
+                          resource,
+                          title: resource.name ?? String(resource.id),
+                          depth: this.state.resourceDepth(resource.id),
+                          events: isGroup && this.state.showAggregatedEvents() ? aggregated : own,
+                          aggregateCount: aggregated.length
+                      };
+                  }),
                   ...(() => {
                       const known = new Set(this.state.resources().map((r) => r.id));
                       const orphans = events.filter((event) => event.resourceId == null || !known.has(event.resourceId));
@@ -374,7 +434,7 @@ export class SchedulerTimelineView extends SchedulerViewBase {
                     row: item.event.id === interacting ? 0 : item.column,
                     ...this.bindEvent(item.event, { continuesBefore: item.continuesBefore, continuesAfter: item.continuesAfter }, group.key)
                 })),
-                context: laneContext(group)
+                context: laneContext(group, this.state)
             };
         });
     });
@@ -555,16 +615,21 @@ export class SchedulerTimelineView extends SchedulerViewBase {
  * template written as `let ctx` has to reach `ctx.title` and `ctx.count` the same way it does in the
  * month or the agenda. The resource itself stays available as `ctx.resource`.
  */
-function laneContext(group: { resource?: SchedulerResource; title: string; depth: number; events: SchedulerEvent[] }) {
+function laneContext(group: { resource?: SchedulerResource; title: string; depth: number; events: SchedulerEvent[]; aggregateCount?: number }, state?: SchedulerState) {
+    const id = group.resource?.id;
     const context = {
         resource: group.resource,
         title: group.title,
         depth: group.depth,
-        group: false,
-        expanded: true,
-        toggle: () => undefined,
+        group: id != null && state ? state.isResourceGroup(id) : false,
+        expanded: id != null && state ? state.isResourceExpanded(id) : true,
+        toggle: () => {
+            if (id != null) state?.toggleResource(id);
+        },
         events: group.events,
-        count: group.events.length
+        count: group.events.length,
+        aggregateCount: group.aggregateCount ?? group.events.length,
+        capacity: group.resource?.['capacity'] as number | undefined
     };
     return { ...context, $implicit: context, context };
 }

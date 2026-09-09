@@ -1,5 +1,5 @@
 import { Directive, EnvironmentInjector, TemplateRef, computed, inject, signal } from '@angular/core';
-import type { SchedulerEvent, SchedulerResource, SchedulerViewType } from '@openng/optimus-ui/types/scheduler';
+import type { SchedulerAppointmentSlot, SchedulerEvent, SchedulerResource, SchedulerViewType } from '@openng/optimus-ui/types/scheduler';
 import { SCHEDULER_CELL_CONTEXT, SCHEDULER_EVENT_CONTEXT, type SchedulerCellContext, type SchedulerEventContext } from './scheduler-context';
 import { dayKey, formatTimeRange, isToday, startOfDay, toDate } from './scheduler-date';
 import { SchedulerContextHost } from './scheduler-outlet';
@@ -162,7 +162,7 @@ export abstract class SchedulerViewBase {
         if (event.allDay) return this.state.labels().allDay;
         const start = toDate(event.start);
         const end = event.end != null ? toDate(event.end) : new Date(start.getTime() + this.state.defaultEventDuration() * 60_000);
-        return formatTimeRange(start, end, this.locale());
+        return formatTimeRange(start, end, this.locale(), this.state.timeFormat());
     }
 
     /** Splits the visible events into the all-day strip and the time grid. */
@@ -240,6 +240,28 @@ export abstract class SchedulerViewBase {
         if (disabled || (originalEvent.key !== 'Enter' && originalEvent.key !== ' ')) return;
         originalEvent.preventDefault();
         this.state.handleSlotClick(originalEvent, start, end);
+    }
+
+    /**
+     * Activation of an appointment window.
+     *
+     * It reports twice on purpose, and the two say different things: `dateClick` is "the user picked
+     * this interval", which a page listens to whether or not the interval happens to be a declared
+     * window, and `slotBook`/`slotCancel` is "the user acted on THIS window", with the window's own
+     * object and its metadata. A page that only wants the second ignores the first.
+     */
+    protected onSlotActivate(originalEvent: MouseEvent | KeyboardEvent, slot: { full: boolean; slot: SchedulerAppointmentSlot }): void {
+        if (slot.full && slot.slot.status !== 'booked') return;
+
+        this.state.handleSlotClick(originalEvent, toDate(slot.slot.start), toDate(slot.slot.end));
+        this.state.handleSlotBook(originalEvent, slot.slot);
+    }
+
+    /** Enter and space on an appointment window, which is announced as a button. */
+    protected onSlotActivateKeydown(originalEvent: KeyboardEvent, slot: { full: boolean; slot: SchedulerAppointmentSlot }): void {
+        if (originalEvent.key !== 'Enter' && originalEvent.key !== ' ') return;
+        originalEvent.preventDefault();
+        this.onSlotActivate(originalEvent, slot);
     }
 
     /** Pointer or focus entering an event surface, which is what opens the event popover. */

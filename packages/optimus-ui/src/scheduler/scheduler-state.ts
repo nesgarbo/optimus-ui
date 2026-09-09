@@ -5,10 +5,17 @@ import type {
     SchedulerBlockedInterval,
     SchedulerCategory,
     SchedulerDateSelectionMode,
+    SchedulerDensity,
     SchedulerDragPayload,
     SchedulerDropInfo,
     SchedulerEvent,
+    SchedulerHorizontalResourceColumnMode,
+    SchedulerRecurrenceEditEvent,
+    SchedulerRecurrenceEditOptions,
+    SchedulerRecurrenceScope,
     SchedulerResource,
+    SchedulerSlotBookEvent,
+    SchedulerTimeFormatOptions,
     SchedulerViewType
 } from '@openng/optimus-ui/types/scheduler';
 import { addDays, dayKey, formatTimeRange, navigate, startOfDay, timelineScaleOf, toDate, viewRange, type SchedulerRange } from './scheduler-date';
@@ -195,6 +202,36 @@ export interface SchedulerStateInputs {
     emitSlotClick: (originalEvent: MouseEvent | KeyboardEvent, start: Date, end: Date) => void;
     emitSelectionLimit: (max: number) => void;
     emitSelectionChange: (events: SchedulerEvent[]) => void;
+    timeFormat: Signal<SchedulerTimeFormatOptions | undefined>;
+    dateDisplay: Signal<Intl.DateTimeFormatOptions | undefined>;
+    eventShell: Signal<'default' | 'none'>;
+    calendar: Signal<string | undefined>;
+    numberingSystem: Signal<string | undefined>;
+    density: Signal<SchedulerDensity>;
+    nowIndicator: Signal<boolean>;
+    showEmptyDays: Signal<boolean>;
+    alwaysShowAllDay: Signal<boolean>;
+    resourcesExpandable: Signal<boolean>;
+    resourcesInitiallyExpanded: Signal<boolean>;
+    showAggregatedEvents: Signal<boolean>;
+    resourceRowHeight: Signal<number | undefined>;
+    rowAutoHeight: Signal<boolean>;
+    horizontalResourceColumnMode: Signal<SchedulerHorizontalResourceColumnMode>;
+    horizontalResourceColumnWidth: Signal<number | undefined>;
+    horizontalResourceMinColumnWidth: Signal<number | undefined>;
+    horizontalResourceDayMinWidth: Signal<number | undefined>;
+    horizontalResourceOverflowThreshold: Signal<number>;
+    eventPopoverPosition: Signal<'top' | 'bottom' | 'left' | 'right' | 'auto'>;
+    eventPopoverShowOnMobile: Signal<boolean>;
+    recurrenceEdit: Signal<boolean | SchedulerRecurrenceEditOptions>;
+    emitSlotBook: (payload: SchedulerSlotBookEvent) => void;
+    emitSlotCancel: (payload: SchedulerSlotBookEvent) => void;
+    emitQuickInfoShow: (event: SchedulerEvent) => void;
+    emitQuickInfoEdit: (event: SchedulerEvent) => void;
+    emitQuickInfoDelete: (event: SchedulerEvent) => void;
+    emitContextMenuShow: (target: SchedulerOverlayTarget) => void;
+    emitRecurrenceEdit: (payload: SchedulerRecurrenceEditEvent) => void;
+    emitRecurrenceDelete: (payload: SchedulerRecurrenceEditEvent) => void;
 }
 
 /**
@@ -269,7 +306,77 @@ export class SchedulerState {
     readonly labels = computed(() => this.inputs.labels());
 
     /** BCP 47 locale used to format every date the Scheduler prints. */
-    readonly locale = computed(() => this.inputs.locale());
+    /**
+     * The locale every label is formatted in, with the calendar and the numbering system folded in.
+     *
+     * They travel as Unicode extensions of the locale tag rather than as options on each formatter,
+     * because that is the only way they reach EVERY call — the month title, the weekday initials, the
+     * gutter, an event's time text — without every renderer having to know about them. A tag the
+     * platform rejects falls back to the plain locale: a Scheduler in the wrong digits beats one that
+     * throws while drawing.
+     */
+    readonly locale = computed(() => {
+        const locale = this.inputs.locale();
+        const calendar = this.inputs.calendar();
+        const numberingSystem = this.inputs.numberingSystem();
+
+        if (!calendar && !numberingSystem) return locale;
+
+        try {
+            return new Intl.Locale(locale ?? new Intl.DateTimeFormat().resolvedOptions().locale, {
+                ...(calendar ? { calendar } : {}),
+                ...(numberingSystem ? { numberingSystem } : {})
+            }).toString();
+        } catch {
+            return locale;
+        }
+    });
+
+    /** How the hour is written, or `undefined` to leave it to the locale. */
+    readonly timeFormat = computed(() => this.inputs.timeFormat());
+
+    /** How dense the chrome is drawn. */
+    readonly density = computed(() => this.inputs.density());
+
+    /** Whether the Scheduler draws the visible box around an event, or leaves it to the definition. */
+    readonly eventShell = computed(() => this.inputs.eventShell());
+
+    /** Whether the line marking the current time is drawn. */
+    readonly nowIndicator = computed(() => this.inputs.nowIndicator());
+
+    /** Whether the agenda lists days with nothing on them. */
+    readonly showEmptyDays = computed(() => this.inputs.showEmptyDays());
+
+    /** Whether the all-day band stays visible when it is empty. */
+    readonly alwaysShowAllDay = computed(() => this.inputs.alwaysShowAllDay());
+
+    /** Whether a resource group can be collapsed. */
+    readonly resourcesExpandable = computed(() => this.inputs.resourcesExpandable());
+
+    /** Whether a group lane also shows the events of the resources under it. */
+    readonly showAggregatedEvents = computed(() => this.inputs.showAggregatedEvents());
+
+    /** Height of one timeline lane in pixels, or `undefined` for the token's. */
+    readonly resourceRowHeight = computed(() => this.inputs.resourceRowHeight());
+
+    /** Whether a lane grows to fit the rows its events need. */
+    readonly rowAutoHeight = computed(() => this.inputs.rowAutoHeight());
+
+    /** Where an event popover opens. */
+    readonly eventPopoverPosition = computed(() => this.inputs.eventPopoverPosition());
+
+    /** Whether the event popover opens on a coarse pointer, where there is no hover. */
+    readonly eventPopoverShowOnMobile = computed(() => this.inputs.eventPopoverShowOnMobile());
+
+    /** How an interaction on an occurrence of a series is reported. */
+    readonly recurrenceEdit = computed<SchedulerRecurrenceEditOptions | null>(() => {
+        const value = this.inputs.recurrenceEdit();
+
+        if (!value) return null;
+        const options = value === true ? {} : value;
+
+        return { defaultScope: 'occurrence', askOnDrag: true, askOnDelete: true, ...options };
+    });
 
     /** Height of one row of the time grid, in minutes. */
     readonly slotMinutes = computed(() => this.inputs.slotMinutes());
@@ -312,6 +419,115 @@ export class SchedulerState {
 
     /** The resources, as bound. */
     readonly resources = computed(() => this.inputs.resources());
+
+    /**
+     * Ids of the groups the user has collapsed.
+     *
+     * Collapsed rather than expanded: a resource the page has not heard of yet is expanded, so a rail
+     * that grows while the user is looking at it does not spring shut. `resourcesInitiallyExpanded`
+     * being false seeds it with every group, once, from the first read.
+     */
+    private readonly collapsedResources = signal<Set<string | number> | null>(null);
+
+    /** Which resources have children, indexed by id. */
+    private readonly resourceGroups = computed(() => {
+        const parents = new Set<string | number>();
+
+        for (const resource of this.inputs.resources()) {
+            if (resource.parentId != null) parents.add(resource.parentId);
+        }
+
+        return parents;
+    });
+
+    /** Whether a resource has resources under it. */
+    isResourceGroup(id: string | number): boolean {
+        return this.resourceGroups().has(id);
+    }
+
+    /** Whether a group is showing its children. */
+    isResourceExpanded(id: string | number): boolean {
+        const collapsed = this.collapsedResources();
+
+        if (collapsed) return !collapsed.has(id);
+        // Sin estado propio todavia: manda el input, y solo para los grupos.
+        return this.inputs.resourcesInitiallyExpanded() || !this.resourceGroups().has(id);
+    }
+
+    /**
+     * Collapses or expands a group.
+     *
+     * A no-op when `resourcesExpandable` is off, so a rail that does not offer the gesture cannot be
+     * put into a state the user has no way out of.
+     */
+    toggleResource(id: string | number): void {
+        if (!this.inputs.resourcesExpandable() || !this.resourceGroups().has(id)) return;
+
+        const collapsed = new Set(this.collapsedResources() ?? (this.inputs.resourcesInitiallyExpanded() ? [] : this.resourceGroups()));
+
+        if (collapsed.has(id)) collapsed.delete(id);
+        else collapsed.add(id);
+        this.collapsedResources.set(collapsed);
+    }
+
+    /**
+     * The resources a rail should draw, with the descendants of collapsed groups left out.
+     *
+     * Walks up the whole chain and not just the immediate parent: collapsing a two-level group has to
+     * hide its grandchildren too, or a collapsed group leaves its leaves floating at the root.
+     */
+    readonly visibleResources = computed(() => {
+        const all = this.inputs.resources();
+
+        if (!this.inputs.resourcesExpandable()) return all;
+
+        const byId = new Map(all.map((resource) => [resource.id, resource]));
+
+        return all.filter((resource) => {
+            let parentId = resource.parentId;
+            let guard = 0;
+
+            while (parentId != null && guard++ < 32) {
+                if (!this.isResourceExpanded(parentId)) return false;
+                parentId = byId.get(parentId)?.parentId;
+            }
+
+            return true;
+        });
+    });
+
+    /**
+     * How deep a resource sits in the rail, counting real ancestors.
+     *
+     * The rail used to answer "0 when it has no parent, 1 otherwise", which draws a three-level
+     * hierarchy as two.
+     */
+    resourceDepth(id: string | number): number {
+        const byId = new Map(this.inputs.resources().map((resource) => [resource.id, resource]));
+        let depth = 0;
+        let parentId = byId.get(id)?.parentId;
+
+        while (parentId != null && depth < 32) {
+            depth++;
+            parentId = byId.get(parentId)?.parentId;
+        }
+
+        return depth;
+    }
+
+    /** Ids of a resource and everything under it, for the aggregate count of a group. */
+    descendantResourceIds(id: string | number): (string | number)[] {
+        const all = this.inputs.resources();
+        const ids = [id];
+
+        for (let index = 0; index < ids.length; index++) {
+            for (const resource of all) {
+                if (resource.parentId === ids[index]) ids.push(resource.id);
+            }
+        }
+
+        return ids;
+    }
 
     /** The categories, as bound. */
     readonly categories = computed(() => this.inputs.categories());
@@ -409,7 +625,7 @@ export class SchedulerState {
                 const visibleStart = Math.max(slot.start.getTime(), from);
                 const visibleEnd = Math.min(slot.end.getTime(), to);
                 const label = slot.capacity != null ? `${Math.max(slot.capacity - slot.booked, 0)}/${slot.capacity}` : '';
-                const range = formatTimeRange(slot.start, slot.end, this.locale());
+                const range = formatTimeRange(slot.start, slot.end, this.locale(), this.timeFormat());
                 return {
                     key: `${dayKey(date)}|${resourceId ?? ''}|${index}`,
                     offset: (visibleStart - from) / span,
@@ -940,6 +1156,13 @@ export class SchedulerState {
 
         if (this.inputs.quickInfoEnabled()) {
             this.quickInfo.set({ event, anchor: (originalEvent.currentTarget as HTMLElement) ?? undefined });
+            this.inputs.emitQuickInfoShow(this.realOf(event));
+        }
+
+        // Sin hover no hay quien abra el popover: en un puntero grueso lo abre la propia
+        // activacion, que es el unico gesto que existe ahi.
+        if (this.inputs.eventPopoverEnabled() && this.inputs.eventPopoverShowOnMobile()) {
+            this.eventPopover.set({ event, anchor: (originalEvent.currentTarget as HTMLElement) ?? undefined });
         }
 
         this.inputs.emitEventClick(originalEvent, this.realOf(event));
@@ -971,6 +1194,7 @@ export class SchedulerState {
         if (!this.inputs.contextMenuEnabled()) return;
         originalEvent.preventDefault();
         this.contextMenu.set({ ...target, anchor: (originalEvent.currentTarget as HTMLElement) ?? undefined });
+        this.inputs.emitContextMenuShow({ ...target, ...(target.event ? { event: this.realOf(target.event) } : {}), events: target.events?.map((event) => this.realOf(event)) });
     }
 
     /**
@@ -1010,22 +1234,159 @@ export class SchedulerState {
         this.inputs.emitSlotClick(originalEvent, this.fromDisplay(start), this.fromDisplay(end));
     }
 
-    /** Asks the application to edit an event. The Scheduler never mutates it itself. */
+    /**
+     * Asks the application to edit an event. The Scheduler never mutates it itself.
+     *
+     * An occurrence of a series is reported through `(recurrenceEdit)` instead, because "save this
+     * appointment" is an ambiguous instruction when the appointment is one of fifty: the page has to
+     * ask whether it means the occurrence or the series, and it is the only one that can.
+     */
     requestEdit(event?: SchedulerEvent): void {
-        if (event) this.inputs.eventChange(this.realOf(event));
+        if (!event) return;
+        if (this.reportRecurrence(event, 'edit')) return;
+        this.inputs.eventChange(this.realOf(event));
     }
 
-    /** Asks the application to delete an event. */
-    requestRemove(event?: SchedulerEvent): void {
-        if (event) this.inputs.eventRemove(this.realOf(event));
+    /**
+     * The quick info's edit action.
+     *
+     * It reports through `(quickInfoEdit)` as well as asking for the change, because the two are
+     * different facts: one is "the user pressed edit in the quick info", which is where a page opens
+     * its form, and the other is "this event should be saved".
+     */
+    requestQuickInfoEdit(event?: SchedulerEvent): void {
+        if (!event) return;
+        this.inputs.emitQuickInfoEdit(this.realOf(event));
+        this.requestEdit(event);
     }
+
+    /** The quick info's delete action. */
+    requestQuickInfoDelete(event?: SchedulerEvent): void {
+        if (!event) return;
+        this.inputs.emitQuickInfoDelete(this.realOf(event));
+        this.requestRemove(event);
+    }
+
+    /** Asks the application to delete an event, or to decide the scope when it is an occurrence. */
+    requestRemove(event?: SchedulerEvent): void {
+        if (!event) return;
+        if (this.reportRecurrence(event, 'delete')) return;
+        this.inputs.eventRemove(this.realOf(event));
+    }
+
+    /**
+     * The series an occurrence came from, or `undefined` when the event is not part of one.
+     *
+     * An expanded occurrence carries `seriesId`; the series itself is the bound event with that id,
+     * which is the object the application has to write to.
+     */
+    seriesOf(event: SchedulerEvent): SchedulerEvent | undefined {
+        // `recurrenceId` on an expanded occurrence is the id of the series it came from; the instant
+        // it was generated for is `recurrenceStart`.
+        const seriesId = event['recurrenceId'];
+
+        if (seriesId == null) return undefined;
+
+        return this.inputs.events().find((candidate) => candidate.id === seriesId);
+    }
+
+    /**
+     * Reports an interaction on an occurrence, and says whether it did.
+     *
+     * `false` means this is an ordinary event and the caller should carry on with the plain output;
+     * `true` means the question has been handed to the page and the caller must not also fire the
+     * unscoped one, or the application would receive both.
+     */
+    private reportRecurrence(event: SchedulerEvent, kind: 'edit' | 'delete', change?: { start: Date; end: Date; apply: () => void; revert: () => void }): boolean {
+        const options = this.recurrenceEdit();
+
+        if (!options) return false;
+        if (kind === 'edit' && change && !options.askOnDrag) return false;
+        if (kind === 'delete' && !options.askOnDelete) return false;
+
+        const series = this.seriesOf(event);
+        const recurrenceStart = event['recurrenceStart'];
+
+        if (!series || recurrenceStart == null) return false;
+
+        const scope: SchedulerRecurrenceScope = options.defaultScope ?? 'occurrence';
+        const payload: SchedulerRecurrenceEditEvent = {
+            occurrence: this.realOf(event),
+            series,
+            occurrenceStart: this.fromDisplay(toDate(recurrenceStart)),
+            scope,
+            ...(change ? { start: this.fromDisplay(change.start), end: this.fromDisplay(change.end) } : {}),
+            // `apply` deja el cambio pendiente puesto bajo el alcance que la pagina elija; sin
+            // llamarlo, la cita se queda donde estaba, que es lo que hace segura la pregunta.
+            apply: (chosen: SchedulerRecurrenceScope) => {
+                if (kind === 'delete') {
+                    this.inputs.eventRemove(chosen === 'occurrence' ? this.realOf(event) : series);
+                    return;
+                }
+                change?.apply();
+                this.inputs.eventChange(chosen === 'occurrence' ? this.realOf(event) : series);
+            },
+            revert: () => change?.revert()
+        };
+
+        if (kind === 'delete') this.inputs.emitRecurrenceDelete(payload);
+        else this.inputs.emitRecurrenceEdit(payload);
+
+        return true;
+    }
+
+    /**
+     * Activation of an appointment window: a booking, or a cancellation of one already taken.
+     *
+     * Which of the two it is comes from the slot's own `status`, because the component cannot know
+     * it: capacity says how many places are left, not whether THIS viewer holds one of them.
+     */
+    handleSlotBook(originalEvent: MouseEvent | KeyboardEvent, slot: SchedulerAppointmentSlot): void {
+        const bound = this.inputs.appointmentSlots().find((candidate) => candidate === slot || (slot.id != null && candidate.id === slot.id)) ?? slot;
+        const payload: SchedulerSlotBookEvent = {
+            originalEvent,
+            slot: bound,
+            start: this.fromDisplay(toDate(slot.start)),
+            end: this.fromDisplay(toDate(slot.end))
+        };
+
+        if (slot.status === 'booked') this.inputs.emitSlotCancel(payload);
+        else this.inputs.emitSlotBook(payload);
+    }
+
+    /**
+     * Width of one column of the grouped resource views, as a CSS length.
+     *
+     * `fixed` always uses the declared width; `fit` always divides the container; `auto` divides it
+     * until there are more columns than `horizontalResourceOverflowThreshold` and then falls back to
+     * the minimum, which is what makes the view scroll instead of squeezing forty crews into a
+     * screen. `resourceColumnMinWidth` stays the override for a page that wants to state it outright.
+     */
+    horizontalResourceColumnWidth(columns: number): string | undefined {
+        const explicit = this.inputs.resourceColumnMinWidth();
+
+        if (explicit) return explicit;
+
+        const mode = this.inputs.horizontalResourceColumnMode();
+        const width = this.inputs.horizontalResourceColumnWidth();
+        const minimum = this.inputs.horizontalResourceMinColumnWidth();
+
+        if (mode === 'fixed' && width != null) return `${width}px`;
+        if (mode === 'fit') return undefined;
+        if (mode === 'auto' && columns > this.inputs.horizontalResourceOverflowThreshold()) return `${minimum ?? width ?? 160}px`;
+
+        return minimum != null ? `${minimum}px` : undefined;
+    }
+
+    /** Minimum width of a DATE column in a resource-first grouped view. */
+    readonly horizontalResourceDayMinWidth = computed(() => this.inputs.horizontalResourceDayMinWidth());
 
     /** Localised time range of an event, for the overlays. */
     eventTimeText(event: SchedulerEvent): string {
         if (event.allDay) return this.labels().allDay;
         const start = toDate(event.start);
         const end = event.end != null ? toDate(event.end) : new Date(start.getTime() + this.defaultEventDuration() * 60_000);
-        return formatTimeRange(start, end, this.locale());
+        return formatTimeRange(start, end, this.locale(), this.timeFormat());
     }
 
     /** Opens the overflow popover for a cell. */
@@ -1108,10 +1469,18 @@ export class SchedulerState {
         // Every output undoes the zone shift: the component draws in the target zone, the
         // application stores real instants.
         emitDragStart: (payload) => this.inputs.emitDragStart(this.realise(payload)),
-        emitDrop: (payload) => this.inputs.emitDrop(this.realise(payload)),
+        emitDrop: (payload) => {
+            this.inputs.emitDrop(this.realise(payload));
+            // El arrastre ya esta aplicado como cambio pendiente: la pregunta del alcance va DESPUES
+            // y trae revert, para que la pagina pueda deshacerlo si el usuario cancela.
+            this.reportRecurrence(payload.event, 'edit', { start: payload.start, end: payload.end, apply: () => undefined, revert: () => payload.revert() });
+        },
         emitResizeStart: (payload) => this.inputs.emitResizeStart(this.realise(payload)),
         emitResize: (payload) => this.inputs.emitResize(this.realise(payload)),
-        emitResizeStop: (payload) => this.inputs.emitResizeStop(this.realise(payload))
+        emitResizeStop: (payload) => {
+            this.inputs.emitResizeStop(this.realise(payload));
+            this.reportRecurrence(payload.event, 'edit', { start: payload.start, end: payload.end, apply: () => undefined, revert: () => payload.revert() });
+        }
     });
 
     /**
@@ -1121,10 +1490,22 @@ export class SchedulerState {
      * ending at midnight on the 1st would otherwise print the next month's name in the header.
      */
     readonly rangeTitle = computed(() => {
-        const locale = this.inputs.locale();
+        // `locale` y no `inputs.locale`: el titulo tiene que salir en el mismo calendario y el mismo
+        // sistema de numeracion que el resto, o el encabezado dice un mes distinto de la rejilla.
+        const locale = this.locale();
         const { start, end } = this.range();
         const last = new Date(end.getTime() - 1);
         const view = this.inputs.view();
+        const display = this.inputs.dateDisplay();
+
+        // Con dateDisplay manda la pagina: un titulo es copy, y una vista que no lo respeta obliga a
+        // sustituir la parte entera para cambiar una coma.
+        if (display) {
+            const from = start.toLocaleDateString(locale, display);
+            const to = last.toLocaleDateString(locale, display);
+
+            return from === to ? from : `${from} - ${to}`;
+        }
 
         const timelineScale = timelineScaleOf(view);
         if (view === 'year' || timelineScale === 'year') {

@@ -20,9 +20,13 @@ import { DEMO_CATEGORIES, DEMO_DATE, DEMO_EVENTS, DEMO_RESOURCES } from './demo-
                 The Scheduler keeps the positioning, the accent colour, the selection state and the ARIA; the definition owns what is inside. The context arrives with the work already done — <i>title</i> and <i>timeText</i> resolved,
                 <i>accentColor</i> picked, <i>category</i> and <i>resource</i> looked up, and the <i>selected</i>, <i>focused</i>, <i>dragging</i> and <i>continuesBefore</i>/<i>continuesAfter</i> flags — so a card is a template, not a calculation.
             </p>
+            <p>
+                <i>eventShell</i> set to <i>none</i> removes the box the Scheduler draws around an event — its background, border and padding — and keeps everything else: the positioning, the pointer and keyboard activation, the focus ring, the
+                selected and dragging state, the resize handles and the overlay anchor. That is the split when your own component draws the card, as the week and agenda definitions below do.
+            </p>
         </app-docsectiontext>
         <div class="card">
-            <p-scheduler-root locale="en-US" view="week" [views]="views" [events]="events" [resources]="resources" [categories]="categories" categoryField="categoryId" [date]="date" [dayStartHour]="7" [dayEndHour]="19">
+            <p-scheduler-root locale="en-US" view="week" [views]="views" [events]="events" [resources]="resources" [categories]="categories" categoryField="categoryId" [date]="date" [dayStartHour]="7" [dayEndHour]="19" eventShell="none">
                 <p-scheduler-header>
                     <p-scheduler-navigation />
                     <p-scheduler-title />

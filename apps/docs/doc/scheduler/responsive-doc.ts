@@ -1,8 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { AppCode } from '@/components/doc/app.code';
 import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
 import { SchedulerModule } from '@openng/optimus-ui/scheduler';
-import type { SchedulerViewType } from '@openng/optimus-ui/types/scheduler';
+import type { SchedulerDensity, SchedulerViewType } from '@openng/optimus-ui/types/scheduler';
 import { DEMO_CATEGORIES, DEMO_DATE, DEMO_EVENTS, DEMO_RESOURCES } from './demo-data';
 
 @Component({
@@ -27,8 +27,16 @@ import { DEMO_CATEGORIES, DEMO_DATE, DEMO_EVENTS, DEMO_RESOURCES } from './demo-
                 For dense schedules the answer is not a narrower column but fewer of them: <i>adaptiveMode</i> shows one resource at a time past <i>adaptiveThreshold</i> and reports its choice through <i>(adaptiveAutoSelect)</i>, and
                 <i>maxEventsPerCell</i> collapses a busy month cell into an overflow link instead of an unreadable stack. Resize the panel below to watch the floors take effect.
             </p>
+            <p>
+                <i>density</i> is the other lever: <i>compact</i> trades padding for rows on screen, which is what an operations wall wants and a page someone reads does not. It changes the heights and not the type, so nothing gets harder to read —
+                there is just more of it.
+            </p>
         </app-docsectiontext>
         <div class="card">
+            <div class="flex flex-wrap gap-2 mb-3">
+                <button type="button" class="px-2 py-1 text-sm rounded border border-surface" [class.bg-highlight]="density() === 'comfortable'" (click)="density.set('comfortable')">Comfortable</button>
+                <button type="button" class="px-2 py-1 text-sm rounded border border-surface" [class.bg-highlight]="density() === 'compact'" (click)="density.set('compact')">Compact</button>
+            </div>
             <div class="resize-x overflow-auto border border-surface rounded-md p-2 min-w-[20rem] max-w-full" style="resize: horizontal">
                 <p-scheduler-root
                     locale="en-US"
@@ -43,6 +51,7 @@ import { DEMO_CATEGORIES, DEMO_DATE, DEMO_EVENTS, DEMO_RESOURCES } from './demo-
                     [dayEndHour]="18"
                     [resourceColumnMinWidth]="'7rem'"
                     [maxEventsPerCell]="2"
+                    [density]="density()"
                 >
                     <p-scheduler-header>
                         <p-scheduler-navigation />
@@ -74,4 +83,6 @@ export class ResponsiveDoc {
     date = DEMO_DATE;
 
     views: SchedulerViewType[] = ['resourceWeek', 'week', 'month', 'year', 'agenda'];
+
+    density = signal<SchedulerDensity>('comfortable');
 }

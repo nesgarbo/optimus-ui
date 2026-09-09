@@ -15,9 +15,10 @@ import { DEMO_CATEGORIES, DEMO_DATE, DEMO_EVENTS } from './demo-data';
                 agenda should not mean scrolling past twenty empty headers.
             </p>
             <p><i>agendaDays</i> sets how many days it spans from the anchor date. Replace a day header with <i>p-scheduler-agenda-date-header</i> and a row with <i>p-scheduler-agenda-event</i>.</p>
+            <p><i>showEmptyDays</i> lists the days the range covers that hold nothing, which is the difference between a list you read and a list you have to check dates against.</p>
         </app-docsectiontext>
         <div class="card">
-            <p-scheduler-root locale="en-US" view="agenda" [events]="events" [categories]="categories" categoryField="categoryId" [date]="date" [agendaDays]="14">
+            <p-scheduler-root locale="en-US" view="agenda" [events]="events" [categories]="categories" categoryField="categoryId" [date]="date" [agendaDays]="14" [showEmptyDays]="showEmptyDays">
                 <p-scheduler-header>
                     <p-scheduler-navigation />
                     <p-scheduler-title />
@@ -32,6 +33,8 @@ import { DEMO_CATEGORIES, DEMO_DATE, DEMO_EVENTS } from './demo-data';
     `
 })
 export class AgendaDoc {
+    showEmptyDays = true;
+
     events = DEMO_EVENTS;
 
     categories = DEMO_CATEGORIES;

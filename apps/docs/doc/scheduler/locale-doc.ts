@@ -30,11 +30,20 @@ interface LocaleOption {
                 The chrome labels are a separate input, because they are NOT derivable from a locale: no browser API knows what your product calls the week view, and "Today", "All day" or "No events" are copy, not data. Pass them through
                 <i>labels</i>, which is merged over the defaults — including <i>labels.views</i>, keyed by view name, which is what the view selector prints. Switch the locale below and the view names change with it.
             </p>
+            <p>
+                <i>calendar</i> and <i>numberingSystem</i> go further than the language. They travel as Unicode extensions of the locale tag, so one setting reaches every label at once — the month title, the weekday initials, the gutter, an event's
+                time text — and the arithmetic stays Gregorian: what changes is what the labels say, not which day an event falls on.
+            </p>
         </app-docsectiontext>
         <div class="card">
             <div class="flex flex-wrap gap-2 mb-3">
                 @for (option of options; track option.locale) {
                     <button type="button" class="px-2 py-1 text-sm rounded border" [class.font-semibold]="option.locale === selected().locale" (click)="selected.set(option)">{{ option.label }}</button>
+                }
+            </div>
+            <div class="flex flex-wrap gap-2 mb-3">
+                @for (option of calendars; track option.label) {
+                    <button type="button" class="px-2 py-1 text-sm rounded border" [class.font-semibold]="option.label === calendarOption().label" (click)="calendarOption.set(option)">{{ option.label }}</button>
                 }
             </div>
             <p-scheduler-root
@@ -48,6 +57,8 @@ interface LocaleOption {
                 [date]="date"
                 [dayStartHour]="7"
                 [dayEndHour]="19"
+                [calendar]="calendarOption().calendar"
+                [numberingSystem]="calendarOption().numberingSystem"
             >
                 <p-scheduler-header>
                     <p-scheduler-navigation />
@@ -74,6 +85,16 @@ export class LocaleDoc {
     date = DEMO_DATE;
 
     view = signal<SchedulerViewType>('week');
+
+    calendars: { label: string; calendar?: string; numberingSystem?: string }[] = [
+        { label: 'Gregorian' },
+        { label: 'Buddhist', calendar: 'buddhist' },
+        { label: 'Japanese', calendar: 'japanese' },
+        { label: 'Islamic', calendar: 'islamic' },
+        { label: 'Arabic digits', numberingSystem: 'arab' }
+    ];
+
+    calendarOption = signal(this.calendars[0]);
 
     options: LocaleOption[] = [
         {

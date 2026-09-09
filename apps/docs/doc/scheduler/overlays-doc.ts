@@ -21,12 +21,34 @@ import { DEMO_CATEGORIES, DEMO_DATE, DEMO_EVENTS } from './demo-data';
                 <li><i>[contextMenu]</i> plus <i>p-scheduler-context-menu</i> opens on right click over an event or a cell. The native menu is only suppressed when the Scheduler has one to show.</li>
             </ul>
             <p>
+                <i>eventPopoverPosition</i> places the event popover — <i>top</i>, <i>bottom</i>, <i>left</i>, <i>right</i> or <i>auto</i>, which opens downwards unless there is no room — and <i>eventPopoverShowOnMobile</i> lets a tap open it, since
+                a coarse pointer has no hover to open it with. Each overlay also reports as it opens: <i>(quickInfoShow)</i>, <i>(contextMenuShow)</i>, and <i>(quickInfoEdit)</i>/<i>(quickInfoDelete)</i> for its actions, which is where a page opens
+                its own form rather than reading the Scheduler's request as an instruction.
+            </p>
+            <p>
                 Each overlay owns its positioning and dismissal and provides a context, so anything projected into it draws the contents without inputs: the Scheduler owns the positioned root, you own the markup. The context exposes the event plus
                 <i>close</i>, <i>edit</i> and <i>remove</i>, and edit and remove are REQUESTS — the Scheduler never mutates your events.
             </p>
         </app-docsectiontext>
         <div class="card">
-            <p-scheduler-root locale="en-US" view="month" [events]="events" [categories]="categories" categoryField="categoryId" [date]="date" [maxEventsPerCell]="2" [quickInfo]="true" [contextMenu]="true">
+            <p-scheduler-root
+                locale="en-US"
+                view="month"
+                [events]="events"
+                [categories]="categories"
+                categoryField="categoryId"
+                [date]="date"
+                [maxEventsPerCell]="2"
+                [quickInfo]="true"
+                [contextMenu]="true"
+                [eventPopover]="true"
+                eventPopoverPosition="top"
+                [eventPopoverShowOnMobile]="true"
+                (quickInfoShow)="log('quick info opened')"
+                (quickInfoEdit)="log('edit requested')"
+                (quickInfoDelete)="log('delete requested')"
+                (contextMenuShow)="log('context menu opened')"
+            >
                 <p-scheduler-header>
                     <p-scheduler-navigation />
                     <p-scheduler-title />
@@ -44,6 +66,12 @@ import { DEMO_CATEGORIES, DEMO_DATE, DEMO_EVENTS } from './demo-data';
     `
 })
 export class OverlaysDoc {
+    last = '';
+
+    log(what: string): void {
+        this.last = what;
+    }
+
     events = DEMO_EVENTS;
 
     categories = DEMO_CATEGORIES;
