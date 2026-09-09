@@ -49,6 +49,27 @@ export function defaultPosition(axis: 'x' | 'y'): AxisPosition {
     return axis === 'x' ? 'bottom' : 'left';
 }
 
+/** Pixels of axis each automatic tick is given, before the labels are measured for collisions. */
+const PIXELS_PER_TICK = 40;
+
+/** The narrowest and widest automatic tick counts, so a tiny or enormous axis stays sensible. */
+const AUTO_TICK_BOUNDS = { min: 2, max: 12 };
+
+/**
+ * How many ticks an axis gets when `tickCount` is left on `auto`.
+ *
+ * Derived from the axis' pixel length rather than fixed, because a fixed count crowds a short chart
+ * and leaves a tall one sparse. The collision pass afterwards can still thin these; what it cannot
+ * do is invent ticks that were never generated.
+ */
+export function autoTickCount(scale: AxisScale): number {
+    const length = Math.abs(scale.range[1] - scale.range[0]);
+
+    if (!Number.isFinite(length) || length <= 0) return AUTO_TICK_BOUNDS.min;
+
+    return Math.min(Math.max(Math.round(length / PIXELS_PER_TICK), AUTO_TICK_BOUNDS.min), AUTO_TICK_BOUNDS.max);
+}
+
 /**
  * Generates the tick values for a scale.
  *
@@ -59,7 +80,7 @@ export function generateTicks(scale: AxisScale, props: BaseAxisProps, type: Axis
     if (scale.type === 'band') return [...scale.domain];
 
     const [min, max] = scale.domain;
-    const count = props.tickCount ?? 6;
+    const count = props.tickCount ?? autoTickCount(scale);
 
     if (props.tickInterval != null && props.tickInterval > 0) {
         const ticks: TickValue[] = [];
@@ -329,11 +350,19 @@ function labelBaseline(position: AxisPosition, rotation: number): string {
     return position === 'top' ? 'text-after-edge' : 'text-before-edge';
 }
 
-/** Paints the grid lines, the minor grid and the alternating bands. */
-export function paintGrid(ctx: DrawContext, render: AxisRender, props: BaseAxisProps, position: AxisPosition, axisId: string): SvgNode[] {
+/**
+ * Paints the grid lines, the minor grid and the alternating bands.
+ *
+ * `gridLines` defaults to `auto`, which means on for the value axis and off for the category axis.
+ * That is not arbitrary: a grid line's job is to let a reader carry a mark's height back to a
+ * number, and a category axis has no numbers to carry back to. Drawing them there just adds
+ * vertical rules between bands that the band spacing already separates.
+ */
+export function paintGrid(ctx: DrawContext, render: AxisRender, props: BaseAxisProps, position: AxisPosition, axisId: string, type: AxisType): SvgNode[] {
     if (props.visible === false) return [];
 
     const horizontal = axisOfPosition(position) === 'x';
+    const showGrid = props.gridLines ?? type !== 'category';
     const nodes: SvgNode[] = [];
 
     if (props.alternateGridColor) {
@@ -344,7 +373,7 @@ export function paintGrid(ctx: DrawContext, render: AxisRender, props: BaseAxisP
         nodes.push(...paintMinorGrid(ctx, render, props, horizontal));
     }
 
-    if (props.gridLines !== false) {
+    if (showGrid) {
         for (const tick of render.ticks) {
             nodes.push({
                 tag: 'line',

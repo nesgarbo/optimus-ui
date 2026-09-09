@@ -136,6 +136,32 @@ describe('scene composition', () => {
         { axis: 'y' as const, id: 'default', props: { id: 'default', type: 'linear' as const } }
     ];
 
+    it('grids the value axis but not the category axis by default', () => {
+        // A grid line lets a reader carry a mark's height back to a number, and a category axis has
+        // no number to carry back to -- so `gridLines: auto` means value-axis only.
+        const scene = buildScene(fakeContext(axes), [series('line', { data: [{}, {}, {}] }, [10, 50, 90])], drawContext());
+        const grid = scene.layers.find((layer) => layer.key === 'grid')!;
+        const groups = grid.nodes.map((node) => String(node.attrs['data-axis-id']));
+
+        expect(groups).toEqual(['default']);
+
+        const lines = allNodes([grid]).filter((node) => String(node.attrs['class'] ?? '') === 'p-chart-grid-line');
+
+        // Horizontal only: every grid line spans the full plot width.
+        for (const line of lines) expect(line.attrs['x1']).not.toBe(line.attrs['x2']);
+    });
+
+    it('grids the category axis when asked to explicitly', () => {
+        const withGrid = [
+            { axis: 'x' as const, id: 'default', props: { id: 'default', type: 'category' as const, gridLines: true } },
+            { axis: 'y' as const, id: 'default', props: { id: 'default', type: 'linear' as const } }
+        ];
+        const scene = buildScene(fakeContext(withGrid), [series('line', { data: [{}, {}, {}] }, [10, 50, 90])], drawContext());
+        const lines = allNodes(scene.layers.filter((layer) => layer.key === 'grid')).filter((node) => String(node.attrs['class'] ?? '') === 'p-chart-grid-line');
+
+        expect(lines.some((line) => line.attrs['x1'] === line.attrs['x2'])).toBe(true);
+    });
+
     it('draws an axis, a grid and a line from one pass', () => {
         const ctx = drawContext();
         const context = fakeContext(axes);
@@ -349,6 +375,23 @@ describe('axis resolution', () => {
 
         expect(kept.ticks.length).toBe(40);
         expect(skipped.ticks.length).toBeLessThan(40);
+    });
+
+    it('scales the automatic tick count with the axis length', () => {
+        // A fixed count crowds a short chart and leaves a tall one sparse, so the count follows the
+        // pixels available.
+        const ctx = drawContext();
+        const short = resolveAxis(ctx, linearScale(0, 100, { start: 80, end: 0 }), {}, 'left', 'linear');
+        const tall = resolveAxis(ctx, linearScale(0, 100, { start: 600, end: 0 }), {}, 'left', 'linear');
+
+        expect(tall.allTicks.length).toBeGreaterThan(short.allTicks.length);
+    });
+
+    it('honours an explicit tick count over the automatic one', () => {
+        const ctx = drawContext();
+        const render = resolveAxis(ctx, linearScale(0, 100, { start: 600, end: 0 }), { tickCount: 3 }, 'left', 'linear');
+
+        expect(render.allTicks.length).toBeLessThanOrEqual(5);
     });
 
     it('reserves nothing for an invisible axis', () => {

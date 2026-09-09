@@ -91,7 +91,7 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
 
         // The grid belongs to the axis that generated it but draws under the marks, so the two are
         // painted into different layers from one resolution pass.
-        scene.add('grid', ...paintGrid(drawContext, render, props, position, registration.id));
+        scene.add('grid', ...paintGrid(drawContext, render, props, position, registration.id, type));
         scene.add('axes', ...paintAxis(drawContext, render, props, position, registration.id));
     }
 

@@ -439,9 +439,13 @@ abstract class ChartAxisBase {
 
         const [min, max] = domain.extent;
         const props = this.props();
-        // A synthetic scale is enough here: only the tick *values* matter, and those come from the
-        // domain rather than from the pixel range.
-        const synthetic = { type: domain.type === 'time' ? ('time' as const) : ('linear' as const), domain: [min, max] as [number, number], range: [0, 1] as [number, number], scale: () => 0, invert: () => 0 };
+        // A synthetic scale is enough here, because only the tick *values* matter and those come
+        // from the domain. Its range still has to be roughly the real axis length: the automatic
+        // tick count is derived from that length, and a shorter range would generate fewer, coarser
+        // ticks whose labels are narrower than the ones actually drawn -- which would under-reserve
+        // and clip them.
+        const length = this.axis === 'x' ? (this.context?.width() ?? 0) : (this.context?.height() ?? 0);
+        const synthetic = { type: domain.type === 'time' ? ('time' as const) : ('linear' as const), domain: [min, max] as [number, number], range: [0, length] as [number, number], scale: () => 0, invert: () => 0 };
         const values = generateTicks(synthetic, props, domain.type);
 
         return values.map((value, index) => formatTick(value, index, props, domain.type, this.context?.locale(), max - min));
