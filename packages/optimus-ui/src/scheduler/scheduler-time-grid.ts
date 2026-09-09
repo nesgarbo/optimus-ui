@@ -207,8 +207,8 @@ import { SchedulerViewBase } from './scheduler-view-base';
                                 [attr.aria-label]="slot.ariaLabel"
                                 [attr.aria-disabled]="slot.full ? 'true' : null"
                                 [attr.tabindex]="slot.full ? -1 : 0"
-                                (click)="onSlotClick($event, slot.slot.start, slot.slot.end)"
-                                (keydown)="onSlotKeydown($event, slot.slot.start, slot.slot.end)"
+                                (click)="onSlotClick($event, slot.slot.start, slot.slot.end, slot.full)"
+                                (keydown)="onSlotKeydown($event, slot.slot.start, slot.slot.end, slot.full)"
                             >
                                 @if (slot.label) {
                                     <span class="p-scheduler-appointment-slot-label">{{ slot.label }}</span>

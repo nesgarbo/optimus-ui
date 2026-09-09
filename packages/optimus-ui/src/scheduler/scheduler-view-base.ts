@@ -222,8 +222,10 @@ export abstract class SchedulerViewBase {
      * `target !== currentTarget`, because the cell's own content — the day number, a custom cell
      * template — is a legitimate place to click the cell.
      */
-    protected onSlotClick(originalEvent: MouseEvent | KeyboardEvent, start: Date, end: Date): void {
-        if (fromEventSurface(originalEvent)) return;
+    protected onSlotClick(originalEvent: MouseEvent | KeyboardEvent, start: Date, end: Date, disabled = false): void {
+        // Un hueco lleno se anuncia como aria-disabled: activarlo con el puntero seleccionaria el dia
+        // y emitiria slotClick de todas formas, que es justo lo que dice que no se puede hacer.
+        if (disabled || fromEventSurface(originalEvent)) return;
         this.state.handleSlotClick(originalEvent, start, end);
     }
 
@@ -234,8 +236,8 @@ export abstract class SchedulerViewBase {
      * handled: the slot is not part of the arrow ring, and swallowing the arrows there would break
      * out of the grid it floats over.
      */
-    protected onSlotKeydown(originalEvent: KeyboardEvent, start: Date, end: Date): void {
-        if (originalEvent.key !== 'Enter' && originalEvent.key !== ' ') return;
+    protected onSlotKeydown(originalEvent: KeyboardEvent, start: Date, end: Date, disabled = false): void {
+        if (disabled || (originalEvent.key !== 'Enter' && originalEvent.key !== ' ')) return;
         originalEvent.preventDefault();
         this.state.handleSlotClick(originalEvent, start, end);
     }
