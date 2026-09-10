@@ -134,6 +134,17 @@ export class SchedulerTimeGridCell {}
 })
 export class SchedulerWorkCell {}
 
+/** Caption naming the month of a grid, drawn when `monthCount` is above one. @group Components */
+@Component({
+    selector: 'p-scheduler-month-title',
+    standalone: true,
+    template: `<ng-content />`,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    encapsulation: ViewEncapsulation.None,
+    host: { 'data-slot': 'scheduler-month-title' }
+})
+export class SchedulerMonthTitle {}
+
 /** Weekday header row of the month grid. @group Components */
 @Component({
     selector: 'p-scheduler-month-header-cell',

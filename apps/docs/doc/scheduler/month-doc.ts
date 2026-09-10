@@ -16,7 +16,7 @@ import { DEMO_CATEGORIES, DEMO_DATE, DEMO_EVENTS } from './demo-data';
             </p>
             <p>
                 An event that spans days is drawn as a bar across them; an event with a time is a dot, a title and a time inside the cell, because half a dozen filled rectangles in a 6rem cell are unreadable. <i>maxEventsPerCell</i> caps how many a
-                cell lists before the rest collapse into a "+N more" link that opens <i>p-scheduler-more-popover</i>.
+                cell lists before the rest collapse into a "+N more" link that opens <i>p-scheduler-more-popover</i>. <i>monthCount</i> puts more than one month on screen at a time.
             </p>
         </app-docsectiontext>
         <div class="card">

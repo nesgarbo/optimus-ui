@@ -46,6 +46,7 @@ const EVENTS: SchedulerEvent[] = [
             [date]="date()"
             [resources]="resources"
             [maxEventsPerCell]="2"
+            [monthCount]="monthCount()"
             [views]="allViews"
             [showMorePopover]="showMorePopover()"
             (moreClick)="more.push($event)"
@@ -97,6 +98,7 @@ class TestHost {
 
     resources: any[] = [];
 
+    monthCount = signal(1);
     showMorePopover = signal(true);
     density = signal<'comfortable' | 'compact'>('comfortable');
     nowIndicator = signal(true);
@@ -221,6 +223,45 @@ describe('Scheduler', () => {
         // The multi-day shutdown appears on all 3 of its days; none of the groups is empty.
         expect(q('[data-slot="scheduler-agenda-event"]').length).toBeGreaterThanOrEqual(EVENTS.length);
         expect(q('.p-scheduler-agenda-empty').length).toBe(0);
+    });
+
+    it('monthCount draws one captioned grid per month and pages by all of them', async () => {
+        host.monthCount.set(3);
+        await fixture.whenStable();
+
+        expect(q('.p-scheduler-month').length).toBe(3);
+        expect(q('.p-scheduler-month-week').length).toBe(18); // 3 rejillas de 6 semanas
+        expect(q('[data-slot="scheduler-month-title"]').length).toBe(3);
+        expect(q('.p-scheduler-month[data-month="2026-11"]').length).toBe(1);
+        // The header names the span and not the anchor: "September" over a grid running into
+        // November would be a lie about what is on screen.
+        expect((q('[data-slot="scheduler-title"]')[0].nativeElement as HTMLElement).textContent?.trim()).toBe('September - November 2026');
+        // September's padding days are October's own days in October's grid: each grid greys out
+        // against ITS month, so the same date is other-month in one and not in the next.
+        expect(q('.p-scheduler-month[data-month="2026-10"] [data-slot="scheduler-month-cell"][data-date="2026-10-01"]:not([data-other-month])').length).toBe(1);
+
+        (q('[data-slot="scheduler-nav-next"]')[0].nativeElement as HTMLElement).click();
+        await fixture.whenStable();
+
+        // Three on screen means a page is three months: December is the last of the next page.
+        expect(q('.p-scheduler-month[data-month="2026-12"]').length).toBe(1);
+        expect(q('.p-scheduler-month[data-month="2026-10"]').length).toBe(0);
+    });
+
+    it('the whole month view keeps one tab stop however many grids it draws', async () => {
+        expect(q('[data-nav-cell][tabindex="0"]').length).toBe(1);
+
+        host.monthCount.set(3);
+        await fixture.whenStable();
+
+        // The arrows walk from the last week of a month into the first of the next, so the three
+        // grids are one grid to the keyboard and get ONE tab stop between them.
+        expect(q('[data-nav-cell][tabindex="0"]').length).toBe(1);
+    });
+
+    it('a single month keeps its caption off and its grid unchanged', () => {
+        expect(q('[data-slot="scheduler-month-title"]').length).toBe(0);
+        expect(q('.p-scheduler-month').length).toBe(1);
     });
 
     it('navigating moves the range and the title', async () => {

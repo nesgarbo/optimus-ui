@@ -1,9 +1,21 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, input } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import type { SchedulerEvent, SchedulerResource, SchedulerViewType } from '@openng/optimus-ui/types/scheduler';
-import { addDays, dayKey, eachDay, endOfDay, isToday, startOfWeek, toDate } from './scheduler-date';
+import { addDays, addMonths, dayKey, eachDay, endOfDay, isToday, startOfMonth, startOfWeek, toDate } from './scheduler-date';
 import { layoutRows } from './scheduler-layout';
 import { SchedulerViewBase } from './scheduler-view-base';
+
+/** Shared empty bucket: a day with no timed event does not need an array of its own. */
+const EMPTY_EVENTS: SchedulerEvent[] = [];
+
+/**
+ * The events of one grid, split the way the grid draws them: bars across a week row, and a list
+ * inside a cell bucketed by the day it belongs to.
+ */
+interface MonthEvents {
+    spanning: SchedulerEvent[];
+    timedByDay: Map<string, SchedulerEvent[]>;
+}
 
 /**
  * The month grid: whole weeks, one row each, with events packed across the days they span.
@@ -26,7 +38,7 @@ import { SchedulerViewBase } from './scheduler-view-base';
     imports: [NgTemplateOutlet],
     template: `
         @for (panel of panels(); track panel.key) {
-            <div class="p-scheduler-month" [attr.data-view]="view" [attr.data-grouping]="grouping()" [attr.data-resource-id]="panel.resource?.id">
+            <div class="p-scheduler-month" [attr.data-view]="view" [attr.data-grouping]="grouping()" [attr.data-resource-id]="panel.resource?.id" [attr.data-month]="panel.monthKey">
                 @if (panel.label) {
                     <!-- One grid per resource has to say whose it is: without the header, three
                      stacked months are three identical months. -->
@@ -41,6 +53,17 @@ import { SchedulerViewBase } from './scheduler-view-base';
                             @if (panel.count) {
                                 <span class="p-scheduler-resource-count">{{ panel.count }}</span>
                             }
+                        }
+                    </div>
+                }
+                @if (panel.monthLabel) {
+                    <!-- With several grids stacked, each one has to name its month: six identical
+                     week rows say nothing about which month they are. -->
+                    <div class="p-scheduler-month-title" data-slot="scheduler-month-title" [attr.data-month]="panel.monthKey">
+                        @if (monthTitleDef(); as tpl) {
+                            <ng-container *ngTemplateOutlet="tpl; context: panel.monthContext" />
+                        } @else {
+                            {{ panel.monthLabel }}
                         }
                     </div>
                 }
@@ -73,7 +96,7 @@ import { SchedulerViewBase } from './scheduler-view-base';
                                     data-nav-cell=""
                                     role="button"
                                     [attr.aria-label]="day.binding.context.label"
-                                    [attr.tabindex]="$first && week.key === panel.weeks[0].key ? 0 : -1"
+                                    [attr.tabindex]="panel.first && $first && week.key === panel.weeks[0].key ? 0 : -1"
                                     (keydown)="onCellKeydown($event, day.date, day.end)"
                                     (click)="onSlotClick($event, day.date, day.end)"
                                     (contextmenu)="onCellContextMenu($event, day.date, day.events)"
@@ -213,7 +236,7 @@ import { SchedulerViewBase } from './scheduler-view-base';
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
-    host: { class: 'p-scheduler-view p-scheduler-view-month' }
+    host: { class: 'p-scheduler-view p-scheduler-view-month', '[attr.data-month-count]': 'state.monthCount()' }
 })
 export class SchedulerMonthView extends SchedulerViewBase {
     /** Which of the three month views is being drawn. */
@@ -253,28 +276,98 @@ export class SchedulerMonthView extends SchedulerViewBase {
     /** @internal */
     readonly monthMoreLinkDef = computed(() => this.def('monthMoreLink'));
     /** @internal */
+    readonly monthTitleDef = computed(() => this.def('monthTitle'));
+    /** @internal */
     readonly resourceHeaderDef = computed(() => this.def('resourceHeader'));
 
     /**
-     * One grid per resource in `resourceMonth`, a single grid otherwise.
+     * The months on screen, first days, in the order they are drawn.
+     *
+     * `monthCount` months become `monthCount` grids and not one long run of week rows: a row that
+     * ends in October and starts in November is not a week of either month, and the padding days a
+     * calendar greys out only mean something against ONE month.
+     */
+    readonly months = computed(() => {
+        const first = startOfMonth(this.state.date());
+        return Array.from({ length: this.state.monthCount() }, (_, index) => addMonths(first, index));
+    });
+
+    /**
+     * One grid per resource in `resourceMonth`, a single grid otherwise, times one grid per month.
      *
      * The unassigned bucket only gets a panel when something would otherwise have nowhere to go.
      */
     readonly panels = computed(() => {
+        const months = this.months();
+        const multiple = months.length > 1;
+        const duration = this.state.defaultEventDuration();
+
+        // Split ONCE per panel and not once per month: the split does not depend on the month, and
+        // repeating it per grid made a twelve-month view do twelve passes over the same events.
+        const prepare = (events: SchedulerEvent[]): MonthEvents => {
+            const spanning: SchedulerEvent[] = [];
+            const timedByDay = new Map<string, SchedulerEvent[]>();
+
+            for (const event of events) {
+                if (this.isSpanning(event, duration)) {
+                    spanning.push(event);
+                    continue;
+                }
+                // Not spanning means it starts and ends on the same calendar day, so its start day
+                // IS the cell it goes in.
+                const key = dayKey(toDate(event.start));
+                const bucket = timedByDay.get(key);
+                if (bucket) bucket.push(event);
+                else timedByDay.set(key, [event]);
+            }
+
+            for (const bucket of timedByDay.values()) bucket.sort((a, b) => toDate(a.start).getTime() - toDate(b.start).getTime());
+
+            return { spanning, timedByDay };
+        };
+
+        // The month caption is only drawn when there is more than one grid: with a single month the
+        // header above the Scheduler already says which one it is, and repeating it is noise.
+        const section = (key: string, label: string, resource: SchedulerResource | null, count: number, context: any, events: SchedulerEvent[], first: boolean) => {
+            const prepared = prepare(events);
+
+            return months.map((month, index) => {
+                const monthKey = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}`;
+                const monthLabel = multiple ? month.toLocaleDateString(this.locale(), { month: 'long', year: 'numeric' }) : '';
+                const monthContext = { $implicit: month, date: month, label: monthLabel };
+
+                return {
+                    key: `${key}|${monthKey}`,
+                    label,
+                    resource,
+                    count,
+                    context,
+                    monthKey,
+                    monthLabel,
+                    monthContext,
+                    // The whole view is ONE grid to the arrow keys, which walk from the last week of
+                    // a month into the first of the next, so only its very first cell is the tab
+                    // stop: one per grid would put a dozen of them in a twelve-month view.
+                    first: first && index === 0,
+                    weeks: this.buildWeeks(prepared, `${key}|${monthKey}`, month)
+                };
+            });
+        };
+
         if (this.grouping() !== 'resource') {
-            return [{ key: 'all', label: '', resource: null as SchedulerResource | null, count: 0, context: null as any, weeks: this.buildWeeks(this.state.visibleEvents(), 'all') }];
+            return section('all', '', null, 0, null, this.state.visibleEvents(), true);
         }
 
         const events = this.state.visibleEvents();
         const resources: (SchedulerResource | null)[] = [...this.state.resources()];
         if (events.some((event) => this.state.eventBelongsTo(event, null))) resources.push(null);
 
-        return resources.map((resource) => {
+        return resources.flatMap((resource, index) => {
             const own = events.filter((event) => this.state.eventBelongsTo(event, resource?.id ?? null));
             const label = resource ? (resource.name ?? String(resource.id)) : this.state.labels().unassigned;
             const key = String(resource?.id ?? '__unassigned');
             const context = { resource, title: label, label, depth: 0, group: false, expanded: true, toggle: () => undefined, events: own, count: own.length };
-            return { key, label, resource, count: own.length, context: { ...context, $implicit: context, context }, weeks: this.buildWeeks(own, key) };
+            return section(key, label, resource, own.length, { ...context, $implicit: context, context }, own, index === 0);
         });
     });
 
@@ -307,15 +400,15 @@ export class SchedulerMonthView extends SchedulerViewBase {
      * The two share the per-cell budget: the bars take the top rows, the list starts below them, and
      * whatever does not fit is reported as overflow for the "+N more" link.
      */
-    private buildWeeks(events: SchedulerEvent[], panelKey: string) {
-        const { start, end } = this.state.range();
-        const anchorMonth = this.state.date().getMonth();
+    private buildWeeks({ spanning, timedByDay }: MonthEvents, panelKey: string, month: Date) {
+        // Every grid is padded to six whole weeks, so a three-month view is three grids of the same
+        // height and the rows do not jump from one month to the next.
+        const start = startOfWeek(month, this.state.firstDayOfWeek());
+        const end = addDays(start, 42);
+        const anchorMonth = month.getMonth();
         const maxRows = this.state.maxEventsPerCell();
         const moreTemplate = this.state.labels().more;
         const duration = this.state.defaultEventDuration();
-
-        const spanning = events.filter((event) => this.isSpanning(event, duration));
-        const timed = events.filter((event) => !this.isSpanning(event, duration));
 
         const rows: any[] = [];
         for (let weekStart = start; weekStart < end; weekStart = addDays(weekStart, 7)) {
@@ -336,7 +429,10 @@ export class SchedulerMonthView extends SchedulerViewBase {
                     return from < dayEnd && to > dayStart;
                 }).length;
 
-                const dayTimed = timed.filter((event) => this.touchesDay(event, date)).sort((a, b) => toDate(a.start).getTime() - toDate(b.start).getTime());
+                // Straight off the bucket: a timed event is one that starts and ends on the same
+                // calendar day, so its day is known without asking every event about every cell —
+                // which with several months on screen was the one cost that grew with the range.
+                const dayTimed = timedByDay.get(key) ?? EMPTY_EVENTS;
 
                 const available = Math.max(maxRows - barRows, 0);
                 const visible = dayTimed.slice(0, available);
@@ -427,19 +523,23 @@ export class SchedulerMonthView extends SchedulerViewBase {
         return dayKey(start) !== dayKey(new Date(end.getTime() - 1));
     }
 
+    /** The panels the contexts were last published for, so an unchanged view republishes nothing. */
+    private publishedPanels: unknown = null;
+
     ngAfterViewChecked(): void {
-        const weeks = this.panels().flatMap((panel) => panel.weeks);
+        const panels = this.panels();
+        // Everything the contexts are built from lives INSIDE the panels — the bindings read the
+        // selection, the drag and the templates as they are built — so the same panels mean the same
+        // contexts, and rebuilding both indexes on every check is work with no result. A month is
+        // 42 cells, and a twelve-month view twelve times that, per change detection pass.
+        if (panels === this.publishedPanels) return;
+        this.publishedPanels = panels;
+
+        const weeks = panels.flatMap((panel) => panel.weeks);
         this.publishContexts(
             [...weeks.flatMap((week) => week.events), ...weeks.flatMap((week) => week.days.flatMap((day: any) => [...day.visibleEvents, ...day.resourceGroups.flatMap((group: any) => group.events)]))],
             weeks.flatMap((week) => week.days.map((day: any) => day.binding))
         );
-    }
-
-    private touchesDay(event: SchedulerEvent, date: Date): boolean {
-        const start = toDate(event.start);
-        const rawEnd = event.end != null ? toDate(event.end) : null;
-        const end = rawEnd && rawEnd > start ? rawEnd : new Date(start.getTime() + this.state.defaultEventDuration() * 60_000);
-        return start < endOfDay(date) && end > date;
     }
 
     /** Opens the overflow popover, keeping the click off the cell underneath. */

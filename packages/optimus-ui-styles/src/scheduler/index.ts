@@ -142,6 +142,7 @@ export const style = /*css*/ `
     p-scheduler-time-gutter,
     p-scheduler-time-grid-cell,
     p-scheduler-work-cell,
+    p-scheduler-month-title,
     p-scheduler-month-header-cell,
     p-scheduler-month-cell,
     p-scheduler-month-cell-number,
@@ -621,6 +622,21 @@ export const style = /*css*/ `
         min-height: 0;
     }
 
+    /* Caption of one grid in a multi-month view. It sits above the weekday row and repeats the
+       month name the header cannot carry once the range covers more than one. */
+    .p-scheduler-month-title {
+        padding: 0.5rem 0.75rem;
+        background: dt('scheduler.weekday.background');
+        border-bottom: 1px solid dt('scheduler.border.color');
+        font-weight: 600;
+    }
+
+    /* Only the FIRST letter: text-transform capitalize turns the Spanish "septiembre de 2026" into
+       "Septiembre De 2026", and most locales print the month lowercase. */
+    .p-scheduler-month-title::first-letter {
+        text-transform: uppercase;
+    }
+
     .p-scheduler-month-header {
         display: grid;
         grid-template-columns: repeat(7, minmax(dt('scheduler.month.day.min.width'), 1fr));
@@ -808,6 +824,12 @@ export const style = /*css*/ `
        as the same grid. */
     .p-scheduler-view-month .p-scheduler-month + .p-scheduler-month {
         border-top: 2px solid dt('scheduler.border.color');
+    }
+
+    /* Several months share the height instead of each taking a whole viewport: a grid that shrinks
+       below its six rows would clip them, so it keeps its own size and the view scrolls. */
+    .p-scheduler-view-month[data-month-count]:not([data-month-count='1']) .p-scheduler-month {
+        flex: 0 0 auto;
     }
 
     .p-scheduler-month-resource-group {
@@ -1624,6 +1646,16 @@ export const style = /*css*/ `
         .p-scheduler-context-menu,
         .p-scheduler-selection-toolbar {
             display: none !important;
+        }
+
+        /* One month per sheet: a printed calendar of several months that runs November over the
+           bottom of October's page is not a calendar of either. The caption stays with its grid. */
+        .p-scheduler-view-month[data-month-count]:not([data-month-count='1']) .p-scheduler-month + .p-scheduler-month {
+            break-before: page;
+        }
+
+        .p-scheduler-month-title {
+            break-after: avoid;
         }
 
         /* A week, an agenda day or a resource lane split across two pages is unreadable: that is the

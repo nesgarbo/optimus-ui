@@ -23,6 +23,7 @@ import { ImportDoc } from '@/doc/scheduler/import-doc';
 import { InteractionDoc } from '@/doc/scheduler/interaction-doc';
 import { LocaleDoc } from '@/doc/scheduler/locale-doc';
 import { MonthDoc } from '@/doc/scheduler/month-doc';
+import { MultiMonthDoc } from '@/doc/scheduler/multi-month-doc';
 import { OverlaysDoc } from '@/doc/scheduler/overlays-doc';
 import { PerformanceDoc } from '@/doc/scheduler/performance-doc';
 import { RecurrenceDoc } from '@/doc/scheduler/recurrence-doc';
@@ -91,6 +92,11 @@ export class SchedulerDemo {
             id: 'month',
             label: 'Month',
             component: MonthDoc
+        },
+        {
+            id: 'multi-month',
+            label: 'Multi Month',
+            component: MultiMonthDoc
         },
         {
             id: 'agenda',

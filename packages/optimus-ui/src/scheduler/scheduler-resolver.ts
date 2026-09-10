@@ -27,6 +27,7 @@ export type SchedulerSlot =
     | 'timeGridCell'
     | 'workCell'
     | 'timeGridEvent'
+    | 'monthTitle'
     | 'monthHeaderCell'
     | 'monthCell'
     | 'monthCellNumber'

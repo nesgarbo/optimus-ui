@@ -531,6 +531,12 @@ export class SchedulerTimeGridEventDef extends SchedulerDef {
     override readonly slot = 'timeGridEvent' as const;
 }
 
+/** Declares the caption naming the month of a grid, drawn when `monthCount` is above one. @group Templates */
+@Directive({ selector: '[pSchedulerMonthTitleDef]', standalone: true })
+export class SchedulerMonthTitleDef extends SchedulerDef {
+    override readonly slot = 'monthTitle' as const;
+}
+
 /** Declares the weekday header row of the month grid. @group Templates */
 @Directive({ selector: '[pSchedulerMonthHeaderCellDef]', standalone: true })
 export class SchedulerMonthHeaderCellDef extends SchedulerDef {
@@ -683,6 +689,7 @@ export const SCHEDULER_DEFS = [
     SchedulerTimeGridCellDef,
     SchedulerWorkCellDef,
     SchedulerTimeGridEventDef,
+    SchedulerMonthTitleDef,
     SchedulerMonthHeaderCellDef,
     SchedulerMonthCellDef,
     SchedulerMonthCellNumberDef,

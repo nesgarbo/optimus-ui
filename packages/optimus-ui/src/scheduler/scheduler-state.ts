@@ -18,7 +18,7 @@ import type {
     SchedulerTimeFormatOptions,
     SchedulerViewType
 } from '@openng/optimus-ui/types/scheduler';
-import { addDays, dayKey, formatTimeRange, navigate, startOfDay, timelineScaleOf, toDate, viewRange, type SchedulerRange } from './scheduler-date';
+import { addDays, addMonths, dayKey, formatTimeRange, navigate, startOfDay, startOfMonth, timelineScaleOf, toDate, viewRange, type SchedulerRange } from './scheduler-date';
 import { expandEvents } from './scheduler-recurrence';
 import { fromDisplayTime, toDisplayTime, zoneLabel } from './scheduler-timezone';
 import { SchedulerDragController, applyPendingChanges, type SchedulerDragTarget, type SchedulerPendingChange } from './scheduler-drag';
@@ -138,6 +138,7 @@ export interface SchedulerStateInputs {
     date: Signal<Date>;
     firstDayOfWeek: Signal<number>;
     dayCount: Signal<number>;
+    monthCount: Signal<number>;
     agendaDays: Signal<number>;
     defaultEventDuration: Signal<number>;
     maxEventsPerCell: Signal<number>;
@@ -267,6 +268,14 @@ export class SchedulerState {
 
     /** Week days that count as working days, 0 = Sunday. */
     readonly workDays = computed(() => this.inputs.workDays());
+
+    /** How many month grids the month views draw at once. Never below one. */
+    readonly monthCount = computed(() => {
+        // A bound `undefined` or a non-numeric attribute arrives as NaN, and NaN months is a month
+        // view with no grid in it at all: anything that is not a count above one IS one.
+        const count = Math.trunc(this.inputs.monthCount());
+        return Number.isFinite(count) && count > 1 ? count : 1;
+    });
 
     /** How many events a month cell shows before it collapses into a "+N more" link. */
     readonly maxEventsPerCell = computed(() => this.inputs.maxEventsPerCell());
@@ -537,6 +546,7 @@ export class SchedulerState {
         viewRange(this.inputs.view(), this.inputs.date(), {
             firstDayOfWeek: this.inputs.firstDayOfWeek(),
             dayCount: this.inputs.dayCount(),
+            monthCount: this.monthCount(),
             agendaDays: this.inputs.agendaDays()
         })
     );
@@ -1044,6 +1054,7 @@ export class SchedulerState {
         this.inputs.setDate(
             navigate(this.inputs.view(), this.inputs.date(), direction, {
                 dayCount: this.inputs.dayCount(),
+                monthCount: this.monthCount(),
                 agendaDays: this.inputs.agendaDays()
             })
         );
@@ -1516,6 +1527,17 @@ export class SchedulerState {
         // would be titled with the previous one — and the agenda's is N days from the anchor, which
         // printed as a range gives an "8 Sep - 7 Oct" that says nothing about where you are.
         if (view === 'month' || view === 'resourceMonth' || view === 'dateMonth' || view === 'agenda' || timelineScale === 'month') {
+            // Several months on screen are titled as the span they cover, not as the anchor: a
+            // header reading "September" over a grid that runs into November is a lie. The year is
+            // printed once when both ends share it.
+            const months = this.monthCount();
+            if (months > 1 && (view === 'month' || view === 'resourceMonth' || view === 'dateMonth')) {
+                const first = startOfMonth(this.inputs.date());
+                const lastMonth = addMonths(first, months - 1);
+                const sameYear = first.getFullYear() === lastMonth.getFullYear();
+                const from = first.toLocaleDateString(locale, sameYear ? { month: 'long' } : { month: 'long', year: 'numeric' });
+                return `${from} - ${lastMonth.toLocaleDateString(locale, { month: 'long', year: 'numeric' })}`;
+            }
             return this.inputs.date().toLocaleDateString(locale, { month: 'long', year: 'numeric' });
         }
         if (dayKey(start) === dayKey(last)) {

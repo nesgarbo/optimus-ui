@@ -53,6 +53,24 @@ describe('scheduler-date', () => {
         expect(daysBetween(start, end)).toBe(42); // 6 semanas fijas
     });
 
+    it("monthCount stretches the month's viewRange to the last week of the last month", () => {
+        const { start, end } = viewRange('month', new Date(2026, 8, 15), { firstDayOfWeek: 1, monthCount: 3 });
+        expect(dayKey(start)).toBe('2026-08-31'); // la rejilla sigue empezando en el mes ancla
+        // Tres rejillas de seis semanas: la ultima empieza en la semana del 1 de noviembre.
+        expect(dayKey(new Date(end.getTime() - 1))).toBe('2026-12-06');
+    });
+
+    it('monthCount below one, or not a number at all, is treated as one', () => {
+        const one = viewRange('month', new Date(2026, 8, 15), { firstDayOfWeek: 1 });
+
+        for (const monthCount of [0, -3, Number.NaN]) {
+            const range = viewRange('month', new Date(2026, 8, 15), { firstDayOfWeek: 1, monthCount });
+            expect(range.start.getTime()).toBe(one.start.getTime());
+            expect(range.end.getTime()).toBe(one.end.getTime());
+            expect(dayKey(navigate('month', new Date(2026, 8, 9), 1, { monthCount }))).toBe('2026-10-09');
+        }
+    });
+
     it("the week's viewRange is 7 days and the day's is dayCount", () => {
         expect(daysBetween(viewRange('week', new Date(2026, 8, 9)).start, viewRange('week', new Date(2026, 8, 9)).end)).toBe(7);
         const three = viewRange('day', new Date(2026, 8, 9), { dayCount: 3 });
@@ -64,6 +82,9 @@ describe('scheduler-date', () => {
         expect(dayKey(navigate('day', base, 1))).toBe('2026-09-10');
         expect(dayKey(navigate('week', base, -1))).toBe('2026-09-02');
         expect(dayKey(navigate('month', base, 1))).toBe('2026-10-09');
+        // Con tres meses en pantalla una pagina son tres meses, o dos tercios de la rejilla se repiten.
+        expect(dayKey(navigate('month', base, 1, { monthCount: 3 }))).toBe('2026-12-09');
+        expect(dayKey(navigate('month', base, -1, { monthCount: 3 }))).toBe('2026-06-09');
         expect(navigate('year', base, 1).getFullYear()).toBe(2027);
     });
 

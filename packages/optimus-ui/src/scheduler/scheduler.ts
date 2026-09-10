@@ -224,6 +224,15 @@ export class Scheduler extends BaseComponent<SchedulerPassThrough> {
      */
     readonly dayCount = input(1, { transform: numberAttribute });
     /**
+     * How many months a month view shows at once, drawn as that many grids one after another.
+     *
+     * The previous/next controls move by the same amount, so paging never repeats a month that is
+     * already on screen.
+     * @defaultValue 1
+     * @group Props
+     */
+    readonly monthCount = input(1, { transform: numberAttribute });
+    /**
      * How many days the agenda spans.
      * @defaultValue 30
      * @group Props
@@ -856,6 +865,7 @@ export class Scheduler extends BaseComponent<SchedulerPassThrough> {
         date: this.date,
         firstDayOfWeek: this.resolvedFirstDayOfWeek,
         dayCount: this.dayCount,
+        monthCount: this.monthCount,
         agendaDays: this.agendaDays,
         defaultEventDuration: this.defaultEventDuration,
         maxEventsPerCell: this.maxEventsPerCell,
@@ -968,7 +978,7 @@ export class Scheduler extends BaseComponent<SchedulerPassThrough> {
      * Announces the rendered range, on init and on every change of it.
      *
      * An effect and not a call inside the navigation handlers: the range is derived from the view,
-     * the anchor date, `firstDayOfWeek`, `dayCount` and `agendaDays`, so a page that changes any of
+     * the anchor date, `firstDayOfWeek`, `dayCount`, `monthCount` and `agendaDays`, so a page that changes any of
      * those — or that binds `[date]` from a route — moves the range without going through the
      * header, and an application loading its events here has to hear about it. Firing once on init
      * is deliberate for the same reason: the first range is the one the first request needs.

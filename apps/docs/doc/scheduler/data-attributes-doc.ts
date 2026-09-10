@@ -20,8 +20,8 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
             <i>scheduler-all-day-cell</i>, <i>scheduler-all-day-event</i>.
         </p>
         <p>
-            Month and year: <i>scheduler-month-header-cell</i>, <i>scheduler-month-cell</i>, <i>scheduler-month-cell-number</i>, <i>scheduler-month-day-cell</i>, <i>scheduler-month-event</i>, <i>scheduler-month-more-link</i>,
-            <i>scheduler-mini-month</i>, <i>scheduler-mini-month-header</i>, <i>scheduler-mini-month-day</i>.
+            Month and year: <i>scheduler-month-title</i>, <i>scheduler-month-header-cell</i>, <i>scheduler-month-cell</i>, <i>scheduler-month-cell-number</i>, <i>scheduler-month-day-cell</i>, <i>scheduler-month-event</i>,
+            <i>scheduler-month-more-link</i>, <i>scheduler-mini-month</i>, <i>scheduler-mini-month-header</i>, <i>scheduler-mini-month-day</i>.
         </p>
         <p>
             Agenda and timelines: <i>scheduler-agenda</i>, <i>scheduler-agenda-date-header</i>, <i>scheduler-agenda-event</i>, <i>scheduler-timeline-body</i>, <i>scheduler-timeline-lane</i>, <i>scheduler-timeline-header-cell</i>,

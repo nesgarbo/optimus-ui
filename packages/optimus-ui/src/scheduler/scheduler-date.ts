@@ -182,6 +182,8 @@ export interface SchedulerRangeOptions {
     firstDayOfWeek?: number;
     /** How many days a `day`-family view shows at once. */
     dayCount?: number;
+    /** How many months a `month`-family view shows at once. */
+    monthCount?: number;
     /** How many days the agenda spans. */
     agendaDays?: number;
     /** How many days the timeline spans. */
@@ -197,7 +199,7 @@ export interface SchedulerRangeOptions {
  * and trailing days of the neighbouring months are part of the range and get rendered greyed out.
  */
 export function viewRange(view: SchedulerViewType, date: Date, options: SchedulerRangeOptions = {}): SchedulerRange {
-    const { firstDayOfWeek = 0, dayCount = 1, agendaDays = 30, timelineDays = 1, fixedWeeks = true } = options;
+    const { firstDayOfWeek = 0, dayCount = 1, monthCount = 1, agendaDays = 30, timelineDays = 1, fixedWeeks = true } = options;
 
     switch (view) {
         case 'day':
@@ -215,10 +217,14 @@ export function viewRange(view: SchedulerViewType, date: Date, options: Schedule
         case 'month':
         case 'resourceMonth':
         case 'dateMonth': {
+            // `monthCount` months side by side, each drawn as its own grid: the range is the union,
+            // from the first week of the first month to the last week of the last one.
+            const months = monthCount > 1 ? Math.trunc(monthCount) : 1; // NaN falls through to 1
             const first = startOfMonth(date);
             const start = startOfWeek(first, firstDayOfWeek);
-            const last = endOfMonth(date);
-            const end = fixedWeeks ? addDays(start, 42) : addDays(startOfWeek(addDays(last, -1), firstDayOfWeek), 7);
+            const lastFirst = addMonths(first, months - 1);
+            const last = endOfMonth(lastFirst);
+            const end = fixedWeeks ? addDays(startOfWeek(lastFirst, firstDayOfWeek), 42) : addDays(startOfWeek(addDays(last, -1), firstDayOfWeek), 7);
             return { start, end };
         }
         case 'year': {
@@ -259,7 +265,7 @@ export function viewRange(view: SchedulerViewType, date: Date, options: Schedule
  * How far one press of the previous/next control moves the anchor date, per view.
  */
 export function navigate(view: SchedulerViewType, date: Date, direction: -1 | 1, options: SchedulerRangeOptions = {}): Date {
-    const { dayCount = 1, agendaDays = 30, timelineDays = 1 } = options;
+    const { dayCount = 1, monthCount = 1, agendaDays = 30, timelineDays = 1 } = options;
 
     switch (view) {
         case 'day':
@@ -273,7 +279,9 @@ export function navigate(view: SchedulerViewType, date: Date, direction: -1 | 1,
         case 'month':
         case 'resourceMonth':
         case 'dateMonth':
-            return addMonths(date, direction);
+            // A page press moves by WHAT IS ON SCREEN: showing three months and stepping one would
+            // repeat two thirds of the grid on every press.
+            return addMonths(date, direction * (monthCount > 1 ? Math.trunc(monthCount) : 1));
         case 'year':
             return addMonths(date, direction * 12);
         case 'agenda':
