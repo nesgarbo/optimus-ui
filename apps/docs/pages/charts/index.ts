@@ -7,11 +7,13 @@ import { BarDoc } from '@/doc/charts/bar-doc';
 import { BasicDoc } from '@/doc/charts/basic-doc';
 import { BubbleDoc } from '@/doc/charts/bubble-doc';
 import { CanvasDoc } from '@/doc/charts/canvas-doc';
+import { CandlestickDoc } from '@/doc/charts/candlestick-doc';
 import { CurveDoc } from '@/doc/charts/curve-doc';
 import { DonutDoc } from '@/doc/charts/donut-doc';
 import { GaugeDoc } from '@/doc/charts/gauge-doc';
 import { GradientDoc } from '@/doc/charts/gradient-doc';
 import { GroupedDoc } from '@/doc/charts/grouped-doc';
+import { HeatmapDoc } from '@/doc/charts/heatmap-doc';
 import { HorizontalDoc } from '@/doc/charts/horizontal-doc';
 import { ImportDoc } from '@/doc/charts/import-doc';
 import { LegendDoc } from '@/doc/charts/legend-doc';
@@ -28,6 +30,7 @@ import { ScatterDoc } from '@/doc/charts/scatter-doc';
 import { StackedDoc } from '@/doc/charts/stacked-doc';
 import { ThemingDoc } from '@/doc/charts/theming-doc';
 import { TooltipDoc } from '@/doc/charts/tooltip-doc';
+import { TreemapDoc } from '@/doc/charts/treemap-doc';
 import { WaterfallDoc } from '@/doc/charts/waterfall-doc';
 
 @Component({
@@ -153,6 +156,21 @@ export class ChartsDemo {
             id: 'polar',
             label: 'Polar',
             component: PolarDoc
+        },
+        {
+            id: 'heatmap',
+            label: 'Heatmap',
+            component: HeatmapDoc
+        },
+        {
+            id: 'treemap',
+            label: 'Treemap',
+            component: TreemapDoc
+        },
+        {
+            id: 'candlestick',
+            label: 'Candlestick & OHLC',
+            component: CandlestickDoc
         },
         {
             id: 'axes',

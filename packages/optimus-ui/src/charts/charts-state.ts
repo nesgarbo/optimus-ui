@@ -58,6 +58,13 @@ export interface SeriesPoint {
      */
     xValue?: number | null;
     /**
+     * The extent this point spans on the value axis, where it is wider than the value itself.
+     *
+     * A candle's wick runs from its low to its high, so the axis has to cover both even though the
+     * point's own value is the close.
+     */
+    extent?: [number, number];
+    /**
      * Whether this point is a waterfall summary rather than a delta.
      *
      * A summary spans from zero to the running total, so it is neither a rise nor a fall and must
@@ -79,6 +86,13 @@ export interface ResolvedSeries {
      * Categories the series contributes to its x axis.
      */
     categories: string[];
+    /**
+     * Categories the series contributes to its y axis.
+     *
+     * Only a heatmap has these: it is the one cartesian series whose *both* axes are categorical,
+     * with the value carried by colour rather than by either position.
+     */
+    yCategories: string[];
     /**
      * Axis this series is bound to.
      */
@@ -185,21 +199,45 @@ export function createChartState(options: ChartStateOptions) {
         seriesRegistry().map((registration, index) => {
             const props = registration.props() as Record<string, unknown>;
             const data = (props['data'] as unknown[] | undefined) ?? [];
-            const horizontal = props['categoryYField'] != null;
-            const categoryAccessor = (horizontal ? props['categoryYField'] : props['categoryXField']) as never;
-            const valueAccessor = (horizontal ? props['valueXField'] : props['valueYField']) as never;
+            // A heatmap's rows are its second category axis, read per datum like the columns. It
+            // binds `categoryYField` the way a horizontal bar does, but it means a second category
+            // axis rather than a flipped orientation -- so the flip has to exclude it, or the
+            // columns end up reading from the row field.
+            const gridded = registration.type === 'heatmap';
+            const flipped = props['categoryYField'] != null && !gridded;
+            const categoryAccessor = (flipped ? props['categoryYField'] : props['categoryXField']) as never;
             const openAccessor = props['openField'] as never;
             // A scatter series is placed by two numbers, so it has no category axis at all. Its x
             // comes from `valueXField` rather than from a category lookup.
             const continuousX = registration.type === 'scatter';
             const xValueAccessor = props['valueXField'] as never;
+            const rowField = typeof props['categoryYField'] === 'string' ? (props['categoryYField'] as string) : 'row';
+            // A candlestick's value is its close, and its axis has to reach its low and high.
+            const ohlc = registration.type === 'candlestick';
+            /*
+             * Which prop carries the measured value, which differs by family:
+             *  - a heatmap has a single `valueField`, since neither axis measures it
+             *  - a scatter's y is `valueYField`, its x being read separately
+             *  - a horizontal bar measures along x, so `valueXField`
+             */
+            const valueAccessor = (gridded ? props['valueField'] : continuousX ? props['valueYField'] : flipped ? props['valueXField'] : props['valueYField']) as never;
+            const valueFallback = gridded ? 'value' : continuousX ? 'y' : 'value';
 
             const points: SeriesPoint[] = data.map((datum, dataIndex) => {
                 const category = readCategory(categoryAccessor, datum, dataIndex, index, registration.id);
-                const value = readNumeric(continuousX ? (props['valueYField'] as never) : valueAccessor, datum, dataIndex, index, registration.id, continuousX ? 'y' : 'value');
+                const value = readNumeric(valueAccessor, datum, dataIndex, index, registration.id, valueFallback);
                 // A floating bar starts at its open value rather than at zero.
                 const base = openAccessor == null ? 0 : (readNumeric(openAccessor, datum, dataIndex, index, registration.id) ?? 0);
                 const xValue = continuousX ? readNumeric(xValueAccessor, datum, dataIndex, index, registration.id, 'x') : undefined;
+
+                if (ohlc) {
+                    const close = readNumeric(props['closeField'] as never, datum, dataIndex, index, registration.id, 'close');
+                    const high = readNumeric(props['highField'] as never, datum, dataIndex, index, registration.id, 'high');
+                    const low = readNumeric(props['lowField'] as never, datum, dataIndex, index, registration.id, 'low');
+                    const extent: [number, number] | undefined = high != null && low != null ? [low, high] : undefined;
+
+                    return { category, value: close, base: 0, dataIndex, extent };
+                }
 
                 return { category, value, base, dataIndex, xValue };
             });
@@ -207,8 +245,9 @@ export function createChartState(options: ChartStateOptions) {
             return {
                 registration,
                 seriesIndex: index,
-                horizontal,
+                horizontal: flipped,
                 continuousX,
+                rows: gridded ? data.map((datum) => String(readPath(datum, rowField) ?? '')) : [],
                 points,
                 xAxisId: (props['xAxisId'] as string | undefined) ?? DEFAULT_AXIS,
                 yAxisId: (props['yAxisId'] as string | undefined) ?? DEFAULT_AXIS
@@ -251,6 +290,7 @@ export function createChartState(options: ChartStateOptions) {
             seriesIndex: entry.seriesIndex,
             points,
             categories: points.map((point) => point.category),
+            yCategories: entry.rows,
             xAxisId: entry.xAxisId,
             yAxisId: entry.yAxisId,
             categoryAxis: entry.continuousX ? null : entry.horizontal ? 'y' : 'x',
@@ -374,7 +414,7 @@ export function createChartState(options: ChartStateOptions) {
             const type = resolveAxisType(props['type'] as AxisType | undefined, axis.axis, bound);
 
             if (type === 'category') {
-                const categories = unionCategories(bound.filter((entry) => !entry.continuousX).map((entry) => entry.categories));
+                const categories = unionCategories(bound.filter((entry) => !entry.continuousX).map((entry) => (axis.axis === 'y' && entry.yCategories.length > 0 ? entry.yCategories : entry.categories)));
                 const sort = props['sort'] as 'value-asc' | 'value-desc' | 'label-asc' | 'label-desc' | undefined;
                 const ordered = sort ? sortCategories(categories, (category) => sumAt(bound, category), sort) : categories;
 
@@ -453,6 +493,10 @@ export function createChartState(options: ChartStateOptions) {
         if (explicit) return explicit;
         if (bound.length === 0) return axis === 'x' ? 'category' : 'linear';
 
+        // A heatmap's rows make its y axis categorical too, which is the one case where both axes
+        // are categories and neither carries the value.
+        if (axis === 'y' && bound.some((entry) => entry.yCategories.length > 0)) return 'category';
+
         return bound.some((entry) => entry.categoryAxis === axis) ? 'category' : 'linear';
     }
 
@@ -509,6 +553,8 @@ export function createChartState(options: ChartStateOptions) {
         // Which number of a point this axis measures. Only a continuous-x series contributes an x
         // value; everything else is placed on x by its category and measured on y by its value.
         const readAt = (point: SeriesPoint, entry: ResolvedSeries): number | null => {
+            // A heatmap encodes its value in colour, so it contributes to no positional domain.
+            if (entry.type === 'heatmap') return null;
             if (axis === 'y') return entry.categoryAxis === 'y' ? null : point.value;
 
             return entry.continuousX ? (point.xValue ?? null) : null;
@@ -525,6 +571,11 @@ export function createChartState(options: ChartStateOptions) {
 
                 min = Math.min(min, measured);
                 max = Math.max(max, measured);
+
+                if (axis === 'y' && point.extent) {
+                    min = Math.min(min, point.extent[0]);
+                    max = Math.max(max, point.extent[1]);
+                }
 
                 // A base is only part of the domain when it is a position the mark actually spans
                 // from -- a stack's floor, a floating bar's start. A base of 0 is the default every

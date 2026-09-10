@@ -64,6 +64,7 @@ function series(type: ResolvedSeries['type'], props: object, values: (number | n
         yAxisId: 'default',
         categoryAxis: 'x',
         continuousX: false,
+        yCategories: [],
         visible: overrides.visible ?? true,
         registration
     };
@@ -368,6 +369,7 @@ describe('scene composition', () => {
             yAxisId: 'default',
             categoryAxis: 'x',
             continuousX: false,
+            yCategories: [],
             visible: true,
             registration
         };
@@ -433,6 +435,7 @@ describe('radial series', () => {
             yAxisId: 'default',
             categoryAxis: 'x',
             continuousX: false,
+            yCategories: [],
             visible: true,
             registration
         };
@@ -491,6 +494,87 @@ describe('radial series', () => {
         const scene = buildScene(fakeContext(axesPresent), [pie({ data, valueField: 'value', categoryField: 'label' }, [40, 30, 20, 10], labels)], drawContext());
 
         expect(scene.layers.map((layer) => layer.key)).not.toContain('axes');
+    });
+});
+
+describe('heatmap', () => {
+    const axes = [
+        { axis: 'x' as const, id: 'default', props: { id: 'default', type: 'category' as const } },
+        { axis: 'y' as const, id: 'default', props: { id: 'default', type: 'category' as const } }
+    ];
+
+    const rows = ['Mon', 'Tue'];
+    const cols = ['00', '04', '08'];
+    const data = rows.flatMap((day) => cols.map((hour, i) => ({ day, hour, sessions: 10 + i * 5 })));
+
+    function heatmap(props: object): ResolvedSeries {
+        const registration: SeriesRegistration = { id: 'hm-1', type: 'heatmap', props: computed(() => props) as never, seriesIndex: signal(0) };
+
+        return {
+            id: 'hm-1',
+            type: 'heatmap',
+            seriesIndex: 0,
+            points: data.map((row, i) => ({ category: row.hour, value: row.sessions, base: 0, dataIndex: i })),
+            categories: data.map((row) => row.hour),
+            yCategories: data.map((row) => row.day),
+            xAxisId: 'default',
+            yAxisId: 'default',
+            categoryAxis: 'x',
+            continuousX: false,
+            visible: true,
+            registration
+        };
+    }
+
+    /** Both of a heatmap's axes are band scales, which no other cartesian series has. */
+    function griddedContext(): DrawContext {
+        return drawContext({
+            scales: new Map<string, AxisScale>([
+                ['x:default', bandScale(cols, { start: AREA.x, end: AREA.x + AREA.width }, 0.2, 0.1)],
+                ['y:default', bandScale(rows, { start: AREA.y + AREA.height, end: AREA.y }, 0.2, 0.1)]
+            ])
+        });
+    }
+
+    it('draws a cell per data row with real geometry', () => {
+        const scene = buildScene(fakeContext(axes), [heatmap({ data, categoryXField: 'hour', categoryYField: 'day', valueField: 'sessions' })], griddedContext());
+        const cells = allNodes(scene.layers).filter((node) => String(node.attrs['data-slot']) === 'chart-heatmap-cell');
+
+        expect(cells).toHaveLength(6);
+
+        // The bug this guards: the cells existed in the DOM with correct colours but an empty path,
+        // so the whole grid was invisible.
+        for (const cell of cells) expect(String(cell.attrs['d'])).not.toBe('');
+    });
+
+    it('colours by value across the given range', () => {
+        const scene = buildScene(fakeContext(axes), [heatmap({ data, categoryXField: 'hour', categoryYField: 'day', valueField: 'sessions', colorRange: ['#000000', '#ffffff'] })], griddedContext());
+        const fills = allNodes(scene.layers)
+            .filter((node) => String(node.attrs['data-slot']) === 'chart-heatmap-cell')
+            .map((node) => String(node.attrs['fill']));
+
+        expect(new Set(fills).size).toBeGreaterThan(1);
+    });
+
+    it('outlines a missing cell instead of filling it', () => {
+        // A hole has to read as no reading, not as a reading of zero.
+        const sparse = data.map((row, i) => (i === 1 ? { ...row, sessions: null } : row));
+        const series = heatmap({ data: sparse, categoryXField: 'hour', categoryYField: 'day', valueField: 'sessions' });
+
+        series.points[1] = { ...series.points[1], value: null };
+
+        const scene = buildScene(fakeContext(axes), [series], griddedContext());
+        const empty = allNodes(scene.layers).find((node) => node.attrs['data-empty'] === '');
+
+        expect(empty).toBeDefined();
+        expect(empty!.attrs['fill']).toBe('none');
+        expect(String(empty!.attrs['stroke-dasharray'])).toBe('3 3');
+    });
+
+    it('contributes nothing to a value domain, since colour carries its value', () => {
+        const scene = buildScene(fakeContext(axes), [heatmap({ data, categoryXField: 'hour', categoryYField: 'day', valueField: 'sessions' })], griddedContext());
+
+        expect(markupOf(scene.layers)).not.toContain('NaN');
     });
 });
 
@@ -560,6 +644,24 @@ describe('axis resolution', () => {
         const render = resolveAxis(ctx, linearScale(0, 100, { start: 600, end: 0 }), { tickCount: 3 }, 'left', 'linear');
 
         expect(render.allTicks.length).toBeLessThanOrEqual(5);
+    });
+
+    it('drops a tick that falls outside the plot', () => {
+        /*
+         * The bug this guards: the domain is rounded for the tick count it can know, while the count
+         * actually used comes from the axis' pixel length. When the two disagreed, the extra ticks
+         * were drawn outside the plot -- a "185" label 39px above the top of the chart.
+         */
+        const ctx = drawContext();
+        const scale = linearScale(166.5, 181.2, { start: 208, end: 0 });
+        const render = resolveAxis(ctx, scale, {}, 'left', 'linear');
+
+        expect(render.ticks.length).toBeGreaterThan(0);
+
+        for (const tick of render.ticks) {
+            expect(tick.position).toBeGreaterThanOrEqual(-0.5);
+            expect(tick.position).toBeLessThanOrEqual(208.5);
+        }
     });
 
     it('reserves nothing for an invisible axis', () => {

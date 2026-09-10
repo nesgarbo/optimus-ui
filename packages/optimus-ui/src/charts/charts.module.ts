@@ -26,10 +26,13 @@ import { ChartHover } from './features/chart-hover';
 import { ChartBar } from './series/chart-bar';
 import { ChartOverlap, ChartRange, ChartStacked, ChartWaterfall } from './series/chart-groups';
 import { ChartLine } from './series/chart-line';
+import { ChartCandlestick } from './series/chart-candlestick';
+import { ChartHeatmap } from './series/chart-heatmap';
 import { ChartPie } from './series/chart-pie';
 import { ChartPolar } from './series/chart-polar';
 import { ChartRadar } from './series/chart-radar';
 import { ChartScatter } from './series/chart-scatter';
+import { ChartTreemap } from './series/chart-treemap';
 
 /**
  * Every chart part in one import.
@@ -50,6 +53,9 @@ const PARTS = [
     ChartScatter,
     ChartRadar,
     ChartPolar,
+    ChartCandlestick,
+    ChartHeatmap,
+    ChartTreemap,
     ChartStacked,
     ChartWaterfall,
     ChartOverlap,

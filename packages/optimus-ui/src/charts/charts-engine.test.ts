@@ -56,6 +56,39 @@ describe('scales', () => {
         expect(Number.isFinite(scale.scale(100))).toBe(true);
     });
 
+    it('gives an inverted range a positive bandwidth', () => {
+        // Every y axis is inverted -- screen y grows downward while a value axis runs bottom to top
+        // -- and doing the arithmetic on the signed span produced a negative bandwidth that clamped
+        // to zero. Nothing noticed until a heatmap read the y band's width and every cell came out
+        // zero-height.
+        const inverted = bandScale(['Mon', 'Tue'], { start: 210, end: 10 }, 0.2, 0.1);
+
+        expect(inverted.bandwidth).toBeGreaterThan(0);
+        expect(inverted.step).toBeGreaterThan(0);
+    });
+
+    it('places bands in the range direction, ascending or descending', () => {
+        const ascending = bandScale(['a', 'b'], { start: 0, end: 200 }, 0.2, 0.1);
+        const descending = bandScale(['a', 'b'], { start: 200, end: 0 }, 0.2, 0.1);
+
+        expect(ascending.scale('a')).toBeLessThan(ascending.scale('b'));
+        expect(descending.scale('a')).toBeGreaterThan(descending.scale('b'));
+    });
+
+    it('returns the smaller coordinate from bandStart whichever way the range runs', () => {
+        // So a caller can draw a rectangle from it without knowing the direction.
+        const descending = bandScale(['a', 'b'], { start: 200, end: 0 }, 0.2, 0.1);
+
+        expect(descending.bandStart('a')).toBeLessThan(descending.scale('a'));
+        expect(descending.scale('a') - descending.bandStart('a')).toBeCloseTo(descending.bandwidth / 2);
+    });
+
+    it('inverts a pixel back to its category on a descending range', () => {
+        const descending = bandScale(['a', 'b', 'c'], { start: 300, end: 0 }, 0.2, 0.1);
+
+        for (const category of ['a', 'b', 'c']) expect(descending.invert(descending.scale(category))).toBe(category);
+    });
+
     it('unions categories across series in first-seen order', () => {
         expect(unionCategories([['a', 'b'], ['b', 'c'], ['a']])).toEqual(['a', 'b', 'c']);
     });

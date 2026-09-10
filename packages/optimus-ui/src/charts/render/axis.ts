@@ -142,7 +142,16 @@ export function resolveAxis(ctx: DrawContext, scale: AxisScale, props: BaseAxisP
         index
     }));
 
-    const drawable = allTicks.filter((tick) => Number.isFinite(tick.position));
+    /*
+     * Only the ticks that land inside the plot survive.
+     *
+     * `linearTicks` rounds outward so an axis can end on a round number, and the domain is niced for
+     * the tick count it can know about -- but the count actually used is derived from the axis'
+     * pixel length, which the domain never sees. The two can disagree, and when they do the extra
+     * ticks are drawn outside the plot: a "185" label sitting 39px above the top of the chart. The
+     * scale is the authority on what is on screen, so anything outside its range goes.
+     */
+    const drawable = allTicks.filter((tick) => Number.isFinite(tick.position) && withinRange(tick.position, scale.range));
     const labelWidths = drawable.map((tick) => ctx.measureText(tick.label, fontSize));
     const widest = labelWidths.length ? Math.max(...labelWidths) : 0;
 
@@ -175,6 +184,17 @@ export function resolveAxis(ctx: DrawContext, scale: AxisScale, props: BaseAxisP
     if (props.showLastLabel === false) ticks = ticks.filter((tick) => tick.index !== allTicks.length - 1);
 
     return { ticks, allTicks: drawable, rotation, reservation: reserveFor(ctx, props, position, ticks, rotation, widest, fontSize) };
+}
+
+/** Whether a pixel position lies within a scale's range, whichever way the range runs. */
+function withinRange(position: number, range: readonly [number, number]): boolean {
+    const [start, end] = range;
+    const lower = Math.min(start, end);
+    const upper = Math.max(start, end);
+    // A half-pixel of slack, so a tick sitting exactly on the edge is not lost to rounding.
+    const slack = 0.5;
+
+    return position >= lower - slack && position <= upper + slack;
 }
 
 /** How much space the axis asks the layout to keep for it. */

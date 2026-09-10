@@ -10,16 +10,19 @@ import type {
     AxisType,
     BarSeriesProps,
     BaseAxisProps,
+    CandlestickSeriesProps,
     ChartHoverProps,
     ChartTooltipProps,
     ColorValue,
     CrosshairConfig,
+    HeatmapSeriesProps,
     LineSeriesProps,
     PieSeriesProps,
     PolarSeriesProps,
     RadarSeriesProps,
     ScatterSeriesProps,
-    SvgNode
+    SvgNode,
+    TreemapSeriesProps
 } from '@openng/optimus-ui/types/charts';
 import { isGradient, isLinearGradient } from '../core/color';
 import type { ChartContext } from '../charts-registry';
@@ -31,6 +34,9 @@ import { paintLineSeries } from './series-line';
 import { paintPieSeries, pieFrame, type PieFrame } from './series-pie';
 import { paintPolarSeries, paintRadarSeries, paintRadialGrid, radialFrame, resolveRadialAxis } from './series-radial';
 import { paintScatterSeries } from './series-scatter';
+import { paintCandlestickSeries } from './series-candlestick';
+import { paintHeatmapSeries, resolveHeatmapScale } from './series-heatmap';
+import { paintTreemapSeries } from './series-treemap';
 import { createScene, plotClip, plotClipRef, type DrawContext, type SceneLayer } from './scene';
 
 /** What a built scene carries back to the root. */
@@ -175,6 +181,18 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
             }
             case 'scatter':
                 scene.add('marks', ...paintScatterSeries(drawContext, entry, entry.registration.props() as ScatterSeriesProps));
+                break;
+            case 'candlestick':
+                scene.add('marks', ...paintCandlestickSeries(drawContext, entry, entry.registration.props() as CandlestickSeriesProps));
+                break;
+            case 'heatmap': {
+                const props = entry.registration.props() as HeatmapSeriesProps;
+
+                scene.add('marks', ...paintHeatmapSeries(drawContext, entry, props, resolveHeatmapScale(entry, props)));
+                break;
+            }
+            case 'treemap':
+                scene.add('marks', ...paintTreemapSeries(drawContext, entry, entry.registration.props() as TreemapSeriesProps));
                 break;
             case 'radar':
             case 'polar':

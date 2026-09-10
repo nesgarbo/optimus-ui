@@ -170,3 +170,58 @@ export const SKILLS = [
     { axis: 'Support', current: 88, target: 75 },
     { axis: 'Docs', current: 67, target: 80 }
 ];
+
+/** A day-by-hour activity matrix, for the heatmap demo. Some cells are deliberately absent. */
+export const ACTIVITY = (() => {
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const hours = ['00', '04', '08', '12', '16', '20'];
+    const rows: { day: string; hour: string; sessions: number | null }[] = [];
+
+    days.forEach((day, d) => {
+        hours.forEach((hour, h) => {
+            // A couple of holes, so the empty-cell treatment is visible in the demo.
+            const missing = (d === 5 && h === 0) || (d === 6 && h === 1);
+            const weekend = d >= 5;
+            const peak = h === 3 ? 1.6 : h === 2 || h === 4 ? 1.2 : 0.4;
+
+            rows.push({ day, hour, sessions: missing ? null : Math.round(40 * peak * (weekend ? 0.5 : 1) + ((d * 7 + h * 13) % 25)) });
+        });
+    });
+
+    return rows;
+})();
+
+/** A revenue hierarchy, for the treemap demo. */
+export const PORTFOLIO = [
+    { id: 'emea', label: 'EMEA', parent: '', revenue: 0, margin: 0 },
+    { id: 'amer', label: 'Americas', parent: '', revenue: 0, margin: 0 },
+    { id: 'apac', label: 'APAC', parent: '', revenue: 0, margin: 0 },
+    { id: 'uk', label: 'UK', parent: 'emea', revenue: 420, margin: 18 },
+    { id: 'de', label: 'Germany', parent: 'emea', revenue: 310, margin: 12 },
+    { id: 'fr', label: 'France', parent: 'emea', revenue: 185, margin: 9 },
+    { id: 'us', label: 'United States', parent: 'amer', revenue: 780, margin: 22 },
+    { id: 'ca', label: 'Canada', parent: 'amer', revenue: 160, margin: 15 },
+    { id: 'br', label: 'Brazil', parent: 'amer', revenue: 120, margin: 6 },
+    { id: 'jp', label: 'Japan', parent: 'apac', revenue: 240, margin: 19 },
+    { id: 'au', label: 'Australia', parent: 'apac', revenue: 150, margin: 14 },
+    { id: 'sg', label: 'Singapore', parent: 'apac', revenue: 95, margin: 11 }
+];
+
+/** Daily prices, for the candlestick demos. */
+export const PRICES = [
+    { date: 'Jan 2', open: 170.2, high: 173.5, low: 169, close: 172.8 },
+    { date: 'Jan 3', open: 172.8, high: 174.1, low: 170.5, close: 171 },
+    { date: 'Jan 4', open: 171, high: 172.3, low: 168.2, close: 168.8 },
+    { date: 'Jan 5', open: 168.8, high: 170, low: 166.5, close: 169.5 },
+    { date: 'Jan 8', open: 169.5, high: 172, low: 169, close: 171.8 },
+    { date: 'Jan 9', open: 171.8, high: 175.2, low: 171, close: 174.5 },
+    { date: 'Jan 10', open: 174.5, high: 176.8, low: 173.2, close: 175.9 },
+    { date: 'Jan 11', open: 175.9, high: 177, low: 174, close: 174.8 },
+    { date: 'Jan 12', open: 174.8, high: 175.5, low: 172, close: 172.5 },
+    { date: 'Jan 16', open: 172.5, high: 174, low: 171.2, close: 173.8 },
+    { date: 'Jan 17', open: 173.8, high: 176.5, low: 173, close: 176 },
+    { date: 'Jan 18', open: 176, high: 178.2, low: 175.5, close: 177.5 },
+    { date: 'Jan 19', open: 177.5, high: 179, low: 176, close: 178.8 },
+    { date: 'Jan 22', open: 178.8, high: 180.5, low: 178, close: 180 },
+    { date: 'Jan 23', open: 180, high: 181.2, low: 177.5, close: 178.2 }
+];

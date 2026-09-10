@@ -17,9 +17,19 @@ export interface ScaleRange {
 export function bandScale(categories: readonly string[], range: ScaleRange, innerPadding = 0.2, outerPadding = 0.1): BandScale {
     const count = Math.max(categories.length, 1);
     const span = range.end - range.start;
-    const step = span / (count + 2 * outerPadding - innerPadding);
+    /*
+     * The bands are laid out along the range's magnitude and then placed in its direction.
+     *
+     * Doing the arithmetic on the signed span instead produced a negative step and a negative
+     * bandwidth on any inverted range -- which is every y axis, since screen y grows downward and a
+     * value axis runs bottom to top. Nothing noticed while only the x band's width was ever read;
+     * a heatmap reads the y band's too, and every one of its cells came out zero-height.
+     */
+    const direction = span < 0 ? -1 : 1;
+    const length = Math.abs(span);
+    const step = length / (count + 2 * outerPadding - innerPadding);
     const bandwidth = Math.max(step * (1 - innerPadding), 0);
-    const offset = range.start + step * outerPadding;
+    const offset = range.start + direction * step * outerPadding;
     const index = new Map<string, number>();
 
     categories.forEach((category, i) => {
@@ -27,7 +37,8 @@ export function bandScale(categories: readonly string[], range: ScaleRange, inne
         if (!index.has(category)) index.set(category, i);
     });
 
-    const positionOf = (i: number) => offset + i * step;
+    /** The band's leading edge, in range order. */
+    const edgeOf = (i: number) => offset + direction * i * step;
 
     return {
         type: 'band',
@@ -38,20 +49,26 @@ export function bandScale(categories: readonly string[], range: ScaleRange, inne
         scale: (value: unknown) => {
             const i = index.get(String(value));
 
-            return i == null ? Number.NaN : positionOf(i) + bandwidth / 2;
+            return i == null ? Number.NaN : edgeOf(i) + (direction * bandwidth) / 2;
         },
         bandStart: (value: unknown) => {
             const i = index.get(String(value));
 
-            return i == null ? Number.NaN : positionOf(i);
+            if (i == null) return Number.NaN;
+
+            const edge = edgeOf(i);
+
+            // The smaller coordinate of the band, whichever way the range runs, so a caller can
+            // draw a rectangle from it without knowing the direction.
+            return direction > 0 ? edge : edge - bandwidth;
         },
         indexAt: (pixel: number) => {
-            const raw = Math.floor((pixel - offset + step * innerPadding * 0.5) / step);
+            const raw = Math.floor((direction * (pixel - offset) + step * innerPadding * 0.5) / step);
 
             return Math.min(Math.max(raw, 0), count - 1);
         },
         invert: (pixel: number) => {
-            const raw = Math.floor((pixel - offset + step * innerPadding * 0.5) / step);
+            const raw = Math.floor((direction * (pixel - offset) + step * innerPadding * 0.5) / step);
             const i = Math.min(Math.max(raw, 0), count - 1);
 
             return categories[i];
