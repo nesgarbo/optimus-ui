@@ -13,7 +13,7 @@ import { itemContext, resolveColorAccessor, resolveDashAccessor, resolveDashPatt
 import { formatNumberTick } from '../core/format';
 import { arcPath, isMarkerShapeName, markerPath, polygonPath, polarToCartesian, spokeAngles } from '../core/geometry';
 import { seriesColorClass } from '../core/palette';
-import { linearTicks } from '../core/ticks';
+import { linearTicks, niceStep } from '../core/ticks';
 import { unionCategories } from '../core/scale';
 import { centerOf } from '../core/layout';
 import type { ResolvedSeries } from '../charts-state';
@@ -59,7 +59,7 @@ export function radialFrame(ctx: DrawContext, categories: readonly string[]): Pi
 }
 
 /** Builds the radial axis shared by every radial series in the chart. */
-export function resolveRadialAxis(series: readonly ResolvedSeries[], props: BaseAxisProps | undefined, tickCount = 5): RadialAxis {
+export function resolveRadialAxis(series: readonly ResolvedSeries[], props: BaseAxisProps | undefined, tickCount = 4): RadialAxis {
     const categories = unionCategories(series.map((entry) => entry.categories));
     let min = 0;
     let max = -Infinity;
@@ -74,10 +74,20 @@ export function resolveRadialAxis(series: readonly ResolvedSeries[], props: Base
 
     if (!Number.isFinite(max)) max = 1;
 
-    // A radial axis starts at the centre, and the centre is zero unless the data goes below it.
-    // Cutting a radial axis is far more misleading than cutting a cartesian one: the reader is
-    // comparing areas, and a non-zero centre inflates every one of them.
-    const ticks = linearTicks(min, max, props?.tickCount ?? tickCount);
+    /*
+     * A radial axis starts at the centre, and the centre is zero unless the data goes below it.
+     * Cutting a radial axis is far more misleading than cutting a cartesian one: the reader is
+     * comparing areas, and a non-zero centre inflates every one of them.
+     *
+     * The rings are equal fractions of a rounded rim rather than nice steps chosen independently.
+     * On a cartesian axis those are the same thing; on a radial one they are not, because the rim
+     * *is* the outermost ring -- so a nice step of 20 against a max of 95 put the rim at 100 and
+     * then drew a fifth ring the reader had not asked for. Rounding the rim first and dividing it
+     * gives the four rings that were asked for, at 25 apiece.
+     */
+    const rim = niceCeiling(max);
+    const count = Math.max(props?.tickCount ?? tickCount, 1);
+    const ticks = min < 0 ? linearTicks(min, rim, count) : Array.from({ length: count + 1 }, (_, i) => (rim * i) / count);
 
     return { categories, ticks, min: ticks[0] ?? min, max: ticks[ticks.length - 1] ?? max };
 }
@@ -88,6 +98,20 @@ export function radiusFor(axis: RadialAxis, value: number, frame: PieFrame, inne
     const usable = frame.radius - innerRadius;
 
     return innerRadius + ((value - axis.min) / span) * usable;
+}
+
+/**
+ * Rounds a maximum up to a readable rim.
+ *
+ * The same 1/2/5/10 ladder the tick generator uses, applied to the value itself rather than to a
+ * step, so 95 becomes 100 and 47 becomes 50.
+ */
+function niceCeiling(max: number): number {
+    if (!Number.isFinite(max) || max <= 0) return 1;
+
+    const step = niceStep(max);
+
+    return step * Math.ceil(max / step);
 }
 
 /** Paints the concentric grid, the spokes and the value labels. */
@@ -129,7 +153,14 @@ export function paintRadialGrid(ctx: DrawContext, axis: RadialAxis, props: BaseA
             nodes.push({
                 tag: 'line',
                 attrs: {
-                    class: 'p-chart-axis-line',
+                    /*
+                     * A spoke's own class, not the axis line's.
+                     *
+                     * Sharing `p-chart-axis-line` meant the stylesheet's axis colour won over the
+                     * grid colour set here -- CSS beats a presentation attribute -- so the spokes
+                     * came out as dark as an axis instead of as faint as the rings they divide.
+                     */
+                    class: 'p-chart-radial-spoke',
                     'data-slot': 'chart-radial-spoke',
                     x1: frame.center.x,
                     y1: frame.center.y,

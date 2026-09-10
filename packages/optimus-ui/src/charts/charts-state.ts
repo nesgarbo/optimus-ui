@@ -25,7 +25,17 @@ import { type AxisRegistration, type ChartContext, type FeatureRegistration, typ
  * space without needing the plot area that its reservation will go on to determine.
  */
 export type AxisDomain =
-    | { kind: 'category'; categories: string[]; banded: boolean; padding?: number }
+    | {
+          kind: 'category';
+          categories: string[];
+          banded: boolean;
+          /**
+           * Whether the bands fill the axis with no padding between them, which is what a matrix
+           * wants: its own cell spacing is the only gap there should be.
+           */
+          tiled?: boolean;
+          padding?: number;
+      }
     | {
           kind: 'value';
           type: AxisType;
@@ -437,7 +447,19 @@ export function createChartState(options: ChartStateOptions) {
                 const sort = props['sort'] as 'value-asc' | 'value-desc' | 'label-asc' | 'label-desc' | undefined;
                 const ordered = sort ? sortCategories(categories, (category) => sumAt(bound, category), sort) : categories;
 
-                result.set(key, { kind: 'category', categories: ordered, banded: seriesUsesBands(bound), padding: numberProp(props['chartPaddingMin']) ?? undefined });
+                /*
+                 * A heatmap is a matrix, and both of its axes behave like a table's rather than a
+                 * bar chart's.
+                 *
+                 * Its cells tile: the gap between them is the series' own `spacing`, so band
+                 * padding on top of that leaves a second, larger gap nobody asked for. And its rows
+                 * read downward from the first, like every table -- a value axis runs bottom to top
+                 * because it measures, but a row axis only lists.
+                 */
+                const gridded = bound.some((entry) => entry.type === 'heatmap');
+                const rows = gridded && axis.axis === 'y' && props['reversed'] !== true ? [...ordered].reverse() : ordered;
+
+                result.set(key, { kind: 'category', categories: rows, banded: seriesUsesBands(bound), tiled: gridded, padding: numberProp(props['chartPaddingMin']) ?? undefined });
                 continue;
             }
 
@@ -470,8 +492,8 @@ export function createChartState(options: ChartStateOptions) {
             const range = horizontal ? (rtl ? { start: area.x + area.width, end: area.x } : { start: area.x, end: area.x + area.width }) : { start: area.y + area.height, end: area.y };
 
             if (domain.kind === 'category') {
-                const inner = domain.banded ? 0.2 : 0;
-                const outer = domain.padding ?? (domain.banded ? 0.1 : 0.05);
+                const inner = domain.tiled ? 0 : domain.banded ? 0.2 : 0;
+                const outer = domain.padding ?? (domain.tiled ? 0 : domain.banded ? 0.1 : 0.05);
 
                 result.set(key, bandScale(domain.categories, range, inner, outer));
                 continue;

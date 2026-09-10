@@ -77,6 +77,11 @@ export const style = /*css*/ `
         stroke: var(--p-chart-axis, dt('charts.axis.color'));
     }
 
+    /* A spoke divides the rings, so it belongs to the grid rather than to the axis. */
+    .p-chart-radial-spoke {
+        stroke: var(--p-chart-grid, dt('charts.grid.color'));
+    }
+
     .p-chart-tick-label {
         fill: var(--p-chart-tick-label-color, dt('charts.tick.label.color'));
     }
