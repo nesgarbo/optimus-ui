@@ -204,7 +204,7 @@ function reserveFor(ctx: DrawContext, props: BaseAxisProps, position: AxisPositi
     const style = props.tickStyle && typeof props.tickStyle === 'object' ? props.tickStyle : {};
     const tickLength = props.showTicks === false ? 0 : (style.tickLength ?? 6);
     const padding = style.padding ?? 8;
-    const titleHeight = props.label ? lineHeightOf(fontSize) + 4 : 0;
+    const titleHeight = props.label ? lineHeightOf(fontSize + 1) + 4 : 0;
 
     if (props.showLabels === false) return tickLength + titleHeight;
 
@@ -322,7 +322,10 @@ function paintAxisTitle(ctx: DrawContext, label: string, position: AxisPosition,
             x,
             y,
             fill: color,
-            'font-size': fontSize,
+            // The title names what the axis measures, so it carries more weight than the tick
+            // labels that read against it -- otherwise the two rows compete at the same voice.
+            'font-size': fontSize + 1,
+            'font-weight': 600,
             'font-family': ctx.fontFamily,
             'text-anchor': 'middle',
             'dominant-baseline': 'central',

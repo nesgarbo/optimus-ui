@@ -170,11 +170,11 @@ export function arcPath(cx: number, cy: number, innerRadius: number, outerRadius
     const largeArc = Math.abs(sweep) > 180 ? 1 : 0;
     const direction = sweep > 0 ? 1 : 0;
 
-    if (innerRadius <= 0) {
-        if (cornerRadius > 0) {
-            return roundedWedgePath(cx, cy, outerRadius, startAngle, endAngle, cornerRadius);
-        }
+    if (cornerRadius > 0) {
+        return roundedArcPath(cx, cy, innerRadius, outerRadius, startAngle, endAngle, cornerRadius);
+    }
 
+    if (innerRadius <= 0) {
         return `M ${cx} ${cy} L ${outerStart.x} ${outerStart.y} A ${outerRadius} ${outerRadius} 0 ${largeArc} ${direction} ${outerEnd.x} ${outerEnd.y} Z`;
     }
 
@@ -201,18 +201,79 @@ export function fullRingPath(cx: number, cy: number, innerRadius: number, outerR
     return `${outer} ${inner}`;
 }
 
-/** A wedge with its outer corners rounded. */
-function roundedWedgePath(cx: number, cy: number, outerRadius: number, startAngle: number, endAngle: number, cornerRadius: number): string {
+/**
+ * An arc with rounded corners.
+ *
+ * Each corner is a real arc tangent to both edges it joins, not an inset endpoint: insetting alone
+ * shortens the slice without rounding anything, which is why a `borderRadius` on a pie had no
+ * visible effect and none at all on a ring.
+ *
+ * The radius is capped three ways -- half the ring's thickness, half the arc length at the outer
+ * edge, and half at the inner -- so two corners on a thin or narrow slice cannot cross and turn the
+ * path inside out.
+ */
+function roundedArcPath(cx: number, cy: number, innerRadius: number, outerRadius: number, startAngle: number, endAngle: number, cornerRadius: number): string {
     const sweep = endAngle - startAngle;
-    // Cap the radius so two rounded corners on a narrow slice cannot overlap.
-    const arcLength = (Math.abs(sweep) / 360) * 2 * Math.PI * outerRadius;
-    const r = Math.min(cornerRadius, arcLength / 2, outerRadius / 2);
-    const angleInset = toDegrees(r / outerRadius);
-    const start = polarToCartesian(cx, cy, outerRadius, startAngle + angleInset);
-    const end = polarToCartesian(cx, cy, outerRadius, endAngle - angleInset);
+    const direction = sweep > 0 ? 1 : 0;
     const largeArc = Math.abs(sweep) > 180 ? 1 : 0;
+    const outerArc = (Math.abs(sweep) / 360) * 2 * Math.PI * outerRadius;
+    const innerArc = innerRadius > 0 ? (Math.abs(sweep) / 360) * 2 * Math.PI * innerRadius : Infinity;
+    const r = Math.min(cornerRadius, (outerRadius - Math.max(innerRadius, 0)) / 2, outerArc / 2, innerArc / 2);
+    const outerStart = polarToCartesian(cx, cy, outerRadius, startAngle);
+    const outerEnd = polarToCartesian(cx, cy, outerRadius, endAngle);
 
-    return `M ${cx} ${cy} L ${start.x} ${start.y} A ${outerRadius} ${outerRadius} 0 ${largeArc} ${sweep > 0 ? 1 : 0} ${end.x} ${end.y} Z`;
+    // Below about half a pixel there is nothing to see, and the corner arcs would only add
+    // rounding errors to a path that is already correct.
+    if (r <= 0.5) {
+        if (innerRadius <= 0) {
+            return `M ${cx} ${cy} L ${outerStart.x} ${outerStart.y} A ${outerRadius} ${outerRadius} 0 ${largeArc} ${direction} ${outerEnd.x} ${outerEnd.y} Z`;
+        }
+
+        const innerEnd = polarToCartesian(cx, cy, innerRadius, endAngle);
+        const innerStart = polarToCartesian(cx, cy, innerRadius, startAngle);
+
+        return (
+            `M ${outerStart.x} ${outerStart.y} A ${outerRadius} ${outerRadius} 0 ${largeArc} ${direction} ${outerEnd.x} ${outerEnd.y} ` +
+            `L ${innerEnd.x} ${innerEnd.y} A ${innerRadius} ${innerRadius} 0 ${largeArc} ${direction === 1 ? 0 : 1} ${innerStart.x} ${innerStart.y} Z`
+        );
+    }
+
+    // The angle a corner of radius r subtends at each edge, so it meets the circular edge
+    // tangentially rather than cutting across it.
+    const outerInset = toDegrees(r / outerRadius) * (sweep > 0 ? 1 : -1);
+    const from = polarToCartesian(cx, cy, outerRadius, startAngle + outerInset);
+    const to = polarToCartesian(cx, cy, outerRadius, endAngle - outerInset);
+    const trailingOuter = polarToCartesian(cx, cy, outerRadius - r, endAngle);
+    const leadingOuter = polarToCartesian(cx, cy, outerRadius - r, startAngle);
+
+    if (innerRadius <= 0) {
+        // A wedge keeps its apex sharp: the two radial edges meet at a point there, and rounding it
+        // would open a gap at the centre of the pie.
+        return (
+            `M ${cx} ${cy} L ${leadingOuter.x} ${leadingOuter.y} ` +
+            `A ${r} ${r} 0 0 ${direction} ${from.x} ${from.y} ` +
+            `A ${outerRadius} ${outerRadius} 0 ${largeArc} ${direction} ${to.x} ${to.y} ` +
+            `A ${r} ${r} 0 0 ${direction} ${trailingOuter.x} ${trailingOuter.y} Z`
+        );
+    }
+
+    const innerInset = toDegrees(r / innerRadius) * (sweep > 0 ? 1 : -1);
+    const innerTo = polarToCartesian(cx, cy, innerRadius, endAngle - innerInset);
+    const innerFrom = polarToCartesian(cx, cy, innerRadius, startAngle + innerInset);
+    const trailingInner = polarToCartesian(cx, cy, innerRadius + r, endAngle);
+    const leadingInner = polarToCartesian(cx, cy, innerRadius + r, startAngle);
+
+    return (
+        `M ${from.x} ${from.y} ` +
+        `A ${outerRadius} ${outerRadius} 0 ${largeArc} ${direction} ${to.x} ${to.y} ` +
+        `A ${r} ${r} 0 0 ${direction} ${trailingOuter.x} ${trailingOuter.y} ` +
+        `L ${trailingInner.x} ${trailingInner.y} ` +
+        `A ${r} ${r} 0 0 ${direction} ${innerTo.x} ${innerTo.y} ` +
+        `A ${innerRadius} ${innerRadius} 0 ${largeArc} ${direction === 1 ? 0 : 1} ${innerFrom.x} ${innerFrom.y} ` +
+        `A ${r} ${r} 0 0 ${direction} ${leadingInner.x} ${leadingInner.y} ` +
+        `L ${leadingOuter.x} ${leadingOuter.y} ` +
+        `A ${r} ${r} 0 0 ${direction} ${from.x} ${from.y} Z`
+    );
 }
 
 /** A regular polygon, which is what a polygon-shaped radar grid ring is. */

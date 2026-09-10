@@ -48,8 +48,8 @@ interface MenuEntry {
                     @if (iconDef()) {
                         <ng-container [ngTemplateOutlet]="iconDef()!.template" [ngTemplateOutletContext]="{ $implicit: { open: open() }, ctx: { open: open() } }" />
                     } @else {
-                        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false">
-                            <path d="M8 1v8M8 9 5 6M8 9l3-3M2 11v2a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-2" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+                        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+                            <path d="M2 4h12M2 8h12M2 12h12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
                         </svg>
                     }
                 </button>

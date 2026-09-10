@@ -423,6 +423,27 @@ abstract class ChartAxisBase {
     /** The edge this axis sits on. */
     protected abstract positionValue(): string;
 
+    /** The two edges an axis' outermost labels overhang, which are the ones it does not sit on. */
+    protected overhangEdges(): ['top' | 'right' | 'bottom' | 'left', 'top' | 'right' | 'bottom' | 'left'] {
+        return this.axis === 'y' ? ['top', 'bottom'] : ['left', 'right'];
+    }
+
+    /** How far the outermost label overhangs: half its own size, plus a hair so it is not flush. */
+    protected labelOverhang(): number {
+        const style = this.tickStyle();
+        const fontSize = (typeof style === 'object' && style?.fontSize) || this.context?.fontSize() || 12;
+
+        // Only the cross-axis half matters: a y label overhangs vertically by half a line, and an x
+        // label horizontally by half its width -- which is not knowable here, so half a line is the
+        // honest approximation and errs small.
+        return Math.ceil(fontSize / 2) + 2;
+    }
+
+    /** Whether this axis draws labels at all, since an axis without them overhangs nothing. */
+    protected showsLabels(): boolean {
+        return this.visible() !== false && this.showLabels() !== false;
+    }
+
     /**
      * The radial grid shape, when this axis declared one.
      *
@@ -519,10 +540,20 @@ abstract class ChartAxisBase {
                 size: this.reservation() + axisGroupReservation(this.groups().map((entry) => ({ props: entry.props(), depth: entry.depth })))
             }))
         );
+        /*
+         * Room for the outermost labels to overhang.
+         *
+         * A tick label is centred on its tick, so the first and last one stick out past the plot by
+         * half their own size. Without this the top y label and the outer x labels were clipped by
+         * the chart's edge -- visible as a `100` with its top row of pixels missing.
+         */
+        const releaseOverhang = [this.overhangEdges()[0], this.overhangEdges()[1]].map((edge) => this.context!.reserve(computed(() => ({ edge, size: this.showsLabels() ? this.labelOverhang() : 0 }))));
 
         this.destroyRef.onDestroy(() => {
             removeAxis();
             releaseSpace();
+
+            for (const release of releaseOverhang) release();
         });
     }
 }
