@@ -19,7 +19,8 @@ import type {
     LegendItemRenderContext,
     PointDescriptionContext,
     SeriesDescriptionContext,
-    TooltipRenderContext
+    TooltipRenderContext,
+    TooltipValueFormatter
 } from './charts-context.types';
 import type { Alignment, AxisType, DashPattern, DecimationAlgorithm, EasingFunctionName, ExportMenuItem, FieldAccessor, FillValue, ModifierKey, Position, TickValue, TimeUnit, ZoomMode } from './charts.types';
 
@@ -863,6 +864,11 @@ export interface ChartTooltipProps {
      * Custom tooltip renderer, which replaces the default layout outright.
      */
     render?: (context: TooltipRenderContext) => unknown;
+    /**
+     * Formats the value. A string reformats the single value; an array of rows renders a custom
+     * multi-row body inside the default card. Ignored when `render` is supplied.
+     */
+    valueFormatter?: TooltipValueFormatter;
 }
 
 /**
@@ -1307,6 +1313,18 @@ export interface ZoomLimits {
  * Current zoom window per axis. `null` on an axis means it is not zoomed.
  * @group Interface
  */
+/**
+ * The visible window on one axis.
+ *
+ * Named on its own because a caller usually handles one axis at a time -- a handler that reacts to
+ * a time range has no use for a `{ x, y }` wrapper it then has to unwrap.
+ * @group Interface
+ */
+export interface ZoomAxisWindow {
+    min: number;
+    max: number;
+}
+
 export interface ZoomState {
     x: { min: number; max: number } | null;
     y: { min: number; max: number } | null;

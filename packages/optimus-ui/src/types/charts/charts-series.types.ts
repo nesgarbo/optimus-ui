@@ -100,6 +100,10 @@ export interface MarkerSeriesProps<T = unknown> {
      * function that draws to `ctx` and returns `null`.
      */
     renderMarker?: (context: PointRenderContext<T>) => unknown;
+    /**
+     * Marker fill opacity, for reading an overplotted cloud.
+     */
+    pointFillOpacity?: FieldAccessor<T, number>;
 }
 
 /**
@@ -988,6 +992,14 @@ export interface TreemapSeriesProps<T = unknown> extends BaseSeriesProps<T>, Hov
      * Canvas, the context arrives clipped to the cell bounds, so draw directly and return `null`.
      */
     renderContent?: (context: TreemapCellContext<T>) => unknown;
+    /**
+     * Border alignment relative to the cell edge.
+     */
+    borderAlign?: BorderAlign;
+    /**
+     * How border segments meet at a cell's corners.
+     */
+    borderJoinStyle?: BorderJoinStyle;
 }
 
 /**

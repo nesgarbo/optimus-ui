@@ -6,7 +6,7 @@
  * keeps the field names describing the axis they belong to instead of describing the default.
  */
 import { ChangeDetectionStrategy, Component, DestroyRef, ViewEncapsulation, computed, inject, input, numberAttribute } from '@angular/core';
-import type { BarEdge, BarSeriesProps, BarShapeInfo, BorderAlign, BorderJoinStyle, BorderRadius, CategorySortOrder, ConnectNullsMode, DashAccessor, FieldAccessor, FillValue } from '@openng/optimus-ui/types/charts';
+import type { NamedAnimationSpec, BarEdge, BarSeriesProps, BarShapeInfo, BorderAlign, BorderJoinStyle, BorderRadius, CategorySortOrder, ConnectNullsMode, DashAccessor, FieldAccessor, FillValue } from '@openng/optimus-ui/types/charts';
 import { CHART_CONTEXT, CHART_ITEM_HOST, CHART_OVERLAP, CHART_STACK, CHART_WATERFALL, nextDatasetId } from '../charts-registry';
 import { createItemRegistry } from './chart-items';
 
@@ -228,6 +228,15 @@ export class ChartBar<T = unknown> {
      * @group Props
      */
     readonly order = input<number | undefined, unknown>(undefined, { transform: optionalNumber });
+    /**
+     * Per-series animation overrides, keyed by the property they drive.
+     *
+     * A series can need a different timing from the chart -- a target line that appears at once over
+     * bars that grow in -- and stating it on the series is the only place that reads as belonging to
+     * that series.
+     * @group Props
+     */
+    readonly animations = input<Record<string, NamedAnimationSpec> | undefined>(undefined);
 
     /** The dataset id, generated once so it survives every input change. */
     readonly datasetId = this.id() ?? nextDatasetId('bar');

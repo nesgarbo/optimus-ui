@@ -378,7 +378,348 @@
                         {
                             "name": "Charts (SVG & Canvas)",
                             "routerLink": "/charts",
-                            "badge": "New"
+                            "badge": "New",
+                            "children": [
+                                {
+                                    "name": "Getting Started",
+                                    "children": [
+                                        {
+                                            "name": "Architecture",
+                                            "routerLink": "/charts/getting-started/architecture"
+                                        },
+                                        {
+                                            "name": "LLMs",
+                                            "routerLink": "/charts/getting-started/llms"
+                                        },
+                                        {
+                                            "name": "Setup",
+                                            "routerLink": "/charts/getting-started/setup"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "Chart Types",
+                                    "children": [
+                                        {
+                                            "name": "Candlestick & OHLC",
+                                            "routerLink": "/charts/types/candlestick",
+                                            "children": [
+                                                {
+                                                    "name": "Candlestick & OHLC Playground",
+                                                    "routerLink": "/charts/types/candlestick/playground"
+                                                },
+                                                {
+                                                    "name": "Candlestick Examples",
+                                                    "routerLink": "/charts/types/candlestick/candlestick"
+                                                },
+                                                {
+                                                    "name": "Hollow Candles Examples",
+                                                    "routerLink": "/charts/types/candlestick/hollow"
+                                                },
+                                                {
+                                                    "name": "Live Candles Examples",
+                                                    "routerLink": "/charts/types/candlestick/live-data"
+                                                },
+                                                {
+                                                    "name": "OHLC Examples",
+                                                    "routerLink": "/charts/types/candlestick/ohlc"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Column & Bar",
+                                            "routerLink": "/charts/types/column-bar",
+                                            "children": [
+                                                {
+                                                    "name": "Bar Examples",
+                                                    "routerLink": "/charts/types/column-bar/bar"
+                                                },
+                                                {
+                                                    "name": "Column & Bar Playground",
+                                                    "routerLink": "/charts/types/column-bar/playground"
+                                                },
+                                                {
+                                                    "name": "Grouped Bar Examples",
+                                                    "routerLink": "/charts/types/column-bar/grouped"
+                                                },
+                                                {
+                                                    "name": "Stacked Bar Examples",
+                                                    "routerLink": "/charts/types/column-bar/stacked"
+                                                },
+                                                {
+                                                    "name": "Waterfall Examples",
+                                                    "routerLink": "/charts/types/column-bar/waterfall"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Combo",
+                                            "routerLink": "/charts/types/combo",
+                                            "children": [
+                                                {
+                                                    "name": "Combo Examples",
+                                                    "routerLink": "/charts/types/combo/examples"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Heatmap",
+                                            "routerLink": "/charts/types/heatmap",
+                                            "children": [
+                                                {
+                                                    "name": "Heatmap Examples",
+                                                    "routerLink": "/charts/types/heatmap/heatmap"
+                                                },
+                                                {
+                                                    "name": "Heatmap Playground",
+                                                    "routerLink": "/charts/types/heatmap/playground"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Line & Area",
+                                            "routerLink": "/charts/types/line-area",
+                                            "children": [
+                                                {
+                                                    "name": "Area Examples",
+                                                    "routerLink": "/charts/types/line-area/area"
+                                                },
+                                                {
+                                                    "name": "Line & Area Playground",
+                                                    "routerLink": "/charts/types/line-area/playground"
+                                                },
+                                                {
+                                                    "name": "Line Examples",
+                                                    "routerLink": "/charts/types/line-area/line"
+                                                },
+                                                {
+                                                    "name": "Range Area Examples",
+                                                    "routerLink": "/charts/types/line-area/range"
+                                                },
+                                                {
+                                                    "name": "Stacked Line Examples",
+                                                    "routerLink": "/charts/types/line-area/stacked"
+                                                },
+                                                {
+                                                    "name": "Time Series Line Examples",
+                                                    "routerLink": "/charts/types/line-area/time-series"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Pie & Donut",
+                                            "routerLink": "/charts/types/pie-donut",
+                                            "children": [
+                                                {
+                                                    "name": "Donut Examples",
+                                                    "routerLink": "/charts/types/pie-donut/donut"
+                                                },
+                                                {
+                                                    "name": "Gauge Examples",
+                                                    "routerLink": "/charts/types/pie-donut/gauge"
+                                                },
+                                                {
+                                                    "name": "Nested Pie Examples",
+                                                    "routerLink": "/charts/types/pie-donut/nested"
+                                                },
+                                                {
+                                                    "name": "Nightingale Examples",
+                                                    "routerLink": "/charts/types/pie-donut/nightingale"
+                                                },
+                                                {
+                                                    "name": "Pie & Donut Playground",
+                                                    "routerLink": "/charts/types/pie-donut/playground"
+                                                },
+                                                {
+                                                    "name": "Pie Examples",
+                                                    "routerLink": "/charts/types/pie-donut/pie"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Polar",
+                                            "routerLink": "/charts/types/polar",
+                                            "children": [
+                                                {
+                                                    "name": "Polar Examples",
+                                                    "routerLink": "/charts/types/polar/polar"
+                                                },
+                                                {
+                                                    "name": "Polar Playground",
+                                                    "routerLink": "/charts/types/polar/playground"
+                                                },
+                                                {
+                                                    "name": "Stacked Polar Examples",
+                                                    "routerLink": "/charts/types/polar/stacked"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Radar",
+                                            "routerLink": "/charts/types/radar",
+                                            "children": [
+                                                {
+                                                    "name": "Radar Examples",
+                                                    "routerLink": "/charts/types/radar/radar"
+                                                },
+                                                {
+                                                    "name": "Radar Playground",
+                                                    "routerLink": "/charts/types/radar/playground"
+                                                },
+                                                {
+                                                    "name": "Stacked Radar Examples",
+                                                    "routerLink": "/charts/types/radar/stacked"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Scatter & Bubble",
+                                            "routerLink": "/charts/types/scatter-bubble",
+                                            "children": [
+                                                {
+                                                    "name": "Bubble Examples",
+                                                    "routerLink": "/charts/types/scatter-bubble/bubble"
+                                                },
+                                                {
+                                                    "name": "Scatter & Bubble Playground",
+                                                    "routerLink": "/charts/types/scatter-bubble/playground"
+                                                },
+                                                {
+                                                    "name": "Scatter Examples",
+                                                    "routerLink": "/charts/types/scatter-bubble/scatter"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Synced Charts",
+                                            "routerLink": "/charts/types/synced",
+                                            "children": [
+                                                {
+                                                    "name": "Synced Charts Examples",
+                                                    "routerLink": "/charts/types/synced/examples"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Treemap",
+                                            "routerLink": "/charts/types/treemap",
+                                            "children": [
+                                                {
+                                                    "name": "Treemap Examples",
+                                                    "routerLink": "/charts/types/treemap/treemap"
+                                                },
+                                                {
+                                                    "name": "Treemap Playground",
+                                                    "routerLink": "/charts/types/treemap/playground"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "Configuration",
+                                    "children": [
+                                        {
+                                            "name": "Animation",
+                                            "routerLink": "/charts/configuration/animation"
+                                        },
+                                        {
+                                            "name": "Annotation",
+                                            "routerLink": "/charts/configuration/annotation"
+                                        },
+                                        {
+                                            "name": "Axes",
+                                            "routerLink": "/charts/configuration/axes"
+                                        },
+                                        {
+                                            "name": "Data Labels",
+                                            "routerLink": "/charts/configuration/data-labels"
+                                        },
+                                        {
+                                            "name": "Decimation",
+                                            "routerLink": "/charts/configuration/decimation"
+                                        },
+                                        {
+                                            "name": "Export",
+                                            "routerLink": "/charts/configuration/export"
+                                        },
+                                        {
+                                            "name": "Hover",
+                                            "routerLink": "/charts/configuration/hover"
+                                        },
+                                        {
+                                            "name": "Legend",
+                                            "routerLink": "/charts/configuration/legend"
+                                        },
+                                        {
+                                            "name": "Navigator",
+                                            "routerLink": "/charts/configuration/navigator"
+                                        },
+                                        {
+                                            "name": "Plugins",
+                                            "routerLink": "/charts/configuration/plugins"
+                                        },
+                                        {
+                                            "name": "Reference Lines & Bands",
+                                            "routerLink": "/charts/configuration/reference-lines-bands"
+                                        },
+                                        {
+                                            "name": "Title & Caption",
+                                            "routerLink": "/charts/configuration/title-caption"
+                                        },
+                                        {
+                                            "name": "Tooltip",
+                                            "routerLink": "/charts/configuration/tooltip"
+                                        },
+                                        {
+                                            "name": "Zoom & Pan",
+                                            "routerLink": "/charts/configuration/zoom-pan"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "Internationalization",
+                                    "children": [
+                                        {
+                                            "name": "Locale",
+                                            "routerLink": "/charts/internationalization/locale"
+                                        },
+                                        {
+                                            "name": "RTL",
+                                            "routerLink": "/charts/internationalization/rtl"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "Reference",
+                                    "children": [
+                                        {
+                                            "name": "API",
+                                            "routerLink": "/charts/reference/api"
+                                        },
+                                        {
+                                            "name": "Accessibility",
+                                            "routerLink": "/charts/reference/accessibility"
+                                        },
+                                        {
+                                            "name": "Performance",
+                                            "routerLink": "/charts/reference/performance"
+                                        },
+                                        {
+                                            "name": "Responsive",
+                                            "routerLink": "/charts/reference/responsive"
+                                        },
+                                        {
+                                            "name": "Theming",
+                                            "routerLink": "/charts/reference/theming"
+                                        },
+                                        {
+                                            "name": "Tree Shaking",
+                                            "routerLink": "/charts/reference/tree-shaking"
+                                        }
+                                    ]
+                                }
+                            ]
                         }
                     ]
                 },

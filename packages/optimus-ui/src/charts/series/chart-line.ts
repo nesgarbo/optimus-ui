@@ -6,7 +6,7 @@
  * knowing which one it is inside.
  */
 import { ChangeDetectionStrategy, Component, DestroyRef, ViewEncapsulation, booleanAttribute, computed, inject, input, numberAttribute } from '@angular/core';
-import type { BorderJoinStyle, ConnectNullsMode, CurveType, DashAccessor, FieldAccessor, FillValue, LineCapStyle, LineSeriesProps, PointRenderContext, SegmentStyleValue } from '@openng/optimus-ui/types/charts';
+import type { NamedAnimationSpec, BorderJoinStyle, ConnectNullsMode, CurveType, DashAccessor, FieldAccessor, FillValue, LineCapStyle, LineSeriesProps, PointRenderContext, SegmentStyleValue } from '@openng/optimus-ui/types/charts';
 import { CHART_CONTEXT, CHART_ITEM_HOST, CHART_RANGE, CHART_STACK, nextDatasetId } from '../charts-registry';
 import { createItemRegistry } from './chart-items';
 
@@ -87,6 +87,15 @@ export class ChartLine<T = unknown> {
      * @group Props
      */
     readonly order = input<number | undefined, unknown>(undefined, { transform: optionalNumber });
+    /**
+     * Per-series animation overrides, keyed by the property they drive.
+     *
+     * A series can need a different timing from the chart -- a target line that appears at once over
+     * bars that grow in -- and stating it on the series is the only place that reads as belonging to
+     * that series.
+     * @group Props
+     */
+    readonly animations = input<Record<string, NamedAnimationSpec> | undefined>(undefined);
     /**
      * Line stroke thickness in pixels.
      * @defaultValue 2
@@ -312,6 +321,7 @@ export class ChartLine<T = unknown> {
         keyField: this.keyField(),
         id: this.datasetId,
         order: this.order(),
+        animations: this.animations(),
         lineStrokeWidth: this.lineStrokeWidth(),
         lineCapStyle: this.lineCapStyle(),
         lineJoinStyle: this.lineJoinStyle(),

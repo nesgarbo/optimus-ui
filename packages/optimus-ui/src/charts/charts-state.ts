@@ -926,7 +926,7 @@ export function createChartState(options: ChartStateOptions) {
 }
 
 /** What {@link createChartState} returns. */
-export type ChartState = ReturnType<typeof createChartState>;
+export type ChartStateHandle = ReturnType<typeof createChartState>;
 
 /** Reads the tick values a scale should label. */
 export function domainTicks(scale: AxisScale): TickValue[] {

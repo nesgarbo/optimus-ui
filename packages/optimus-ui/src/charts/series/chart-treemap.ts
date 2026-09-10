@@ -5,7 +5,7 @@
  * the tiling algorithm the whole of the geometry.
  */
 import { ChangeDetectionStrategy, Component, DestroyRef, ViewEncapsulation, booleanAttribute, computed, contentChild, inject, input, numberAttribute, signal } from '@angular/core';
-import type { DashAccessor, FieldAccessor, FillValue, TreemapCellContext, TreemapLevelConfig, TreemapSeriesProps } from '@openng/optimus-ui/types/charts';
+import type { BorderJoinStyle, DashAccessor, FieldAccessor, FillValue, TreemapCellContext, TreemapLevelConfig, TreemapSeriesProps } from '@openng/optimus-ui/types/charts';
 import type { DrilldownContext } from '../charts-registry';
 import { CHART_CONTEXT, CHART_DRILLDOWN, CHART_ITEM_HOST, nextDatasetId } from '../charts-registry';
 import { createItemRegistry } from './chart-items';
@@ -271,6 +271,16 @@ export class ChartTreemap<T = unknown> implements DrilldownContext {
      * @group Props
      */
     readonly keyField = input<string | undefined>(undefined);
+    /**
+     * Border alignment relative to the cell edge.
+     * @group Props
+     */
+    readonly borderAlign = input<'center' | 'inner' | undefined>(undefined);
+    /**
+     * How border segments meet at a cell's corners.
+     * @group Props
+     */
+    readonly borderJoinStyle = input<BorderJoinStyle | undefined>(undefined);
 
     /** The dataset id, generated once so it survives every input change. */
     readonly datasetId = this.id() ?? nextDatasetId('treemap');
@@ -312,7 +322,9 @@ export class ChartTreemap<T = unknown> implements DrilldownContext {
         name: this.name(),
         id: this.datasetId,
         order: this.order(),
-        keyField: this.keyField()
+        keyField: this.keyField(),
+        borderAlign: this.borderAlign(),
+        borderJoinStyle: this.borderJoinStyle()
     }));
 
     constructor() {

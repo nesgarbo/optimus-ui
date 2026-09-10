@@ -375,15 +375,18 @@ function gradientDefFor(series: ResolvedSeries): SvgNode | null {
     if (!isGradient(color)) return null;
 
     const id = `line-area-${series.id}-grad`;
-    const stops = color.stops.map((stop) => ({ tag: 'stop', attrs: { offset: stop.offset, 'stop-color': stop.color }, children: [] }) satisfies SvgNode);
+    const stops = color.stops.map((stop) => ({ tag: 'stop', attrs: { offset: stop.offset, 'stop-color': stop.color, 'stop-opacity': stop.opacity ?? null }, children: [] }) satisfies SvgNode);
 
     if (isLinearGradient(color)) {
-        const { x1, y1, x2, y2 } = color.linearGradient;
+        const axis = color.linearGradient;
+        // The `direction` shorthand is the common case written the short way, so it resolves to the
+        // same four numbers rather than being a second code path through the painter.
+        const { x1, y1, x2, y2 } = 'direction' in axis ? (axis.direction === 'horizontal' ? { x1: 0, y1: 0, x2: 1, y2: 0 } : { x1: 0, y1: 0, x2: 0, y2: 1 }) : axis;
 
         return { tag: 'linearGradient', attrs: { id, x1, y1, x2, y2 }, children: stops };
     }
 
-    const { cx, cy, r } = color.radialGradient;
+    const { cx = 0.5, cy = 0.5, r = 0.5 } = color.radialGradient;
 
     return { tag: 'radialGradient', attrs: { id, cx, cy, r }, children: stops };
 }

@@ -537,6 +537,10 @@ export interface TooltipItem {
      * OHLC prices. Populated on candlestick series.
      */
     ohlc?: OhlcValues;
+    /**
+     * Rows a `valueFormatter` returned for this series, which replace its single line in the card.
+     */
+    rows?: TooltipRow[];
 }
 
 /**
@@ -605,33 +609,37 @@ export interface TooltipRenderContext extends CanvasRenderCapabilities {
  */
 export interface TooltipValueContext<T = unknown> {
     /**
-     * Dataset the value belongs to.
+     * Dataset the hovered value belongs to.
      */
     datasetId: string;
     /**
-     * Series name.
+     * Series name, as the tooltip shows it.
      */
     seriesName: string;
     /**
-     * Series order index.
+     * Order of the series within the chart.
      */
     seriesIndex: number;
     /**
      * Index into the original data array.
      */
-    dataIndex: number;
+    index: number;
     /**
-     * Category label.
+     * The hovered point's category or slice label.
      */
-    category: string;
+    label: string;
     /**
-     * Original data row.
+     * The raw data row.
      */
     datum?: T;
     /**
-     * Percentage of the total, from 0 to 100, where the chart type defines one.
+     * Share of the total, where the chart has one.
      */
     percentage?: number;
+    /**
+     * The colour the mark was drawn in.
+     */
+    color?: string;
 }
 
 /**
@@ -1113,3 +1121,38 @@ export type KeyNavAction = { type: 'navigate'; datasetId: string; index: number 
  * @group Types
  */
 export type QueuedPainter = { key: string; paint: CanvasPainter };
+
+/**
+ * The hover, as the chart root emits it.
+ *
+ * `null` when nothing is hovered, which is why the event is nullable rather than only firing on
+ * entry: a listener that only heard about arrivals could never clear its own highlight.
+ * @group Interface
+ */
+export interface ChartPointEvent<T = unknown> {
+    /**
+     * Dataset the hovered mark belongs to.
+     */
+    datasetId: string;
+    /**
+     * Index into the original data array.
+     */
+    index: number;
+    /**
+     * The hovered value.
+     */
+    value: number | null;
+    /**
+     * The hovered point's category or slice label.
+     */
+    label: string;
+    /**
+     * The raw data row.
+     */
+    datum?: T;
+    /**
+     * Pointer position within the chart, in pixels.
+     */
+    x: number;
+    y: number;
+}

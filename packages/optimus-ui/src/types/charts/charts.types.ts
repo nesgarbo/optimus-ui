@@ -137,6 +137,10 @@ export interface GradientStop {
      * Any CSS color string.
      */
     color: string;
+    /**
+     * Stop opacity, so a gradient can fade out as well as change colour.
+     */
+    opacity?: number;
 }
 
 /**
@@ -144,7 +148,14 @@ export interface GradientStop {
  * @group Interface
  */
 export interface LinearGradientColor {
-    linearGradient: { x1: number; y1: number; x2: number; y2: number };
+    /**
+     * The gradient's axis.
+     *
+     * Either explicit unit coordinates, or a `direction` shorthand -- which is what most gradients
+     * actually want, since "top to bottom" is the common case and spelling it as four numbers adds
+     * nothing.
+     */
+    linearGradient: { x1: number; y1: number; x2: number; y2: number } | { direction: 'vertical' | 'horizontal' };
     stops: GradientStop[];
 }
 
@@ -153,7 +164,11 @@ export interface LinearGradientColor {
  * @group Interface
  */
 export interface RadialGradientColor {
-    radialGradient: { cx: number; cy: number; r: number };
+    /**
+     * Centre and radius in unit coordinates. Every field is optional; the default is a gradient
+     * centred on the shape and reaching its edge.
+     */
+    radialGradient: { cx?: number; cy?: number; r?: number };
     stops: GradientStop[];
 }
 

@@ -100,6 +100,13 @@ export class ChartScatter<T = unknown> {
      */
     readonly pointBackgroundColor = input<FieldAccessor<T, FillValue> | undefined>(undefined);
     /**
+     * Marker fill opacity, which is how an overplotted cloud is made readable: a thousand points at
+     * 0.4 show where they pile up, where the same points at full opacity show only the last one
+     * drawn.
+     * @group Props
+     */
+    readonly pointFillOpacity = input<FieldAccessor<T, number> | undefined>(undefined);
+    /**
      * Fill colour while the mark is hovered.
      * @group Props
      */
@@ -241,6 +248,7 @@ export class ChartScatter<T = unknown> {
         name: this.name(),
         keyField: this.keyField(),
         pointBackgroundColor: this.pointBackgroundColor(),
+        pointFillOpacity: this.pointFillOpacity(),
         hoverColor: this.hoverColor(),
         hoverBorderColor: this.hoverBorderColor(),
         id: this.datasetId,

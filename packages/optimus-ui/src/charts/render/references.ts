@@ -43,7 +43,7 @@ function edgeOn(scale: AxisScale | undefined, value: string | number | undefined
  * as though it belonged between two categories.
  */
 export function paintReferenceLine(ctx: DrawContext, props: ChartReferenceLineProps): SvgNode[] {
-    const stroke = props.stroke ?? ctx.theme.annotationColor ?? '#94a3b8';
+    const stroke = props.stroke ?? ctx.theme.annotation ?? '#94a3b8';
     const width = props.lineStrokeWidth ?? 1;
     const dash = props.lineDash?.join(' ') ?? null;
     const labelSize = props.labelFontSize ?? 11;

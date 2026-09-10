@@ -4,7 +4,7 @@
  * As with radar, the concentric grid belongs to `ChartYAxis` rather than to the series.
  */
 import { ChangeDetectionStrategy, Component, DestroyRef, ViewEncapsulation, computed, inject, input, numberAttribute } from '@angular/core';
-import type { BorderRadius, DashAccessor, FieldAccessor, FillValue, PolarSeriesProps, SliceSortOrder } from '@openng/optimus-ui/types/charts';
+import type { BorderAlign, BorderJoinStyle, BorderRadius, DashAccessor, FieldAccessor, FillValue, PolarSeriesProps, SliceSortOrder } from '@openng/optimus-ui/types/charts';
 import { CHART_CONTEXT, CHART_ITEM_HOST, CHART_STACK, nextDatasetId } from '../charts-registry';
 import { createItemRegistry } from './chart-items';
 
@@ -90,6 +90,16 @@ export class ChartPolar<T = unknown> {
      */
     readonly order = input<number | undefined, unknown>(undefined, { transform: optionalNumber });
     /**
+     * Border alignment relative to the sector edge.
+     * @group Props
+     */
+    readonly borderAlign = input<BorderAlign | undefined>(undefined);
+    /**
+     * How border segments meet at a sector's corners.
+     * @group Props
+     */
+    readonly borderJoinStyle = input<BorderJoinStyle | undefined>(undefined);
+    /**
      * Hollow centre ratio, from 0 to 1. At 0 bars run from the centre.
      * @defaultValue 0
      * @group Props
@@ -158,6 +168,8 @@ export class ChartPolar<T = unknown> {
         keyField: this.keyField(),
         id: this.datasetId,
         order: this.order(),
+        borderAlign: this.borderAlign(),
+        borderJoinStyle: this.borderJoinStyle(),
         innerRadius: this.innerRadius(),
         spacing: this.spacing(),
         sort: this.sort(),

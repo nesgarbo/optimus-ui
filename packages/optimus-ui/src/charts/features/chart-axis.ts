@@ -362,6 +362,7 @@ abstract class ChartAxisBase {
     readonly props = computed<BaseAxisProps & { position?: string; axisGroups?: { props: Record<string, unknown>; depth: number }[] }>(() => ({
         id: this.id(),
         axisGroups: this.groups().map((entry) => ({ props: entry.props(), depth: entry.depth })),
+        gridShape: this.gridShapeValue(),
         type: this.type(),
         min: this.min(),
         max: this.max(),
@@ -421,6 +422,16 @@ abstract class ChartAxisBase {
 
     /** The edge this axis sits on. */
     protected abstract positionValue(): string;
+
+    /**
+     * The radial grid shape, when this axis declared one.
+     *
+     * A hook rather than an input on the base, because only the two subclasses know that they have
+     * one -- and the base has to be able to publish it either way.
+     */
+    protected gridShapeValue(): 'polygon' | 'circle' | undefined {
+        return undefined;
+    }
 
     /**
      * How much room the axis needs on its edge.
@@ -540,6 +551,19 @@ export class ChartXAxis extends ChartAxisBase {
      * @group Props
      */
     readonly position = input<'top' | 'bottom'>('bottom');
+    /**
+     * Concentric grid shape on a radial chart: smooth circles, or an angular polygon.
+     *
+     * Accepted on either axis, because a template that configures the rings does not always have a
+     * `ChartYAxis` in it -- and rejecting it on the axis the author happened to write would be an
+     * arbitrary distinction.
+     * @group Props
+     */
+    readonly gridShape = input<'polygon' | 'circle' | undefined>(undefined);
+
+    protected override gridShapeValue(): 'polygon' | 'circle' | undefined {
+        return this.gridShape();
+    }
 
     protected positionValue(): string {
         return this.position();
@@ -580,6 +604,10 @@ export class ChartYAxis extends ChartAxisBase {
      * @group Props
      */
     readonly gridShape = input<'polygon' | 'circle' | undefined>(undefined);
+
+    protected override gridShapeValue(): 'polygon' | 'circle' | undefined {
+        return this.gridShape();
+    }
 
     protected positionValue(): string {
         return this.position();

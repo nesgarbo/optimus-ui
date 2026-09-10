@@ -1,3 +1,4 @@
+export * from '@openng/optimus-ui/types/charts';
 export * from './chart-svg';
 export * from './chart-canvas';
 export * from './chart-group';

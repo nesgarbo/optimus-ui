@@ -43,7 +43,7 @@ export interface ChartTheme {
     /**
      * Annotation and reference label color.
      */
-    annotationColor?: string;
+    annotation?: string;
     /**
      * Chart title color.
      */
@@ -390,6 +390,14 @@ export interface DatasetRegistration {
      * The data rows the series was given.
      */
     data: readonly unknown[];
+    /**
+     * The series' resolved inputs.
+     *
+     * A plugin reads this to reach a field the registration does not name -- a candlestick's
+     * `closeField`, say. It is deliberately untyped: a plugin is written against a specific chart
+     * and knows what it bound, while the registration itself has to describe every family.
+     */
+    props: Record<string, unknown>;
 }
 
 /**

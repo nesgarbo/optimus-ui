@@ -7,13 +7,14 @@
  * merely documented.
  */
 import { isPlatformServer } from '@angular/common';
-import { DestroyRef, Directive, ElementRef, NgZone, booleanAttribute, computed, effect, inject, input, numberAttribute, signal, untracked, type Signal } from '@angular/core';
+import { DestroyRef, Directive, ElementRef, NgZone, booleanAttribute, computed, effect, inject, input, numberAttribute, output, signal, untracked, type Signal } from '@angular/core';
 import { BaseComponent } from '@openng/optimus-ui/basecomponent';
 import type {
     AnimationSpec,
     AnimationTransitions,
     ChartExportOptions,
     ChartPluginEntry,
+    ChartPointEvent,
     ChartRootApi,
     ChartState as PublicChartState,
     ChartText,
@@ -32,7 +33,7 @@ import { resolveDirection } from './core/format';
 import { resolveSize } from './core/layout';
 import { seriesColorAt } from './core/palette';
 import { CHART_CONTEXT, CHART_GROUP, type ChartContext, type ChartGroupMember, nextDatasetId } from './charts-registry';
-import { createChartState, type ChartState } from './charts-state';
+import { createChartState, type ChartStateHandle } from './charts-state';
 import { installPlugins, type PluginHost } from './charts-plugins';
 
 /** The size a chart falls back to before its container has ever been measured. */
@@ -168,6 +169,15 @@ export abstract class ChartRootBase extends BaseComponent<ChartsPassThrough> imp
      * @group Props
      */
     readonly plugins = input<ChartPluginEntry[] | undefined>(undefined);
+    /**
+     * Fires as the hover moves, and with `null` when it leaves.
+     *
+     * Nullable rather than only firing on entry, because a listener that never heard about the
+     * pointer leaving could not clear its own highlight -- which is exactly what a synced dashboard
+     * uses this for.
+     * @group Emits
+     */
+    readonly pointHover = output<ChartPointEvent | null>();
 
     /* ------------------------------------------------------------------------------------------
      * Injected
@@ -295,7 +305,7 @@ export abstract class ChartRootBase extends BaseComponent<ChartsPassThrough> imp
      * --------------------------------------------------------------------------------------- */
 
     /** The chart's computed state: registry, domains, scales and layout. */
-    readonly chartState: ChartState = createChartState({
+    readonly chartState: ChartStateHandle = createChartState({
         renderer: this.rendererOf(),
         width: this.$width,
         height: this.$height,
@@ -310,6 +320,36 @@ export abstract class ChartRootBase extends BaseComponent<ChartsPassThrough> imp
         container: () => this.containerElement(),
         exportChart: (options) => this.toImage(options),
         requestRender: () => this.requestRender()
+    });
+
+    /**
+     * Publishes the hover as a public event.
+     *
+     * Derived from the state rather than emitted at each call site, so the pointer, the keyboard
+     * and a synced sibling all produce the same event -- and none of them can forget to.
+     */
+    private readonly emitPointHover = effect(() => {
+        const hover = this.chartState.context.hover();
+
+        if (!hover) {
+            this.pointHover.emit(null);
+
+            return;
+        }
+
+        const series = this.chartState.resolvedSeries().find((entry) => entry.id === hover.datasetId);
+        const point = series?.points.find((entry) => entry.dataIndex === hover.index);
+        const data = (series?.registration.props() as { data?: unknown[] } | undefined)?.data;
+
+        this.pointHover.emit({
+            datasetId: hover.datasetId,
+            index: hover.index,
+            value: point?.value ?? null,
+            label: point?.category ?? String(hover.index),
+            datum: data?.[hover.index],
+            x: hover.x,
+            y: hover.y
+        });
     });
 
     /** The context every part injects. */
@@ -678,7 +718,8 @@ export abstract class ChartRootBase extends BaseComponent<ChartsPassThrough> imp
                 seriesIndex: series.seriesIndex,
                 color: typeof props['color'] === 'string' ? (props['color'] as string) : seriesColorAt(palette, series.seriesIndex),
                 visible: series.visible,
-                data: (props['data'] as unknown[] | undefined) ?? []
+                data: (props['data'] as unknown[] | undefined) ?? [],
+                props
             });
         }
 

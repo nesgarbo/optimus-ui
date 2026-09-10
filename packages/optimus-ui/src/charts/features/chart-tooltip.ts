@@ -6,7 +6,7 @@
  */
 import { ChangeDetectionStrategy, Component, DestroyRef, ViewEncapsulation, booleanAttribute, computed, contentChild, effect, inject, input, numberAttribute, signal, type EffectRef } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import type { ChartTooltipProps, CrosshairConfig, HoverState, TooltipItem, TooltipRenderContext, TooltipSnap } from '@openng/optimus-ui/types/charts';
+import type { ChartTooltipProps, CrosshairConfig, HoverState, TooltipItem, TooltipRenderContext, TooltipSnap, TooltipValueFormatter } from '@openng/optimus-ui/types/charts';
 import { formatNumberTick } from '../core/format';
 import { seriesColorAt } from '../core/palette';
 import { CHART_CONTEXT, type ChartContext } from '../charts-registry';
@@ -116,6 +116,16 @@ export class ChartTooltip {
      * @group Props
      */
     readonly render = input<((context: TooltipRenderContext) => unknown) | undefined>(undefined);
+    /**
+     * Formats the value.
+     *
+     * Return a string to reformat the single value, or an array of rows to render a custom
+     * multi-row body inside the default card -- which covers the common multi-metric case without
+     * having to replace the whole layout with `render`. Ignored when `render` is set, since that
+     * has already replaced the body the rows would go in.
+     * @group Props
+     */
+    readonly valueFormatter = input<TooltipValueFormatter | undefined>(undefined);
 
     /** The feature's current inputs, as the root reads them. */
     readonly props = computed<ChartTooltipProps>(() => ({
@@ -128,7 +138,8 @@ export class ChartTooltip {
         followCursor: this.followCursor(),
         showDelay: this.showDelay(),
         hideDelay: this.hideDelay(),
-        render: this.render()
+        render: this.render(),
+        valueFormatter: this.valueFormatter()
     }));
 
     /**
@@ -179,13 +190,30 @@ export class ChartTooltip {
 
             if (!Number.isFinite(value)) continue;
 
+            const color = typeof props['color'] === 'string' ? (props['color'] as string) : seriesColorAt(palette, entry.seriesIndex());
+            const formatter = this.valueFormatter();
+            const formatted = formatter
+                ? formatter(value, {
+                      datasetId: entry.id,
+                      seriesName: (props['name'] as string | undefined) ?? entry.id,
+                      seriesIndex: entry.seriesIndex(),
+                      index: resolvedIndex,
+                      label: category,
+                      datum: data[resolvedIndex],
+                      color
+                  })
+                : undefined;
+
             allSeries.push({
                 datasetId: entry.id,
                 name: props['name'] as string | undefined,
                 label: category,
-                color: typeof props['color'] === 'string' ? (props['color'] as string) : seriesColorAt(palette, entry.seriesIndex()),
+                color,
                 value,
-                formattedValue: formatNumberTick(value, locale)
+                formattedValue: typeof formatted === 'string' ? formatted : formatNumberTick(value, locale),
+                // Rows returned by the formatter replace this series' single line in the card, which
+                // is what lets one hovered mark report several metrics.
+                rows: Array.isArray(formatted) ? formatted : undefined
             });
         }
 
