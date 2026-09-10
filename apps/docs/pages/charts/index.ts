@@ -56,24 +56,15 @@ import { CandlestickAnnotationDoc } from '@/doc/charts/types-candlestick-annotat
 import { CandlestickAxesDoc } from '@/doc/charts/types-candlestick-axes-doc';
 import { CandlestickBasicDoc } from '@/doc/charts/types-candlestick-basic-doc';
 import { CandlestickCandleStylingDoc } from '@/doc/charts/types-candlestick-candle-styling-doc';
-import { CandlestickCandlestickAaplQ12024WithVolumeSubPaneDoc } from '@/doc/charts/types-candlestick-candlestick-aapl-q1-2024-with-volume-sub-pane-doc';
-import { CandlestickCandlestickAppleIncAapl2024DailyOhlcDoc } from '@/doc/charts/types-candlestick-candlestick-apple-inc-aapl-2024-daily-ohlc-doc';
 import { CandlestickCandlestickBitcoinBtcUsdWeeklyNov2021ToDec2024Doc } from '@/doc/charts/types-candlestick-candlestick-bitcoin-btc-usd-weekly-nov-2021-to-dec-2024-doc';
 import { CandlestickColorsDoc } from '@/doc/charts/types-candlestick-colors-doc';
 import { CandlestickDataLabelsDoc } from '@/doc/charts/types-candlestick-data-labels-doc';
 import { CandlestickDeclarativeDoc } from '@/doc/charts/types-candlestick-declarative-doc';
 import { CandlestickExportDoc } from '@/doc/charts/types-candlestick-export-doc';
 import { CandlestickHollowDoc } from '@/doc/charts/types-candlestick-hollow-doc';
-import { CandlestickHollowEurUsdH22024DailyHollowCandlesDoc } from '@/doc/charts/types-candlestick-hollow-eur-usd-h2-2024-daily-hollow-candles-doc';
-import { CandlestickHollowTeslaIncTsla2024WeeklyHollowCandlesDoc } from '@/doc/charts/types-candlestick-hollow-tesla-inc-tsla-2024-weekly-hollow-candles-doc';
 import { CandlestickHoverDoc } from '@/doc/charts/types-candlestick-hover-doc';
 import { CandlestickImportDoc } from '@/doc/charts/types-candlestick-import-doc';
-import { CandlestickLiveDataBtcUsdHighFrequencyStreamDoc } from '@/doc/charts/types-candlestick-live-data-btc-usd-high-frequency-stream-doc';
-import { CandlestickLiveDataEurUsdLiveTickStreamDoc } from '@/doc/charts/types-candlestick-live-data-eur-usd-live-tick-stream-doc';
 import { CandlestickOhlcBarsDoc } from '@/doc/charts/types-candlestick-ohlc-bars-doc';
-import { CandlestickOhlcGoldSpotXauUsd2024WeeklyOhlcDoc } from '@/doc/charts/types-candlestick-ohlc-gold-spot-xau-usd-2024-weekly-ohlc-doc';
-import { CandlestickOhlcWtiCrudeOilCl12024WeeklyOhlcDoc } from '@/doc/charts/types-candlestick-ohlc-wti-crude-oil-cl1-2024-weekly-ohlc-doc';
-import { CandlestickPlaygroundPlaygroundDoc } from '@/doc/charts/types-candlestick-playground-playground-doc';
 import { CandlestickReferenceLinesAndBandsDoc } from '@/doc/charts/types-candlestick-reference-lines-and-bands-doc';
 import { CandlestickResponsiveDoc } from '@/doc/charts/types-candlestick-responsive-doc';
 import { CandlestickTitleAndCaptionDoc } from '@/doc/charts/types-candlestick-title-and-caption-doc';
@@ -84,10 +75,7 @@ import { ColumnBarAnimationDoc } from '@/doc/charts/types-column-bar-animation-d
 import { ColumnBarAnnotationDoc } from '@/doc/charts/types-column-bar-annotation-doc';
 import { ColumnBarAxesDoc } from '@/doc/charts/types-column-bar-axes-doc';
 import { ColumnBarBarParis2024SummerOlympicsGoldMedalsTop12CountriesDoc } from '@/doc/charts/types-column-bar-bar-paris-2024-summer-olympics-gold-medals-top-12-countries-doc';
-import { ColumnBarBarPrimeuiThemedBarChartDoc } from '@/doc/charts/types-column-bar-bar-primeui-themed-bar-chart-doc';
 import { ColumnBarBarSizingDoc } from '@/doc/charts/types-column-bar-bar-sizing-doc';
-import { ColumnBarBarWorldSLargestMetropolitanAreasByPopulation2024Doc } from '@/doc/charts/types-column-bar-bar-world-s-largest-metropolitan-areas-by-population-2024-doc';
-import { ColumnBarBarWorldSMostVisitedArtMuseums2023Doc } from '@/doc/charts/types-column-bar-bar-world-s-most-visited-art-museums-2023-doc';
 import { ColumnBarBasicDoc } from '@/doc/charts/types-column-bar-basic-doc';
 import { ColumnBarBorderDoc } from '@/doc/charts/types-column-bar-border-doc';
 import { ColumnBarColorsDoc } from '@/doc/charts/types-column-bar-colors-doc';
@@ -98,8 +86,6 @@ import { ColumnBarExportDoc } from '@/doc/charts/types-column-bar-export-doc';
 import { ColumnBarFloatingRangeDoc } from '@/doc/charts/types-column-bar-floating-range-doc';
 import { ColumnBarGradientColorDoc } from '@/doc/charts/types-column-bar-gradient-color-doc';
 import { ColumnBarGroupedDoc } from '@/doc/charts/types-column-bar-grouped-doc';
-import { ColumnBarGroupedG7RanddExpenditureByFundingSource2022Doc } from '@/doc/charts/types-column-bar-grouped-g7-randd-expenditure-by-funding-source-2022-doc';
-import { ColumnBarGroupedLabourForceParticipationByGenderAndRegion2023Doc } from '@/doc/charts/types-column-bar-grouped-labour-force-participation-by-gender-and-region-2023-doc';
 import { ColumnBarHorizontalDoc } from '@/doc/charts/types-column-bar-horizontal-doc';
 import { ColumnBarHoverDoc } from '@/doc/charts/types-column-bar-hover-doc';
 import { ColumnBarImportDoc } from '@/doc/charts/types-column-bar-import-doc';
@@ -108,32 +94,19 @@ import { ColumnBarNegativeValuesDoc } from '@/doc/charts/types-column-bar-negati
 import { ColumnBarNullValuesDoc } from '@/doc/charts/types-column-bar-null-values-doc';
 import { ColumnBarOverlapDoc } from '@/doc/charts/types-column-bar-overlap-doc';
 import { ColumnBarPercentStackedDoc } from '@/doc/charts/types-column-bar-percent-stacked-doc';
-import { ColumnBarPlaygroundPlaygroundDoc } from '@/doc/charts/types-column-bar-playground-playground-doc';
 import { ColumnBarReferenceLinesAndBandsDoc } from '@/doc/charts/types-column-bar-reference-lines-and-bands-doc';
 import { ColumnBarResponsiveDoc } from '@/doc/charts/types-column-bar-responsive-doc';
 import { ColumnBarSortedDoc } from '@/doc/charts/types-column-bar-sorted-doc';
 import { ColumnBarStackedDoc } from '@/doc/charts/types-column-bar-stacked-doc';
-import { ColumnBarStackedElectricityGenerationMixByCountry2023Doc } from '@/doc/charts/types-column-bar-stacked-electricity-generation-mix-by-country-2023-doc';
-import { ColumnBarStackedGlobalElectricVehicleSalesByRegion20192023Doc } from '@/doc/charts/types-column-bar-stacked-global-electric-vehicle-sales-by-region-2019-2023-doc';
-import { ColumnBarStackedRevenueCompositionGroupedStackedWithReferenceBandsDoc } from '@/doc/charts/types-column-bar-stacked-revenue-composition-grouped-stacked-with-reference-bands-doc';
-import { ColumnBarStackedWorldPopulationByAgeGroupAndSex2024Doc } from '@/doc/charts/types-column-bar-stacked-world-population-by-age-group-and-sex-2024-doc';
 import { ColumnBarTitleAndCaptionDoc } from '@/doc/charts/types-column-bar-title-and-caption-doc';
 import { ColumnBarTooltipDoc } from '@/doc/charts/types-column-bar-tooltip-doc';
 import { ColumnBarVariwideDoc } from '@/doc/charts/types-column-bar-variwide-doc';
 import { ColumnBarWaterfallDoc } from '@/doc/charts/types-column-bar-waterfall-doc';
-import { ColumnBarWaterfallEu27GovernmentRevenueAndSpending2022Doc } from '@/doc/charts/types-column-bar-waterfall-eu-27-government-revenue-and-spending-2022-doc';
-import { ColumnBarWaterfallFy2023EbitdaBridgeStackedWaterfallDoc } from '@/doc/charts/types-column-bar-waterfall-fy-2023-ebitda-bridge-stacked-waterfall-doc';
-import { ColumnBarWaterfallGlobalCarbonBudget2022SourcesSinksNetAccumulationDoc } from '@/doc/charts/types-column-bar-waterfall-global-carbon-budget-2022-sources-sinks-net-accumulation-doc';
 import { ColumnBarZoomAndNavigatorDoc } from '@/doc/charts/types-column-bar-zoom-and-navigator-doc';
 import { ComboBarAndAreaDoc } from '@/doc/charts/types-combo-bar-and-area-doc';
 import { ComboBarAndLineDoc } from '@/doc/charts/types-combo-bar-and-line-doc';
 import { ComboDualAxisDoc } from '@/doc/charts/types-combo-dual-axis-doc';
-import { ComboExamplesChannelEfficiencyQuadrantsDoc } from '@/doc/charts/types-combo-examples-channel-efficiency-quadrants-doc';
 import { ComboExamplesClimateDashboardRainfallTemperatureDoc } from '@/doc/charts/types-combo-examples-climate-dashboard-rainfall-temperature-doc';
-import { ComboExamplesEconomicForecastEnvelopeDoc } from '@/doc/charts/types-combo-examples-economic-forecast-envelope-doc';
-import { ComboExamplesProductCapabilityBenchmarkRadarPolarDoc } from '@/doc/charts/types-combo-examples-product-capability-benchmark-radar-polar-doc';
-import { ComboExamplesRevenueMixVsTargetWithGrowthOverlayDoc } from '@/doc/charts/types-combo-examples-revenue-mix-vs-target-with-growth-overlay-doc';
-import { ComboExamplesStockPriceVolumeDoc } from '@/doc/charts/types-combo-examples-stock-price-volume-doc';
 import { ComboImportDoc } from '@/doc/charts/types-combo-import-doc';
 import { ComboLineAndScatterDoc } from '@/doc/charts/types-combo-line-and-scatter-doc';
 import { ComboLineAndScatterOnACategoryAxisDoc } from '@/doc/charts/types-combo-line-and-scatter-on-a-category-axis-doc';
@@ -173,13 +146,10 @@ import { HeatmapCustomContentDoc } from '@/doc/charts/types-heatmap-custom-conte
 import { HeatmapDataLabelsDoc } from '@/doc/charts/types-heatmap-data-labels-doc';
 import { HeatmapDeclarativeDoc } from '@/doc/charts/types-heatmap-declarative-doc';
 import { HeatmapExportDoc } from '@/doc/charts/types-heatmap-export-doc';
-import { HeatmapHeatmapOlympicMedalTableBySportDoc } from '@/doc/charts/types-heatmap-heatmap-olympic-medal-table-by-sport-doc';
-import { HeatmapHeatmapSaasMonthlyCohortRetention2024SignupsDoc } from '@/doc/charts/types-heatmap-heatmap-saas-monthly-cohort-retention-2024-signups-doc';
 import { HeatmapHeatmapSandp500SectorCorrelationMatrixDailyReturns2023Doc } from '@/doc/charts/types-heatmap-heatmap-sandp-500-sector-correlation-matrix-daily-returns-2023-doc';
 import { HeatmapHoverDoc } from '@/doc/charts/types-heatmap-hover-doc';
 import { HeatmapImportDoc } from '@/doc/charts/types-heatmap-import-doc';
 import { HeatmapLegendDoc } from '@/doc/charts/types-heatmap-legend-doc';
-import { HeatmapPlaygroundPlaygroundDoc } from '@/doc/charts/types-heatmap-playground-playground-doc';
 import { HeatmapResponsiveDoc } from '@/doc/charts/types-heatmap-responsive-doc';
 import { HeatmapSingleColorDoc } from '@/doc/charts/types-heatmap-single-color-doc';
 import { HeatmapTitleAndCaptionDoc } from '@/doc/charts/types-heatmap-title-and-caption-doc';
@@ -207,8 +177,6 @@ import { LineAreaAccessibilityDoc } from '@/doc/charts/types-line-area-accessibi
 import { LineAreaAnimationDoc } from '@/doc/charts/types-line-area-animation-doc';
 import { LineAreaAnnotationDoc } from '@/doc/charts/types-line-area-annotation-doc';
 import { LineAreaAreaDoc } from '@/doc/charts/types-line-area-area-doc';
-import { LineAreaAreaUsElectricityGenerationMix20102023Doc } from '@/doc/charts/types-line-area-area-us-electricity-generation-mix-2010-2023-doc';
-import { LineAreaAreaUsTreasuryYieldCurve20192024Doc } from '@/doc/charts/types-line-area-area-us-treasury-yield-curve-2019-2024-doc';
 import { LineAreaAreaUsUnemploymentRate20002024Doc } from '@/doc/charts/types-line-area-area-us-unemployment-rate-2000-2024-doc';
 import { LineAreaAxesDoc } from '@/doc/charts/types-line-area-axes-doc';
 import { LineAreaBasicDoc } from '@/doc/charts/types-line-area-basic-doc';
@@ -223,25 +191,14 @@ import { LineAreaHoverDoc } from '@/doc/charts/types-line-area-hover-doc';
 import { LineAreaImportDoc } from '@/doc/charts/types-line-area-import-doc';
 import { LineAreaLegendDoc } from '@/doc/charts/types-line-area-legend-doc';
 import { LineAreaLineBorderDoc } from '@/doc/charts/types-line-area-line-border-doc';
-import { LineAreaLineNasaGlobalTemperatureAnomalyDoc } from '@/doc/charts/types-line-area-line-nasa-global-temperature-anomaly-doc';
 import { LineAreaLineStylingDoc } from '@/doc/charts/types-line-area-line-styling-doc';
-import { LineAreaLineUSUnemploymentRate20002024Doc } from '@/doc/charts/types-line-area-line-u-s-unemployment-rate-2000-2024-doc';
-import { LineAreaLineUsStockIndicesNormalisedComparisonDoc } from '@/doc/charts/types-line-area-line-us-stock-indices-normalised-comparison-doc';
 import { LineAreaMarkersDoc } from '@/doc/charts/types-line-area-markers-doc';
 import { LineAreaNullHandlingDoc } from '@/doc/charts/types-line-area-null-handling-doc';
-import { LineAreaPlaygroundPlaygroundDoc } from '@/doc/charts/types-line-area-playground-playground-doc';
 import { LineAreaRangeAreaDoc } from '@/doc/charts/types-line-area-range-area-doc';
-import { LineAreaRangeBrentCrudeOilAnnualPriceRange2005To2023Doc } from '@/doc/charts/types-line-area-range-brent-crude-oil-annual-price-range-2005-to-2023-doc';
-import { LineAreaRangeGlobalNumberOfBirthsAndDeaths1950To2100Doc } from '@/doc/charts/types-line-area-range-global-number-of-births-and-deaths-1950-to-2100-doc';
-import { LineAreaRangeLondonSunriseAndSunsetTimesDoc } from '@/doc/charts/types-line-area-range-london-sunrise-and-sunset-times-doc';
 import { LineAreaReferenceLinesAndBandsDoc } from '@/doc/charts/types-line-area-reference-lines-and-bands-doc';
 import { LineAreaResponsiveDoc } from '@/doc/charts/types-line-area-responsive-doc';
 import { LineAreaSegmentStylingDoc } from '@/doc/charts/types-line-area-segment-styling-doc';
 import { LineAreaStackedAreaDoc } from '@/doc/charts/types-line-area-stacked-area-doc';
-import { LineAreaStackedEu27EnergyMix20132023Doc } from '@/doc/charts/types-line-area-stacked-eu-27-energy-mix-2013-2023-doc';
-import { LineAreaStackedUsFederalSpending20002023Doc } from '@/doc/charts/types-line-area-stacked-us-federal-spending-2000-2023-doc';
-import { LineAreaTimeSeriesLiveServerMetricsCpuAndMemoryUtilisationDoc } from '@/doc/charts/types-line-area-time-series-live-server-metrics-cpu-and-memory-utilisation-doc';
-import { LineAreaTimeSeriesLiveStockPriceAcmeCorpDoc } from '@/doc/charts/types-line-area-time-series-live-stock-price-acme-corp-doc';
 import { LineAreaTitleAndCaptionDoc } from '@/doc/charts/types-line-area-title-and-caption-doc';
 import { LineAreaTooltipDoc } from '@/doc/charts/types-line-area-tooltip-doc';
 import { LineAreaZoomAndNavigatorDoc } from '@/doc/charts/types-line-area-zoom-and-navigator-doc';
@@ -282,26 +239,13 @@ import { PieDonutDataLabelsDoc } from '@/doc/charts/types-pie-donut-data-labels-
 import { PieDonutDeclarativeDoc } from '@/doc/charts/types-pie-donut-declarative-doc';
 import { PieDonutDonutBrowserMarketShareDoc } from '@/doc/charts/types-pie-donut-donut-browser-market-share-doc';
 import { PieDonutDonutDoc } from '@/doc/charts/types-pie-donut-donut-doc';
-import { PieDonutDonutRenewableEnergyByRegionDoc } from '@/doc/charts/types-pie-donut-donut-renewable-energy-by-region-doc';
-import { PieDonutDonutSandp500SectorBreakdownDoc } from '@/doc/charts/types-pie-donut-donut-sandp-500-sector-breakdown-doc';
 import { PieDonutExportDoc } from '@/doc/charts/types-pie-donut-export-doc';
-import { PieDonutGaugeAtmosphericCoConcentrationMaunaLoaDoc } from '@/doc/charts/types-pie-donut-gauge-atmospheric-co-concentration-mauna-loa-doc';
 import { PieDonutGaugeDoc } from '@/doc/charts/types-pie-donut-gauge-doc';
-import { PieDonutGaugeGbGridCarbonIntensityDoc } from '@/doc/charts/types-pie-donut-gauge-gb-grid-carbon-intensity-doc';
-import { PieDonutGaugeNasaGlobalTemperatureAnomalyDoc } from '@/doc/charts/types-pie-donut-gauge-nasa-global-temperature-anomaly-doc';
 import { PieDonutGradientColorDoc } from '@/doc/charts/types-pie-donut-gradient-color-doc';
 import { PieDonutHoverDoc } from '@/doc/charts/types-pie-donut-hover-doc';
 import { PieDonutImportDoc } from '@/doc/charts/types-pie-donut-import-doc';
 import { PieDonutLegendDoc } from '@/doc/charts/types-pie-donut-legend-doc';
 import { PieDonutOuterRadiusDoc } from '@/doc/charts/types-pie-donut-outer-radius-doc';
-import { PieDonutPieBrowserMarketShareDoc } from '@/doc/charts/types-pie-donut-pie-browser-market-share-doc';
-import { PieDonutPieGlobalEnergyMixDoc } from '@/doc/charts/types-pie-donut-pie-global-energy-mix-doc';
-import { PieDonutPieIaasCloudMarketShareDoc } from '@/doc/charts/types-pie-donut-pie-iaas-cloud-market-share-doc';
-import { PieDonutPieNestedGlobalEvSalesByMarketAndPowertrain2016To2023Doc } from '@/doc/charts/types-pie-donut-pie-nested-global-ev-sales-by-market-and-powertrain-2016-to-2023-doc';
-import { PieDonutPieNestedWorldGdpByRegionAndIncomeGroup2023Doc } from '@/doc/charts/types-pie-donut-pie-nested-world-gdp-by-region-and-income-group-2023-doc';
-import { PieDonutPieNightingaleNoaaMonthlyPrecipitation2024Doc } from '@/doc/charts/types-pie-donut-pie-nightingale-noaa-monthly-precipitation-2024-doc';
-import { PieDonutPieNightingaleUsTornadoClimatologyDoc } from '@/doc/charts/types-pie-donut-pie-nightingale-us-tornado-climatology-doc';
-import { PieDonutPlaygroundPlaygroundDoc } from '@/doc/charts/types-pie-donut-playground-playground-doc';
 import { PieDonutResponsiveDoc } from '@/doc/charts/types-pie-donut-responsive-doc';
 import { PieDonutSortedDoc } from '@/doc/charts/types-pie-donut-sorted-doc';
 import { PieDonutStackedDoc } from '@/doc/charts/types-pie-donut-stacked-doc';
@@ -333,16 +277,10 @@ import { PolarImportDoc } from '@/doc/charts/types-polar-import-doc';
 import { PolarInnerRadiusDoc } from '@/doc/charts/types-polar-inner-radius-doc';
 import { PolarLegendDoc } from '@/doc/charts/types-polar-legend-doc';
 import { PolarPercentStackedDoc } from '@/doc/charts/types-polar-percent-stacked-doc';
-import { PolarPlaygroundPlaygroundDoc } from '@/doc/charts/types-polar-playground-playground-doc';
-import { PolarPolarGlobalFxMarket24HourTradingVolumeCycleDoc } from '@/doc/charts/types-polar-polar-global-fx-market-24-hour-trading-volume-cycle-doc';
-import { PolarPolarHeathrowLhrScheduledDeparturesByHourOfDayDoc } from '@/doc/charts/types-polar-polar-heathrow-lhr-scheduled-departures-by-hour-of-day-doc';
 import { PolarPolarMonacoGrandPrixSectorPerformanceByTeamDoc } from '@/doc/charts/types-polar-polar-monaco-grand-prix-sector-performance-by-team-doc';
 import { PolarResponsiveDoc } from '@/doc/charts/types-polar-responsive-doc';
 import { PolarSortedDoc } from '@/doc/charts/types-polar-sorted-doc';
 import { PolarStackedDoc } from '@/doc/charts/types-polar-stacked-doc';
-import { PolarStackedUkGridMonthlyRenewableGenerationBySourceDoc } from '@/doc/charts/types-polar-stacked-uk-grid-monthly-renewable-generation-by-source-doc';
-import { PolarStackedWindGustinessByDirectionSustainedVsGustsDoc } from '@/doc/charts/types-polar-stacked-wind-gustiness-by-direction-sustained-vs-gusts-doc';
-import { PolarStackedWindSpeedByDirectionMorningVsAfternoonDoc } from '@/doc/charts/types-polar-stacked-wind-speed-by-direction-morning-vs-afternoon-doc';
 import { PolarTitleAndCaptionDoc } from '@/doc/charts/types-polar-title-and-caption-doc';
 import { PolarTooltipDoc } from '@/doc/charts/types-polar-tooltip-doc';
 import { RadarAccessibilityDoc } from '@/doc/charts/types-radar-accessibility-doc';
@@ -365,18 +303,10 @@ import { RadarLegendDoc } from '@/doc/charts/types-radar-legend-doc';
 import { RadarLineStylingDoc } from '@/doc/charts/types-radar-line-styling-doc';
 import { RadarMarkersDoc } from '@/doc/charts/types-radar-markers-doc';
 import { RadarMultiSeriesDoc } from '@/doc/charts/types-radar-multi-series-doc';
-import { RadarPlaygroundPlaygroundDoc } from '@/doc/charts/types-radar-playground-playground-doc';
-import { RadarRadarEngineeringTeamAssessmentReferenceBandsAndLinesDoc } from '@/doc/charts/types-radar-radar-engineering-team-assessment-reference-bands-and-lines-doc';
-import { RadarRadarFifa24AttributeProfilesOfThreeSuperstarsDoc } from '@/doc/charts/types-radar-radar-fifa-24-attribute-profiles-of-three-superstars-doc';
-import { RadarRadarNistCsf20CybersecurityPostureAuditDoc } from '@/doc/charts/types-radar-radar-nist-csf-2-0-cybersecurity-posture-audit-doc';
-import { RadarRadarStartupKpiScorecardAnimatedQuarterlyProgressDoc } from '@/doc/charts/types-radar-radar-startup-kpi-scorecard-animated-quarterly-progress-doc';
 import { RadarRadarUsEquityFactorTiltsVtvVugMtumDoc } from '@/doc/charts/types-radar-radar-us-equity-factor-tilts-vtv-vug-mtum-doc';
 import { RadarReferenceBandsAndLinesDoc } from '@/doc/charts/types-radar-reference-bands-and-lines-doc';
 import { RadarResponsiveDoc } from '@/doc/charts/types-radar-responsive-doc';
-import { RadarStackedDigitalTransformationEngagementHoursByServicePhaseDoc } from '@/doc/charts/types-radar-stacked-digital-transformation-engagement-hours-by-service-phase-doc';
 import { RadarStackedDoc } from '@/doc/charts/types-radar-stacked-doc';
-import { RadarStackedGlobalRetailerRevenueMixByRegionQ32025Doc } from '@/doc/charts/types-radar-stacked-global-retailer-revenue-mix-by-region-q3-2025-doc';
-import { RadarStackedSaasPlatformMonthlyUsageByPlanTierDoc } from '@/doc/charts/types-radar-stacked-saas-platform-monthly-usage-by-plan-tier-doc';
 import { RadarTitleAndCaptionDoc } from '@/doc/charts/types-radar-title-and-caption-doc';
 import { RadarTooltipDoc } from '@/doc/charts/types-radar-tooltip-doc';
 import { ReferenceLinesBandsLabelDoc } from '@/doc/charts/configuration-reference-lines-bands-label-doc';
@@ -400,10 +330,8 @@ import { ScatterBubbleAnnotationDoc } from '@/doc/charts/types-scatter-bubble-an
 import { ScatterBubbleAxesDoc } from '@/doc/charts/types-scatter-bubble-axes-doc';
 import { ScatterBubbleBasicDoc } from '@/doc/charts/types-scatter-bubble-basic-doc';
 import { ScatterBubbleBorderDoc } from '@/doc/charts/types-scatter-bubble-border-doc';
-import { ScatterBubbleBubbleBlockbusterRoiProductionBudgetWorldwideGross20112023Doc } from '@/doc/charts/types-scatter-bubble-bubble-blockbuster-roi-production-budget-worldwide-gross-2011-2023-doc';
 import { ScatterBubbleBubbleDoc } from '@/doc/charts/types-scatter-bubble-bubble-doc';
 import { ScatterBubbleBubbleMicrosoftProductPortfolioBcgGrowthShareMatrixFy2023Doc } from '@/doc/charts/types-scatter-bubble-bubble-microsoft-product-portfolio-bcg-growth-share-matrix-fy2023-doc';
-import { ScatterBubbleBubbleOecdHealthcareSpendVsOutcome2022Doc } from '@/doc/charts/types-scatter-bubble-bubble-oecd-healthcare-spend-vs-outcome-2022-doc';
 import { ScatterBubbleColorsDoc } from '@/doc/charts/types-scatter-bubble-colors-doc';
 import { ScatterBubbleCustomMarkersDoc } from '@/doc/charts/types-scatter-bubble-custom-markers-doc';
 import { ScatterBubbleDataLabelsDoc } from '@/doc/charts/types-scatter-bubble-data-labels-doc';
@@ -415,14 +343,8 @@ import { ScatterBubbleHoverDoc } from '@/doc/charts/types-scatter-bubble-hover-d
 import { ScatterBubbleImportDoc } from '@/doc/charts/types-scatter-bubble-import-doc';
 import { ScatterBubbleLegendDoc } from '@/doc/charts/types-scatter-bubble-legend-doc';
 import { ScatterBubbleMarkersDoc } from '@/doc/charts/types-scatter-bubble-markers-doc';
-import { ScatterBubblePlaygroundPlaygroundDoc } from '@/doc/charts/types-scatter-bubble-playground-playground-doc';
 import { ScatterBubbleReferenceLinesAndBandsDoc } from '@/doc/charts/types-scatter-bubble-reference-lines-and-bands-doc';
 import { ScatterBubbleResponsiveDoc } from '@/doc/charts/types-scatter-bubble-responsive-doc';
-import { ScatterBubbleScatter100000PointsCanvasBoostModeDoc } from '@/doc/charts/types-scatter-bubble-scatter-100-000-points-canvas-boost-mode-doc';
-import { ScatterBubbleScatterMooreSLawTransistorCountPerMicroprocessor19712024Doc } from '@/doc/charts/types-scatter-bubble-scatter-moore-s-law-transistor-count-per-microprocessor-1971-2024-doc';
-import { ScatterBubbleScatterNba202324ScorersVsPlaymakersByPositionDoc } from '@/doc/charts/types-scatter-bubble-scatter-nba-2023-24-scorers-vs-playmakers-by-position-doc';
-import { ScatterBubbleScatterUsTechProfitabilityFortune100BySubIndustryFy2023Doc } from '@/doc/charts/types-scatter-bubble-scatter-us-tech-profitability-fortune-100-by-sub-industry-fy2023-doc';
-import { ScatterBubbleScatterWindFarmTelemetry100000ReadingsDecimatedDoc } from '@/doc/charts/types-scatter-bubble-scatter-wind-farm-telemetry-100-000-readings-decimated-doc';
 import { ScatterBubbleTitleAndCaptionDoc } from '@/doc/charts/types-scatter-bubble-title-and-caption-doc';
 import { ScatterBubbleTooltipDoc } from '@/doc/charts/types-scatter-bubble-tooltip-doc';
 import { ScatterBubbleZoomAndNavigatorDoc } from '@/doc/charts/types-scatter-bubble-zoom-and-navigator-doc';
@@ -433,14 +355,7 @@ import { SetupQuickstartsDoc } from '@/doc/charts/getting-started-setup-quicksta
 import { SetupStylesDoc } from '@/doc/charts/getting-started-setup-styles-doc';
 import { SyncedCrosshairSyncDoc } from '@/doc/charts/types-synced-crosshair-sync-doc';
 import { SyncedDashboardDoc } from '@/doc/charts/types-synced-dashboard-doc';
-import { SyncedExamplesCandlestickVolumeStackedPanesDoc } from '@/doc/charts/types-synced-examples-candlestick-volume-stacked-panes-doc';
 import { SyncedExamplesClimateOverviewDoc } from '@/doc/charts/types-synced-examples-climate-overview-doc';
-import { SyncedExamplesECommerceFunnelCategorySyncDoc } from '@/doc/charts/types-synced-examples-e-commerce-funnel-category-sync-doc';
-import { SyncedExamplesEnergyGridOperationsDoc } from '@/doc/charts/types-synced-examples-energy-grid-operations-doc';
-import { SyncedExamplesFinancialWorkstationPriceVolumeSpreadDoc } from '@/doc/charts/types-synced-examples-financial-workstation-price-volume-spread-doc';
-import { SyncedExamplesFleetTelemetryKpiStripDoc } from '@/doc/charts/types-synced-examples-fleet-telemetry-kpi-strip-doc';
-import { SyncedExamplesServerMetricsMonitorDoc } from '@/doc/charts/types-synced-examples-server-metrics-monitor-doc';
-import { SyncedExamplesTradingWatchlistSparklinesInTableDoc } from '@/doc/charts/types-synced-examples-trading-watchlist-sparklines-in-table-doc';
 import { SyncedFullSyncDoc } from '@/doc/charts/types-synced-full-sync-doc';
 import { SyncedImportDoc } from '@/doc/charts/types-synced-import-doc';
 import { SyncedSharedLegendDoc } from '@/doc/charts/types-synced-shared-legend-doc';
@@ -485,18 +400,10 @@ import { TreemapImportDoc } from '@/doc/charts/types-treemap-import-doc';
 import { TreemapLabelsDoc } from '@/doc/charts/types-treemap-labels-doc';
 import { TreemapLayoutDoc } from '@/doc/charts/types-treemap-layout-doc';
 import { TreemapLegendDoc } from '@/doc/charts/types-treemap-legend-doc';
-import { TreemapPlaygroundPlaygroundDoc } from '@/doc/charts/types-treemap-playground-playground-doc';
 import { TreemapResponsiveDoc } from '@/doc/charts/types-treemap-responsive-doc';
 import { TreemapTitleAndCaptionDoc } from '@/doc/charts/types-treemap-title-and-caption-doc';
 import { TreemapTooltipDoc } from '@/doc/charts/types-treemap-tooltip-doc';
 import { TreemapTreemapAlphabetIncQ32024RevenueBySegmentDoc } from '@/doc/charts/types-treemap-treemap-alphabet-inc-q3-2024-revenue-by-segment-doc';
-import { TreemapTreemapComingSoonDoc } from '@/doc/charts/types-treemap-treemap-coming-soon-doc';
-import { TreemapTreemapFortuneGlobal500Top15ByFy2023RevenueDoc } from '@/doc/charts/types-treemap-treemap-fortune-global-500-top-15-by-fy2023-revenue-doc';
-import { TreemapTreemapLlmsIntegration2Doc } from '@/doc/charts/types-treemap-treemap-llms-integration-2-doc';
-import { TreemapTreemapLlmsIntegrationDoc } from '@/doc/charts/types-treemap-treemap-llms-integration-doc';
-import { TreemapTreemapOverviewDoc } from '@/doc/charts/types-treemap-treemap-overview-doc';
-import { TreemapTreemapPricingDoc } from '@/doc/charts/types-treemap-treemap-pricing-doc';
-import { TreemapTreemapWorldSLargestStockExchangesMarketCapVs2025YtdDoc } from '@/doc/charts/types-treemap-treemap-world-s-largest-stock-exchanges-market-cap-vs-2025-ytd-doc';
 import { ZoomPanBasicDoc } from '@/doc/charts/configuration-zoom-pan-basic-doc';
 import { ZoomPanDragToZoomDoc } from '@/doc/charts/configuration-zoom-pan-drag-to-zoom-doc';
 import { ZoomPanNavigatorDoc } from '@/doc/charts/configuration-zoom-pan-navigator-doc';
@@ -843,71 +750,6 @@ export class ChartsDemo {
                     id: 'types-column-bar-bar-paris-2024-summer-olympics-gold-medals-top-12-countries',
                     label: 'Paris 2024 Summer Olympics, Gold Medals, Top 12 Countries',
                     component: ColumnBarBarParis2024SummerOlympicsGoldMedalsTop12CountriesDoc
-                },
-                {
-                    id: 'types-column-bar-bar-world-s-largest-metropolitan-areas-by-population-2024',
-                    label: "World's Largest Metropolitan Areas by Population, 2024",
-                    component: ColumnBarBarWorldSLargestMetropolitanAreasByPopulation2024Doc
-                },
-                {
-                    id: 'types-column-bar-bar-world-s-most-visited-art-museums-2023',
-                    label: "World's Most-Visited Art Museums, 2023",
-                    component: ColumnBarBarWorldSMostVisitedArtMuseums2023Doc
-                },
-                {
-                    id: 'types-column-bar-bar-primeui-themed-bar-chart',
-                    label: 'PrimeUI-Themed Bar Chart',
-                    component: ColumnBarBarPrimeuiThemedBarChartDoc
-                },
-                {
-                    id: 'types-column-bar-grouped-g7-randd-expenditure-by-funding-source-2022',
-                    label: 'G7 R&D Expenditure by Funding Source, 2022',
-                    component: ColumnBarGroupedG7RanddExpenditureByFundingSource2022Doc
-                },
-                {
-                    id: 'types-column-bar-grouped-labour-force-participation-by-gender-and-region-2023',
-                    label: 'Labour Force Participation by Gender & Region, 2023',
-                    component: ColumnBarGroupedLabourForceParticipationByGenderAndRegion2023Doc
-                },
-                {
-                    id: 'types-column-bar-playground-playground',
-                    label: 'Playground',
-                    component: ColumnBarPlaygroundPlaygroundDoc
-                },
-                {
-                    id: 'types-column-bar-stacked-revenue-composition-grouped-stacked-with-reference-bands',
-                    label: 'Revenue Composition, Grouped Stacked with Reference Bands',
-                    component: ColumnBarStackedRevenueCompositionGroupedStackedWithReferenceBandsDoc
-                },
-                {
-                    id: 'types-column-bar-stacked-global-electric-vehicle-sales-by-region-2019-2023',
-                    label: 'Global Electric Vehicle Sales by Region, 2019–2023',
-                    component: ColumnBarStackedGlobalElectricVehicleSalesByRegion20192023Doc
-                },
-                {
-                    id: 'types-column-bar-stacked-electricity-generation-mix-by-country-2023',
-                    label: 'Electricity Generation Mix by Country, 2023',
-                    component: ColumnBarStackedElectricityGenerationMixByCountry2023Doc
-                },
-                {
-                    id: 'types-column-bar-stacked-world-population-by-age-group-and-sex-2024',
-                    label: 'World Population by Age Group and Sex, 2024',
-                    component: ColumnBarStackedWorldPopulationByAgeGroupAndSex2024Doc
-                },
-                {
-                    id: 'types-column-bar-waterfall-eu-27-government-revenue-and-spending-2022',
-                    label: 'EU-27 Government Revenue and Spending, 2022',
-                    component: ColumnBarWaterfallEu27GovernmentRevenueAndSpending2022Doc
-                },
-                {
-                    id: 'types-column-bar-waterfall-global-carbon-budget-2022-sources-sinks-net-accumulation',
-                    label: 'Global Carbon Budget 2022, Sources, Sinks, Net Accumulation',
-                    component: ColumnBarWaterfallGlobalCarbonBudget2022SourcesSinksNetAccumulationDoc
-                },
-                {
-                    id: 'types-column-bar-waterfall-fy-2023-ebitda-bridge-stacked-waterfall',
-                    label: 'FY 2023 EBITDA Bridge, Stacked Waterfall',
-                    component: ColumnBarWaterfallFy2023EbitdaBridgeStackedWaterfallDoc
                 }
             ]
         },
@@ -1060,71 +902,6 @@ export class ChartsDemo {
                     id: 'types-line-area-area-us-unemployment-rate-2000-2024',
                     label: 'US Unemployment Rate 2000–2024',
                     component: LineAreaAreaUsUnemploymentRate20002024Doc
-                },
-                {
-                    id: 'types-line-area-area-us-electricity-generation-mix-2010-2023',
-                    label: 'US Electricity Generation Mix 2010–2023',
-                    component: LineAreaAreaUsElectricityGenerationMix20102023Doc
-                },
-                {
-                    id: 'types-line-area-area-us-treasury-yield-curve-2019-2024',
-                    label: 'US Treasury Yield Curve 2019–2024',
-                    component: LineAreaAreaUsTreasuryYieldCurve20192024Doc
-                },
-                {
-                    id: 'types-line-area-line-nasa-global-temperature-anomaly',
-                    label: 'NASA Global Temperature Anomaly',
-                    component: LineAreaLineNasaGlobalTemperatureAnomalyDoc
-                },
-                {
-                    id: 'types-line-area-line-u-s-unemployment-rate-2000-2024',
-                    label: 'U.S. Unemployment Rate 2000–2024',
-                    component: LineAreaLineUSUnemploymentRate20002024Doc
-                },
-                {
-                    id: 'types-line-area-line-us-stock-indices-normalised-comparison',
-                    label: 'US Stock Indices: Normalised Comparison',
-                    component: LineAreaLineUsStockIndicesNormalisedComparisonDoc
-                },
-                {
-                    id: 'types-line-area-playground-playground',
-                    label: 'Playground',
-                    component: LineAreaPlaygroundPlaygroundDoc
-                },
-                {
-                    id: 'types-line-area-range-brent-crude-oil-annual-price-range-2005-to-2023',
-                    label: 'Brent Crude Oil Annual Price Range, 2005 to 2023',
-                    component: LineAreaRangeBrentCrudeOilAnnualPriceRange2005To2023Doc
-                },
-                {
-                    id: 'types-line-area-range-global-number-of-births-and-deaths-1950-to-2100',
-                    label: 'Global Number of Births and Deaths, 1950 to 2100',
-                    component: LineAreaRangeGlobalNumberOfBirthsAndDeaths1950To2100Doc
-                },
-                {
-                    id: 'types-line-area-range-london-sunrise-and-sunset-times',
-                    label: 'London Sunrise & Sunset Times',
-                    component: LineAreaRangeLondonSunriseAndSunsetTimesDoc
-                },
-                {
-                    id: 'types-line-area-stacked-us-federal-spending-2000-2023',
-                    label: 'US Federal Spending 2000–2023',
-                    component: LineAreaStackedUsFederalSpending20002023Doc
-                },
-                {
-                    id: 'types-line-area-stacked-eu-27-energy-mix-2013-2023',
-                    label: 'EU-27 Energy Mix 2013–2023',
-                    component: LineAreaStackedEu27EnergyMix20132023Doc
-                },
-                {
-                    id: 'types-line-area-time-series-live-server-metrics-cpu-and-memory-utilisation',
-                    label: 'Live server metrics: CPU and memory utilisation',
-                    component: LineAreaTimeSeriesLiveServerMetricsCpuAndMemoryUtilisationDoc
-                },
-                {
-                    id: 'types-line-area-time-series-live-stock-price-acme-corp',
-                    label: 'Live stock price: ACME Corp',
-                    component: LineAreaTimeSeriesLiveStockPriceAcmeCorpDoc
                 }
             ]
         },
@@ -1252,71 +1029,6 @@ export class ChartsDemo {
                     id: 'types-pie-donut-donut-browser-market-share',
                     label: 'Browser Market Share',
                     component: PieDonutDonutBrowserMarketShareDoc
-                },
-                {
-                    id: 'types-pie-donut-donut-sandp-500-sector-breakdown',
-                    label: 'S&P 500 Sector Breakdown',
-                    component: PieDonutDonutSandp500SectorBreakdownDoc
-                },
-                {
-                    id: 'types-pie-donut-donut-renewable-energy-by-region',
-                    label: 'Renewable Energy by Region',
-                    component: PieDonutDonutRenewableEnergyByRegionDoc
-                },
-                {
-                    id: 'types-pie-donut-gauge-gb-grid-carbon-intensity',
-                    label: 'GB Grid Carbon Intensity',
-                    component: PieDonutGaugeGbGridCarbonIntensityDoc
-                },
-                {
-                    id: 'types-pie-donut-gauge-atmospheric-co-concentration-mauna-loa',
-                    label: 'Atmospheric CO₂ Concentration: Mauna Loa',
-                    component: PieDonutGaugeAtmosphericCoConcentrationMaunaLoaDoc
-                },
-                {
-                    id: 'types-pie-donut-gauge-nasa-global-temperature-anomaly',
-                    label: 'NASA Global Temperature Anomaly',
-                    component: PieDonutGaugeNasaGlobalTemperatureAnomalyDoc
-                },
-                {
-                    id: 'types-pie-donut-pie-iaas-cloud-market-share',
-                    label: 'IaaS Cloud Market Share',
-                    component: PieDonutPieIaasCloudMarketShareDoc
-                },
-                {
-                    id: 'types-pie-donut-pie-browser-market-share',
-                    label: 'Browser Market Share',
-                    component: PieDonutPieBrowserMarketShareDoc
-                },
-                {
-                    id: 'types-pie-donut-pie-global-energy-mix',
-                    label: 'Global Energy Mix',
-                    component: PieDonutPieGlobalEnergyMixDoc
-                },
-                {
-                    id: 'types-pie-donut-pie-nested-global-ev-sales-by-market-and-powertrain-2016-to-2023',
-                    label: 'Global EV Sales by Market and Powertrain, 2016 to 2023',
-                    component: PieDonutPieNestedGlobalEvSalesByMarketAndPowertrain2016To2023Doc
-                },
-                {
-                    id: 'types-pie-donut-pie-nested-world-gdp-by-region-and-income-group-2023',
-                    label: 'World GDP by region and income group 2023',
-                    component: PieDonutPieNestedWorldGdpByRegionAndIncomeGroup2023Doc
-                },
-                {
-                    id: 'types-pie-donut-pie-nightingale-us-tornado-climatology',
-                    label: 'US Tornado Climatology',
-                    component: PieDonutPieNightingaleUsTornadoClimatologyDoc
-                },
-                {
-                    id: 'types-pie-donut-pie-nightingale-noaa-monthly-precipitation-2024',
-                    label: 'NOAA Monthly Precipitation 2024',
-                    component: PieDonutPieNightingaleNoaaMonthlyPrecipitation2024Doc
-                },
-                {
-                    id: 'types-pie-donut-playground-playground',
-                    label: 'Playground',
-                    component: PieDonutPlaygroundPlaygroundDoc
                 }
             ]
         },
@@ -1444,46 +1156,6 @@ export class ChartsDemo {
                     id: 'types-scatter-bubble-bubble-microsoft-product-portfolio-bcg-growth-share-matrix-fy2023',
                     label: 'Microsoft Product Portfolio: BCG Growth-Share Matrix, FY2023',
                     component: ScatterBubbleBubbleMicrosoftProductPortfolioBcgGrowthShareMatrixFy2023Doc
-                },
-                {
-                    id: 'types-scatter-bubble-bubble-oecd-healthcare-spend-vs-outcome-2022',
-                    label: 'OECD Healthcare: Spend vs Outcome, 2022',
-                    component: ScatterBubbleBubbleOecdHealthcareSpendVsOutcome2022Doc
-                },
-                {
-                    id: 'types-scatter-bubble-bubble-blockbuster-roi-production-budget-worldwide-gross-2011-2023',
-                    label: 'Blockbuster ROI: Production Budget × Worldwide Gross, 2011–2023',
-                    component: ScatterBubbleBubbleBlockbusterRoiProductionBudgetWorldwideGross20112023Doc
-                },
-                {
-                    id: 'types-scatter-bubble-playground-playground',
-                    label: 'Playground',
-                    component: ScatterBubblePlaygroundPlaygroundDoc
-                },
-                {
-                    id: 'types-scatter-bubble-scatter-us-tech-profitability-fortune-100-by-sub-industry-fy2023',
-                    label: 'US Tech Profitability: Fortune 100 by Sub-Industry, FY2023',
-                    component: ScatterBubbleScatterUsTechProfitabilityFortune100BySubIndustryFy2023Doc
-                },
-                {
-                    id: 'types-scatter-bubble-scatter-nba-2023-24-scorers-vs-playmakers-by-position',
-                    label: 'NBA 2023-24: Scorers vs Playmakers, by Position',
-                    component: ScatterBubbleScatterNba202324ScorersVsPlaymakersByPositionDoc
-                },
-                {
-                    id: 'types-scatter-bubble-scatter-moore-s-law-transistor-count-per-microprocessor-1971-2024',
-                    label: "Moore's Law: Transistor Count per Microprocessor, 1971–2024",
-                    component: ScatterBubbleScatterMooreSLawTransistorCountPerMicroprocessor19712024Doc
-                },
-                {
-                    id: 'types-scatter-bubble-scatter-wind-farm-telemetry-100-000-readings-decimated',
-                    label: 'Wind Farm Telemetry: 100,000 Readings, Decimated',
-                    component: ScatterBubbleScatterWindFarmTelemetry100000ReadingsDecimatedDoc
-                },
-                {
-                    id: 'types-scatter-bubble-scatter-100-000-points-canvas-boost-mode',
-                    label: '100,000 Points · Canvas + Boost Mode',
-                    component: ScatterBubbleScatter100000PointsCanvasBoostModeDoc
                 }
             ]
         },
@@ -1618,49 +1290,9 @@ export class ChartsDemo {
                     component: RadarAccessibilityDoc
                 },
                 {
-                    id: 'types-radar-playground-playground',
-                    label: 'Playground',
-                    component: RadarPlaygroundPlaygroundDoc
-                },
-                {
                     id: 'types-radar-radar-us-equity-factor-tilts-vtv-vug-mtum',
                     label: 'US Equity Factor Tilts: VTV · VUG · MTUM',
                     component: RadarRadarUsEquityFactorTiltsVtvVugMtumDoc
-                },
-                {
-                    id: 'types-radar-radar-fifa-24-attribute-profiles-of-three-superstars',
-                    label: 'FIFA 24: Attribute Profiles of Three Superstars',
-                    component: RadarRadarFifa24AttributeProfilesOfThreeSuperstarsDoc
-                },
-                {
-                    id: 'types-radar-radar-nist-csf-2-0-cybersecurity-posture-audit',
-                    label: 'NIST CSF 2.0: Cybersecurity Posture Audit',
-                    component: RadarRadarNistCsf20CybersecurityPostureAuditDoc
-                },
-                {
-                    id: 'types-radar-radar-startup-kpi-scorecard-animated-quarterly-progress',
-                    label: 'Startup KPI Scorecard: Animated Quarterly Progress',
-                    component: RadarRadarStartupKpiScorecardAnimatedQuarterlyProgressDoc
-                },
-                {
-                    id: 'types-radar-radar-engineering-team-assessment-reference-bands-and-lines',
-                    label: 'Engineering Team Assessment: Reference Bands & Lines',
-                    component: RadarRadarEngineeringTeamAssessmentReferenceBandsAndLinesDoc
-                },
-                {
-                    id: 'types-radar-stacked-digital-transformation-engagement-hours-by-service-phase',
-                    label: 'Digital Transformation Engagement: Hours by Service × Phase',
-                    component: RadarStackedDigitalTransformationEngagementHoursByServicePhaseDoc
-                },
-                {
-                    id: 'types-radar-stacked-saas-platform-monthly-usage-by-plan-tier',
-                    label: 'SaaS Platform: Monthly Usage by Plan Tier',
-                    component: RadarStackedSaasPlatformMonthlyUsageByPlanTierDoc
-                },
-                {
-                    id: 'types-radar-stacked-global-retailer-revenue-mix-by-region-q3-2025',
-                    label: 'Global Retailer: Revenue Mix by Region, Q3 2025',
-                    component: RadarStackedGlobalRetailerRevenueMixByRegionQ32025Doc
                 }
             ]
         },
@@ -1780,39 +1412,9 @@ export class ChartsDemo {
                     component: PolarAccessibilityDoc
                 },
                 {
-                    id: 'types-polar-playground-playground',
-                    label: 'Playground',
-                    component: PolarPlaygroundPlaygroundDoc
-                },
-                {
                     id: 'types-polar-polar-monaco-grand-prix-sector-performance-by-team',
                     label: 'Monaco Grand Prix: Sector Performance by Team',
                     component: PolarPolarMonacoGrandPrixSectorPerformanceByTeamDoc
-                },
-                {
-                    id: 'types-polar-polar-heathrow-lhr-scheduled-departures-by-hour-of-day',
-                    label: 'Heathrow LHR: Scheduled Departures by Hour of Day',
-                    component: PolarPolarHeathrowLhrScheduledDeparturesByHourOfDayDoc
-                },
-                {
-                    id: 'types-polar-polar-global-fx-market-24-hour-trading-volume-cycle',
-                    label: 'Global FX Market: 24-Hour Trading Volume Cycle',
-                    component: PolarPolarGlobalFxMarket24HourTradingVolumeCycleDoc
-                },
-                {
-                    id: 'types-polar-stacked-uk-grid-monthly-renewable-generation-by-source',
-                    label: 'UK Grid: Monthly Renewable Generation by Source',
-                    component: PolarStackedUkGridMonthlyRenewableGenerationBySourceDoc
-                },
-                {
-                    id: 'types-polar-stacked-wind-speed-by-direction-morning-vs-afternoon',
-                    label: 'Wind Speed by Direction: Morning vs Afternoon',
-                    component: PolarStackedWindSpeedByDirectionMorningVsAfternoonDoc
-                },
-                {
-                    id: 'types-polar-stacked-wind-gustiness-by-direction-sustained-vs-gusts',
-                    label: 'Wind Gustiness by Direction: Sustained vs Gusts',
-                    component: PolarStackedWindGustinessByDirectionSustainedVsGustsDoc
                 }
             ]
         },
@@ -1915,21 +1517,6 @@ export class ChartsDemo {
                     id: 'types-heatmap-heatmap-sandp-500-sector-correlation-matrix-daily-returns-2023',
                     label: 'S&P 500 Sector Correlation Matrix: Daily Returns, 2023',
                     component: HeatmapHeatmapSandp500SectorCorrelationMatrixDailyReturns2023Doc
-                },
-                {
-                    id: 'types-heatmap-heatmap-olympic-medal-table-by-sport',
-                    label: 'Olympic Medal Table by Sport',
-                    component: HeatmapHeatmapOlympicMedalTableBySportDoc
-                },
-                {
-                    id: 'types-heatmap-heatmap-saas-monthly-cohort-retention-2024-signups',
-                    label: 'SaaS Monthly-Cohort Retention: 2024 Signups',
-                    component: HeatmapHeatmapSaasMonthlyCohortRetention2024SignupsDoc
-                },
-                {
-                    id: 'types-heatmap-playground-playground',
-                    label: 'Playground',
-                    component: HeatmapPlaygroundPlaygroundDoc
                 }
             ]
         },
@@ -2034,49 +1621,9 @@ export class ChartsDemo {
                     component: TreemapAccessibilityDoc
                 },
                 {
-                    id: 'types-treemap-playground-playground',
-                    label: 'Playground',
-                    component: TreemapPlaygroundPlaygroundDoc
-                },
-                {
                     id: 'types-treemap-treemap-alphabet-inc-q3-2024-revenue-by-segment',
                     label: 'Alphabet Inc.: Q3 2024 Revenue by Segment',
                     component: TreemapTreemapAlphabetIncQ32024RevenueBySegmentDoc
-                },
-                {
-                    id: 'types-treemap-treemap-world-s-largest-stock-exchanges-market-cap-vs-2025-ytd',
-                    label: "World's Largest Stock Exchanges: Market Cap vs 2025 YTD",
-                    component: TreemapTreemapWorldSLargestStockExchangesMarketCapVs2025YtdDoc
-                },
-                {
-                    id: 'types-treemap-treemap-fortune-global-500-top-15-by-fy2023-revenue',
-                    label: 'Fortune Global 500: Top 15 by FY2023 Revenue',
-                    component: TreemapTreemapFortuneGlobal500Top15ByFy2023RevenueDoc
-                },
-                {
-                    id: 'types-treemap-treemap-llms-integration',
-                    label: 'LLMs Integration',
-                    component: TreemapTreemapLlmsIntegrationDoc
-                },
-                {
-                    id: 'types-treemap-treemap-llms-integration-2',
-                    label: 'LLMs Integration',
-                    component: TreemapTreemapLlmsIntegration2Doc
-                },
-                {
-                    id: 'types-treemap-treemap-overview',
-                    label: 'overview',
-                    component: TreemapTreemapOverviewDoc
-                },
-                {
-                    id: 'types-treemap-treemap-pricing',
-                    label: 'Pricing',
-                    component: TreemapTreemapPricingDoc
-                },
-                {
-                    id: 'types-treemap-treemap-coming-soon',
-                    label: 'Coming Soon',
-                    component: TreemapTreemapComingSoonDoc
                 }
             ]
         },
@@ -2184,51 +1731,6 @@ export class ChartsDemo {
                     id: 'types-candlestick-candlestick-bitcoin-btc-usd-weekly-nov-2021-to-dec-2024',
                     label: 'Bitcoin (BTC/USD), Weekly, Nov 2021 to Dec 2024',
                     component: CandlestickCandlestickBitcoinBtcUsdWeeklyNov2021ToDec2024Doc
-                },
-                {
-                    id: 'types-candlestick-candlestick-apple-inc-aapl-2024-daily-ohlc',
-                    label: 'Apple Inc. (AAPL), 2024 Daily OHLC',
-                    component: CandlestickCandlestickAppleIncAapl2024DailyOhlcDoc
-                },
-                {
-                    id: 'types-candlestick-candlestick-aapl-q1-2024-with-volume-sub-pane',
-                    label: 'AAPL, Q1 2024 with Volume sub-pane',
-                    component: CandlestickCandlestickAaplQ12024WithVolumeSubPaneDoc
-                },
-                {
-                    id: 'types-candlestick-hollow-tesla-inc-tsla-2024-weekly-hollow-candles',
-                    label: 'Tesla, Inc. (TSLA), 2024 Weekly Hollow Candles',
-                    component: CandlestickHollowTeslaIncTsla2024WeeklyHollowCandlesDoc
-                },
-                {
-                    id: 'types-candlestick-hollow-eur-usd-h2-2024-daily-hollow-candles',
-                    label: 'EUR/USD, H2 2024 Daily Hollow Candles',
-                    component: CandlestickHollowEurUsdH22024DailyHollowCandlesDoc
-                },
-                {
-                    id: 'types-candlestick-live-data-btc-usd-high-frequency-stream',
-                    label: 'BTC/USD, High-Frequency Stream',
-                    component: CandlestickLiveDataBtcUsdHighFrequencyStreamDoc
-                },
-                {
-                    id: 'types-candlestick-live-data-eur-usd-live-tick-stream',
-                    label: 'EUR/USD, Live Tick Stream',
-                    component: CandlestickLiveDataEurUsdLiveTickStreamDoc
-                },
-                {
-                    id: 'types-candlestick-ohlc-wti-crude-oil-cl1-2024-weekly-ohlc',
-                    label: 'WTI Crude Oil (CL1), 2024 Weekly OHLC',
-                    component: CandlestickOhlcWtiCrudeOilCl12024WeeklyOhlcDoc
-                },
-                {
-                    id: 'types-candlestick-ohlc-gold-spot-xau-usd-2024-weekly-ohlc',
-                    label: 'Gold Spot (XAU/USD), 2024 Weekly OHLC',
-                    component: CandlestickOhlcGoldSpotXauUsd2024WeeklyOhlcDoc
-                },
-                {
-                    id: 'types-candlestick-playground-playground',
-                    label: 'Playground',
-                    component: CandlestickPlaygroundPlaygroundDoc
                 }
             ]
         },
@@ -2286,31 +1788,6 @@ export class ChartsDemo {
                     id: 'types-combo-examples-climate-dashboard-rainfall-temperature',
                     label: 'Climate Dashboard: Rainfall + Temperature',
                     component: ComboExamplesClimateDashboardRainfallTemperatureDoc
-                },
-                {
-                    id: 'types-combo-examples-stock-price-volume',
-                    label: 'Stock Price + Volume',
-                    component: ComboExamplesStockPriceVolumeDoc
-                },
-                {
-                    id: 'types-combo-examples-revenue-mix-vs-target-with-growth-overlay',
-                    label: 'Revenue Mix vs Target with Growth Overlay',
-                    component: ComboExamplesRevenueMixVsTargetWithGrowthOverlayDoc
-                },
-                {
-                    id: 'types-combo-examples-channel-efficiency-quadrants',
-                    label: 'Channel Efficiency Quadrants',
-                    component: ComboExamplesChannelEfficiencyQuadrantsDoc
-                },
-                {
-                    id: 'types-combo-examples-economic-forecast-envelope',
-                    label: 'Economic Forecast Envelope',
-                    component: ComboExamplesEconomicForecastEnvelopeDoc
-                },
-                {
-                    id: 'types-combo-examples-product-capability-benchmark-radar-polar',
-                    label: 'Product Capability Benchmark: Radar + Polar',
-                    component: ComboExamplesProductCapabilityBenchmarkRadarPolarDoc
                 }
             ]
         },
@@ -2353,41 +1830,6 @@ export class ChartsDemo {
                     id: 'types-synced-examples-climate-overview',
                     label: 'Climate Overview',
                     component: SyncedExamplesClimateOverviewDoc
-                },
-                {
-                    id: 'types-synced-examples-trading-watchlist-sparklines-in-table',
-                    label: 'Trading Watchlist: Sparklines in Table',
-                    component: SyncedExamplesTradingWatchlistSparklinesInTableDoc
-                },
-                {
-                    id: 'types-synced-examples-fleet-telemetry-kpi-strip',
-                    label: 'Fleet Telemetry: KPI Strip',
-                    component: SyncedExamplesFleetTelemetryKpiStripDoc
-                },
-                {
-                    id: 'types-synced-examples-e-commerce-funnel-category-sync',
-                    label: 'E-commerce Funnel: Category Sync',
-                    component: SyncedExamplesECommerceFunnelCategorySyncDoc
-                },
-                {
-                    id: 'types-synced-examples-server-metrics-monitor',
-                    label: 'Server Metrics Monitor',
-                    component: SyncedExamplesServerMetricsMonitorDoc
-                },
-                {
-                    id: 'types-synced-examples-energy-grid-operations',
-                    label: 'Energy Grid Operations',
-                    component: SyncedExamplesEnergyGridOperationsDoc
-                },
-                {
-                    id: 'types-synced-examples-candlestick-volume-stacked-panes',
-                    label: 'Candlestick + Volume: Stacked Panes',
-                    component: SyncedExamplesCandlestickVolumeStackedPanesDoc
-                },
-                {
-                    id: 'types-synced-examples-financial-workstation-price-volume-spread',
-                    label: 'Financial Workstation: Price, Volume, Spread',
-                    component: SyncedExamplesFinancialWorkstationPriceVolumeSpreadDoc
                 }
             ]
         },
