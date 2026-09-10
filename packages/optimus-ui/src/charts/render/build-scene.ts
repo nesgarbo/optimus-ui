@@ -5,7 +5,22 @@
  * roots call it, so there is exactly one answer to "what does this chart look like" and the
  * renderers only differ in how they put it on screen.
  */
-import type { AxisPosition, AxisType, BarSeriesProps, BaseAxisProps, ChartHoverProps, ChartTooltipProps, ColorValue, CrosshairConfig, LineSeriesProps, PieSeriesProps, SvgNode } from '@openng/optimus-ui/types/charts';
+import type {
+    AxisPosition,
+    AxisType,
+    BarSeriesProps,
+    BaseAxisProps,
+    ChartHoverProps,
+    ChartTooltipProps,
+    ColorValue,
+    CrosshairConfig,
+    LineSeriesProps,
+    PieSeriesProps,
+    PolarSeriesProps,
+    RadarSeriesProps,
+    ScatterSeriesProps,
+    SvgNode
+} from '@openng/optimus-ui/types/charts';
 import { isGradient, isLinearGradient } from '../core/color';
 import type { ChartContext } from '../charts-registry';
 import type { ResolvedSeries } from '../charts-state';
@@ -14,6 +29,8 @@ import { axisOfPosition, defaultPosition, paintAxis, paintGrid, resolveAxis, typ
 import { bandSlotFor, groupedBars, paintBarSeries, shouldGroup } from './series-bar';
 import { paintLineSeries } from './series-line';
 import { paintPieSeries, pieFrame, type PieFrame } from './series-pie';
+import { paintPolarSeries, paintRadarSeries, paintRadialGrid, radialFrame, resolveRadialAxis } from './series-radial';
+import { paintScatterSeries } from './series-scatter';
 import { createScene, plotClip, plotClipRef, type DrawContext, type SceneLayer } from './scene';
 
 /** What a built scene carries back to the root. */
@@ -110,6 +127,33 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
     const groupMembers = grouped ? groupedBars(series) : [];
     const rings = radialRings(series);
     const frame = pieFrame(drawContext);
+    const spoked = series.filter((entry) => entry.visible && (entry.type === 'radar' || entry.type === 'polar'));
+    const polarMembers = spoked.filter((entry) => entry.type === 'polar' && entry.registration.stackId == null);
+
+    // Radar and polar share one radial value axis and one concentric grid, taken from ChartYAxis:
+    // the rings are the axis, so several series drawn on them must be measured against the same
+    // scale or their shapes cannot be compared.
+    if (spoked.length > 0) {
+        const yAxis = context.axes().find((axis) => axis.axis === 'y');
+        const axisProps = (yAxis?.props() ?? {}) as BaseAxisProps & { gridShape?: 'polygon' | 'circle' };
+        const radialAxis = resolveRadialAxis(spoked, axisProps);
+        // Inset for the spoke labels, which sit outside the outer ring where there is no axis edge
+        // to reserve against.
+        const spokeFrame = radialFrame(drawContext, radialAxis.categories);
+
+        scene.add('grid', ...paintRadialGrid(drawContext, radialAxis, axisProps, spokeFrame, spoked.some((entry) => entry.type === 'radar') ? 'polygon' : 'circle'));
+
+        for (const entry of spoked) {
+            if (entry.type === 'radar') {
+                scene.add('marks', ...paintRadarSeries(drawContext, entry, entry.registration.props() as RadarSeriesProps, radialAxis, spokeFrame));
+                continue;
+            }
+
+            const position = polarMembers.indexOf(entry);
+
+            scene.add('marks', ...paintPolarSeries(drawContext, entry, entry.registration.props() as PolarSeriesProps, radialAxis, spokeFrame, polarMembers.length || 1, position < 0 ? 0 : position));
+        }
+    }
 
     for (const entry of series) {
         if (!entry.visible || entry.points.length === 0) continue;
@@ -129,6 +173,13 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
                 scene.add('marks', ...paintBarSeries(drawContext, entry, props, slot, horizontal));
                 break;
             }
+            case 'scatter':
+                scene.add('marks', ...paintScatterSeries(drawContext, entry, entry.registration.props() as ScatterSeriesProps));
+                break;
+            case 'radar':
+            case 'polar':
+                // Already drawn above, against the shared radial axis.
+                break;
             case 'pie':
             case 'donut':
             case 'pie3d': {
@@ -225,7 +276,7 @@ function gradientDefFor(series: ResolvedSeries): SvgNode | null {
  * overlap, and re-arranging them into rings would be inventing a layout the author did not ask for.
  */
 function radialRings(series: readonly ResolvedSeries[]): ResolvedSeries[] {
-    return series.filter((entry) => entry.visible && isRadial(entry.type) && entry.registration.stackId != null);
+    return series.filter((entry) => entry.visible && (entry.type === 'pie' || entry.type === 'donut' || entry.type === 'pie3d') && entry.registration.stackId != null);
 }
 
 /**

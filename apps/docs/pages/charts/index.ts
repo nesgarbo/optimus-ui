@@ -5,6 +5,7 @@ import { ArchitectureDoc } from '@/doc/charts/architecture-doc';
 import { AxesDoc } from '@/doc/charts/axes-doc';
 import { BarDoc } from '@/doc/charts/bar-doc';
 import { BasicDoc } from '@/doc/charts/basic-doc';
+import { BubbleDoc } from '@/doc/charts/bubble-doc';
 import { CanvasDoc } from '@/doc/charts/canvas-doc';
 import { CurveDoc } from '@/doc/charts/curve-doc';
 import { DonutDoc } from '@/doc/charts/donut-doc';
@@ -19,8 +20,11 @@ import { MarkersDoc } from '@/doc/charts/markers-doc';
 import { NightingaleDoc } from '@/doc/charts/nightingale-doc';
 import { NullsDoc } from '@/doc/charts/nulls-doc';
 import { PieDoc } from '@/doc/charts/pie-doc';
+import { PolarDoc } from '@/doc/charts/polar-doc';
+import { RadarDoc } from '@/doc/charts/radar-doc';
 import { RangeDoc } from '@/doc/charts/range-doc';
 import { RtlDoc } from '@/doc/charts/rtl-doc';
+import { ScatterDoc } from '@/doc/charts/scatter-doc';
 import { StackedDoc } from '@/doc/charts/stacked-doc';
 import { ThemingDoc } from '@/doc/charts/theming-doc';
 import { TooltipDoc } from '@/doc/charts/tooltip-doc';
@@ -129,6 +133,26 @@ export class ChartsDemo {
             id: 'nightingale',
             label: 'Nightingale',
             component: NightingaleDoc
+        },
+        {
+            id: 'scatter',
+            label: 'Scatter',
+            component: ScatterDoc
+        },
+        {
+            id: 'bubble',
+            label: 'Bubble',
+            component: BubbleDoc
+        },
+        {
+            id: 'radar',
+            label: 'Radar',
+            component: RadarDoc
+        },
+        {
+            id: 'polar',
+            label: 'Polar',
+            component: PolarDoc
         },
         {
             id: 'axes',

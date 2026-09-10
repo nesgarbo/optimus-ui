@@ -148,3 +148,25 @@ export const WIND = [
     { direction: 'W', strength: 78 },
     { direction: 'NW', strength: 39 }
 ];
+
+/** A correlation cloud, for the scatter demo. */
+export const CORRELATION = Array.from({ length: 60 }, (_, i) => {
+    const spend = 20 + ((i * 37) % 80);
+
+    return {
+        spend,
+        // A deliberate trend with scatter around it, so the cloud reads as a relationship.
+        revenue: spend * 2.4 + (((i * 53) % 40) - 20),
+        accounts: 5 + ((i * 17) % 45)
+    };
+});
+
+/** Skill profiles, for the radar demo. */
+export const SKILLS = [
+    { axis: 'Speed', current: 82, target: 70 },
+    { axis: 'Reliability', current: 74, target: 90 },
+    { axis: 'Coverage', current: 61, target: 85 },
+    { axis: 'Cost', current: 55, target: 60 },
+    { axis: 'Support', current: 88, target: 75 },
+    { axis: 'Docs', current: 67, target: 80 }
+];

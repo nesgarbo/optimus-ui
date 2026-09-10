@@ -22,7 +22,21 @@ import { type AxisRegistration, type ChartContext, type FeatureRegistration, typ
  * Splitting this out of the scale is what lets an axis measure its own labels and reserve layout
  * space without needing the plot area that its reservation will go on to determine.
  */
-export type AxisDomain = { kind: 'category'; categories: string[]; banded: boolean; padding?: number } | { kind: 'value'; type: AxisType; extent: [number, number] };
+export type AxisDomain =
+    | { kind: 'category'; categories: string[]; banded: boolean; padding?: number }
+    | {
+          kind: 'value';
+          type: AxisType;
+          extent: [number, number];
+          /**
+           * Edge padding at the axis minimum, as a fraction of the pixel range.
+           */
+          paddingMin?: number;
+          /**
+           * Edge padding at the axis maximum, as a fraction of the pixel range.
+           */
+          paddingMax?: number;
+      };
 
 /** A resolved value of one series at one category. */
 export interface SeriesPoint {
@@ -36,6 +50,13 @@ export interface SeriesPoint {
      * Index into the original data array.
      */
     dataIndex: number;
+    /**
+     * The x value, on a series whose x axis is continuous rather than categorical.
+     *
+     * A scatter point has two numbers and no category; a category-based series leaves this unset and
+     * is placed by `category` instead.
+     */
+    xValue?: number | null;
     /**
      * Whether this point is a waterfall summary rather than a delta.
      *
@@ -64,13 +85,18 @@ export interface ResolvedSeries {
     xAxisId: string;
     yAxisId: string;
     /**
-     * Which axis this series puts its categories on. The other one carries the values.
+     * Which axis this series puts its categories on, or `null` when it has none.
      *
-     * A horizontal bar binds `categoryYField`, so its category axis is y and its value axis is x.
-     * Recording it here is what lets an axis with no explicit `type` work out whether it is a
-     * category axis or a value axis from what is actually bound to it.
+     * A horizontal bar binds `categoryYField`, so its category axis is y and its value axis is x. A
+     * scatter series binds two numbers and no category at all, so neither of its axes is
+     * categorical. Recording it here is what lets an axis with no explicit `type` work out its own
+     * role from what is actually bound to it.
      */
-    categoryAxis: 'x' | 'y';
+    categoryAxis: 'x' | 'y' | null;
+    /**
+     * Whether the series is placed on x by a number rather than by a category.
+     */
+    continuousX: boolean;
     /**
      * Whether the legend has switched this series off.
      */
@@ -163,20 +189,26 @@ export function createChartState(options: ChartStateOptions) {
             const categoryAccessor = (horizontal ? props['categoryYField'] : props['categoryXField']) as never;
             const valueAccessor = (horizontal ? props['valueXField'] : props['valueYField']) as never;
             const openAccessor = props['openField'] as never;
+            // A scatter series is placed by two numbers, so it has no category axis at all. Its x
+            // comes from `valueXField` rather than from a category lookup.
+            const continuousX = registration.type === 'scatter';
+            const xValueAccessor = props['valueXField'] as never;
 
             const points: SeriesPoint[] = data.map((datum, dataIndex) => {
                 const category = readCategory(categoryAccessor, datum, dataIndex, index, registration.id);
-                const value = readNumeric(valueAccessor, datum, dataIndex, index, registration.id, 'value');
+                const value = readNumeric(continuousX ? (props['valueYField'] as never) : valueAccessor, datum, dataIndex, index, registration.id, continuousX ? 'y' : 'value');
                 // A floating bar starts at its open value rather than at zero.
                 const base = openAccessor == null ? 0 : (readNumeric(openAccessor, datum, dataIndex, index, registration.id) ?? 0);
+                const xValue = continuousX ? readNumeric(xValueAccessor, datum, dataIndex, index, registration.id, 'x') : undefined;
 
-                return { category, value, base, dataIndex };
+                return { category, value, base, dataIndex, xValue };
             });
 
             return {
                 registration,
                 seriesIndex: index,
                 horizontal,
+                continuousX,
                 points,
                 xAxisId: (props['xAxisId'] as string | undefined) ?? DEFAULT_AXIS,
                 yAxisId: (props['yAxisId'] as string | undefined) ?? DEFAULT_AXIS
@@ -221,7 +253,8 @@ export function createChartState(options: ChartStateOptions) {
             categories: points.map((point) => point.category),
             xAxisId: entry.xAxisId,
             yAxisId: entry.yAxisId,
-            categoryAxis: entry.horizontal ? 'y' : 'x',
+            categoryAxis: entry.continuousX ? null : entry.horizontal ? 'y' : 'x',
+            continuousX: entry.continuousX,
             visible: !hidden.has(entry.registration.id),
             registration: entry.registration
         });
@@ -341,7 +374,7 @@ export function createChartState(options: ChartStateOptions) {
             const type = resolveAxisType(props['type'] as AxisType | undefined, axis.axis, bound);
 
             if (type === 'category') {
-                const categories = unionCategories(bound.map((entry) => entry.categories));
+                const categories = unionCategories(bound.filter((entry) => !entry.continuousX).map((entry) => entry.categories));
                 const sort = props['sort'] as 'value-asc' | 'value-desc' | 'label-asc' | 'label-desc' | undefined;
                 const ordered = sort ? sortCategories(categories, (category) => sumAt(bound, category), sort) : categories;
 
@@ -349,7 +382,13 @@ export function createChartState(options: ChartStateOptions) {
                 continue;
             }
 
-            result.set(key, { kind: 'value', type, extent: valueDomain(bound, props, type) });
+            result.set(key, {
+                kind: 'value',
+                type,
+                extent: valueDomain(bound, props, type, axis.axis),
+                paddingMin: numberProp(props['chartPaddingMin']) ?? undefined,
+                paddingMax: numberProp(props['chartPaddingMax']) ?? undefined
+            });
         }
 
         return result;
@@ -380,18 +419,19 @@ export function createChartState(options: ChartStateOptions) {
             }
 
             const [min, max] = domain.extent;
+            const padded = padRange(range, domain.paddingMin, domain.paddingMax);
 
             if (domain.type === 'time') {
-                result.set(key, timeScale(min, max, range));
+                result.set(key, timeScale(min, max, padded));
                 continue;
             }
 
             if (domain.type === 'logarithmic') {
-                result.set(key, logScale(min, max, range));
+                result.set(key, logScale(min, max, padded));
                 continue;
             }
 
-            result.set(key, linearScale(min, max, range));
+            result.set(key, linearScale(min, max, padded));
         }
 
         return result;
@@ -414,6 +454,30 @@ export function createChartState(options: ChartStateOptions) {
         if (bound.length === 0) return axis === 'x' ? 'category' : 'linear';
 
         return bound.some((entry) => entry.categoryAxis === axis) ? 'category' : 'linear';
+    }
+
+    /**
+     * Insets a continuous axis' pixel range by the edge padding.
+     *
+     * Expressed as a fraction of the pixel range rather than of the domain, which is what the
+     * padding props are documented to mean, and the useful definition: it gives a mark near the
+     * edge room to be drawn whole regardless of what the data's units happen to be. A negative
+     * fraction pushes outward instead, deliberately clipping the data at the edge.
+     *
+     * Both endpoints move toward each other, so this works unchanged for an inverted y range and
+     * for the flipped x range of an RTL chart.
+     */
+    function padRange(range: { start: number; end: number }, paddingMin: number | undefined, paddingMax: number | undefined): { start: number; end: number } {
+        if (!paddingMin && !paddingMax) return range;
+
+        const span = range.end - range.start;
+        const direction = Math.sign(span) || 1;
+        const length = Math.abs(span);
+
+        return {
+            start: range.start + direction * (paddingMin ?? 0) * length,
+            end: range.end - direction * (paddingMax ?? 0) * length
+        };
     }
 
     /** Sums what every bound series contributes to one category, for value sorting. */
@@ -441,22 +505,32 @@ export function createChartState(options: ChartStateOptions) {
      * baseline, so cutting its axis exaggerates the differences between bars, whereas a line
      * measures slope and a forced zero flattens the very trend the chart exists to show.
      */
-    function valueDomain(series: readonly ResolvedSeries[], props: Record<string, unknown>, type: AxisType): [number, number] {
+    function valueDomain(series: readonly ResolvedSeries[], props: Record<string, unknown>, type: AxisType, axis: 'x' | 'y'): [number, number] {
+        // Which number of a point this axis measures. Only a continuous-x series contributes an x
+        // value; everything else is placed on x by its category and measured on y by its value.
+        const readAt = (point: SeriesPoint, entry: ResolvedSeries): number | null => {
+            if (axis === 'y') return entry.categoryAxis === 'y' ? null : point.value;
+
+            return entry.continuousX ? (point.xValue ?? null) : null;
+        };
+
         let min = Infinity;
         let max = -Infinity;
 
         for (const entry of series) {
             for (const point of entry.points) {
-                if (point.value == null) continue;
+                const measured = readAt(point, entry);
 
-                min = Math.min(min, point.value);
-                max = Math.max(max, point.value);
+                if (measured == null) continue;
+
+                min = Math.min(min, measured);
+                max = Math.max(max, measured);
 
                 // A base is only part of the domain when it is a position the mark actually spans
                 // from -- a stack's floor, a floating bar's start. A base of 0 is the default every
                 // unstacked series carries, and folding that in would drag the minimum of every
                 // line chart down to zero. Whether zero belongs there is `startFromZero`'s call.
-                if (point.base !== 0) {
+                if (axis === 'y' && point.base !== 0) {
                     min = Math.min(min, point.base);
                     max = Math.max(max, point.base);
                 }

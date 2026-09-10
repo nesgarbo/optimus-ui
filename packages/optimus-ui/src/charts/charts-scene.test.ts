@@ -63,6 +63,7 @@ function series(type: ResolvedSeries['type'], props: object, values: (number | n
         xAxisId: 'default',
         yAxisId: 'default',
         categoryAxis: 'x',
+        continuousX: false,
         visible: overrides.visible ?? true,
         registration
     };
@@ -366,6 +367,7 @@ describe('scene composition', () => {
             xAxisId: 'default',
             yAxisId: 'default',
             categoryAxis: 'x',
+            continuousX: false,
             visible: true,
             registration
         };
@@ -430,6 +432,7 @@ describe('radial series', () => {
             xAxisId: 'default',
             yAxisId: 'default',
             categoryAxis: 'x',
+            continuousX: false,
             visible: true,
             registration
         };

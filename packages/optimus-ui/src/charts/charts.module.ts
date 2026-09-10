@@ -27,6 +27,9 @@ import { ChartBar } from './series/chart-bar';
 import { ChartOverlap, ChartRange, ChartStacked, ChartWaterfall } from './series/chart-groups';
 import { ChartLine } from './series/chart-line';
 import { ChartPie } from './series/chart-pie';
+import { ChartPolar } from './series/chart-polar';
+import { ChartRadar } from './series/chart-radar';
+import { ChartScatter } from './series/chart-scatter';
 
 /**
  * Every chart part in one import.
@@ -44,6 +47,9 @@ const PARTS = [
     ChartLine,
     ChartBar,
     ChartPie,
+    ChartScatter,
+    ChartRadar,
+    ChartPolar,
     ChartStacked,
     ChartWaterfall,
     ChartOverlap,
