@@ -7,7 +7,8 @@
  */
 import { ChangeDetectionStrategy, Component, DestroyRef, ViewEncapsulation, computed, inject, input, numberAttribute } from '@angular/core';
 import type { BarEdge, BarSeriesProps, BarShapeInfo, BorderAlign, BorderJoinStyle, BorderRadius, CategorySortOrder, ConnectNullsMode, DashAccessor, FieldAccessor, FillValue } from '@openng/optimus-ui/types/charts';
-import { CHART_CONTEXT, CHART_OVERLAP, CHART_STACK, CHART_WATERFALL, nextDatasetId } from '../charts-registry';
+import { CHART_CONTEXT, CHART_ITEM_HOST, CHART_OVERLAP, CHART_STACK, CHART_WATERFALL, nextDatasetId } from '../charts-registry';
+import { createItemRegistry } from './chart-items';
 
 /**
  * A bar series. Without a wrapper, several bar series render side by side in each category; wrap
@@ -21,7 +22,8 @@ import { CHART_CONTEXT, CHART_OVERLAP, CHART_STACK, CHART_WATERFALL, nextDataset
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
-    host: { style: 'display: none' }
+    host: { style: 'display: none' },
+    providers: [{ provide: CHART_ITEM_HOST, useExisting: ChartBar }]
 })
 export class ChartBar<T = unknown> {
     private readonly context = inject(CHART_CONTEXT, { optional: true });
@@ -33,6 +35,17 @@ export class ChartBar<T = unknown> {
     private readonly overlap = inject(CHART_OVERLAP, { optional: true });
 
     private readonly destroyRef = inject(DestroyRef);
+
+    /**
+     * Inline `ChartItem` children, which stand in for a `data` array.
+     *
+     * `data` wins when both are present: an explicit array is the more deliberate statement, and
+     * silently merging the two would make the order of the result depend on nothing visible.
+     */
+    protected readonly items = createItemRegistry();
+
+    /** @internal Registers an inline item. Called through `CHART_ITEM_HOST`. */
+    readonly registerItem = this.items.registerItem;
 
     /**
      * Data array. Mutually exclusive with `ChartItem` children.
@@ -221,12 +234,14 @@ export class ChartBar<T = unknown> {
 
     /** The series' current inputs, as the root reads them. */
     readonly props = computed<BarSeriesProps<T>>(() => ({
-        data: this.data(),
+        // An inline item's datum is shaped by the item, not by `T`, which is why the cast is here
+        // rather than in the registry: only the series knows what it declared `T` to be.
+        data: this.data() ?? (this.items.data() as T[] | undefined),
         categoryXField: this.categoryXField(),
         categoryYField: this.categoryYField(),
         valueYField: this.valueYField(),
         valueXField: this.valueXField(),
-        color: this.color(),
+        color: this.color() ?? this.items.overrides().color,
         opacity: this.opacity(),
         name: this.name(),
         keyField: this.keyField(),

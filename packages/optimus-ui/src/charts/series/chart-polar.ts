@@ -5,7 +5,8 @@
  */
 import { ChangeDetectionStrategy, Component, DestroyRef, ViewEncapsulation, computed, inject, input, numberAttribute } from '@angular/core';
 import type { BorderRadius, DashAccessor, FieldAccessor, FillValue, PolarSeriesProps, SliceSortOrder } from '@openng/optimus-ui/types/charts';
-import { CHART_CONTEXT, CHART_STACK, nextDatasetId } from '../charts-registry';
+import { CHART_CONTEXT, CHART_ITEM_HOST, CHART_STACK, nextDatasetId } from '../charts-registry';
+import { createItemRegistry } from './chart-items';
 
 /**
  * A polar series. Without a `ChartStacked` wrapper, several polar series render side by side within
@@ -19,7 +20,8 @@ import { CHART_CONTEXT, CHART_STACK, nextDatasetId } from '../charts-registry';
     template: '<ng-content />',
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
-    host: { style: 'display: none' }
+    host: { style: 'display: none' },
+    providers: [{ provide: CHART_ITEM_HOST, useExisting: ChartPolar }]
 })
 export class ChartPolar<T = unknown> {
     private readonly context = inject(CHART_CONTEXT, { optional: true });
@@ -27,6 +29,17 @@ export class ChartPolar<T = unknown> {
     private readonly stack = inject(CHART_STACK, { optional: true });
 
     private readonly destroyRef = inject(DestroyRef);
+
+    /**
+     * Inline `ChartItem` children, which stand in for a `data` array.
+     *
+     * `data` wins when both are present: an explicit array is the more deliberate statement, and
+     * silently merging the two would make the order of the result depend on nothing visible.
+     */
+    protected readonly items = createItemRegistry();
+
+    /** @internal Registers an inline item. Called through `CHART_ITEM_HOST`. */
+    readonly registerItem = this.items.registerItem;
 
     /**
      * Data array. Mutually exclusive with `ChartItem` children.
@@ -134,10 +147,12 @@ export class ChartPolar<T = unknown> {
 
     /** The series' current inputs, as the root reads them. */
     readonly props = computed<PolarSeriesProps<T>>(() => ({
-        data: this.data(),
+        // An inline item's datum is shaped by the item, not by `T`, which is why the cast is here
+        // rather than in the registry: only the series knows what it declared `T` to be.
+        data: this.data() ?? (this.items.data() as T[] | undefined),
         categoryXField: this.categoryXField(),
         valueYField: this.valueYField(),
-        color: this.color(),
+        color: this.color() ?? this.items.overrides().color,
         opacity: this.opacity(),
         name: this.name(),
         keyField: this.keyField(),

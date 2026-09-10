@@ -6,12 +6,13 @@
  * because the scale is built from the plot area that the reservation itself determines -- measuring
  * from the domain is what breaks that loop.
  */
-import { ChangeDetectionStrategy, Component, DestroyRef, Directive, ViewEncapsulation, booleanAttribute, computed, inject, input, numberAttribute } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, Directive, ViewEncapsulation, booleanAttribute, computed, inject, input, numberAttribute, signal, type Signal } from '@angular/core';
 import type { AxisTickMarkRenderContext, AxisTickRenderContext, AxisType, BaseAxisProps, DataGroupingConfig, DateTimeFormatConfig, TickStyle, TickValue, TimeTickConfig, TimeUnit } from '@openng/optimus-ui/types/charts';
 import { formatTick } from '../render/axis';
+import { axisGroupReservation } from '../render/axis-groups';
 import { generateTicks } from '../render/axis';
 import { lineHeightOf, measureTextWidth, rotatedBounds } from '../core/layout';
-import { CHART_CONTEXT } from '../charts-registry';
+import { CHART_AXIS_GROUP_HOST, CHART_CONTEXT } from '../charts-registry';
 
 /**
  * Inputs shared by the two axes.
@@ -341,8 +342,26 @@ abstract class ChartAxisBase {
     readonly renderTick = input<((context: AxisTickMarkRenderContext) => unknown) | undefined>(undefined);
 
     /** The axis' current inputs, as the root reads them. */
-    readonly props = computed<BaseAxisProps & { position?: string }>(() => ({
+    /**
+     * The `ChartAxisGroup` children, with the depth each one sits at.
+     *
+     * Held on the axis rather than on the groups, because the axis is what draws them: a group is a
+     * band of this axis' own space, and only the axis knows how much of that it has.
+     */
+    protected readonly groups = signal<readonly { props: Signal<Record<string, unknown>>; depth: number }[]>([]);
+
+    /** @internal Registers a group. Called through `CHART_AXIS_GROUP_HOST`. */
+    registerGroup(props: Signal<Record<string, unknown>>, depth: number): () => void {
+        const entry = { props, depth };
+
+        this.groups.update((list) => [...list, entry]);
+
+        return () => this.groups.update((list) => list.filter((item) => item !== entry));
+    }
+
+    readonly props = computed<BaseAxisProps & { position?: string; axisGroups?: { props: Record<string, unknown>; depth: number }[] }>(() => ({
         id: this.id(),
+        axisGroups: this.groups().map((entry) => ({ props: entry.props(), depth: entry.depth })),
         type: this.type(),
         min: this.min(),
         max: this.max(),
@@ -481,7 +500,14 @@ abstract class ChartAxisBase {
         const removeAxis = this.context.registerAxis({ id: this.id(), axis: this.axis, props: this.props as never });
         // The edge is read through a computed rather than captured here: `position` is an input, and
         // an input read during construction is still its default.
-        const releaseSpace = this.context.reserve(computed(() => ({ edge: this.positionValue() as 'top' | 'right' | 'bottom' | 'left', size: this.reservation() })));
+        // The group rows are extra space beyond the ticks', which is why the two are summed rather
+        // than the larger of them taken: the headers sit under the labels, not over them.
+        const releaseSpace = this.context.reserve(
+            computed(() => ({
+                edge: this.positionValue() as 'top' | 'right' | 'bottom' | 'left',
+                size: this.reservation() + axisGroupReservation(this.groups().map((entry) => ({ props: entry.props(), depth: entry.depth })))
+            }))
+        );
 
         this.destroyRef.onDestroy(() => {
             removeAxis();
@@ -499,10 +525,11 @@ abstract class ChartAxisBase {
 @Component({
     selector: 'p-chart-x-axis',
     standalone: true,
-    template: '',
+    template: '<ng-content />',
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
-    host: { style: 'display: none' }
+    host: { style: 'display: none' },
+    providers: [{ provide: CHART_AXIS_GROUP_HOST, useExisting: ChartXAxis }]
 })
 export class ChartXAxis extends ChartAxisBase {
     readonly axis = 'x' as const;
@@ -533,10 +560,11 @@ export class ChartXAxis extends ChartAxisBase {
 @Component({
     selector: 'p-chart-y-axis',
     standalone: true,
-    template: '',
+    template: '<ng-content />',
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
-    host: { style: 'display: none' }
+    host: { style: 'display: none' },
+    providers: [{ provide: CHART_AXIS_GROUP_HOST, useExisting: ChartYAxis }]
 })
 export class ChartYAxis extends ChartAxisBase {
     readonly axis = 'y' as const;

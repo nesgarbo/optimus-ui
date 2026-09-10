@@ -178,6 +178,72 @@ export interface ChartRootProps {
      * Plugins to install when the chart mounts.
      */
     plugins?: ChartPluginEntry[];
+    /**
+     * Number formatting for every numeric surface: axis ticks, tooltips, data labels, the colour
+     * legend and screen-reader prose. An axis `tickFormat` still wins over it.
+     */
+    numberFormat?: Intl.NumberFormatOptions;
+    /**
+     * Overrides individual catalogue strings, merged over the resolved language.
+     */
+    text?: Partial<ChartText>;
+}
+
+/**
+ * The chart's prose, as a catalogue.
+ *
+ * `locale` handles numbers and dates on its own, because `Intl` does. Prose is different: screen
+ * reader descriptions, data-table headers, export menu entries and keyboard hints are written
+ * sentences, so they have to come from somewhere. Everything here is either announced or drawn as
+ * chrome -- never a data value, which always comes from the data.
+ * @group Interface
+ */
+export interface ChartText {
+    /**
+     * Accessible name for the chart figure, used when no description was given.
+     */
+    chart: string;
+    /**
+     * Export menu button label.
+     */
+    exportMenu: string;
+    /**
+     * Export menu entries, one per format.
+     */
+    downloadPNG: string;
+    downloadJPEG: string;
+    downloadSVG: string;
+    downloadPDF: string;
+    downloadPNGTransparent: string;
+    downloadSVGTransparent: string;
+    downloadCSV: string;
+    /**
+     * Zoom and pan controls.
+     */
+    zoomIn: string;
+    zoomOut: string;
+    panLeft: string;
+    panRight: string;
+    resetZoom: string;
+    /**
+     * The navigator's selection window, for the screen reader.
+     */
+    navigator: string;
+    /**
+     * Screen-reader data table.
+     */
+    dataTable: string;
+    category: string;
+    value: string;
+    series: string;
+    /**
+     * Keyboard hint announced when the chart takes focus.
+     */
+    keyboardHint: string;
+    /**
+     * Breadcrumb root, for a treemap drilldown.
+     */
+    all: string;
 }
 
 /**

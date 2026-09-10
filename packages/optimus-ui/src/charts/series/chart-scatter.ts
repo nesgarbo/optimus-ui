@@ -7,7 +7,8 @@
  */
 import { ChangeDetectionStrategy, Component, DestroyRef, ViewEncapsulation, booleanAttribute, computed, contentChild, inject, input, numberAttribute } from '@angular/core';
 import type { BorderJoinStyle, ConnectNullsMode, DashAccessor, FieldAccessor, FillValue, PointRenderContext, ScatterSeriesProps } from '@openng/optimus-ui/types/charts';
-import { CHART_CONTEXT, nextDatasetId } from '../charts-registry';
+import { CHART_CONTEXT, CHART_ITEM_HOST, nextDatasetId } from '../charts-registry';
+import { createItemRegistry } from './chart-items';
 import { ChartMarkerDef } from '../features/chart-defs';
 
 /**
@@ -21,12 +22,24 @@ import { ChartMarkerDef } from '../features/chart-defs';
     template: '<ng-content />',
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
-    host: { style: 'display: none' }
+    host: { style: 'display: none' },
+    providers: [{ provide: CHART_ITEM_HOST, useExisting: ChartScatter }]
 })
 export class ChartScatter<T = unknown> {
     private readonly context = inject(CHART_CONTEXT, { optional: true });
 
     private readonly destroyRef = inject(DestroyRef);
+
+    /**
+     * Inline `ChartItem` children, which stand in for a `data` array.
+     *
+     * `data` wins when both are present: an explicit array is the more deliberate statement, and
+     * silently merging the two would make the order of the result depend on nothing visible.
+     */
+    protected readonly items = createItemRegistry();
+
+    /** @internal Registers an inline item. Called through `CHART_ITEM_HOST`. */
+    readonly registerItem = this.items.registerItem;
 
     /** A projected template that replaces each marker. */
     readonly markerDef = contentChild(ChartMarkerDef);
@@ -81,6 +94,21 @@ export class ChartScatter<T = unknown> {
      * @group Props
      */
     readonly keyField = input<string | undefined>(undefined);
+    /**
+     * Per-point fill colour.
+     * @group Props
+     */
+    readonly pointBackgroundColor = input<FieldAccessor<T, FillValue> | undefined>(undefined);
+    /**
+     * Fill colour while the mark is hovered.
+     * @group Props
+     */
+    readonly hoverColor = input<FieldAccessor<T, FillValue> | undefined>(undefined);
+    /**
+     * Border colour while the mark is hovered.
+     * @group Props
+     */
+    readonly hoverBorderColor = input<FieldAccessor<T, FillValue> | undefined>(undefined);
     /**
      * Unique dataset identifier. Generated when unset.
      * @group Props
@@ -201,15 +229,20 @@ export class ChartScatter<T = unknown> {
 
     /** The series' current inputs, as the root reads them. */
     readonly props = computed<ScatterSeriesProps<T>>(() => ({
-        data: this.data(),
+        // An inline item's datum is shaped by the item, not by `T`, which is why the cast is here
+        // rather than in the registry: only the series knows what it declared `T` to be.
+        data: this.data() ?? (this.items.data() as T[] | undefined),
         valueXField: this.valueXField(),
         valueYField: this.valueYField(),
         sizeField: this.sizeField(),
         boost: this.boost(),
-        color: this.color(),
+        color: this.color() ?? this.items.overrides().color,
         opacity: this.opacity(),
         name: this.name(),
         keyField: this.keyField(),
+        pointBackgroundColor: this.pointBackgroundColor(),
+        hoverColor: this.hoverColor(),
+        hoverBorderColor: this.hoverBorderColor(),
         id: this.datasetId,
         order: this.order(),
         markerSize: this.markerSize(),

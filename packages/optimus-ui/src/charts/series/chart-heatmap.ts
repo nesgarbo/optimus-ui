@@ -7,7 +7,8 @@
  */
 import { ChangeDetectionStrategy, Component, DestroyRef, ViewEncapsulation, booleanAttribute, computed, contentChild, inject, input, numberAttribute } from '@angular/core';
 import type { BorderAlign, BorderJoinStyle, DashAccessor, FieldAccessor, FillValue, HeatmapCellContext, HeatmapSeriesProps } from '@openng/optimus-ui/types/charts';
-import { CHART_CONTEXT, nextDatasetId } from '../charts-registry';
+import { CHART_CONTEXT, CHART_ITEM_HOST, nextDatasetId } from '../charts-registry';
+import { createItemRegistry } from './chart-items';
 import { ChartHeatmapCellDef } from '../features/chart-defs';
 
 /**
@@ -21,12 +22,24 @@ import { ChartHeatmapCellDef } from '../features/chart-defs';
     template: '<ng-content />',
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
-    host: { style: 'display: none' }
+    host: { style: 'display: none' },
+    providers: [{ provide: CHART_ITEM_HOST, useExisting: ChartHeatmap }]
 })
 export class ChartHeatmap<T = unknown> {
     private readonly context = inject(CHART_CONTEXT, { optional: true });
 
     private readonly destroyRef = inject(DestroyRef);
+
+    /**
+     * Inline `ChartItem` children, which stand in for a `data` array.
+     *
+     * `data` wins when both are present: an explicit array is the more deliberate statement, and
+     * silently merging the two would make the order of the result depend on nothing visible.
+     */
+    protected readonly items = createItemRegistry();
+
+    /** @internal Registers an inline item. Called through `CHART_ITEM_HOST`. */
+    readonly registerItem = this.items.registerItem;
 
     /** A projected template that replaces the content of each cell. */
     readonly cellDef = contentChild(ChartHeatmapCellDef);
@@ -151,6 +164,11 @@ export class ChartHeatmap<T = unknown> {
      */
     readonly hoverColor = input<FieldAccessor<T, FillValue> | undefined>(undefined);
     /**
+     * Explicit draw order, which overrides the registration order.
+     * @group Props
+     */
+    readonly order = input<number | undefined, unknown>(undefined, { transform: optionalNumber });
+    /**
      * Per-cell border colour on hover.
      * @group Props
      */
@@ -176,11 +194,13 @@ export class ChartHeatmap<T = unknown> {
 
     /** The series' current inputs, as the root reads them. */
     readonly props = computed<HeatmapSeriesProps<T>>(() => ({
-        data: this.data(),
+        // An inline item's datum is shaped by the item, not by `T`, which is why the cast is here
+        // rather than in the registry: only the series knows what it declared `T` to be.
+        data: this.data() ?? (this.items.data() as T[] | undefined),
         categoryXField: this.categoryXField(),
         categoryYField: this.categoryYField(),
         valueField: this.valueField(),
-        color: this.color(),
+        color: this.color() ?? this.items.overrides().color,
         colorRange: this.colorRange(),
         colorScale: this.colorScale(),
         nullColor: this.nullColor(),
@@ -198,6 +218,7 @@ export class ChartHeatmap<T = unknown> {
         showEmptyCells: this.showEmptyCells(),
         renderContent: this.renderContent(),
         hoverColor: this.hoverColor(),
+        order: this.order(),
         hoverBorderColor: this.hoverBorderColor(),
         name: this.name(),
         keyField: this.keyField(),

@@ -7,10 +7,12 @@
  * geometrically identical.
  */
 import { computed, signal, type Signal, type WritableSignal } from '@angular/core';
-import type { AxisScale, AxisType, BoxArea, ChartTheme, FeatureType, HoverState, RendererType, SeriesType, StackingMode, TickValue } from '@openng/optimus-ui/types/charts';
+import type { AxisScale, AxisType, BoxArea, ChartDecimationProps, ChartExportOptions, ChartText, ChartTheme, FeatureType, HoverState, RendererType, SeriesType, StackingMode, TickValue } from '@openng/optimus-ui/types/charts';
 import { readCategory, readNumeric, readPath } from './core/accessor';
-import { computeLayout, type EdgeReservation } from './core/layout';
+import { decimate, type Sample } from './core/decimate';
+import { computeLayout, responsiveTier, type EdgeReservation } from './core/layout';
 import { resolveTheme } from './core/palette';
+import { registeredLocales, resolveChartText } from './core/text';
 import { bandScale, linearScale, logScale, timeScale, toNumber, unionCategories } from './core/scale';
 import { sortCategories, stackedDomain, stackSeries, waterfallDomain, waterfallSteps, type StackInput } from './core/stack';
 import { niceDomain } from './core/ticks';
@@ -132,6 +134,16 @@ export interface ChartStateOptions {
     fontSize: Signal<number>;
     direction: Signal<'ltr' | 'rtl'>;
     locale: Signal<string | undefined>;
+    numberFormat: Signal<Intl.NumberFormatOptions | undefined>;
+    text: Signal<Partial<ChartText> | undefined>;
+    /**
+     * The container element, for the parts that attach their own pointer handlers.
+     */
+    container: () => HTMLElement | null;
+    /**
+     * Exports the chart. Only the root knows how, so it hands the ability down.
+     */
+    exportChart: (options: ChartExportOptions) => Promise<void>;
     /**
      * Asks the host for a repaint. The state itself never paints.
      */
@@ -176,6 +188,13 @@ export function createChartState(options: ChartStateOptions) {
     const zoomWindow = signal<{ x: { min: number; max: number } | null; y: { min: number; max: number } | null }>({ x: null, y: null });
 
     const theme = computed(() => resolveTheme(options.theme(), options.isDark()));
+    // Reads `registeredLocales` so a catalogue registered after this chart mounted still reaches it.
+    const chartText = computed(() => {
+        registeredLocales();
+
+        return resolveChartText(options.locale(), options.text());
+    });
+    const tier = computed(() => responsiveTier(options.width()));
     const textColor = computed(() => theme().color ?? '#0f172a');
 
     /* --- Layout ------------------------------------------------------------------------------- */
@@ -248,7 +267,7 @@ export function createChartState(options: ChartStateOptions) {
                 horizontal: flipped,
                 continuousX,
                 rows: gridded ? data.map((datum) => String(readPath(datum, rowField) ?? '')) : [],
-                points,
+                points: decimated(points, continuousX),
                 xAxisId: (props['xAxisId'] as string | undefined) ?? DEFAULT_AXIS,
                 yAxisId: (props['yAxisId'] as string | undefined) ?? DEFAULT_AXIS
             };
@@ -629,6 +648,40 @@ export function createChartState(options: ChartStateOptions) {
         return [min, max];
     }
 
+    /**
+     * Downsamples a series when a `ChartDecimation` is present and the series is over its threshold.
+     *
+     * The samples carry their original index, so a decimated point still finds its own datum for a
+     * tooltip -- which is what keeps decimation a rendering decision rather than a data one. A
+     * gridded or categorical series is left alone: dropping a category does not summarise it, it
+     * hides it.
+     */
+    function decimated(points: SeriesPoint[], continuousX: boolean): SeriesPoint[] {
+        const feature = featureRegistry().find((entry) => entry.type === 'decimation');
+
+        if (!feature) return points;
+
+        const props = feature.props() as ChartDecimationProps;
+        const threshold = props.threshold ?? 1000;
+
+        if (points.length <= threshold) return points;
+
+        const samples: Sample[] = [];
+
+        for (const point of points) {
+            if (point.value == null) continue;
+
+            samples.push({ x: point.xValue ?? point.dataIndex, y: point.value, index: point.dataIndex });
+        }
+
+        if (samples.length === 0) return points;
+
+        const kept = decimate(samples, props.algorithm ?? 'lttb', props.samples ?? 500);
+        const keptIndices = new Set(kept.map((sample) => sample.index));
+
+        return points.filter((point) => keptIndices.has(point.dataIndex));
+    }
+
     /** Reads a numeric prop, ignoring `'auto'` and anything unparseable. */
     function numberProp(value: unknown): number | null {
         return typeof value === 'number' && Number.isFinite(value) ? value : null;
@@ -746,6 +799,26 @@ export function createChartState(options: ChartStateOptions) {
         return lookup as never;
     }
 
+    /**
+     * The chart's data as CSV.
+     *
+     * One row per category and one column per series, which is the shape both consumers want: the
+     * download entry writes it to a file and the screen-reader table renders it. Deriving them from
+     * one function is what keeps the announced table and the downloaded file from disagreeing.
+     */
+    function toCsv(): string {
+        const series = resolvedSeries().filter((entry) => entry.visible);
+
+        if (series.length === 0) return '';
+
+        const categories = unionCategories(series.map((entry) => entry.categories));
+        const escape = (cell: string) => (/[",\n]/.test(cell) ? `"${cell.replace(/"/g, '""')}"` : cell);
+        const header = ['Category', ...series.map((entry) => String((entry.registration.props() as Record<string, unknown>)['name'] ?? entry.id))];
+        const rows = categories.map((category) => [category, ...series.map((entry) => String(entry.points.find((point) => point.category === category)?.value ?? ''))]);
+
+        return [header, ...rows].map((row) => row.map(escape).join(',')).join('\n');
+    }
+
     const context: ChartContext = {
         renderer: options.renderer,
         chartArea,
@@ -762,6 +835,17 @@ export function createChartState(options: ChartStateOptions) {
         fontSize: options.fontSize,
         direction: options.direction,
         locale: options.locale,
+        numberFormat: options.numberFormat,
+        text: chartText,
+        tier,
+        container: options.container,
+        exportChart: options.exportChart,
+        toCsv: () => toCsv(),
+        zoomWindow: zoomWindow.asReadonly(),
+        setZoomWindow: (window) => {
+            zoomWindow.set(window);
+            options.requestRender();
+        },
         progress,
         hover,
         hiddenDatasets,

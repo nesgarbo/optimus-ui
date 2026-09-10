@@ -4,9 +4,11 @@
  * A treemap has no axes at all -- position carries nothing and area carries the value -- which makes
  * the tiling algorithm the whole of the geometry.
  */
-import { ChangeDetectionStrategy, Component, DestroyRef, ViewEncapsulation, booleanAttribute, computed, contentChild, inject, input, numberAttribute } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ViewEncapsulation, booleanAttribute, computed, contentChild, inject, input, numberAttribute, signal } from '@angular/core';
 import type { DashAccessor, FieldAccessor, FillValue, TreemapCellContext, TreemapLevelConfig, TreemapSeriesProps } from '@openng/optimus-ui/types/charts';
-import { CHART_CONTEXT, nextDatasetId } from '../charts-registry';
+import type { DrilldownContext } from '../charts-registry';
+import { CHART_CONTEXT, CHART_DRILLDOWN, CHART_ITEM_HOST, nextDatasetId } from '../charts-registry';
+import { createItemRegistry } from './chart-items';
 import { ChartTreemapCellDef } from '../features/chart-defs';
 
 /**
@@ -20,12 +22,63 @@ import { ChartTreemapCellDef } from '../features/chart-defs';
     template: '<ng-content />',
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
-    host: { style: 'display: none' }
+    host: { style: 'display: none' },
+    providers: [
+        { provide: CHART_ITEM_HOST, useExisting: ChartTreemap },
+        { provide: CHART_DRILLDOWN, useExisting: ChartTreemap }
+    ]
 })
-export class ChartTreemap<T = unknown> {
+export class ChartTreemap<T = unknown> implements DrilldownContext {
     private readonly context = inject(CHART_CONTEXT, { optional: true });
 
     private readonly destroyRef = inject(DestroyRef);
+
+    /**
+     * The levels drilled into, root excluded.
+     *
+     * The treemap holds it rather than the chart, because the hierarchy is the treemap's: a chart
+     * with no treemap in it has nothing to drill.
+     */
+    private readonly drillPath = signal<readonly { id: string; label: string }[]>([]);
+
+    /** @internal The trail, as `ChartBreadcrumb` reads it. */
+    readonly path = this.drillPath.asReadonly();
+
+    /** @internal What the root level is called. */
+    readonly rootLabel$ = computed(() => this.rootLabel() ?? 'All');
+
+    /**
+     * @internal Drills to a level, or back to the root with `null`.
+     *
+     * Drilling to a level already in the path truncates back to it, which is what makes a
+     * breadcrumb step work: clicking the second crumb of four means "go back there", not "go
+     * deeper into it again".
+     */
+    drillTo(id: string | null): void {
+        if (id == null) {
+            this.drillPath.set([]);
+
+            return;
+        }
+
+        this.drillPath.update((path) => {
+            const at = path.findIndex((step) => step.id === id);
+
+            return at >= 0 ? path.slice(0, at + 1) : path;
+        });
+        this.context?.requestRender();
+    }
+
+    /**
+     * Inline `ChartItem` children, which stand in for a `data` array.
+     *
+     * `data` wins when both are present: an explicit array is the more deliberate statement, and
+     * silently merging the two would make the order of the result depend on nothing visible.
+     */
+    protected readonly items = createItemRegistry();
+
+    /** @internal Registers an inline item. Called through `CHART_ITEM_HOST`. */
+    readonly registerItem = this.items.registerItem;
 
     /** A projected template that replaces the content of each cell. */
     readonly cellDef = contentChild(ChartTreemapCellDef);
@@ -212,18 +265,26 @@ export class ChartTreemap<T = unknown> {
      * @group Props
      */
     readonly order = input<number | undefined, unknown>(undefined, { transform: optionalNumber });
+    /**
+     * Field that identifies a datum across updates, so an animation can follow a row rather than a
+     * position.
+     * @group Props
+     */
+    readonly keyField = input<string | undefined>(undefined);
 
     /** The dataset id, generated once so it survives every input change. */
     readonly datasetId = this.id() ?? nextDatasetId('treemap');
 
     /** The series' current inputs, as the root reads them. */
     readonly props = computed<TreemapSeriesProps<T>>(() => ({
-        data: this.data(),
+        // An inline item's datum is shaped by the item, not by `T`, which is why the cast is here
+        // rather than in the registry: only the series knows what it declared `T` to be.
+        data: this.data() ?? (this.items.data() as T[] | undefined),
         categoryField: this.categoryField(),
         valueField: this.valueField(),
-        nodeId: this.nodeId(),
-        parentField: this.parentField(),
-        color: this.color(),
+        nodeId: this.nodeId() ?? (this.items.hierarchical() ? 'nodeId' : undefined),
+        parentField: this.parentField() ?? (this.items.hierarchical() ? 'parentId' : undefined),
+        color: this.color() ?? this.items.overrides().color,
         opacity: this.opacity(),
         colorValueField: this.colorValueField(),
         colorRange: this.colorRange(),
@@ -250,7 +311,8 @@ export class ChartTreemap<T = unknown> {
         renderContent: this.renderContent(),
         name: this.name(),
         id: this.datasetId,
-        order: this.order()
+        order: this.order(),
+        keyField: this.keyField()
     }));
 
     constructor() {

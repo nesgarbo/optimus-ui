@@ -7,7 +7,8 @@
  */
 import { ChangeDetectionStrategy, Component, DestroyRef, ViewEncapsulation, booleanAttribute, computed, inject, input, numberAttribute } from '@angular/core';
 import type { BorderJoinStyle, ConnectNullsMode, CurveType, DashAccessor, FieldAccessor, FillValue, LineCapStyle, LineSeriesProps, PointRenderContext, SegmentStyleValue } from '@openng/optimus-ui/types/charts';
-import { CHART_CONTEXT, CHART_RANGE, CHART_STACK, nextDatasetId } from '../charts-registry';
+import { CHART_CONTEXT, CHART_ITEM_HOST, CHART_RANGE, CHART_STACK, nextDatasetId } from '../charts-registry';
+import { createItemRegistry } from './chart-items';
 
 /**
  * A line series. Set `fillOpacity` above zero to make it an area: area is a fill on a line rather
@@ -21,7 +22,8 @@ import { CHART_CONTEXT, CHART_RANGE, CHART_STACK, nextDatasetId } from '../chart
     template: '',
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
-    host: { style: 'display: none' }
+    host: { style: 'display: none' },
+    providers: [{ provide: CHART_ITEM_HOST, useExisting: ChartLine }]
 })
 export class ChartLine<T = unknown> {
     private readonly context = inject(CHART_CONTEXT, { optional: true });
@@ -31,6 +33,17 @@ export class ChartLine<T = unknown> {
     private readonly range = inject(CHART_RANGE, { optional: true });
 
     private readonly destroyRef = inject(DestroyRef);
+
+    /**
+     * Inline `ChartItem` children, which stand in for a `data` array.
+     *
+     * `data` wins when both are present: an explicit array is the more deliberate statement, and
+     * silently merging the two would make the order of the result depend on nothing visible.
+     */
+    protected readonly items = createItemRegistry();
+
+    /** @internal Registers an inline item. Called through `CHART_ITEM_HOST`. */
+    readonly registerItem = this.items.registerItem;
 
     /**
      * Data array. Mutually exclusive with `ChartItem` children.
@@ -181,6 +194,16 @@ export class ChartLine<T = unknown> {
      */
     readonly pointBackgroundColor = input<FieldAccessor<T, FillValue> | undefined>(undefined);
     /**
+     * Fill colour while the mark is hovered.
+     * @group Props
+     */
+    readonly hoverColor = input<FieldAccessor<T, FillValue> | undefined>(undefined);
+    /**
+     * Border colour while the mark is hovered.
+     * @group Props
+     */
+    readonly hoverBorderColor = input<FieldAccessor<T, FillValue> | undefined>(undefined);
+    /**
      * Marker border stroke colour.
      * @group Props
      */
@@ -279,10 +302,12 @@ export class ChartLine<T = unknown> {
 
     /** The series' current inputs, as the root reads them. */
     readonly props = computed<LineSeriesProps<T>>(() => ({
-        data: this.data(),
+        // An inline item's datum is shaped by the item, not by `T`, which is why the cast is here
+        // rather than in the registry: only the series knows what it declared `T` to be.
+        data: this.data() ?? (this.items.data() as T[] | undefined),
         categoryXField: this.categoryXField(),
         valueYField: this.valueYField(),
-        color: this.color(),
+        color: this.color() ?? this.items.overrides().color,
         name: this.name(),
         keyField: this.keyField(),
         id: this.datasetId,
@@ -308,6 +333,8 @@ export class ChartLine<T = unknown> {
         markerShape: this.markerShape(),
         pointRotation: this.pointRotation(),
         pointBackgroundColor: this.pointBackgroundColor(),
+        hoverColor: this.hoverColor(),
+        hoverBorderColor: this.hoverBorderColor(),
         pointBorderColor: this.pointBorderColor(),
         pointBorderStrokeWidth: this.pointBorderStrokeWidth(),
         pointBorderDash: this.pointBorderDash(),

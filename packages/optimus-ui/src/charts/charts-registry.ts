@@ -8,7 +8,7 @@
  * rendering concern so a series can be tested without a root and vice versa.
  */
 import { InjectionToken, type Signal } from '@angular/core';
-import type { AnyFeatureProps, AnySeriesProps, AxisScale, BoxArea, ChartTheme, FeatureType, HoverState, RendererType, SeriesType } from '@openng/optimus-ui/types/charts';
+import type { AnyFeatureProps, AnySeriesProps, AxisScale, BoxArea, ChartExportOptions, ChartText, ChartTheme, FeatureType, HoverState, RendererType, ResponsiveTier, SeriesType } from '@openng/optimus-ui/types/charts';
 import type { AxisDomain } from './charts-state';
 
 /** Where a part asks the layout to reserve space. */
@@ -236,6 +236,46 @@ export interface ChartContext {
      * frame, which is what lets five series update together without five layout passes.
      */
     requestRender: () => void;
+    /**
+     * The visible window on each axis, or `null` for the full domain.
+     *
+     * Zoom, pan, the navigator and a synced sibling all write the same window, which is why it is
+     * one piece of state rather than one per part: two of them disagreeing about what is visible
+     * would be two different charts.
+     */
+    zoomWindow: Signal<{ x: { min: number; max: number } | null; y: { min: number; max: number } | null }>;
+    /**
+     * Sets the visible window.
+     */
+    setZoomWindow: (window: { x: { min: number; max: number } | null; y: { min: number; max: number } | null }) => void;
+    /**
+     * The chart's container element, for a part that has to attach its own pointer handlers.
+     *
+     * Zoom and the navigator both need the element the pointer actually moves over, and neither can
+     * get it from its own host: they render into the overlay layer, which does not take the
+     * pointer.
+     */
+    container: () => HTMLElement | null;
+    /**
+     * The resolved prose catalogue.
+     */
+    text: Signal<ChartText>;
+    /**
+     * Chart-wide number formatting, which every numeric surface goes through.
+     */
+    numberFormat: Signal<Intl.NumberFormatOptions | undefined>;
+    /**
+     * The responsive tier the container currently falls into.
+     */
+    tier: Signal<ResponsiveTier>;
+    /**
+     * Exports the chart, so an export menu does not have to know which renderer it is in.
+     */
+    exportChart: (options: ChartExportOptions) => Promise<void>;
+    /**
+     * The chart's data as CSV, for the download entry and the screen-reader table.
+     */
+    toCsv: () => string;
 }
 
 /**
@@ -370,6 +410,34 @@ export interface ItemHost {
 
 /** The item host, provided by every series that accepts `ChartItem` children. */
 export const CHART_ITEM_HOST = new InjectionToken<ItemHost>('CHART_ITEM_HOST');
+
+/**
+ * The drilldown a treemap owns and a breadcrumb reads.
+ *
+ * The state lives with the treemap because the treemap is what has a hierarchy; the breadcrumb only
+ * renders the trail and asks to move along it. Putting the path on the chart context instead would
+ * give every chart a drilldown, most of which have no hierarchy to drill.
+ */
+export interface DrilldownContext {
+    /**
+     * The levels drilled into, root excluded.
+     */
+    path: Signal<readonly { id: string; label: string }[]>;
+    /**
+     * What the root level is called.
+     *
+     * Named apart from the `rootLabel` input it derives from, because the treemap implements this
+     * interface on itself and one name cannot be both an input and a resolved value.
+     */
+    rootLabel$: Signal<string>;
+    /**
+     * Drills to a level, or back to the root with `null`.
+     */
+    drillTo: (id: string | null) => void;
+}
+
+/** The drilldown context, provided by `ChartTreemap`. */
+export const CHART_DRILLDOWN = new InjectionToken<DrilldownContext>('CHART_DRILLDOWN');
 
 /** The axis a `ChartAxisGroup` reports itself to. */
 export interface AxisGroupHost {

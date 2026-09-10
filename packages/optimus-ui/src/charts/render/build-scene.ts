@@ -14,6 +14,7 @@ import type {
     ChartDataLabelsProps,
     ChartHoverProps,
     ChartReferenceBandProps,
+    ChartRangeProps,
     ChartReferenceLineProps,
     ChartTooltipProps,
     ColorValue,
@@ -32,6 +33,7 @@ import type { ChartContext } from '../charts-registry';
 import type { ResolvedSeries } from '../charts-state';
 import { isCartesian, isRadial } from '../charts-state';
 import { axisOfPosition, defaultPosition, paintAxis, paintGrid, resolveAxis, type AxisRender } from './axis';
+import { paintAxisGroups } from './axis-groups';
 import { bandSlotFor, groupedBars, paintBarSeries, shouldGroup } from './series-bar';
 import { paintLineSeries } from './series-line';
 import { paintPieSeries, pieFrame, type PieFrame } from './series-pie';
@@ -41,6 +43,7 @@ import { paintCandlestickSeries } from './series-candlestick';
 import { paintHeatmapSeries, resolveHeatmapScale } from './series-heatmap';
 import { paintTreemapSeries } from './series-treemap';
 import { paintDataLabels } from './data-labels';
+import { paintRangeBand } from './range-band';
 import { collectLabels, type LabelSource } from './label-targets';
 import { paintReferenceBand, paintReferenceLine } from './references';
 import { createScene, plotClip, plotClipRef, type DrawContext, type SceneLayer } from './scene';
@@ -138,6 +141,9 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
         // painted into different layers from one resolution pass.
         scene.add('grid', ...paintGrid(drawContext, render, props, position, registration.id, type));
         scene.add('axes', ...paintAxis(drawContext, render, props, position, registration.id));
+        // The group rows sit outside the tick row, so they need to know how far out that already
+        // reaches -- which is exactly what the axis reserved for itself.
+        scene.add('axes', ...paintAxisGroups(drawContext, scale, (props as { axisGroups?: { props: Record<string, unknown>; depth: number }[] }).axisGroups, position, render.reservation));
     }
 
     /* --- References --------------------------------------------------------------------------- */
@@ -160,6 +166,26 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
         const props = registration.props() as ChartReferenceLineProps;
 
         scene.add(props.placement === 'beforeData' ? 'bandsBelow' : 'references', ...paintReferenceLine(drawContext, props));
+    }
+
+    /* --- Range bands ------------------------------------------------------------------------- */
+
+    /*
+     * Painted before the lines rather than after, so the band sits under the edges that bound it.
+     * A fill drawn over its own outline would soften the very lines the reader is comparing.
+     */
+    for (const registration of context.features()) {
+        if (!registration.type.startsWith('range:')) continue;
+
+        const props = registration.props() as ChartRangeProps;
+        const id = registration.type.slice('range:'.length);
+        const pair = series.filter((entry) => entry.visible && entry.registration.rangeId === id);
+
+        // Fewer than two edges is not a band, and more than two is ambiguous about which pair to
+        // fill, so the documented answer is the first two.
+        if (pair.length < 2) continue;
+
+        scene.add('marks', ...paintRangeBand(drawContext, [pair[0], pair[1]], props));
     }
 
     /* --- Marks -------------------------------------------------------------------------------- */

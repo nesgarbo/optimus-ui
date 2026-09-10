@@ -20,12 +20,21 @@ import {
     ChartTooltipDef,
     ChartTreemapCellDef
 } from './features/chart-defs';
+import { ChartAccessibility } from './features/chart-accessibility';
 import { ChartAnnotation } from './features/chart-annotation';
+import { ChartAxisCategory, ChartAxisGroup } from './features/chart-axis-group';
+import { ChartBreadcrumb } from './features/chart-breadcrumb';
 import { ChartColorLegend } from './features/chart-color-legend';
 import { ChartDataLabels } from './features/chart-data-labels';
+import { ChartDecimation } from './features/chart-decimation';
+import { ChartExportMenu } from './features/chart-export-menu';
 import { ChartLegend } from './features/chart-legend';
+import { ChartNavigator } from './features/chart-navigator';
 import { ChartReferenceBand, ChartReferenceLine } from './features/chart-reference';
+import { ChartResponsive } from './features/chart-responsive';
 import { ChartCaption, ChartTitle } from './features/chart-title';
+import { ChartZoom } from './features/chart-zoom';
+import { ChartItem, ChartTreemapGroup } from './series/chart-items';
 import { ChartTooltip } from './features/chart-tooltip';
 import { ChartHover } from './features/chart-hover';
 import { ChartBar } from './series/chart-bar';
@@ -77,6 +86,17 @@ const PARTS = [
     ChartReferenceLine,
     ChartReferenceBand,
     ChartAnnotation,
+    ChartZoom,
+    ChartNavigator,
+    ChartExportMenu,
+    ChartAccessibility,
+    ChartResponsive,
+    ChartDecimation,
+    ChartBreadcrumb,
+    ChartAxisGroup,
+    ChartAxisCategory,
+    ChartItem,
+    ChartTreemapGroup,
     ChartLegendItemDef,
     ChartTooltipDef,
     ChartColorLegendDef,

@@ -7,7 +7,8 @@
  */
 import { ChangeDetectionStrategy, Component, DestroyRef, ViewEncapsulation, computed, inject, input, numberAttribute } from '@angular/core';
 import type { BorderAlign, BorderJoinStyle, BorderRadius, CandlestickSeriesProps, DashAccessor, FieldAccessor, FillValue } from '@openng/optimus-ui/types/charts';
-import { CHART_CONTEXT, nextDatasetId } from '../charts-registry';
+import { CHART_CONTEXT, CHART_ITEM_HOST, nextDatasetId } from '../charts-registry';
+import { createItemRegistry } from './chart-items';
 
 /**
  * A candlestick series.
@@ -20,12 +21,24 @@ import { CHART_CONTEXT, nextDatasetId } from '../charts-registry';
     template: '<ng-content />',
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
-    host: { style: 'display: none' }
+    host: { style: 'display: none' },
+    providers: [{ provide: CHART_ITEM_HOST, useExisting: ChartCandlestick }]
 })
 export class ChartCandlestick<T = unknown> {
     private readonly context = inject(CHART_CONTEXT, { optional: true });
 
     private readonly destroyRef = inject(DestroyRef);
+
+    /**
+     * Inline `ChartItem` children, which stand in for a `data` array.
+     *
+     * `data` wins when both are present: an explicit array is the more deliberate statement, and
+     * silently merging the two would make the order of the result depend on nothing visible.
+     */
+    protected readonly items = createItemRegistry();
+
+    /** @internal Registers an inline item. Called through `CHART_ITEM_HOST`. */
+    readonly registerItem = this.items.registerItem;
 
     /**
      * Data array. Mutually exclusive with `ChartItem` children.
@@ -192,13 +205,21 @@ export class ChartCandlestick<T = unknown> {
      * @group Props
      */
     readonly order = input<number | undefined, unknown>(undefined, { transform: optionalNumber });
+    /**
+     * Field that identifies a datum across updates, so an animation can follow a row rather than a
+     * position.
+     * @group Props
+     */
+    readonly keyField = input<string | undefined>(undefined);
 
     /** The dataset id, generated once so it survives every input change. */
     readonly datasetId = this.id() ?? nextDatasetId('candlestick');
 
     /** The series' current inputs, as the root reads them. */
     readonly props = computed<CandlestickSeriesProps<T>>(() => ({
-        data: this.data(),
+        // An inline item's datum is shaped by the item, not by `T`, which is why the cast is here
+        // rather than in the registry: only the series knows what it declared `T` to be.
+        data: this.data() ?? (this.items.data() as T[] | undefined),
         categoryXField: this.categoryXField(),
         categoryYField: this.categoryYField(),
         openField: this.openField(),
@@ -206,7 +227,7 @@ export class ChartCandlestick<T = unknown> {
         lowField: this.lowField(),
         closeField: this.closeField(),
         variant: this.variant(),
-        color: this.color(),
+        color: this.color() ?? this.items.overrides().color,
         upColor: this.upColor(),
         downColor: this.downColor(),
         neutralColor: this.neutralColor(),
@@ -228,7 +249,8 @@ export class ChartCandlestick<T = unknown> {
         id: this.datasetId,
         xAxisId: this.xAxisId(),
         yAxisId: this.yAxisId(),
-        order: this.order()
+        order: this.order(),
+        keyField: this.keyField()
     }));
 
     constructor() {

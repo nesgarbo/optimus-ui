@@ -1091,6 +1091,29 @@ export interface ChartItemProps {
  * the same wrapper produces concentric rings, where only `gap` and `id` apply.
  * @group Interface
  */
+/**
+ * `ChartRange` inputs.
+ *
+ * Wrap exactly two `ChartLine` components to fill the area between them. Fewer than two renders
+ * nothing; more than two uses only the first pair.
+ * @group Interface
+ */
+export interface ChartRangeProps {
+    /**
+     * A single fill colour for the band. Omit for dual-colour mode, where each child's own line
+     * colour fills the region in which that series is on top.
+     */
+    color?: FillValue;
+    /**
+     * Fill opacity for the band.
+     */
+    fillOpacity?: number;
+    /**
+     * Range group identifier.
+     */
+    id?: string;
+}
+
 export interface StackedProps {
     /**
      * `'normal'` stacks absolute values, with negatives stacking downward; `'percent'` normalizes

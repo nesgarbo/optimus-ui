@@ -16,6 +16,7 @@ import type {
     ChartPluginEntry,
     ChartRootApi,
     ChartState as PublicChartState,
+    ChartText,
     ChartTheme,
     ChartUpdateDataOptions,
     ChartsPassThrough,
@@ -124,6 +125,18 @@ export abstract class ChartRootBase extends BaseComponent<ChartsPassThrough> imp
      * @group Props
      */
     readonly locale = input<string | undefined>(undefined);
+    /**
+     * Number formatting for every numeric surface: axis ticks, tooltips, data labels, the colour
+     * legend and screen-reader prose. An axis `tickFormat` still wins over it, since that is the
+     * more specific statement.
+     * @group Props
+     */
+    readonly numberFormat = input<Intl.NumberFormatOptions | undefined>(undefined);
+    /**
+     * Overrides individual catalogue strings, merged over the resolved language.
+     * @group Props
+     */
+    readonly text = input<Partial<ChartText> | undefined>(undefined);
     /**
      * Sync configuration, read when the chart sits inside a `ChartGroup`.
      * @group Props
@@ -292,6 +305,10 @@ export abstract class ChartRootBase extends BaseComponent<ChartsPassThrough> imp
         fontSize: this.$fontSize,
         direction: this.$direction,
         locale: computed(() => this.locale()),
+        numberFormat: computed(() => this.numberFormat()),
+        text: computed(() => this.text()),
+        container: () => this.containerElement(),
+        exportChart: (options) => this.toImage(options),
         requestRender: () => this.requestRender()
     });
 

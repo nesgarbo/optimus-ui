@@ -70,11 +70,25 @@ export function projectSlices(ctx: DrawContext, series: ResolvedSeries, props: P
                 value: Number.isFinite(value) ? Math.abs(value) : 0
             };
         })
-        .filter((entry) => ctx.isItemVisible(series.id, entry.dataIndex) && entry.value > 0);
+        .filter((entry) => ctx.isItemVisible(series.id, entry.dataIndex));
 
     if (entries.length === 0) return [];
 
-    const ordered = props.sort ? sortBySlice(entries, props.sort) : entries;
+    /*
+     * A series whose values are all zero -- or whose value field is absent entirely -- falls back to
+     * equal sweeps rather than rendering nothing.
+     *
+     * That is not a defensive fudge: it is the nightingale idiom. A rose encodes its magnitude in
+     * the radius, so `sliceRadiusValue` carries the data and the angles are deliberately uniform.
+     * Requiring a second, meaningless value field just to get twelve equal wedges would be asking
+     * the author to say the same thing twice.
+     */
+    const magnitude = entries.reduce((sum, entry) => sum + entry.value, 0);
+    const measured = magnitude > 0 ? entries.filter((entry) => entry.value > 0) : entries.map((entry) => ({ ...entry, value: 1 }));
+
+    if (measured.length === 0) return [];
+
+    const ordered = props.sort ? sortBySlice(measured, props.sort) : measured;
     const total = ordered.reduce((sum, entry) => sum + entry.value, 0);
 
     if (total <= 0) return [];
@@ -88,11 +102,21 @@ export function projectSlices(ctx: DrawContext, series: ResolvedSeries, props: P
     const outerRadius = frame.radius * outerRatio;
     const innerRadius = outerRadius * innerRatio;
 
-    // The spacing between slices is taken out of each slice's own sweep, expressed as the angle that
-    // gap subtends at the mid-radius -- so the visual gap stays constant rather than pinching at the
-    // inner edge of a thin ring.
-    const midRadius = (outerRadius + innerRadius) / 2 || outerRadius;
-    const gapAngle = spacing > 0 && midRadius > 0 ? Math.min((spacing / (2 * Math.PI * midRadius)) * 360, sweep / ordered.length / 2) : 0;
+    /*
+     * The spacing between slices is taken out of each slice's own sweep, expressed as the angle that
+     * gap subtends at that slice's mid-radius -- so the visual gap is a constant number of pixels
+     * rather than a constant angle.
+     *
+     * The distinction only shows up on a nightingale, where every slice has a different radius: one
+     * angle for all of them meant a short petal gave up a far larger share of its arc than a long
+     * one, and the rose came out as a pinwheel of wedge-shaped holes converging on the centre.
+     */
+    const gapAngleAt = (radius: number) => {
+        const mid = (radius + innerRadius) / 2 || radius;
+
+        return spacing > 0 && mid > 0 ? Math.min((spacing / (2 * Math.PI * mid)) * 360, sweep / ordered.length / 2) : 0;
+    };
+    const gapAngle = gapAngleAt(outerRadius);
 
     // The radius values are resolved up front because each one is scaled against the largest of
     // *them*. Scaling against the angle values instead was a real bug: on a rose chart the angles
@@ -115,16 +139,19 @@ export function projectSlices(ctx: DrawContext, series: ResolvedSeries, props: P
         const explode = (resolveScalarAccessor(props.offset, context, 0) as number) ?? 0;
         const hoverOffset = hovered && ctx.hoverEffect?.offset ? ctx.hoverEffect.offset : 0;
 
+        // A nightingale scales each slice's radius by its own value, which is what encodes the
+        // magnitude in the radius as well as in the angle.
+        const sliceOuter = sliceRadius != null ? scaleSliceRadius(sliceRadius, maxRadiusValue, outerRadius, innerRadius) : outerRadius;
+        const sliceGap = sliceRadius != null ? gapAngleAt(sliceOuter) : gapAngle;
+
         slices.push({
             label: entry.label,
             value: entry.value,
             percentage: fraction * 100,
-            startAngle: cursor + gapAngle / 2,
-            endAngle: cursor + span - gapAngle / 2,
+            startAngle: cursor + sliceGap / 2,
+            endAngle: cursor + span - sliceGap / 2,
             innerRadius,
-            // A nightingale scales each slice's radius by its own value, which is what encodes the
-            // magnitude in the radius as well as in the angle.
-            outerRadius: sliceRadius != null ? scaleSliceRadius(sliceRadius, maxRadiusValue, outerRadius, innerRadius) : outerRadius,
+            outerRadius: sliceOuter,
             dataIndex: entry.dataIndex,
             offset: explode + hoverOffset
         });

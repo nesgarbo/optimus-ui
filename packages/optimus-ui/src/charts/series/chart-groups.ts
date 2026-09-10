@@ -6,8 +6,9 @@
  * nesting keeps the template readable in a way a `stack: 'group-a'` string on every series would
  * not.
  */
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, input, numberAttribute, signal } from '@angular/core';
-import { CHART_OVERLAP, CHART_RANGE, CHART_STACK, CHART_WATERFALL, nextGroupId, type OverlapContext, type RangeContext, type StackContext, type WaterfallContext } from '../charts-registry';
+import { ChangeDetectionStrategy, Component, DestroyRef, ViewEncapsulation, computed, inject, input, numberAttribute, signal } from '@angular/core';
+import type { FillValue } from '@openng/optimus-ui/types/charts';
+import { CHART_CONTEXT, CHART_OVERLAP, CHART_RANGE, CHART_STACK, CHART_WATERFALL, nextGroupId, type OverlapContext, type RangeContext, type StackContext, type WaterfallContext } from '../charts-registry';
 
 /**
  * Stacks the series it wraps. On bar and line series that means segments piled on one another; on
@@ -133,10 +134,35 @@ export class ChartOverlap {
     providers: [{ provide: CHART_RANGE, useFactory: () => inject(ChartRange).rangeContext }]
 })
 export class ChartRange {
+    private readonly context = inject(CHART_CONTEXT, { optional: true });
+
+    private readonly destroyRef = inject(DestroyRef);
+
     private edges = 0;
 
-    /** The group id, generated once. */
-    readonly rangeId = nextGroupId('range');
+    /**
+     * Single fill colour for the band. Omit for dual-colour mode, where each child's own line
+     * colour fills the region in which that series is on top.
+     * @group Props
+     */
+    readonly color = input<FillValue | undefined>(undefined);
+    /**
+     * Fill opacity for the band.
+     * @defaultValue 0.3
+     * @group Props
+     */
+    readonly fillOpacity = input(0.3, { transform: numberAttribute });
+    /**
+     * Range group identifier.
+     * @group Props
+     */
+    readonly id = input<string | undefined>(undefined);
+
+    /** The group id, which an explicit `id` replaces. */
+    readonly rangeId = this.id() ?? nextGroupId('range');
+
+    /** The group's current inputs, as the root reads them when it fills the band. */
+    readonly props = computed(() => ({ color: this.color(), fillOpacity: this.fillOpacity(), id: this.rangeId }));
 
     /** What the wrapped series inject. */
     readonly rangeContext: RangeContext = {
@@ -150,4 +176,14 @@ export class ChartRange {
             return edge;
         }
     };
+
+    constructor() {
+        if (!this.context) return;
+
+        // Registered under a suffixed type, because a chart can hold several bands and each one
+        // fills with its own colour.
+        const remove = this.context.registerFeature({ type: `range:${this.rangeId}`, props: this.props as never });
+
+        this.destroyRef.onDestroy(remove);
+    }
 }
