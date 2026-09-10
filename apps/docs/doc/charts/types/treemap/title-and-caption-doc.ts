@@ -12,16 +12,20 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             <p>Add <i>ChartTitle</i> to display a title above the chart and <i>ChartCaption</i> for a descriptive line beneath it. Adding both reduces the available chart area.</p>
             <p>For full configuration see <a href="/charts/configuration/title-caption">Title &amp; Caption</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-treemap [data]="data" categoryField="name" valueField="population" />
-                    <p-chart-title text="World Population by Region" />
-                    <p-chart-caption text="Estimated population in millions, 2024" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-treemap [data]="data" categoryField="name" valueField="population" />
+                        <p-chart-title text="World Population by Region" />
+                        <p-chart-caption text="Estimated population in millions, 2024" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

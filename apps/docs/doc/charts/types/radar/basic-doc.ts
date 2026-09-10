@@ -11,16 +11,20 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Set <i>categoryXField</i> to map spoke labels and <i>valueYField</i> to map the radial value for each axis.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-radar id="perf" [data]="data" categoryXField="metric" valueYField="value" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-radar id="perf" [data]="data" categoryXField="metric" valueYField="value" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

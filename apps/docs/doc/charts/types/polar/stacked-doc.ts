@@ -11,19 +11,23 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Wrap multiple <i>ChartPolar</i> components inside <i>ChartStacked</i> to stack bars radially outward. Each series accumulates on top of the previous one.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="display: flex; justify-content: center">
-                <p-chart-svg [width]="460" [height]="460">
-                    <p-chart-stacked>
-                        <p-chart-polar [data]="data" categoryXField="direction" valueYField="morning" name="Morning" />
-                        <p-chart-polar [data]="data" categoryXField="direction" valueYField="afternoon" name="Afternoon" />
-                    </p-chart-stacked>
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="display: flex; justify-content: center">
+                    <p-chart-svg [width]="460" [height]="460">
+                        <p-chart-stacked>
+                            <p-chart-polar [data]="data" categoryXField="direction" valueYField="morning" name="Morning" />
+                            <p-chart-polar [data]="data" categoryXField="direction" valueYField="afternoon" name="Afternoon" />
+                        </p-chart-stacked>
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

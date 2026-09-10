@@ -11,20 +11,24 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Place multiple <i>ChartBar</i> components as siblings. Each series positions itself within the category group. <i>barGap</i> and <i>categoryGap</i> both accept a fraction between 0 and 1, relative to the category band width.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-bar [data]="data" categoryXField="quarter" valueYField="newLogo" name="New logo ARR" color="#5daeea" [borderRadius]="3" />
-                    <p-chart-bar [data]="data" categoryXField="quarter" valueYField="expansion" name="Expansion ARR" color="#4ecdc4" [borderRadius]="3" />
-                    <p-chart-bar [data]="data" categoryXField="quarter" valueYField="services" name="Services ARR" color="#ffad5a" [borderRadius]="3" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis label="$M" />
-                    <p-chart-legend position="top" />
-                    <p-chart-tooltip mode="shared" [valueFormatter]="valueFormatter" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-bar [data]="data" categoryXField="quarter" valueYField="newLogo" name="New logo ARR" color="#5daeea" [borderRadius]="3" />
+                        <p-chart-bar [data]="data" categoryXField="quarter" valueYField="expansion" name="Expansion ARR" color="#4ecdc4" [borderRadius]="3" />
+                        <p-chart-bar [data]="data" categoryXField="quarter" valueYField="services" name="Services ARR" color="#ffad5a" [borderRadius]="3" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis label="$M" />
+                        <p-chart-legend position="top" />
+                        <p-chart-tooltip mode="shared" [valueFormatter]="valueFormatter" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

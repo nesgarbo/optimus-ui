@@ -14,16 +14,20 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 intersecting lines through a specific data point.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-line [data]="data" categoryXField="month" valueYField="score" color="#5daeea" curve="smooth" [showMarkers]="true" />
-                <p-chart-reference-line [y]="60" label="Target" />
-                <p-chart-reference-line x="Apr" label="Q2 Start" stroke="#10a981" [lineDash]="[6, 4]" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-line [data]="data" categoryXField="month" valueYField="score" color="#5daeea" curve="smooth" [showMarkers]="true" />
+                    <p-chart-reference-line [y]="60" label="Target" />
+                    <p-chart-reference-line x="Apr" label="Q2 Start" stroke="#10a981" [lineDash]="[6, 4]" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

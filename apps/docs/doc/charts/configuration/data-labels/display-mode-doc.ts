@@ -13,16 +13,20 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 Set <i>display</i> to control what is shown. <i>value</i> shows the raw number, <i>percentage</i> shows the proportion of the total, and <i>both</i> shows both. Set <i>display="none"</i> to hide labels without removing the component.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div class="flex justify-center">
-                <p-chart-svg [width]="460" [height]="460">
-                    <p-chart-pie [data]="data" categoryField="category" valueField="visits" name="Traffic Sources" />
-                    <p-chart-data-labels display="both" />
-                    <p-chart-legend position="bottom" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div class="flex justify-center">
+                    <p-chart-svg [width]="460" [height]="460">
+                        <p-chart-pie [data]="data" categoryField="category" valueField="visits" name="Traffic Sources" />
+                        <p-chart-data-labels display="both" />
+                        <p-chart-legend position="bottom" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

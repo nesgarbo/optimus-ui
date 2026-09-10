@@ -15,16 +15,20 @@ import { ChartsModule, type TickValue } from '@openng/optimus-ui/charts';
             </p>
             <p>For full configuration see <a href="/charts/configuration/axes">Axes</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-scatter id="queue-risk" [data]="data" valueXField="backlog" valueYField="breachRisk" color="#36b7d6" [markerSize]="7" />
-                    <p-chart-x-axis label="Support backlog" [tickCount]="6" [tickFormat]="formatTickets" gridStyle="dashed" />
-                    <p-chart-y-axis label="SLA breach risk" [startFromZero]="true" [tickFormat]="formatRisk" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-scatter id="queue-risk" [data]="data" valueXField="backlog" valueYField="breachRisk" color="#36b7d6" [markerSize]="7" />
+                        <p-chart-x-axis label="Support backlog" [tickCount]="6" [tickFormat]="formatTickets" gridStyle="dashed" />
+                        <p-chart-y-axis label="SLA breach risk" [startFromZero]="true" [tickFormat]="formatRisk" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

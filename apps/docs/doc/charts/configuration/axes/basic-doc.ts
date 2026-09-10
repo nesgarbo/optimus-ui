@@ -11,14 +11,18 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Add <i>ChartXAxis</i> and <i>ChartYAxis</i> to render axes and gridlines. Both default to a category axis with auto-calculated tick labels and a linear scale.</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-line [data]="data" categoryXField="month" valueYField="requests" color="#5daeea" [showMarkers]="true" />
-                <p-chart-x-axis label="Month" />
-                <p-chart-y-axis label="Requests" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-line [data]="data" categoryXField="month" valueYField="requests" color="#5daeea" [showMarkers]="true" />
+                    <p-chart-x-axis label="Month" />
+                    <p-chart-y-axis label="Requests" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

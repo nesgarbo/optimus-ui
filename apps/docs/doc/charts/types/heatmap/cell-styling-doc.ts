@@ -18,16 +18,20 @@ import { supportLoadMatrix } from '@/doc/charts/data/supportLoadMatrix';
             <p>#### SvgHeatmapCellStylingDemo.ts</p>
             <p>#### supportLoadMatrix.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-heatmap [data]="data" categoryXField="day" categoryYField="window" valueField="tickets" [colorRange]="['#eef6ff', '#4ecdc4', '#1f4f7a']" [spacing]="4" [borderRadius]="8" />
-                    <p-chart-x-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
-                    <p-chart-y-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-heatmap [data]="data" categoryXField="day" categoryYField="window" valueField="tickets" [colorRange]="['#eef6ff', '#4ecdc4', '#1f4f7a']" [spacing]="4" [borderRadius]="8" />
+                        <p-chart-x-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
+                        <p-chart-y-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

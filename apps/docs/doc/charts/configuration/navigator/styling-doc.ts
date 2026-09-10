@@ -24,27 +24,31 @@ function seededRandom(seed: number) {
                 override any of them to take manual control.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-line [data]="data" categoryXField="day" valueYField="value" color="#7c8cff" curve="smooth" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                    <p-chart-zoom mode="x" />
-                    <p-chart-navigator
-                        color="#7c8cff"
-                        [opacity]="0.4"
-                        selectionColor="rgba(93,174,234,0.8)"
-                        selectionFill="rgba(93,174,234,0.12)"
-                        maskColor="rgba(0,0,0,0.18)"
-                        backgroundColor="#eef6ff"
-                        gridColor="rgba(93,174,234,0.1)"
-                        labelColor="#2531a8"
-                    />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-line [data]="data" categoryXField="day" valueYField="value" color="#7c8cff" curve="smooth" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                        <p-chart-zoom mode="x" />
+                        <p-chart-navigator
+                            color="#7c8cff"
+                            [opacity]="0.4"
+                            selectionColor="rgba(93,174,234,0.8)"
+                            selectionFill="rgba(93,174,234,0.12)"
+                            maskColor="rgba(0,0,0,0.18)"
+                            backgroundColor="#eef6ff"
+                            gridColor="rgba(93,174,234,0.1)"
+                            labelColor="#2531a8"
+                        />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

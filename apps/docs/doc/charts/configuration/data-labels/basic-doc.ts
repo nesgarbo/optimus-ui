@@ -11,15 +11,19 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Add <i>ChartDataLabels</i> to display values on chart elements. By default labels show the raw value at each data point, bar, or slice.</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="bookings" [borderRadius]="4" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-data-labels />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="bookings" [borderRadius]="4" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-data-labels />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

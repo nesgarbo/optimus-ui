@@ -18,26 +18,30 @@ import { heathrowHourly as data, type HourSlot, MAX } from '@/doc/charts/data/he
             <p>#### SvgPolarHeathrowHourlyDemo.ts</p>
             <p>#### heathrowHourly.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg [animation]="{ duration: 700 }">
-                    <p-chart-polar [data]="data" categoryXField="hour" valueYField="flights" [color]="barColor" [innerRadius]="0.22" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis [tickCount]="2" [gridOpacity]="0.35" />
-                    <p-chart-tooltip />
-                    <p-chart-hover [brightness]="1.1" />
-                    <p-chart-title text="Heathrow LHR — scheduled departures by hour of day" />
-                    <p-chart-caption text="Morning long-haul push (06:00–09:00) and trans-Atlantic wave (14:00–17:00) are the two bright arcs · curfew silences 23:30–06:00 · Source: Heathrow Airport Ltd." />
-                    <p-chart-export-menu filename="heathrow-hourly-departures-2023" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg [animation]="{ duration: 700 }">
+                        <p-chart-polar [data]="data" categoryXField="hour" valueYField="flights" [color]="barColor" [innerRadius]="0.22" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis [tickCount]="2" [gridOpacity]="0.35" />
+                        <p-chart-tooltip />
+                        <p-chart-hover [brightness]="1.1" />
+                        <p-chart-title text="Heathrow LHR — scheduled departures by hour of day" />
+                        <p-chart-caption text="Morning long-haul push (06:00–09:00) and trans-Atlantic wave (14:00–17:00) are the two bright arcs · curfew silences 23:30–06:00 · Source: Heathrow Airport Ltd." />
+                        <p-chart-export-menu filename="heathrow-hourly-departures-2023" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PolarHeathrowLhrScheduledDeparturesByHourOfDayDoc {
+export class PolarPolarHeathrowLhrScheduledDeparturesByHourOfDayDoc {
     readonly data = data;
 
     readonly barColor = (ctx: { datum: HourSlot }): string => {

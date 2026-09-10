@@ -25,31 +25,35 @@ const REGION_COLORS = {
             <p>#### SvgBarDebtDemo.ts</p>
             <p>#### evSalesByRegion.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460" [animation]="{ duration: 700 }">
-                <p-chart-stacked>
-                    <p-chart-bar [data]="data" categoryXField="year" valueYField="china" name="China" [color]="colors.china" />
-                    <p-chart-bar [data]="data" categoryXField="year" valueYField="europe" name="Europe" [color]="colors.europe" />
-                    <p-chart-bar [data]="data" categoryXField="year" valueYField="usa" name="USA" [color]="colors.usa" />
-                    <p-chart-bar [data]="data" categoryXField="year" valueYField="otherAsia" name="Other Asia-Pacific" [color]="colors.otherAsia" />
-                    <p-chart-bar [data]="data" categoryXField="year" valueYField="rest" name="Rest of World" [color]="colors.rest" />
-                </p-chart-stacked>
-                <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                <p-chart-legend position="top" />
-                <p-chart-hover />
-                <p-chart-x-axis />
-                <p-chart-y-axis [tickFormat]="formatAxis" />
-                <p-chart-title text="Global Electric Vehicle Sales by Region, 2019–2023" />
-                <p-chart-caption text="Passenger EVs sold (millions) · Source: IEA Global EV Outlook 2024" />
-                <p-chart-export-menu filename="global-ev-sales-by-region" />
-                <p-chart-accessibility />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460" [animation]="{ duration: 700 }">
+                    <p-chart-stacked>
+                        <p-chart-bar [data]="data" categoryXField="year" valueYField="china" name="China" [color]="colors.china" />
+                        <p-chart-bar [data]="data" categoryXField="year" valueYField="europe" name="Europe" [color]="colors.europe" />
+                        <p-chart-bar [data]="data" categoryXField="year" valueYField="usa" name="USA" [color]="colors.usa" />
+                        <p-chart-bar [data]="data" categoryXField="year" valueYField="otherAsia" name="Other Asia-Pacific" [color]="colors.otherAsia" />
+                        <p-chart-bar [data]="data" categoryXField="year" valueYField="rest" name="Rest of World" [color]="colors.rest" />
+                    </p-chart-stacked>
+                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                    <p-chart-legend position="top" />
+                    <p-chart-hover />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis [tickFormat]="formatAxis" />
+                    <p-chart-title text="Global Electric Vehicle Sales by Region, 2019–2023" />
+                    <p-chart-caption text="Passenger EVs sold (millions) · Source: IEA Global EV Outlook 2024" />
+                    <p-chart-export-menu filename="global-ev-sales-by-region" />
+                    <p-chart-accessibility />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class StackedGlobalElectricVehicleSalesByRegion20192023Doc {
+export class ColumnBarStackedGlobalElectricVehicleSalesByRegion20192023Doc {
     readonly data = data;
     readonly colors = REGION_COLORS;
 

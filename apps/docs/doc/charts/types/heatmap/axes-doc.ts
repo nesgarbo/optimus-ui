@@ -15,16 +15,20 @@ import { supportLoadMatrix } from '@/doc/charts/data/supportLoadMatrix';
             <p>#### supportLoadMatrix.ts</p>
             <p>For full configuration see <a href="/charts/configuration/axes">Axes</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-heatmap [data]="data" categoryXField="day" categoryYField="window" valueField="tickets" [colorRange]="['#eef6ff', '#5bc8f5', '#2531a8']" />
-                    <p-chart-x-axis label="Day" />
-                    <p-chart-y-axis label="Queue window" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-heatmap [data]="data" categoryXField="day" categoryYField="window" valueField="tickets" [colorRange]="['#eef6ff', '#5bc8f5', '#2531a8']" />
+                        <p-chart-x-axis label="Day" />
+                        <p-chart-y-axis label="Queue window" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

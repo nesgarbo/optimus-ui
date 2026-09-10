@@ -60,47 +60,51 @@ const MOORES_LABEL = "Moore's Law · 2× / 2 yr";
             <p>#### SvgScatterMooresLawDemo.ts</p>
             <p>#### mooresLaw.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-scatter id="chips" [data]="data" valueXField="year" valueYField="count" color="#2563eb" [markerSize]="7" />
-                    <p-chart-annotation>
-                        <ng-template pChartAnnotationDef let-ctx>
-                            @if (mooresLine(ctx); as m) {
-                                <svg:g>
-                                    <svg:line [attr.x1]="m.x1" [attr.y1]="m.y1" [attr.x2]="m.x2" [attr.y2]="m.y2" stroke="#e5484d" stroke-width="1.5" stroke-dasharray="8 5" opacity="0.55" />
-                                    <svg:rect [attr.x]="m.bx" [attr.y]="m.by" [attr.width]="m.bw" [attr.height]="m.bh" rx="4" ry="4" fill="#e5484d" />
-                                    <svg:text [attr.x]="m.bx + m.bw / 2" [attr.y]="m.by + m.bh / 2" text-anchor="middle" dominant-baseline="central" [attr.font-size]="m.fs" font-weight="600" fill="#ffffff">{{ mooresLabel }}</svg:text>
-                                </svg:g>
-                            }
-                        </ng-template>
-                    </p-chart-annotation>
-                    <p-chart-annotation>
-                        <ng-template pChartAnnotationDef let-ctx>
-                            <svg:g>
-                                @for (s of spotlightBoxes(ctx); track s.label) {
-                                    <svg:circle [attr.cx]="s.cx" [attr.cy]="s.cy" r="10" fill="none" [style.stroke]="spotRing" stroke-width="1.25" opacity="0.45" />
-                                    <svg:rect [attr.x]="s.bx" [attr.y]="s.by" [attr.width]="s.bw" [attr.height]="s.bh" rx="4" ry="4" [style.fill]="chipBg" />
-                                    <svg:text [attr.x]="s.bx + s.padX" [attr.y]="s.by + s.bh / 2" text-anchor="start" dominant-baseline="central" [attr.font-size]="s.fs" font-weight="600" [style.fill]="chipText">{{ s.label }}</svg:text>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-scatter id="chips" [data]="data" valueXField="year" valueYField="count" color="#2563eb" [markerSize]="7" />
+                        <p-chart-annotation>
+                            <ng-template pChartAnnotationDef let-ctx>
+                                @if (mooresLine(ctx); as m) {
+                                    <svg:g>
+                                        <svg:line [attr.x1]="m.x1" [attr.y1]="m.y1" [attr.x2]="m.x2" [attr.y2]="m.y2" stroke="#e5484d" stroke-width="1.5" stroke-dasharray="8 5" opacity="0.55" />
+                                        <svg:rect [attr.x]="m.bx" [attr.y]="m.by" [attr.width]="m.bw" [attr.height]="m.bh" rx="4" ry="4" fill="#e5484d" />
+                                        <svg:text [attr.x]="m.bx + m.bw / 2" [attr.y]="m.by + m.bh / 2" text-anchor="middle" dominant-baseline="central" [attr.font-size]="m.fs" font-weight="600" fill="#ffffff">{{ mooresLabel }}</svg:text>
+                                    </svg:g>
                                 }
-                            </svg:g>
-                        </ng-template>
-                    </p-chart-annotation>
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                    <p-chart-hover [brightness]="1.15" />
-                    <p-chart-x-axis label="Year" [tickFormat]="formatYear" [chartPaddingMax]="0.1" />
-                    <p-chart-y-axis label="Transistor count" type="logarithmic" [tickFormat]="formatCount" [chartPaddingMax]="0.1" />
-                    <p-chart-title text="Moore's Law — transistor count per microprocessor, 1971–2024" />
-                    <p-chart-caption text="Log-Y axis flattens 2×/2yr into a straight line · drag to zoom range · Source: Intel/AMD/NVIDIA/Apple/IBM spec sheets" />
-                    <p-chart-export-menu filename="moores-law-1971-2024" />
-                </p-chart-svg>
+                            </ng-template>
+                        </p-chart-annotation>
+                        <p-chart-annotation>
+                            <ng-template pChartAnnotationDef let-ctx>
+                                <svg:g>
+                                    @for (s of spotlightBoxes(ctx); track s.label) {
+                                        <svg:circle [attr.cx]="s.cx" [attr.cy]="s.cy" r="10" fill="none" [style.stroke]="spotRing" stroke-width="1.25" opacity="0.45" />
+                                        <svg:rect [attr.x]="s.bx" [attr.y]="s.by" [attr.width]="s.bw" [attr.height]="s.bh" rx="4" ry="4" [style.fill]="chipBg" />
+                                        <svg:text [attr.x]="s.bx + s.padX" [attr.y]="s.by + s.bh / 2" text-anchor="start" dominant-baseline="central" [attr.font-size]="s.fs" font-weight="600" [style.fill]="chipText">{{ s.label }}</svg:text>
+                                    }
+                                </svg:g>
+                            </ng-template>
+                        </p-chart-annotation>
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                        <p-chart-hover [brightness]="1.15" />
+                        <p-chart-x-axis label="Year" [tickFormat]="formatYear" [chartPaddingMax]="0.1" />
+                        <p-chart-y-axis label="Transistor count" type="logarithmic" [tickFormat]="formatCount" [chartPaddingMax]="0.1" />
+                        <p-chart-title text="Moore's Law — transistor count per microprocessor, 1971–2024" />
+                        <p-chart-caption text="Log-Y axis flattens 2×/2yr into a straight line · drag to zoom range · Source: Intel/AMD/NVIDIA/Apple/IBM spec sheets" />
+                        <p-chart-export-menu filename="moores-law-1971-2024" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ScatterMooreSLawTransistorCountPerMicroprocessor19712024Doc {
+export class ScatterBubbleScatterMooreSLawTransistorCountPerMicroprocessor19712024Doc {
     readonly data = chips;
     readonly mooresLabel = MOORES_LABEL;
     readonly chipBg = CHIP_BG;

@@ -12,18 +12,22 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             <p>Add <i>ChartZoom</i> to enable drag-to-zoom on the time axis and <i>ChartNavigator</i> to show a mini overview chart below. The navigator uses the close price for its mini chart.</p>
             <p>For full configuration see <a href="/charts/configuration/zoom-pan">Zoom &amp; Pan</a> and <a href="/charts/configuration/navigator">Navigator</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-candlestick [data]="data" categoryXField="date" openField="open" highField="high" lowField="low" closeField="close" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                    <p-chart-zoom mode="x" />
-                    <p-chart-navigator />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-candlestick [data]="data" categoryXField="date" openField="open" highField="high" lowField="low" closeField="close" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                        <p-chart-zoom mode="x" />
+                        <p-chart-navigator />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

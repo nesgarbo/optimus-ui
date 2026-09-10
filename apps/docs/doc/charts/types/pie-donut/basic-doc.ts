@@ -11,14 +11,18 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Map data fields with <i>valueField</i> and <i>categoryField</i>. The chart calculates each slice angle from the acquisition-channel share.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="display: flex; justify-content: center">
-                <p-chart-svg [width]="460" [height]="460">
-                    <p-chart-pie [data]="data" valueField="share" categoryField="channel" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="display: flex; justify-content: center">
+                    <p-chart-svg [width]="460" [height]="460">
+                        <p-chart-pie [data]="data" valueField="share" categoryField="channel" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

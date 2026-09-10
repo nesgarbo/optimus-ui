@@ -14,15 +14,19 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 visible enough.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="bookings" color="#94a3b8" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-hover backgroundColor="#5daeea" borderColor="#2531a8" [borderStrokeWidth]="2" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="bookings" color="#94a3b8" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-hover backgroundColor="#5daeea" borderColor="#2531a8" [borderStrokeWidth]="2" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

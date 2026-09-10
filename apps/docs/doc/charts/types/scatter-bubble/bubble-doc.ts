@@ -14,18 +14,22 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 grows in line with the underlying number.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-scatter id="asia" [data]="asiaData" valueXField="gdp" valueYField="lifeExp" sizeField="population" name="Asia" color="#5daeea" [minSize]="6" [maxSize]="34" />
-                    <p-chart-scatter id="europe" [data]="europeData" valueXField="gdp" valueYField="lifeExp" sizeField="population" name="Europe" color="#4ecdc4" [minSize]="6" [maxSize]="34" />
-                    <p-chart-scatter id="americas" [data]="americasData" valueXField="gdp" valueYField="lifeExp" sizeField="population" name="Americas" color="#ffad5a" [minSize]="6" [maxSize]="34" />
-                    <p-chart-x-axis label="GDP per capita ($K)" [chartPaddingMin]="0.16" [chartPaddingMax]="0.1" />
-                    <p-chart-y-axis label="Life expectancy (years)" [startFromZero]="false" [chartPaddingMin]="0.12" [chartPaddingMax]="0.12" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-scatter id="asia" [data]="asiaData" valueXField="gdp" valueYField="lifeExp" sizeField="population" name="Asia" color="#5daeea" [minSize]="6" [maxSize]="34" />
+                        <p-chart-scatter id="europe" [data]="europeData" valueXField="gdp" valueYField="lifeExp" sizeField="population" name="Europe" color="#4ecdc4" [minSize]="6" [maxSize]="34" />
+                        <p-chart-scatter id="americas" [data]="americasData" valueXField="gdp" valueYField="lifeExp" sizeField="population" name="Americas" color="#ffad5a" [minSize]="6" [maxSize]="34" />
+                        <p-chart-x-axis label="GDP per capita ($K)" [chartPaddingMin]="0.16" [chartPaddingMax]="0.1" />
+                        <p-chart-y-axis label="Life expectancy (years)" [startFromZero]="false" [chartPaddingMin]="0.12" [chartPaddingMax]="0.12" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

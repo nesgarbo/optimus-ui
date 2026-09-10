@@ -31,34 +31,38 @@ function statsOf(field: keyof Point): Stat {
             <p>#### SvgSyncedServerMetricsDemo.ts</p>
             <p>#### syncedServerMetrics.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-group>
-                <div style="display: flex; flex-direction: column; gap: 12px">
-                    @for (s of series; track s.field; let i = $index) {
-                        <div>
-                            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px">
-                                <div class="chart-series-label">{{ s.label }}</div>
-                                <div class="chart-now-label">
-                                    now <span [style.color]="s.color" style="font-weight: 700">{{ stats[s.field].current.toFixed(1) }}{{ s.unit }}</span>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-group>
+                    <div style="display: flex; flex-direction: column; gap: 12px">
+                        @for (s of series; track s.field; let i = $index) {
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px">
+                                    <div class="chart-series-label">{{ s.label }}</div>
+                                    <div class="chart-now-label">
+                                        now <span [style.color]="s.color" style="font-weight: 700">{{ stats[s.field].current.toFixed(1) }}{{ s.unit }}</span>
+                                    </div>
                                 </div>
+                                <p-chart-svg [sync]="true" [height]="120">
+                                    <p-chart-line [data]="data" categoryXField="t" [valueYField]="s.field" [color]="s.color" curve="smooth" [showMarkers]="false" [lineStrokeWidth]="1.5" [fillOpacity]="0.12" />
+                                    <p-chart-reference-line [y]="s.warn" [stroke]="s.warnStroke" [lineDash]="[3, 4]" [label]="s.warn + s.unit + ' warn'" />
+                                    <p-chart-x-axis [visible]="i === series.length - 1" />
+                                    <p-chart-y-axis [tickCount]="3" [startFromZero]="true" />
+                                    <p-chart-tooltip [crosshair]="true" />
+                                    <p-chart-hover />
+                                    @if (i === series.length - 1) {
+                                        <p-chart-zoom mode="x" />
+                                    }
+                                </p-chart-svg>
                             </div>
-                            <p-chart-svg [sync]="true" [height]="120">
-                                <p-chart-line [data]="data" categoryXField="t" [valueYField]="s.field" [color]="s.color" curve="smooth" [showMarkers]="false" [lineStrokeWidth]="1.5" [fillOpacity]="0.12" />
-                                <p-chart-reference-line [y]="s.warn" [stroke]="s.warnStroke" [lineDash]="[3, 4]" [label]="s.warn + s.unit + ' warn'" />
-                                <p-chart-x-axis [visible]="i === series.length - 1" />
-                                <p-chart-y-axis [tickCount]="3" [startFromZero]="true" />
-                                <p-chart-tooltip [crosshair]="true" />
-                                <p-chart-hover />
-                                @if (i === series.length - 1) {
-                                    <p-chart-zoom mode="x" />
-                                }
-                            </p-chart-svg>
-                        </div>
-                    }
-                </div>
-            </p-chart-group>
-        </div>
-        <app-code></app-code>
+                        }
+                    </div>
+                </p-chart-group>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     styles: [
         `
@@ -77,7 +81,7 @@ function statsOf(field: keyof Point): Stat {
     ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ExamplesServerMetricsMonitorDoc {
+export class SyncedExamplesServerMetricsMonitorDoc {
     readonly data = data;
 
     readonly stats: Record<string, Stat> = {

@@ -11,25 +11,29 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>When <i>fontSize</i> is omitted, title and caption font sizes adapt to the container width across four tiers. Resize the chart to see the text scale down on smaller containers.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div class="flex flex-col gap-4">
-                <div class="flex items-center gap-3">
-                    <span class="text-sm text-surface-500">Width: {{ containerWidth() }}px</span>
-                    <input type="range" min="200" max="800" class="flex-1" [value]="containerWidth()" (input)="containerWidth.set(+asInput($event).value)" />
-                </div>
-                <div [style.width]="'min(' + containerWidth() + 'px, 100%)'" style="margin: 0 auto">
-                    <p-chart-svg [height]="460">
-                        <p-chart-bar [data]="data" categoryXField="month" valueYField="arr" color="#5daeea" />
-                        <p-chart-x-axis />
-                        <p-chart-y-axis />
-                        <p-chart-title text="Expansion ARR Run Rate" />
-                        <p-chart-caption text="Resize to see adaptive font scaling" />
-                        <p-chart-tooltip />
-                    </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div class="flex flex-col gap-4">
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm text-surface-500">Width: {{ containerWidth() }}px</span>
+                        <input type="range" min="200" max="800" class="flex-1" [value]="containerWidth()" (input)="containerWidth.set(+asInput($event).value)" />
+                    </div>
+                    <div [style.width]="'min(' + containerWidth() + 'px, 100%)'" style="margin: 0 auto">
+                        <p-chart-svg [height]="460">
+                            <p-chart-bar [data]="data" categoryXField="month" valueYField="arr" color="#5daeea" />
+                            <p-chart-x-axis />
+                            <p-chart-y-axis />
+                            <p-chart-title text="Expansion ARR Run Rate" />
+                            <p-chart-caption text="Resize to see adaptive font scaling" />
+                            <p-chart-tooltip />
+                        </p-chart-svg>
+                    </div>
                 </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

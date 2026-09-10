@@ -15,20 +15,24 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             </p>
             <p>For full configuration see <a href="/charts/configuration/reference-lines-bands">Reference Lines &amp; Bands</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-candlestick [data]="data" categoryXField="date" openField="open" highField="high" lowField="low" closeField="close" />
-                    <p-chart-reference-line [y]="175" label="Resistance" stroke="#e5484d" [lineDash]="[6, 4]" />
-                    <p-chart-reference-band [y1]="169" [y2]="172" fill="#10a981" [fillOpacity]="0.1" label="Support Zone" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                    <p-chart-tooltip />
-                    <p-chart-hover />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-candlestick [data]="data" categoryXField="date" openField="open" highField="high" lowField="low" closeField="close" />
+                        <p-chart-reference-line [y]="175" label="Resistance" stroke="#e5484d" [lineDash]="[6, 4]" />
+                        <p-chart-reference-band [y1]="169" [y2]="172" fill="#10a981" [fillOpacity]="0.1" label="Support Zone" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                        <p-chart-tooltip />
+                        <p-chart-hover />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

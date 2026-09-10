@@ -32,183 +32,187 @@ const data = [
         <app-docsectiontext>
             <p></p>
         </app-docsectiontext>
-        <div class="card">
-            <div class="chart-playground-layout">
-                <div class="chart-playground-stage">
-                    <p-chart-svg [responsive]="true" [height]="460">
-                        <p-chart-candlestick
-                            id="playground"
-                            [data]="data"
-                            categoryXField="date"
-                            openField="open"
-                            highField="high"
-                            lowField="low"
-                            closeField="close"
-                            name="AAPL"
-                            [variant]="variant()"
-                            [upColor]="upColor()"
-                            [downColor]="downColor()"
-                            [neutralColor]="neutralColor()"
-                            [borderUpColor]="borderUpColor()"
-                            [borderDownColor]="borderDownColor()"
-                            [borderNeutralColor]="borderNeutralColor()"
-                            [borderStrokeWidth]="borderWidth()"
-                            [borderRadius]="borderRadius()"
-                            [borderAlign]="borderAlign()"
-                            [borderJoinStyle]="borderJoinStyle()"
-                            [borderDash]="borderDashProp()"
-                            [borderDashOffset]="borderDashProp() ? borderDashOffset() : undefined"
-                            [hoverColor]="hoverColorProp()"
-                            [hoverBorderColor]="hoverBorderColorProp()"
-                            [barWidthRatio]="barWidthRatio()"
-                            [wickStrokeWidth]="wickWidth()"
-                        />
-                        <p-chart-x-axis />
-                        <p-chart-y-axis />
-                        <p-chart-tooltip />
-                        <p-chart-hover [brightness]="hoverBrightness()" [dimOpacity]="hoverDimOpacity()" />
-                    </p-chart-svg>
-                </div>
+        @defer (on viewport) {
+            <div class="card">
+                <div class="chart-playground-layout">
+                    <div class="chart-playground-stage">
+                        <p-chart-svg [responsive]="true" [height]="460">
+                            <p-chart-candlestick
+                                id="playground"
+                                [data]="data"
+                                categoryXField="date"
+                                openField="open"
+                                highField="high"
+                                lowField="low"
+                                closeField="close"
+                                name="AAPL"
+                                [variant]="variant()"
+                                [upColor]="upColor()"
+                                [downColor]="downColor()"
+                                [neutralColor]="neutralColor()"
+                                [borderUpColor]="borderUpColor()"
+                                [borderDownColor]="borderDownColor()"
+                                [borderNeutralColor]="borderNeutralColor()"
+                                [borderStrokeWidth]="borderWidth()"
+                                [borderRadius]="borderRadius()"
+                                [borderAlign]="borderAlign()"
+                                [borderJoinStyle]="borderJoinStyle()"
+                                [borderDash]="borderDashProp()"
+                                [borderDashOffset]="borderDashProp() ? borderDashOffset() : undefined"
+                                [hoverColor]="hoverColorProp()"
+                                [hoverBorderColor]="hoverBorderColorProp()"
+                                [barWidthRatio]="barWidthRatio()"
+                                [wickStrokeWidth]="wickWidth()"
+                            />
+                            <p-chart-x-axis />
+                            <p-chart-y-axis />
+                            <p-chart-tooltip />
+                            <p-chart-hover [brightness]="hoverBrightness()" [dimOpacity]="hoverDimOpacity()" />
+                        </p-chart-svg>
+                    </div>
 
-                <div class="playground-controls">
-                    <div class="playground-controls-header">Controls</div>
+                    <div class="playground-controls">
+                        <div class="playground-controls-header">Controls</div>
 
-                    <app-playground-section title="Style" [open]="openGroups().style" (toggle)="toggleGroup('style')">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">variant</label>
-                            <p-selectbutton [options]="variantOptions" [ngModel]="variant()" (ngModelChange)="variant.set($event)" [allowEmpty]="false" />
-                        </div>
-                    </app-playground-section>
-
-                    <app-playground-section title="Shape" [open]="openGroups().shape" (toggle)="toggleGroup('shape')">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">barWidthRatio — {{ barWidthRatio().toFixed(2) }}</label>
-                            <p-slider [ngModel]="barWidthRatio()" (ngModelChange)="barWidthRatio.set($event)" [min]="0.1" [max]="1" [step]="0.05" styleClass="w-full" />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">wickWidth — {{ wickWidth() }}px</label>
-                            <p-slider [ngModel]="wickWidth()" (ngModelChange)="wickWidth.set($event)" [min]="0.5" [max]="4" [step]="0.5" styleClass="w-full" />
-                        </div>
-                    </app-playground-section>
-
-                    <app-playground-section title="Color" [open]="openGroups().color" (toggle)="toggleGroup('color')">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">upColor</label>
-                            <div class="flex items-center gap-2">
-                                <input type="color" [value]="upColor()" (input)="upColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
-                                <span class="text-xs font-semibold">{{ upColor() }}</span>
-                            </div>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">downColor</label>
-                            <div class="flex items-center gap-2">
-                                <input type="color" [value]="downColor()" (input)="downColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
-                                <span class="text-xs font-semibold">{{ downColor() }}</span>
-                            </div>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">neutralColor</label>
-                            <div class="flex items-center gap-2">
-                                <input type="color" [value]="neutralColor()" (input)="neutralColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
-                                <span class="text-xs font-semibold">{{ neutralColor() }}</span>
-                            </div>
-                        </div>
-                    </app-playground-section>
-
-                    <app-playground-section title="Border" [open]="openGroups().border" (toggle)="toggleGroup('border')">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">borderRadius — {{ borderRadius() }}px</label>
-                            <p-slider [ngModel]="borderRadius()" (ngModelChange)="borderRadius.set($event)" [min]="0" [max]="8" [step]="1" styleClass="w-full" />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">borderWidth — {{ borderWidth() }}px</label>
-                            <p-slider [ngModel]="borderWidth()" (ngModelChange)="borderWidth.set($event)" [min]="0" [max]="4" [step]="0.5" styleClass="w-full" />
-                        </div>
-                        @if (borderWidth() > 0) {
+                        <app-playground-section title="Style" [open]="openGroups().style" (toggle)="toggleGroup('style')">
                             <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">borderUpColor</label>
+                                <label class="text-xs text-surface-500 dark:text-surface-400">variant</label>
+                                <p-selectbutton [options]="variantOptions" [ngModel]="variant()" (ngModelChange)="variant.set($event)" [allowEmpty]="false" />
+                            </div>
+                        </app-playground-section>
+
+                        <app-playground-section title="Shape" [open]="openGroups().shape" (toggle)="toggleGroup('shape')">
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">barWidthRatio — {{ barWidthRatio().toFixed(2) }}</label>
+                                <p-slider [ngModel]="barWidthRatio()" (ngModelChange)="barWidthRatio.set($event)" [min]="0.1" [max]="1" [step]="0.05" styleClass="w-full" />
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">wickWidth — {{ wickWidth() }}px</label>
+                                <p-slider [ngModel]="wickWidth()" (ngModelChange)="wickWidth.set($event)" [min]="0.5" [max]="4" [step]="0.5" styleClass="w-full" />
+                            </div>
+                        </app-playground-section>
+
+                        <app-playground-section title="Color" [open]="openGroups().color" (toggle)="toggleGroup('color')">
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">upColor</label>
                                 <div class="flex items-center gap-2">
-                                    <input type="color" [value]="borderUpColor()" (input)="borderUpColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
-                                    <span class="text-xs font-semibold">{{ borderUpColor() }}</span>
+                                    <input type="color" [value]="upColor()" (input)="upColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
+                                    <span class="text-xs font-semibold">{{ upColor() }}</span>
                                 </div>
                             </div>
                             <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">borderDownColor</label>
+                                <label class="text-xs text-surface-500 dark:text-surface-400">downColor</label>
                                 <div class="flex items-center gap-2">
-                                    <input type="color" [value]="borderDownColor()" (input)="borderDownColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
-                                    <span class="text-xs font-semibold">{{ borderDownColor() }}</span>
+                                    <input type="color" [value]="downColor()" (input)="downColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
+                                    <span class="text-xs font-semibold">{{ downColor() }}</span>
                                 </div>
                             </div>
                             <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">borderNeutralColor</label>
+                                <label class="text-xs text-surface-500 dark:text-surface-400">neutralColor</label>
                                 <div class="flex items-center gap-2">
-                                    <input type="color" [value]="borderNeutralColor()" (input)="borderNeutralColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
-                                    <span class="text-xs font-semibold">{{ borderNeutralColor() }}</span>
+                                    <input type="color" [value]="neutralColor()" (input)="neutralColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
+                                    <span class="text-xs font-semibold">{{ neutralColor() }}</span>
                                 </div>
                             </div>
+                        </app-playground-section>
+
+                        <app-playground-section title="Border" [open]="openGroups().border" (toggle)="toggleGroup('border')">
                             <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">borderAlign</label>
-                                <p-selectbutton [options]="alignOptions" [ngModel]="borderAlign()" (ngModelChange)="borderAlign.set($event)" [allowEmpty]="false" />
+                                <label class="text-xs text-surface-500 dark:text-surface-400">borderRadius — {{ borderRadius() }}px</label>
+                                <p-slider [ngModel]="borderRadius()" (ngModelChange)="borderRadius.set($event)" [min]="0" [max]="8" [step]="1" styleClass="w-full" />
                             </div>
                             <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">borderDash</label>
-                                <p-selectbutton [options]="dashOptions" [ngModel]="borderDashMode()" (ngModelChange)="borderDashMode.set($event)" [allowEmpty]="false" />
+                                <label class="text-xs text-surface-500 dark:text-surface-400">borderWidth — {{ borderWidth() }}px</label>
+                                <p-slider [ngModel]="borderWidth()" (ngModelChange)="borderWidth.set($event)" [min]="0" [max]="4" [step]="0.5" styleClass="w-full" />
                             </div>
-                            @if (borderDashMode() !== 'none') {
+                            @if (borderWidth() > 0) {
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-xs text-surface-500 dark:text-surface-400">borderDashOffset — {{ borderDashOffset() }}</label>
-                                    <p-slider [ngModel]="borderDashOffset()" (ngModelChange)="borderDashOffset.set($event)" [min]="0" [max]="20" [step]="1" styleClass="w-full" />
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">borderUpColor</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="color" [value]="borderUpColor()" (input)="borderUpColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
+                                        <span class="text-xs font-semibold">{{ borderUpColor() }}</span>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">borderDownColor</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="color" [value]="borderDownColor()" (input)="borderDownColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
+                                        <span class="text-xs font-semibold">{{ borderDownColor() }}</span>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">borderNeutralColor</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="color" [value]="borderNeutralColor()" (input)="borderNeutralColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
+                                        <span class="text-xs font-semibold">{{ borderNeutralColor() }}</span>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">borderAlign</label>
+                                    <p-selectbutton [options]="alignOptions" [ngModel]="borderAlign()" (ngModelChange)="borderAlign.set($event)" [allowEmpty]="false" />
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">borderDash</label>
+                                    <p-selectbutton [options]="dashOptions" [ngModel]="borderDashMode()" (ngModelChange)="borderDashMode.set($event)" [allowEmpty]="false" />
+                                </div>
+                                @if (borderDashMode() !== 'none') {
+                                    <div class="flex flex-col gap-1">
+                                        <label class="text-xs text-surface-500 dark:text-surface-400">borderDashOffset — {{ borderDashOffset() }}</label>
+                                        <p-slider [ngModel]="borderDashOffset()" (ngModelChange)="borderDashOffset.set($event)" [min]="0" [max]="20" [step]="1" styleClass="w-full" />
+                                    </div>
+                                }
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">borderJoinStyle</label>
+                                    <p-selectbutton [options]="joinOptions" [ngModel]="borderJoinStyle()" (ngModelChange)="borderJoinStyle.set($event)" [allowEmpty]="false" />
+                                </div>
+                            }
+                        </app-playground-section>
+
+                        <app-playground-section title="Hover" [open]="openGroups().hover" (toggle)="toggleGroup('hover')">
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">brightness — {{ hoverBrightness().toFixed(2) }}</label>
+                                <p-slider [ngModel]="hoverBrightness()" (ngModelChange)="hoverBrightness.set($event)" [min]="1" [max]="1.5" [step]="0.05" styleClass="w-full" />
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">dimOpacity — {{ hoverDimOpacity().toFixed(2) }}</label>
+                                <p-slider [ngModel]="hoverDimOpacity()" (ngModelChange)="hoverDimOpacity.set($event)" [min]="0" [max]="1" [step]="0.05" styleClass="w-full" />
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">hoverColor</label>
+                                <p-selectbutton [options]="autoCustomOptions" [ngModel]="hoverColorMode()" (ngModelChange)="hoverColorMode.set($event)" [allowEmpty]="false" />
+                            </div>
+                            @if (hoverColorMode() === 'custom') {
+                                <div class="flex flex-col gap-1">
+                                    <div class="flex items-center gap-2">
+                                        <input type="color" [value]="hoverColor()" (input)="hoverColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
+                                        <span class="text-xs font-semibold">{{ hoverColor() }}</span>
+                                    </div>
                                 </div>
                             }
                             <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">borderJoinStyle</label>
-                                <p-selectbutton [options]="joinOptions" [ngModel]="borderJoinStyle()" (ngModelChange)="borderJoinStyle.set($event)" [allowEmpty]="false" />
+                                <label class="text-xs text-surface-500 dark:text-surface-400">hoverBorderColor</label>
+                                <p-selectbutton [options]="autoCustomOptions" [ngModel]="hoverBorderColorMode()" (ngModelChange)="hoverBorderColorMode.set($event)" [allowEmpty]="false" />
                             </div>
-                        }
-                    </app-playground-section>
-
-                    <app-playground-section title="Hover" [open]="openGroups().hover" (toggle)="toggleGroup('hover')">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">brightness — {{ hoverBrightness().toFixed(2) }}</label>
-                            <p-slider [ngModel]="hoverBrightness()" (ngModelChange)="hoverBrightness.set($event)" [min]="1" [max]="1.5" [step]="0.05" styleClass="w-full" />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">dimOpacity — {{ hoverDimOpacity().toFixed(2) }}</label>
-                            <p-slider [ngModel]="hoverDimOpacity()" (ngModelChange)="hoverDimOpacity.set($event)" [min]="0" [max]="1" [step]="0.05" styleClass="w-full" />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">hoverColor</label>
-                            <p-selectbutton [options]="autoCustomOptions" [ngModel]="hoverColorMode()" (ngModelChange)="hoverColorMode.set($event)" [allowEmpty]="false" />
-                        </div>
-                        @if (hoverColorMode() === 'custom') {
-                            <div class="flex flex-col gap-1">
-                                <div class="flex items-center gap-2">
-                                    <input type="color" [value]="hoverColor()" (input)="hoverColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
-                                    <span class="text-xs font-semibold">{{ hoverColor() }}</span>
+                            @if (hoverBorderColorMode() === 'custom') {
+                                <div class="flex flex-col gap-1">
+                                    <div class="flex items-center gap-2">
+                                        <input type="color" [value]="hoverBorderColor()" (input)="hoverBorderColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
+                                        <span class="text-xs font-semibold">{{ hoverBorderColor() }}</span>
+                                    </div>
                                 </div>
-                            </div>
-                        }
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">hoverBorderColor</label>
-                            <p-selectbutton [options]="autoCustomOptions" [ngModel]="hoverBorderColorMode()" (ngModelChange)="hoverBorderColorMode.set($event)" [allowEmpty]="false" />
-                        </div>
-                        @if (hoverBorderColorMode() === 'custom') {
-                            <div class="flex flex-col gap-1">
-                                <div class="flex items-center gap-2">
-                                    <input type="color" [value]="hoverBorderColor()" (input)="hoverBorderColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
-                                    <span class="text-xs font-semibold">{{ hoverBorderColor() }}</span>
-                                </div>
-                            </div>
-                        }
-                    </app-playground-section>
+                            }
+                        </app-playground-section>
+                    </div>
                 </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PlaygroundPlaygroundDoc {
+export class CandlestickPlaygroundPlaygroundDoc {
     readonly data = data;
 
     readonly variantOptions = ['candlestick', 'hollow', 'ohlc'];

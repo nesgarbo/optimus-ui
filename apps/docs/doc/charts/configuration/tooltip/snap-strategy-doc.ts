@@ -16,17 +16,21 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 the painted cell only.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="arr" name="Expansion ARR" color="#5daeea" />
-                <p-chart-line [data]="data" categoryXField="month" valueYField="growth" name="Growth %" color="#ffad5a" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-legend position="bottom" />
-                <p-chart-tooltip mode="shared" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="arr" name="Expansion ARR" color="#5daeea" />
+                    <p-chart-line [data]="data" categoryXField="month" valueYField="growth" name="Growth %" color="#ffad5a" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-legend position="bottom" />
+                    <p-chart-tooltip mode="shared" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

@@ -16,35 +16,39 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 and candlestick series on a category axis.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="orders" color="#5daeea" />
-                <p-chart-x-axis>
-                    <p-chart-axis-group label="Q1" [bracket]="true">
-                        <p-chart-axis-category value="Jan" />
-                        <p-chart-axis-category value="Feb" />
-                        <p-chart-axis-category value="Mar" />
-                    </p-chart-axis-group>
-                    <p-chart-axis-group label="Q2" [bracket]="true">
-                        <p-chart-axis-category value="Apr" />
-                        <p-chart-axis-category value="May" />
-                        <p-chart-axis-category value="Jun" />
-                    </p-chart-axis-group>
-                    <p-chart-axis-group label="Q3" [bracket]="true">
-                        <p-chart-axis-category value="Jul" />
-                        <p-chart-axis-category value="Aug" />
-                        <p-chart-axis-category value="Sep" />
-                    </p-chart-axis-group>
-                    <p-chart-axis-group label="Q4" [bracket]="true">
-                        <p-chart-axis-category value="Oct" />
-                        <p-chart-axis-category value="Nov" />
-                        <p-chart-axis-category value="Dec" />
-                    </p-chart-axis-group>
-                </p-chart-x-axis>
-                <p-chart-y-axis label="Orders (K)" [gridLines]="true" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="orders" color="#5daeea" />
+                    <p-chart-x-axis>
+                        <p-chart-axis-group label="Q1" [bracket]="true">
+                            <p-chart-axis-category value="Jan" />
+                            <p-chart-axis-category value="Feb" />
+                            <p-chart-axis-category value="Mar" />
+                        </p-chart-axis-group>
+                        <p-chart-axis-group label="Q2" [bracket]="true">
+                            <p-chart-axis-category value="Apr" />
+                            <p-chart-axis-category value="May" />
+                            <p-chart-axis-category value="Jun" />
+                        </p-chart-axis-group>
+                        <p-chart-axis-group label="Q3" [bracket]="true">
+                            <p-chart-axis-category value="Jul" />
+                            <p-chart-axis-category value="Aug" />
+                            <p-chart-axis-category value="Sep" />
+                        </p-chart-axis-group>
+                        <p-chart-axis-group label="Q4" [bracket]="true">
+                            <p-chart-axis-category value="Oct" />
+                            <p-chart-axis-category value="Nov" />
+                            <p-chart-axis-category value="Dec" />
+                        </p-chart-axis-group>
+                    </p-chart-x-axis>
+                    <p-chart-y-axis label="Orders (K)" [gridLines]="true" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

@@ -15,18 +15,22 @@ import { supportLoadMatrix } from '@/doc/charts/data/supportLoadMatrix';
             <p>#### supportLoadMatrix.ts</p>
             <p>For full configuration see <a href="/charts/configuration/title-caption">Title &amp; Caption</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-heatmap [data]="data" categoryXField="day" categoryYField="window" valueField="tickets" />
-                    <p-chart-x-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
-                    <p-chart-y-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
-                    <p-chart-title text="Support Ticket Intake" />
-                    <p-chart-caption text="Ticket volume by weekday and queue window" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-heatmap [data]="data" categoryXField="day" categoryYField="window" valueField="tickets" />
+                        <p-chart-x-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
+                        <p-chart-y-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
+                        <p-chart-title text="Support Ticket Intake" />
+                        <p-chart-caption text="Ticket volume by weekday and queue window" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

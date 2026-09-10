@@ -21,18 +21,22 @@ function seededRandom(seed: number) {
             <p>Add <i>ChartZoom</i> and <i>ChartNavigator</i> to control a category window when the chart has more bars than can be read at once.</p>
             <p>For full configuration see <a href="/charts/configuration/zoom-pan">Zoom &amp; Pan</a> and <a href="/charts/configuration/navigator">Navigator</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-bar [data]="data" categoryXField="day" valueYField="orders" color="#5daeea" [borderRadius]="2" />
-                    <p-chart-x-axis [tickCount]="10" />
-                    <p-chart-y-axis label="Daily orders" />
-                    <p-chart-zoom mode="x" />
-                    <p-chart-navigator />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-bar [data]="data" categoryXField="day" valueYField="orders" color="#5daeea" [borderRadius]="2" />
+                        <p-chart-x-axis [tickCount]="10" />
+                        <p-chart-y-axis label="Daily orders" />
+                        <p-chart-zoom mode="x" />
+                        <p-chart-navigator />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

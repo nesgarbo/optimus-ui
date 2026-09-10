@@ -36,15 +36,19 @@ const heatmapData = days.flatMap((day) =>
                 <i>width</i> and <i>height</i> to control the gradient bar dimensions.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="280">
-                <p-chart-heatmap [data]="data" categoryXField="month" categoryYField="day" valueField="value" [colorScale]="[0, 50, 100]" [colorRange]="['#eef6ff', '#5bc8f5', '#2531a8']" [spacing]="3" [borderRadius]="4" />
-                <p-chart-x-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
-                <p-chart-y-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
-                <p-chart-color-legend position="bottom" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="280">
+                    <p-chart-heatmap [data]="data" categoryXField="month" categoryYField="day" valueField="value" [colorScale]="[0, 50, 100]" [colorRange]="['#eef6ff', '#5bc8f5', '#2531a8']" [spacing]="3" [borderRadius]="4" />
+                    <p-chart-x-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
+                    <p-chart-y-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
+                    <p-chart-color-legend position="bottom" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

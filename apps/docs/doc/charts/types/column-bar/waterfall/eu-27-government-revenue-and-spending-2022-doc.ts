@@ -29,37 +29,41 @@ function barColor(item: FinanceItem): string {
             <p>#### SvgBarEuGovFinanceDemo.ts</p>
             <p>#### euGovFinance.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460" [animation]="{ duration: 700 }">
-                <p-chart-waterfall totalField="isTotal">
-                    <p-chart-bar [data]="data" categoryXField="item" valueYField="value" [color]="barColorAccessor" [borderRadius]="3" />
-                </p-chart-waterfall>
-                <p-chart-data-labels display="value" [formatter]="formatPct" [fontSize]="10" />
-                <p-chart-annotation>
-                    <ng-template pChartAnnotationDef let-ctx>
-                        @if (ctx.chartArea) {
-                            <svg:g>
-                                <svg:text [attr.x]="ctx.chartArea.x + ctx.chartArea.width" [attr.y]="ctx.chartArea.y + 10" text-anchor="end" font-size="11" font-weight="600" opacity="0.85">Deficit: 3.4% of GDP</svg:text>
-                                <svg:text [attr.x]="ctx.chartArea.x + ctx.chartArea.width" [attr.y]="ctx.chartArea.y + 25" text-anchor="end" font-size="10" opacity="0.5">Above Maastricht 3% reference</svg:text>
-                            </svg:g>
-                        }
-                    </ng-template>
-                </p-chart-annotation>
-                <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                <p-chart-hover />
-                <p-chart-x-axis [tickRotation]="-30" />
-                <p-chart-y-axis [tickFormat]="formatAxis" />
-                <p-chart-title text="EU-27 Government Revenue and Spending, 2022" />
-                <p-chart-caption text="Percentage of GDP · Source: Eurostat General Government Finance Statistics" />
-                <p-chart-export-menu filename="eu-gov-finance-2022" />
-                <p-chart-accessibility />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460" [animation]="{ duration: 700 }">
+                    <p-chart-waterfall totalField="isTotal">
+                        <p-chart-bar [data]="data" categoryXField="item" valueYField="value" [color]="barColorAccessor" [borderRadius]="3" />
+                    </p-chart-waterfall>
+                    <p-chart-data-labels display="value" [formatter]="formatPct" [fontSize]="10" />
+                    <p-chart-annotation>
+                        <ng-template pChartAnnotationDef let-ctx>
+                            @if (ctx.chartArea) {
+                                <svg:g>
+                                    <svg:text [attr.x]="ctx.chartArea.x + ctx.chartArea.width" [attr.y]="ctx.chartArea.y + 10" text-anchor="end" font-size="11" font-weight="600" opacity="0.85">Deficit: 3.4% of GDP</svg:text>
+                                    <svg:text [attr.x]="ctx.chartArea.x + ctx.chartArea.width" [attr.y]="ctx.chartArea.y + 25" text-anchor="end" font-size="10" opacity="0.5">Above Maastricht 3% reference</svg:text>
+                                </svg:g>
+                            }
+                        </ng-template>
+                    </p-chart-annotation>
+                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                    <p-chart-hover />
+                    <p-chart-x-axis [tickRotation]="-30" />
+                    <p-chart-y-axis [tickFormat]="formatAxis" />
+                    <p-chart-title text="EU-27 Government Revenue and Spending, 2022" />
+                    <p-chart-caption text="Percentage of GDP · Source: Eurostat General Government Finance Statistics" />
+                    <p-chart-export-menu filename="eu-gov-finance-2022" />
+                    <p-chart-accessibility />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class WaterfallEu27GovernmentRevenueAndSpending2022Doc {
+export class ColumnBarWaterfallEu27GovernmentRevenueAndSpending2022Doc {
     readonly data = data;
 
     readonly barColorAccessor = ({ datum }: ItemContext): string => barColor(datum as FinanceItem);

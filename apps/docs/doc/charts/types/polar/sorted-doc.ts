@@ -11,16 +11,20 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Set <i>sort</i> to reorder bars before rendering. Use <i>value-desc</i> to place the tallest bar first, or <i>label-asc</i> for alphabetical order. Sort does not affect the underlying data, only the visual arrangement.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="display: flex; justify-content: center">
-                <p-chart-svg [width]="460" [height]="460">
-                    <p-chart-polar [data]="data" categoryXField="direction" valueYField="speed" sort="value-desc" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="display: flex; justify-content: center">
+                    <p-chart-svg [width]="460" [height]="460">
+                        <p-chart-polar [data]="data" categoryXField="direction" valueYField="speed" sort="value-desc" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

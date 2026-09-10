@@ -36,17 +36,21 @@ function priceSeries(n: number) {
                 change the modifier key. Omit <i>modifierKey</i> entirely to make drag always pan. Set <i>drag: false</i> separately to disable drag-to-zoom.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-line [data]="data" categoryXField="timestamp" valueYField="price" color="#5daeea" curve="smooth" />
-                    <p-chart-x-axis type="time" />
-                    <p-chart-y-axis label="Price ($)" [startFromZero]="false" />
-                    <p-chart-zoom mode="x" [pan]="{ enabled: true, modifierKey: 'shift' }" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-line [data]="data" categoryXField="timestamp" valueYField="price" color="#5daeea" curve="smooth" />
+                        <p-chart-x-axis type="time" />
+                        <p-chart-y-axis label="Price ($)" [startFromZero]="false" />
+                        <p-chart-zoom mode="x" [pan]="{ enabled: true, modifierKey: 'shift' }" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

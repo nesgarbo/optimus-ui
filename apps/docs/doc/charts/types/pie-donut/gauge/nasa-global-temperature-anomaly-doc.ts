@@ -23,38 +23,42 @@ const bandNotes = ['Below the 1°C long-term warming line', 'Paris Agreement gua
             <p>#### SvgGaugeClimateAnomalyDemo.ts</p>
             <p>#### climateAnomaly.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 360px">
-                <p-chart-svg [animation]="{ duration: 900 }">
-                    <p-chart-pie [data]="data" valueField="value" categoryField="label" [color]="colors" [startAngle]="-180" [sweepAngle]="180" [innerRadius]="0.72" />
-                    <p-chart-annotation>
-                        <ng-template pChartAnnotationDef let-ctx>
-                            @let a = anno(ctx);
-                            <svg:g>
-                                <svg:line [attr.x1]="a.x1" [attr.y1]="a.y1" [attr.x2]="a.x2" [attr.y2]="a.y2" stroke="#e5484d" stroke-width="2.5" stroke-dasharray="5 3" stroke-linecap="round" />
-                                <svg:text text-anchor="middle" font-size="11" font-weight="700" fill="#e5484d">
-                                    <svg:tspan [attr.x]="a.lx" [attr.y]="a.ly" dy="-8" dominant-baseline="auto">Paris</svg:tspan>
-                                    <svg:tspan [attr.x]="a.lx" dy="16" dominant-baseline="auto">1.5°C</svg:tspan>
-                                </svg:text>
-                                <svg:text [attr.x]="ctx.center.x" [attr.y]="a.textY" text-anchor="middle" dominant-baseline="auto" font-size="52" font-weight="bold" fill="#ffad5a">+{{ current }}°C</svg:text>
-                                <svg:text [attr.x]="ctx.center.x" [attr.y]="a.subY" text-anchor="middle" dominant-baseline="auto" font-size="13" opacity="0.65">above 1951–1980 baseline</svg:text>
-                            </svg:g>
-                        </ng-template>
-                    </p-chart-annotation>
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                    <p-chart-hover [brightness]="1.08" />
-                    <p-chart-title text="Global temperature anomaly" />
-                    <p-chart-caption text="Source: NASA GISS Surface Temperature Analysis · January 2025 · Updated monthly" />
-                    <p-chart-export-menu filename="nasa-global-temperature-anomaly" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 360px">
+                    <p-chart-svg [animation]="{ duration: 900 }">
+                        <p-chart-pie [data]="data" valueField="value" categoryField="label" [color]="colors" [startAngle]="-180" [sweepAngle]="180" [innerRadius]="0.72" />
+                        <p-chart-annotation>
+                            <ng-template pChartAnnotationDef let-ctx>
+                                @let a = anno(ctx);
+                                <svg:g>
+                                    <svg:line [attr.x1]="a.x1" [attr.y1]="a.y1" [attr.x2]="a.x2" [attr.y2]="a.y2" stroke="#e5484d" stroke-width="2.5" stroke-dasharray="5 3" stroke-linecap="round" />
+                                    <svg:text text-anchor="middle" font-size="11" font-weight="700" fill="#e5484d">
+                                        <svg:tspan [attr.x]="a.lx" [attr.y]="a.ly" dy="-8" dominant-baseline="auto">Paris</svg:tspan>
+                                        <svg:tspan [attr.x]="a.lx" dy="16" dominant-baseline="auto">1.5°C</svg:tspan>
+                                    </svg:text>
+                                    <svg:text [attr.x]="ctx.center.x" [attr.y]="a.textY" text-anchor="middle" dominant-baseline="auto" font-size="52" font-weight="bold" fill="#ffad5a">+{{ current }}°C</svg:text>
+                                    <svg:text [attr.x]="ctx.center.x" [attr.y]="a.subY" text-anchor="middle" dominant-baseline="auto" font-size="13" opacity="0.65">above 1951–1980 baseline</svg:text>
+                                </svg:g>
+                            </ng-template>
+                        </p-chart-annotation>
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                        <p-chart-hover [brightness]="1.08" />
+                        <p-chart-title text="Global temperature anomaly" />
+                        <p-chart-caption text="Source: NASA GISS Surface Temperature Analysis · January 2025 · Updated monthly" />
+                        <p-chart-export-menu filename="nasa-global-temperature-anomaly" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GaugeNasaGlobalTemperatureAnomalyDoc {
+export class PieDonutGaugeNasaGlobalTemperatureAnomalyDoc {
     readonly data = data;
     readonly colors = colors;
     readonly current = CURRENT;

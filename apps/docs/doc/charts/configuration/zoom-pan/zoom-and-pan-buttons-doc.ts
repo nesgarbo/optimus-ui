@@ -45,17 +45,21 @@ function priceSeries(n: number) {
                 disappearing, which keeps focus where the user left it. Each press announces the resulting range to screen readers.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-line [data]="data" categoryXField="timestamp" valueYField="price" color="#5daeea" curve="smooth" />
-                    <p-chart-x-axis type="time" />
-                    <p-chart-y-axis label="Price ($)" [startFromZero]="false" />
-                    <p-chart-zoom mode="x" [pan]="{ enabled: true, modifierKey: 'shift' }" [zoomButtons]="true" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-line [data]="data" categoryXField="timestamp" valueYField="price" color="#5daeea" curve="smooth" />
+                        <p-chart-x-axis type="time" />
+                        <p-chart-y-axis label="Price ($)" [startFromZero]="false" />
+                        <p-chart-zoom mode="x" [pan]="{ enabled: true, modifierKey: 'shift' }" [zoomButtons]="true" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

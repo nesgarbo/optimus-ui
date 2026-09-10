@@ -27,15 +27,19 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 template, which takes precedence when both are supplied. Content painted on Canvas is pixels rather than elements, so it carries no event bindings in either renderer. Each chart type's page documents which form its seams take.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="380">
-                <p-chart-line [data]="data" categoryXField="month" valueYField="revenue" curve="smooth" [showMarkers]="true" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-tooltip />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="380">
+                    <p-chart-line [data]="data" categoryXField="month" valueYField="revenue" curve="smooth" [showMarkers]="true" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-tooltip />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

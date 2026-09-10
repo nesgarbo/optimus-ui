@@ -14,16 +14,20 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 candle's own open. Positive color means price closed higher than the last close; negative color means lower.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-candlestick [data]="data" categoryXField="date" openField="open" highField="high" lowField="low" closeField="close" variant="hollow" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-candlestick [data]="data" categoryXField="date" openField="open" highField="high" lowField="low" closeField="close" variant="hollow" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

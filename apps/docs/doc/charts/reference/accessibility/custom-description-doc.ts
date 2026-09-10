@@ -15,16 +15,20 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 hidden screen reader section. The default is <i>'h4'</i>.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-line [data]="data" categoryXField="month" valueYField="completion" color="#5ccf9f" curve="smooth" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-title text="Onboarding completion trend" />
-                <p-chart-accessibility description="Line chart showing onboarding completion from January to June 2026. Completion improved from 42 percent in January to 72 percent in June, with a brief dip in April." />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-line [data]="data" categoryXField="month" valueYField="completion" color="#5ccf9f" curve="smooth" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-title text="Onboarding completion trend" />
+                    <p-chart-accessibility description="Line chart showing onboarding completion from January to June 2026. Completion improved from 42 percent in January to 72 percent in June, with a brief dip in April." />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

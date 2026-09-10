@@ -21,18 +21,22 @@ function seededRandom(seed: number) {
             <p>Add <i>ChartZoom</i> and <i>ChartNavigator</i> when the ordered range is longer than the visible chart can explain at once.</p>
             <p>For full configuration see <a href="/charts/configuration/zoom-pan">Zoom &amp; Pan</a> and <a href="/charts/configuration/navigator">Navigator</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-line [data]="data" categoryXField="day" valueYField="value" curve="smooth" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                    <p-chart-zoom mode="x" />
-                    <p-chart-navigator />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-line [data]="data" categoryXField="day" valueYField="value" curve="smooth" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                        <p-chart-zoom mode="x" />
+                        <p-chart-navigator />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

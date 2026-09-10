@@ -11,44 +11,48 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Combine four or more charts in a grid layout with synced crosshairs. Hovering any chart highlights the same time period across all panels, so temporal patterns line up across metrics.</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-group>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 16px">
-                    <p-chart-svg [sync]="true" [height]="200">
-                        <p-chart-line id="temp" [data]="data" categoryXField="month" valueYField="temp" name="Temperature (°C)" curve="smooth" [showMarkers]="true" />
-                        <p-chart-x-axis />
-                        <p-chart-y-axis />
-                        <p-chart-tooltip [crosshair]="true" />
-                        <p-chart-hover />
-                    </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-group>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 16px">
+                        <p-chart-svg [sync]="true" [height]="200">
+                            <p-chart-line id="temp" [data]="data" categoryXField="month" valueYField="temp" name="Temperature (°C)" curve="smooth" [showMarkers]="true" />
+                            <p-chart-x-axis />
+                            <p-chart-y-axis />
+                            <p-chart-tooltip [crosshair]="true" />
+                            <p-chart-hover />
+                        </p-chart-svg>
 
-                    <p-chart-svg [sync]="true" [height]="200">
-                        <p-chart-bar id="rainfall" [data]="data" categoryXField="month" valueYField="rainfall" name="Rainfall (mm)" />
-                        <p-chart-x-axis />
-                        <p-chart-y-axis />
-                        <p-chart-tooltip [crosshair]="true" />
-                        <p-chart-hover />
-                    </p-chart-svg>
+                        <p-chart-svg [sync]="true" [height]="200">
+                            <p-chart-bar id="rainfall" [data]="data" categoryXField="month" valueYField="rainfall" name="Rainfall (mm)" />
+                            <p-chart-x-axis />
+                            <p-chart-y-axis />
+                            <p-chart-tooltip [crosshair]="true" />
+                            <p-chart-hover />
+                        </p-chart-svg>
 
-                    <p-chart-svg [sync]="true" [height]="200">
-                        <p-chart-line id="wind" [data]="data" categoryXField="month" valueYField="wind" name="Wind (km/h)" curve="smooth" [showMarkers]="true" />
-                        <p-chart-x-axis />
-                        <p-chart-y-axis />
-                        <p-chart-tooltip [crosshair]="true" />
-                        <p-chart-hover />
-                    </p-chart-svg>
+                        <p-chart-svg [sync]="true" [height]="200">
+                            <p-chart-line id="wind" [data]="data" categoryXField="month" valueYField="wind" name="Wind (km/h)" curve="smooth" [showMarkers]="true" />
+                            <p-chart-x-axis />
+                            <p-chart-y-axis />
+                            <p-chart-tooltip [crosshair]="true" />
+                            <p-chart-hover />
+                        </p-chart-svg>
 
-                    <p-chart-svg [sync]="true" [height]="200">
-                        <p-chart-line id="humidity" [data]="data" categoryXField="month" valueYField="humidity" name="Humidity (%)" [fillOpacity]="0.15" curve="smooth" />
-                        <p-chart-x-axis />
-                        <p-chart-y-axis />
-                        <p-chart-tooltip [crosshair]="true" />
-                        <p-chart-hover />
-                    </p-chart-svg>
-                </div>
-            </p-chart-group>
-        </div>
-        <app-code></app-code>
+                        <p-chart-svg [sync]="true" [height]="200">
+                            <p-chart-line id="humidity" [data]="data" categoryXField="month" valueYField="humidity" name="Humidity (%)" [fillOpacity]="0.15" curve="smooth" />
+                            <p-chart-x-axis />
+                            <p-chart-y-axis />
+                            <p-chart-tooltip [crosshair]="true" />
+                            <p-chart-hover />
+                        </p-chart-svg>
+                    </div>
+                </p-chart-group>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

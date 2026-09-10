@@ -11,21 +11,25 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Set <i>mode="percent"</i> on <i>ChartStacked</i> to normalize each category to 100%. The axis always spans 0–100% regardless of the underlying data magnitude.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-stacked mode="percent">
-                        <p-chart-bar [data]="data" categoryXField="tier" valueYField="selfServe" name="Self-service" color="#5daeea" />
-                        <p-chart-bar [data]="data" categoryXField="tier" valueYField="assisted" name="Assisted" color="#ffad5a" />
-                    </p-chart-stacked>
-                    <p-chart-x-axis />
-                    <p-chart-y-axis [tickFormat]="tickFormat" />
-                    <p-chart-legend position="top" />
-                    <p-chart-tooltip mode="shared" [valueFormatter]="valueFormatter" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-stacked mode="percent">
+                            <p-chart-bar [data]="data" categoryXField="tier" valueYField="selfServe" name="Self-service" color="#5daeea" />
+                            <p-chart-bar [data]="data" categoryXField="tier" valueYField="assisted" name="Assisted" color="#ffad5a" />
+                        </p-chart-stacked>
+                        <p-chart-x-axis />
+                        <p-chart-y-axis [tickFormat]="tickFormat" />
+                        <p-chart-legend position="top" />
+                        <p-chart-tooltip mode="shared" [valueFormatter]="valueFormatter" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

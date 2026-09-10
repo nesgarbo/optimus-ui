@@ -16,25 +16,29 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             </p>
             <p>For full configuration see <a href="/charts/configuration/annotation">Annotation</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-candlestick [data]="data" categoryXField="date" openField="open" highField="high" lowField="low" closeField="close" />
-                    <p-chart-annotation>
-                        <ng-template pChartAnnotationDef let-ctx>
-                            @if (ctx.chartArea) {
-                                <svg:text [attr.x]="ctx.chartArea.x + ctx.chartArea.width - 10" [attr.y]="ctx.chartArea.y + 20" text-anchor="end" [attr.font-size]="ctx.responsive.pick({ xs: 10, sm: 11, md: 13 })" font-weight="600" opacity="0.6">
-                                    AAPL — Jan 2024
-                                </svg:text>
-                            }
-                        </ng-template>
-                    </p-chart-annotation>
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-candlestick [data]="data" categoryXField="date" openField="open" highField="high" lowField="low" closeField="close" />
+                        <p-chart-annotation>
+                            <ng-template pChartAnnotationDef let-ctx>
+                                @if (ctx.chartArea) {
+                                    <svg:text [attr.x]="ctx.chartArea.x + ctx.chartArea.width - 10" [attr.y]="ctx.chartArea.y + 20" text-anchor="end" [attr.font-size]="ctx.responsive.pick({ xs: 10, sm: 11, md: 13 })" font-weight="600" opacity="0.6">
+                                        AAPL — Jan 2024
+                                    </svg:text>
+                                }
+                            </ng-template>
+                        </p-chart-annotation>
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

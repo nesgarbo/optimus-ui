@@ -11,14 +11,18 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Set <i>borderStrokeWidth</i> and <i>borderColor</i> to add a stroke around each slice. Add <i>borderRadius</i> for rounded corners, <i>spacing</i> to introduce gaps between slices, and <i>borderDash</i> for a dashed stroke.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="display: flex; justify-content: center">
-                <p-chart-svg [width]="460" [height]="460">
-                    <p-chart-pie [data]="data" valueField="share" categoryField="stage" [borderStrokeWidth]="2" borderColor="rgba(255, 255, 255, 0.78)" [borderDash]="[4, 3]" [spacing]="1" [borderRadius]="6" borderAlign="inner" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="display: flex; justify-content: center">
+                    <p-chart-svg [width]="460" [height]="460">
+                        <p-chart-pie [data]="data" valueField="share" categoryField="stage" [borderStrokeWidth]="2" borderColor="rgba(255, 255, 255, 0.78)" [borderDash]="[4, 3]" [spacing]="1" [borderRadius]="6" borderAlign="inner" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

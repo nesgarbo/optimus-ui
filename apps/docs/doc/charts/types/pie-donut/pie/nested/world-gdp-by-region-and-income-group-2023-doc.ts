@@ -51,39 +51,43 @@ const INCOME_SHORT: Record<string, string> = { 'High income': 'HI', 'Upper middl
             <p>#### SvgNestedPieGdpDemo.ts</p>
             <p>#### nestedGdp.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg [animation]="{ duration: 900, easing: 'easeOutExpo' }">
-                    <p-chart-stacked [gap]="8">
-                        <p-chart-pie id="gdp-income" [data]="incomeData" valueField="gdp" categoryField="sliceId" [color]="incomeColors" [startAngle]="-90" [spacing]="2.5" [borderRadius]="3">
-                            <ng-template pChartSliceDef let-ctx>
-                                @if (ctx.percentage >= 2 && incomeShort(ctx.index)) {
-                                    <svg:text text-anchor="middle" dominant-baseline="middle" font-size="8" font-weight="600" fill="#fff" opacity="0.85">{{ incomeShort(ctx.index) }}</svg:text>
-                                }
-                            </ng-template>
-                        </p-chart-pie>
-                        <p-chart-pie id="gdp-regions" [data]="regionData" valueField="gdp" categoryField="region" [color]="regionColors" [startAngle]="-90">
-                            <ng-template pChartSliceDef let-ctx>
-                                @if (ctx.percentage >= 5) {
-                                    <svg:text text-anchor="middle" dominant-baseline="middle" font-size="9" font-weight="600" fill="#fff" opacity="0.9">{{ regionShort(ctx.label) }}</svg:text>
-                                }
-                            </ng-template>
-                        </p-chart-pie>
-                    </p-chart-stacked>
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                    <p-chart-hover [brightness]="1.06" [offset]="4" />
-                    <p-chart-title text="World GDP by region and income group 2023" />
-                    <p-chart-caption text="Source: World Bank Open Data · NY.GDP.MKTP.CD · 2023 · Inner ring: 7 WB regions · Outer ring: income groups (dark = high income, light = low income)" />
-                    <p-chart-export-menu filename="world-gdp-nested-2023" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg [animation]="{ duration: 900, easing: 'easeOutExpo' }">
+                        <p-chart-stacked [gap]="8">
+                            <p-chart-pie id="gdp-income" [data]="incomeData" valueField="gdp" categoryField="sliceId" [color]="incomeColors" [startAngle]="-90" [spacing]="2.5" [borderRadius]="3">
+                                <ng-template pChartSliceDef let-ctx>
+                                    @if (ctx.percentage >= 2 && incomeShort(ctx.index)) {
+                                        <svg:text text-anchor="middle" dominant-baseline="middle" font-size="8" font-weight="600" fill="#fff" opacity="0.85">{{ incomeShort(ctx.index) }}</svg:text>
+                                    }
+                                </ng-template>
+                            </p-chart-pie>
+                            <p-chart-pie id="gdp-regions" [data]="regionData" valueField="gdp" categoryField="region" [color]="regionColors" [startAngle]="-90">
+                                <ng-template pChartSliceDef let-ctx>
+                                    @if (ctx.percentage >= 5) {
+                                        <svg:text text-anchor="middle" dominant-baseline="middle" font-size="9" font-weight="600" fill="#fff" opacity="0.9">{{ regionShort(ctx.label) }}</svg:text>
+                                    }
+                                </ng-template>
+                            </p-chart-pie>
+                        </p-chart-stacked>
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                        <p-chart-hover [brightness]="1.06" [offset]="4" />
+                        <p-chart-title text="World GDP by region and income group 2023" />
+                        <p-chart-caption text="Source: World Bank Open Data · NY.GDP.MKTP.CD · 2023 · Inner ring: 7 WB regions · Outer ring: income groups (dark = high income, light = low income)" />
+                        <p-chart-export-menu filename="world-gdp-nested-2023" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NestedWorldGdpByRegionAndIncomeGroup2023Doc {
+export class PieDonutPieNestedWorldGdpByRegionAndIncomeGroup2023Doc {
     readonly regionData = regionData;
     readonly incomeData = incomeData;
     readonly regionColors = regionData.map((d) => REGION_COLORS[d.region]);

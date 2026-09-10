@@ -24,18 +24,22 @@ function seededRandom(seed: number) {
             </p>
             <p>For full configuration see <a href="/charts/configuration/zoom-pan">Zoom &amp; Pan</a> and <a href="/charts/configuration/navigator">Navigator</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-scatter id="routes" [data]="data" valueXField="routeDistance" valueYField="fuelBurn" color="#36b7d6" [markerSize]="5" />
-                    <p-chart-x-axis label="Route distance (km)" />
-                    <p-chart-y-axis label="Fuel burn (liters)" />
-                    <p-chart-zoom mode="xy" />
-                    <p-chart-navigator />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-scatter id="routes" [data]="data" valueXField="routeDistance" valueYField="fuelBurn" color="#36b7d6" [markerSize]="5" />
+                        <p-chart-x-axis label="Route distance (km)" />
+                        <p-chart-y-axis label="Fuel burn (liters)" />
+                        <p-chart-zoom mode="xy" />
+                        <p-chart-navigator />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

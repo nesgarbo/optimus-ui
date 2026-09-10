@@ -31,27 +31,31 @@ interface Peak {
         <app-docsectiontext>
             <p>Use <i>xScale</i> and <i>yScale</i> to convert data values to pixel positions. This is the primary use case: annotating a specific category, timestamp, or value with a label, icon, or shape.</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-line [data]="data" categoryXField="month" valueYField="arr" color="#5daeea" />
-                <p-chart-x-axis />
-                <p-chart-y-axis [tickFormat]="formatK" />
-                <p-chart-annotation>
-                    <ng-template pChartAnnotationDef let-ctx>
-                        @let p = peak(ctx);
-                        @if (p) {
-                            <svg:g>
-                                <svg:circle [attr.cx]="p.x" [attr.cy]="p.y" r="9" fill="none" stroke="#5daeea" stroke-width="2" opacity="0.45" />
-                                <svg:line [attr.x1]="p.x" [attr.y1]="p.by + p.bh" [attr.x2]="p.x" [attr.y2]="p.y - 10" stroke="#5daeea" stroke-width="1" opacity="0.4" />
-                                <svg:rect [attr.x]="p.bx" [attr.y]="p.by" [attr.width]="p.bw" [attr.height]="p.bh" rx="4" fill="#5daeea" />
-                                <svg:text [attr.x]="p.x" [attr.y]="p.by + p.bh / 2" text-anchor="middle" dominant-baseline="central" fill="white" [attr.font-size]="p.fs" font-weight="600">{{ p.label }}</svg:text>
-                            </svg:g>
-                        }
-                    </ng-template>
-                </p-chart-annotation>
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-line [data]="data" categoryXField="month" valueYField="arr" color="#5daeea" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis [tickFormat]="formatK" />
+                    <p-chart-annotation>
+                        <ng-template pChartAnnotationDef let-ctx>
+                            @let p = peak(ctx);
+                            @if (p) {
+                                <svg:g>
+                                    <svg:circle [attr.cx]="p.x" [attr.cy]="p.y" r="9" fill="none" stroke="#5daeea" stroke-width="2" opacity="0.45" />
+                                    <svg:line [attr.x1]="p.x" [attr.y1]="p.by + p.bh" [attr.x2]="p.x" [attr.y2]="p.y - 10" stroke="#5daeea" stroke-width="1" opacity="0.4" />
+                                    <svg:rect [attr.x]="p.bx" [attr.y]="p.by" [attr.width]="p.bw" [attr.height]="p.bh" rx="4" fill="#5daeea" />
+                                    <svg:text [attr.x]="p.x" [attr.y]="p.by + p.bh / 2" text-anchor="middle" dominant-baseline="central" fill="white" [attr.font-size]="p.fs" font-weight="600">{{ p.label }}</svg:text>
+                                </svg:g>
+                            }
+                        </ng-template>
+                    </p-chart-annotation>
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

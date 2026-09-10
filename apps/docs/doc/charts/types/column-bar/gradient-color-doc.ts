@@ -11,17 +11,21 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Pass a linear gradient object to the <i>color</i> input to apply a gradient fill across all bars. For per-bar gradients, pass an array of gradient objects to <i>color</i>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-bar [data]="data" categoryXField="region" valueYField="attainment" [color]="gradientColor" [borderRadius]="6" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis label="% of plan" />
-                    <p-chart-reference-line [y]="90" stroke="#5daeea" [lineStrokeWidth]="1.5" [lineDash]="[5, 4]" label="Target" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-bar [data]="data" categoryXField="region" valueYField="attainment" [color]="gradientColor" [borderRadius]="6" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis label="% of plan" />
+                        <p-chart-reference-line [y]="90" stroke="#5daeea" [lineStrokeWidth]="1.5" [lineDash]="[5, 4]" label="Target" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

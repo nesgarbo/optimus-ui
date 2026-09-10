@@ -12,14 +12,18 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             <p>Start with <i>ChartSvg</i>, one series, a category field, a value field, and two axes. That is enough to get a chart on screen.</p>
             <p>Add <i>ChartLegend</i> and <i>ChartTooltip</i> to complete the standard layout. Add <i>ChartZoom</i> or <i>ChartNavigator</i> when users need to explore large ranges.</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="380">
-                <p-chart-line [data]="data" categoryXField="month" valueYField="revenue" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="380">
+                    <p-chart-line [data]="data" categoryXField="month" valueYField="revenue" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

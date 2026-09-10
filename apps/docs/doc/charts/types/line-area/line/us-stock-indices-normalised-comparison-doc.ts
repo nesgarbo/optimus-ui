@@ -19,28 +19,32 @@ const COLORS = { sp: '#5daeea', nas: '#10a981', dow: '#ffad5a' };
             <p>#### SvgLineStockIndicesDemo.ts</p>
             <p>#### stockIndices.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg [animation]="{ duration: 600 }">
-                    <p-chart-line [data]="data" categoryXField="q" valueYField="sp" name="S&P 500" [color]="colors.sp" [lineStrokeWidth]="2.5" curve="smooth" />
-                    <p-chart-line [data]="data" categoryXField="q" valueYField="nas" name="Nasdaq" [color]="colors.nas" [lineStrokeWidth]="2.5" curve="smooth" />
-                    <p-chart-line [data]="data" categoryXField="q" valueYField="dow" name="Dow Jones" [color]="colors.dow" [lineStrokeWidth]="2.5" curve="smooth" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                    <p-chart-tooltip mode="shared" crosshair />
-                    <p-chart-legend position="bottom" />
-                    <p-chart-title text="US stock indices — rebased to 100" />
-                    <p-chart-caption text="Source: Yahoo Finance · End-of-quarter closes normalised to Q1 2020 = 100 · Hover to compare returns" />
-                    <p-chart-export-menu filename="us-stock-indices-2020-2024" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg [animation]="{ duration: 600 }">
+                        <p-chart-line [data]="data" categoryXField="q" valueYField="sp" name="S&P 500" [color]="colors.sp" [lineStrokeWidth]="2.5" curve="smooth" />
+                        <p-chart-line [data]="data" categoryXField="q" valueYField="nas" name="Nasdaq" [color]="colors.nas" [lineStrokeWidth]="2.5" curve="smooth" />
+                        <p-chart-line [data]="data" categoryXField="q" valueYField="dow" name="Dow Jones" [color]="colors.dow" [lineStrokeWidth]="2.5" curve="smooth" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                        <p-chart-tooltip mode="shared" crosshair />
+                        <p-chart-legend position="bottom" />
+                        <p-chart-title text="US stock indices — rebased to 100" />
+                        <p-chart-caption text="Source: Yahoo Finance · End-of-quarter closes normalised to Q1 2020 = 100 · Hover to compare returns" />
+                        <p-chart-export-menu filename="us-stock-indices-2020-2024" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LineUsStockIndicesNormalisedComparisonDoc {
+export class LineAreaLineUsStockIndicesNormalisedComparisonDoc {
     readonly data = stockIndices;
     readonly colors = COLORS;
 }

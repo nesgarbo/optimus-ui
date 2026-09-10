@@ -17,16 +17,20 @@ import { primeThemedSales } from '@/doc/charts/data/primeThemedSales';
             <p>#### SvgBarPrimeThemedDemo.ts</p>
             <p>#### primeThemedSales.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div class="primeui-themed-chart" style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-bar [data]="data" categoryXField="month" valueYField="sales" [color]="barColor" [borderColor]="barColor" [borderStrokeWidth]="2" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div class="primeui-themed-chart" style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-bar [data]="data" categoryXField="month" valueYField="sales" [color]="barColor" [borderColor]="barColor" [borderStrokeWidth]="2" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     styles: [
         `
@@ -42,7 +46,7 @@ import { primeThemedSales } from '@/doc/charts/data/primeThemedSales';
     ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class BarPrimeuiThemedBarChartDoc {
+export class ColumnBarBarPrimeuiThemedBarChartDoc {
     readonly data = primeThemedSales;
 
     readonly barColor = ({ index }: ItemContext) => `var(--p-chart-color-${index})`;

@@ -14,17 +14,21 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 and area series show a line, scatter, bubble, pie, and donut show a dot, and everything else shows a square.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="350">
-                <p-chart-bar [data]="data" categoryXField="quarter" valueYField="bookings" color="#5daeea" name="Bookings" />
-                <p-chart-bar [data]="data" categoryXField="quarter" valueYField="supportCost" color="#ffad5a" name="Support Cost" />
-                <p-chart-bar [data]="data" categoryXField="quarter" valueYField="margin" color="#10a981" name="Margin" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-legend position="bottom" iconShape="circle" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="350">
+                    <p-chart-bar [data]="data" categoryXField="quarter" valueYField="bookings" color="#5daeea" name="Bookings" />
+                    <p-chart-bar [data]="data" categoryXField="quarter" valueYField="supportCost" color="#ffad5a" name="Support Cost" />
+                    <p-chart-bar [data]="data" categoryXField="quarter" valueYField="margin" color="#10a981" name="Margin" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-legend position="bottom" iconShape="circle" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

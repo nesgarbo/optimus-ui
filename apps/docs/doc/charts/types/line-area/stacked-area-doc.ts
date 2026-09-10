@@ -14,20 +14,24 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 values stack downward from zero.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-stacked>
-                        <p-chart-line [data]="data" categoryXField="month" valueYField="direct" name="Direct" curve="smooth" [fillOpacity]="0.3" />
-                        <p-chart-line [data]="data" categoryXField="month" valueYField="organic" name="Organic" curve="smooth" [fillOpacity]="0.3" />
-                        <p-chart-line [data]="data" categoryXField="month" valueYField="referral" name="Referral" curve="smooth" [fillOpacity]="0.3" />
-                    </p-chart-stacked>
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-stacked>
+                            <p-chart-line [data]="data" categoryXField="month" valueYField="direct" name="Direct" curve="smooth" [fillOpacity]="0.3" />
+                            <p-chart-line [data]="data" categoryXField="month" valueYField="organic" name="Organic" curve="smooth" [fillOpacity]="0.3" />
+                            <p-chart-line [data]="data" categoryXField="month" valueYField="referral" name="Referral" curve="smooth" [fillOpacity]="0.3" />
+                        </p-chart-stacked>
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

@@ -19,47 +19,55 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
             <p>#### SvgRangeDaylightDemo.ts</p>
             <p>#### daylight.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg [animation]="{ duration: 700, easing: 'easeOutCubic' }">
-                    <p-chart-range color="#ffad5a" [fillOpacity]="0.22">
-                        <p-chart-line [data]="data" categoryXField="month" valueYField="sunset" name="Sunset" color="#ff7a66" [fillOpacity]="0" curve="smooth" [lineStrokeWidth]="2" />
-                        <p-chart-line [data]="data" categoryXField="month" valueYField="sunrise" name="Sunrise" color="#6bbbed" [fillOpacity]="0" curve="smooth" [lineStrokeWidth]="2" />
-                    </p-chart-range>
-                    <p-chart-reference-line [y]="12" label="Noon" stroke="#5daeea" [lineDash]="[4, 3]" labelPosition="start" />
-                    <p-chart-reference-band [y1]="20" [y2]="22" fill="#ffad5a" [fillOpacity]="0.08" />
-                    <p-chart-annotation>
-                        <ng-template pChartAnnotationDef let-ctx>
-                            @if (ctx.yScale) {
-                                <svg:g>
-                                    <svg:text [attr.x]="monthX('Jun', ctx.chartArea)" [attr.y]="(ctx.yScale(4.75) + ctx.yScale(21.33)) / 2 - 9" fill="#ffad5a" font-size="11" font-weight="700" text-anchor="middle" dominant-baseline="middle">
-                                        16h 35m
-                                    </svg:text>
-                                    <svg:text [attr.x]="monthX('Jun', ctx.chartArea)" [attr.y]="(ctx.yScale(4.75) + ctx.yScale(21.33)) / 2 + 7" font-size="10" text-anchor="middle" dominant-baseline="middle" opacity="0.5">Summer solstice</svg:text>
-                                    <svg:text [attr.x]="monthX('Dec', ctx.chartArea) - 4" [attr.y]="(ctx.yScale(8.08) + ctx.yScale(15.92)) / 2 - 9" fill="#6bbbed" font-size="11" font-weight="700" text-anchor="end" dominant-baseline="middle">
-                                        7h 50m
-                                    </svg:text>
-                                    <svg:text [attr.x]="monthX('Dec', ctx.chartArea) - 4" [attr.y]="(ctx.yScale(8.08) + ctx.yScale(15.92)) / 2 + 7" font-size="10" text-anchor="end" dominant-baseline="middle" opacity="0.5">Winter solstice</svg:text>
-                                </svg:g>
-                            }
-                        </ng-template>
-                    </p-chart-annotation>
-                    <p-chart-tooltip mode="shared" />
-                    <p-chart-hover />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis [tickCount]="7" [min]="3" [max]="23" [tickFormat]="formatHour" />
-                    <p-chart-title text="London sunrise & sunset times" />
-                    <p-chart-caption text="Source: timeanddate.com · London (51.5 °N) · Monthly averages · Amber band = after 20:00 summer evenings" />
-                    <p-chart-export-menu filename="london-sunrise-sunset" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg [animation]="{ duration: 700, easing: 'easeOutCubic' }">
+                        <p-chart-range color="#ffad5a" [fillOpacity]="0.22">
+                            <p-chart-line [data]="data" categoryXField="month" valueYField="sunset" name="Sunset" color="#ff7a66" [fillOpacity]="0" curve="smooth" [lineStrokeWidth]="2" />
+                            <p-chart-line [data]="data" categoryXField="month" valueYField="sunrise" name="Sunrise" color="#6bbbed" [fillOpacity]="0" curve="smooth" [lineStrokeWidth]="2" />
+                        </p-chart-range>
+                        <p-chart-reference-line [y]="12" label="Noon" stroke="#5daeea" [lineDash]="[4, 3]" labelPosition="start" />
+                        <p-chart-reference-band [y1]="20" [y2]="22" fill="#ffad5a" [fillOpacity]="0.08" />
+                        <p-chart-annotation>
+                            <ng-template pChartAnnotationDef let-ctx>
+                                @if (ctx.yScale) {
+                                    <svg:g>
+                                        <svg:text [attr.x]="monthX('Jun', ctx.chartArea)" [attr.y]="(ctx.yScale(4.75) + ctx.yScale(21.33)) / 2 - 9" fill="#ffad5a" font-size="11" font-weight="700" text-anchor="middle" dominant-baseline="middle">
+                                            16h 35m
+                                        </svg:text>
+                                        <svg:text [attr.x]="monthX('Jun', ctx.chartArea)" [attr.y]="(ctx.yScale(4.75) + ctx.yScale(21.33)) / 2 + 7" font-size="10" text-anchor="middle" dominant-baseline="middle" opacity="0.5">
+                                            Summer solstice
+                                        </svg:text>
+                                        <svg:text [attr.x]="monthX('Dec', ctx.chartArea) - 4" [attr.y]="(ctx.yScale(8.08) + ctx.yScale(15.92)) / 2 - 9" fill="#6bbbed" font-size="11" font-weight="700" text-anchor="end" dominant-baseline="middle">
+                                            7h 50m
+                                        </svg:text>
+                                        <svg:text [attr.x]="monthX('Dec', ctx.chartArea) - 4" [attr.y]="(ctx.yScale(8.08) + ctx.yScale(15.92)) / 2 + 7" font-size="10" text-anchor="end" dominant-baseline="middle" opacity="0.5">
+                                            Winter solstice
+                                        </svg:text>
+                                    </svg:g>
+                                }
+                            </ng-template>
+                        </p-chart-annotation>
+                        <p-chart-tooltip mode="shared" />
+                        <p-chart-hover />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis [tickCount]="7" [min]="3" [max]="23" [tickFormat]="formatHour" />
+                        <p-chart-title text="London sunrise & sunset times" />
+                        <p-chart-caption text="Source: timeanddate.com · London (51.5 °N) · Monthly averages · Amber band = after 20:00 summer evenings" />
+                        <p-chart-export-menu filename="london-sunrise-sunset" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class RangeLondonSunriseAndSunsetTimesDoc {
+export class LineAreaRangeLondonSunriseAndSunsetTimesDoc {
     readonly data = daylight;
     readonly formatHour = (v: TickValue) => {
         const hh = Math.floor(v as number);

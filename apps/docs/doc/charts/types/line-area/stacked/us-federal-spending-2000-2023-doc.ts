@@ -25,34 +25,38 @@ const COLORS = {
             <p>#### SvgStackedFederalSpendingDemo.ts</p>
             <p>#### federalSpending.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg [animation]="{ duration: 600 }">
-                    <p-chart-stacked>
-                        <p-chart-line [data]="data" categoryXField="year" valueYField="social" name="Social Security" [color]="colors.social" curve="smooth" [fillOpacity]="0.8" />
-                        <p-chart-line [data]="data" categoryXField="year" valueYField="health" name="Health (Medicare)" [color]="colors.health" curve="smooth" [fillOpacity]="0.8" />
-                        <p-chart-line [data]="data" categoryXField="year" valueYField="defense" name="Defense" [color]="colors.defense" curve="smooth" [fillOpacity]="0.8" />
-                        <p-chart-line [data]="data" categoryXField="year" valueYField="interest" name="Net Interest" [color]="colors.interest" curve="smooth" [fillOpacity]="0.8" />
-                        <p-chart-line [data]="data" categoryXField="year" valueYField="other" name="Other" [color]="colors.other" curve="smooth" [fillOpacity]="0.8" />
-                    </p-chart-stacked>
-                    <p-chart-reference-line x="2020" label="COVID" stroke="var(--p-chart-annotation-color)" [lineDash]="[4, 3]" labelPosition="start" labelColor="var(--p-chart-annotation-color)" [labelFontSize]="10" />
-                    <p-chart-tooltip mode="shared" [valueFormatter]="formatBillions" />
-                    <p-chart-legend position="bottom" />
-                    <p-chart-hover />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis [tickCount]="6" [tickFormat]="formatTrillions" />
-                    <p-chart-title text="US federal spending by category 2000–2023" />
-                    <p-chart-caption text="Source: Congressional Budget Office · Historical Budget Data · Fiscal years · $ billions" />
-                    <p-chart-export-menu filename="us-federal-spending-2000-2023" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg [animation]="{ duration: 600 }">
+                        <p-chart-stacked>
+                            <p-chart-line [data]="data" categoryXField="year" valueYField="social" name="Social Security" [color]="colors.social" curve="smooth" [fillOpacity]="0.8" />
+                            <p-chart-line [data]="data" categoryXField="year" valueYField="health" name="Health (Medicare)" [color]="colors.health" curve="smooth" [fillOpacity]="0.8" />
+                            <p-chart-line [data]="data" categoryXField="year" valueYField="defense" name="Defense" [color]="colors.defense" curve="smooth" [fillOpacity]="0.8" />
+                            <p-chart-line [data]="data" categoryXField="year" valueYField="interest" name="Net Interest" [color]="colors.interest" curve="smooth" [fillOpacity]="0.8" />
+                            <p-chart-line [data]="data" categoryXField="year" valueYField="other" name="Other" [color]="colors.other" curve="smooth" [fillOpacity]="0.8" />
+                        </p-chart-stacked>
+                        <p-chart-reference-line x="2020" label="COVID" stroke="var(--p-chart-annotation-color)" [lineDash]="[4, 3]" labelPosition="start" labelColor="var(--p-chart-annotation-color)" [labelFontSize]="10" />
+                        <p-chart-tooltip mode="shared" [valueFormatter]="formatBillions" />
+                        <p-chart-legend position="bottom" />
+                        <p-chart-hover />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis [tickCount]="6" [tickFormat]="formatTrillions" />
+                        <p-chart-title text="US federal spending by category 2000–2023" />
+                        <p-chart-caption text="Source: Congressional Budget Office · Historical Budget Data · Fiscal years · $ billions" />
+                        <p-chart-export-menu filename="us-federal-spending-2000-2023" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class StackedUsFederalSpending20002023Doc {
+export class LineAreaStackedUsFederalSpending20002023Doc {
     readonly data = federalSpending;
     readonly colors = COLORS;
     readonly formatBillions = (v: number) => `$${v}B`;

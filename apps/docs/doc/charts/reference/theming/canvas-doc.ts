@@ -66,37 +66,41 @@ const marketDarkTheme = {
             </p>
             <p>Since <i>theme</i> is a signal, updating it is all that's needed. The chart re-renders on its own. This logic can be extracted into a service and reused across canvas charts.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div class="canvas-theme-demo" [class]="'canvas-theme-demo--' + activeMode()">
-                <div class="canvas-theme-demo__toolbar">
-                    <div>
-                        <span>Canvas theme object</span>
-                        <strong>{{ modeLabel() }}</strong>
+        @defer (on viewport) {
+            <div class="card">
+                <div class="canvas-theme-demo" [class]="'canvas-theme-demo--' + activeMode()">
+                    <div class="canvas-theme-demo__toolbar">
+                        <div>
+                            <span>Canvas theme object</span>
+                            <strong>{{ modeLabel() }}</strong>
+                        </div>
+                        <div class="canvas-theme-demo__actions" role="group" aria-label="Canvas theme mode">
+                            <button type="button" [class.active]="activeMode() === 'light'" (click)="activeMode.set('light')">Light</button>
+                            <button type="button" [class.active]="activeMode() === 'dark'" (click)="activeMode.set('dark')">Dark</button>
+                        </div>
                     </div>
-                    <div class="canvas-theme-demo__actions" role="group" aria-label="Canvas theme mode">
-                        <button type="button" [class.active]="activeMode() === 'light'" (click)="activeMode.set('light')">Light</button>
-                        <button type="button" [class.active]="activeMode() === 'dark'" (click)="activeMode.set('dark')">Dark</button>
-                    </div>
-                </div>
 
-                <p-chart-canvas [theme]="activeTheme()" [height]="430" [animation]="{ duration: 500, easing: 'easeOutCubic' }">
-                    <p-chart-bar [data]="marginData" categoryXField="month" valueYField="software" name="Software ARR" [borderRadius]="5" />
-                    <p-chart-bar [data]="marginData" categoryXField="month" valueYField="services" name="Services ARR" [borderRadius]="5" />
-                    <p-chart-line [data]="marginData" categoryXField="month" valueYField="margin" yAxisId="margin" name="Gross margin" [lineStrokeWidth]="3" [showMarkers]="true" curve="smooth" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis label="ARR" [tickFormat]="money" />
-                    <p-chart-y-axis id="margin" position="right" label="Margin" [tickFormat]="percent" [chartPaddingMin]="0.12" />
-                    <p-chart-tooltip mode="shared" [crosshair]="true" />
-                    <p-chart-legend position="bottom" />
-                    <p-chart-hover />
-                    <p-chart-title text="Revenue desk palette override" />
-                    <p-chart-caption text="The buttons swap the Canvas theme object, repainting bars, line, axes, grid, tooltip, legend, and crosshair." />
-                    <p-chart-export-menu filename="canvas-theme-palette-override" />
-                    <p-chart-accessibility />
-                </p-chart-canvas>
+                    <p-chart-canvas [theme]="activeTheme()" [height]="430" [animation]="{ duration: 500, easing: 'easeOutCubic' }">
+                        <p-chart-bar [data]="marginData" categoryXField="month" valueYField="software" name="Software ARR" [borderRadius]="5" />
+                        <p-chart-bar [data]="marginData" categoryXField="month" valueYField="services" name="Services ARR" [borderRadius]="5" />
+                        <p-chart-line [data]="marginData" categoryXField="month" valueYField="margin" yAxisId="margin" name="Gross margin" [lineStrokeWidth]="3" [showMarkers]="true" curve="smooth" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis label="ARR" [tickFormat]="money" />
+                        <p-chart-y-axis id="margin" position="right" label="Margin" [tickFormat]="percent" [chartPaddingMin]="0.12" />
+                        <p-chart-tooltip mode="shared" [crosshair]="true" />
+                        <p-chart-legend position="bottom" />
+                        <p-chart-hover />
+                        <p-chart-title text="Revenue desk palette override" />
+                        <p-chart-caption text="The buttons swap the Canvas theme object, repainting bars, line, axes, grid, tooltip, legend, and crosshair." />
+                        <p-chart-export-menu filename="canvas-theme-palette-override" />
+                        <p-chart-accessibility />
+                    </p-chart-canvas>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

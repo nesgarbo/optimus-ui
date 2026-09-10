@@ -14,22 +14,26 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 background series and a strong accent for the foreground outline.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="display: flex; justify-content: center">
-                <p-chart-svg [width]="460" [height]="460">
-                    <p-chart-polar id="pressure" [data]="polarData" categoryXField="queue" valueYField="pressure" name="Incident pressure" color="rgba(148,163,184,0.45)" />
-                    <p-chart-radar id="readiness" [data]="radarData" categoryXField="queue" valueYField="readiness" name="Automation readiness" color="#5ccf9f" [fillOpacity]="0.18" [lineStrokeWidth]="2.5" [showMarkers]="true" [markerSize]="5" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                    <p-chart-legend position="top" />
-                    <p-chart-tooltip />
-                    <p-chart-hover [brightness]="1.15" />
-                    <p-chart-title text="Support coverage: incident pressure vs automation readiness" />
-                    <p-chart-caption text="Grey polar sectors show incident pressure by queue. The mint radar outline shows automation readiness on the same axes, making coverage gaps visible where pressure is high but readiness trails." />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="display: flex; justify-content: center">
+                    <p-chart-svg [width]="460" [height]="460">
+                        <p-chart-polar id="pressure" [data]="polarData" categoryXField="queue" valueYField="pressure" name="Incident pressure" color="rgba(148,163,184,0.45)" />
+                        <p-chart-radar id="readiness" [data]="radarData" categoryXField="queue" valueYField="readiness" name="Automation readiness" color="#5ccf9f" [fillOpacity]="0.18" [lineStrokeWidth]="2.5" [showMarkers]="true" [markerSize]="5" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                        <p-chart-legend position="top" />
+                        <p-chart-tooltip />
+                        <p-chart-hover [brightness]="1.15" />
+                        <p-chart-title text="Support coverage: incident pressure vs automation readiness" />
+                        <p-chart-caption text="Grey polar sectors show incident pressure by queue. The mint radar outline shows automation readiness on the same axes, making coverage gaps visible where pressure is high but readiness trails." />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

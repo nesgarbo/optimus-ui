@@ -14,16 +14,20 @@ import { ChartsModule, svgNode, type PointRenderContext, type SvgNode } from '@o
                 the chart handles translation to each vertex position. In Canvas mode, pass a <i>renderMarker</i> function that draws at the origin and returns <i>null</i> (the context is pre-translated to the vertex).
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-radar id="custom" [data]="data" categoryXField="metric" valueYField="value" [fillOpacity]="0.15" [showMarkers]="true" [markerSize]="12" [renderMarker]="renderMarker" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-radar id="custom" [data]="data" categoryXField="metric" valueYField="value" [fillOpacity]="0.15" [showMarkers]="true" [markerSize]="12" [renderMarker]="renderMarker" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

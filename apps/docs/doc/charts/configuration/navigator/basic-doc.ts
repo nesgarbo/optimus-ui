@@ -23,18 +23,22 @@ function seededRandom(seed: number) {
                 position. The navigator and zoom share the same zoom state. Dragging the navigator handle updates the main chart and vice versa.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-line [data]="data" categoryXField="day" valueYField="value" curve="smooth" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                    <p-chart-zoom mode="x" />
-                    <p-chart-navigator />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-line [data]="data" categoryXField="day" valueYField="value" curve="smooth" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                        <p-chart-zoom mode="x" />
+                        <p-chart-navigator />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

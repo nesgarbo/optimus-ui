@@ -11,18 +11,22 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Set <i>showMarkers</i> to display point markers at each spoke vertex. Set <i>markerSize</i> to control the radius. Mixing marker sizes across series creates visual hierarchy without changing stroke weights.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-radar id="large" [data]="data" categoryXField="metric" valueYField="api" [fillOpacity]="0.15" [showMarkers]="true" [markerSize]="8" name="API cluster" />
-                    <p-chart-radar id="small" [data]="data" categoryXField="metric" valueYField="worker" [fillOpacity]="0.15" [showMarkers]="true" [markerSize]="3" name="Worker queue" />
-                    <p-chart-radar id="none" [data]="data" categoryXField="metric" valueYField="batch" [fillOpacity]="0.15" [showMarkers]="false" name="Batch jobs" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-radar id="large" [data]="data" categoryXField="metric" valueYField="api" [fillOpacity]="0.15" [showMarkers]="true" [markerSize]="8" name="API cluster" />
+                        <p-chart-radar id="small" [data]="data" categoryXField="metric" valueYField="worker" [fillOpacity]="0.15" [showMarkers]="true" [markerSize]="3" name="Worker queue" />
+                        <p-chart-radar id="none" [data]="data" categoryXField="metric" valueYField="batch" [fillOpacity]="0.15" [showMarkers]="false" name="Batch jobs" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

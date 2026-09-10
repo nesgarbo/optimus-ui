@@ -33,63 +33,67 @@ function isDarkScheme(annotation: string): boolean {
             <p>#### SvgLiveCryptoStreamDemo.ts</p>
             <p>#### cryptoStream.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg [animation]="{ duration: 300 }">
-                    <p-chart-candlestick [data]="data()" categoryXField="ts" openField="open" highField="high" lowField="low" closeField="close" upColor="#10a981" downColor="#e5484d" [barWidthRatio]="0.6" />
-                    <p-chart-reference-line [y]="vwap()" label="VWAP" stroke="#7c8cff" [lineStrokeWidth]="1" [lineDash]="[6, 4]" labelPosition="start" />
-                    <p-chart-annotation>
-                        <ng-template pChartAnnotationDef let-ctx>
-                            @if (ctx.chartArea && ctx.yScale) {
-                                <svg:g pointer-events="none">
-                                    <svg:line
-                                        [attr.x1]="ctx.chartArea.x"
-                                        [attr.y1]="ctx.yScale(currentClose())"
-                                        [attr.x2]="ctx.chartArea.x + ctx.chartArea.width"
-                                        [attr.y2]="ctx.yScale(currentClose())"
-                                        [attr.stroke]="tickColor()"
-                                        stroke-dasharray="2 3"
-                                        stroke-width="1"
-                                        opacity="0.55"
-                                    />
-                                    <svg:rect [attr.x]="ctx.chartArea.x + ctx.chartArea.width - 90" [attr.y]="ctx.yScale(currentClose()) - 10" width="90" height="20" rx="3" [attr.fill]="tickColor()" opacity="0.95" />
-                                    <svg:text
-                                        [attr.x]="ctx.chartArea.x + ctx.chartArea.width - 45"
-                                        [attr.y]="ctx.yScale(currentClose()) + 1"
-                                        text-anchor="middle"
-                                        dominant-baseline="central"
-                                        fill="#fff"
-                                        font-size="11"
-                                        font-weight="700"
-                                        font-family="ui-monospace,SFMono-Regular,monospace"
-                                    >
-                                        {{ fmtClose() }}
-                                    </svg:text>
-                                    <svg:rect [attr.x]="ctx.chartArea.x + 8" [attr.y]="ctx.chartArea.y + 4" width="200" height="42" rx="4" [attr.fill]="panelFill()" />
-                                    <svg:text [attr.x]="ctx.chartArea.x + 16" [attr.y]="ctx.chartArea.y + 16" dominant-baseline="central" [attr.fill]="panelMuted()" font-size="9">5s agg · 48 window</svg:text>
-                                    <svg:text [attr.x]="ctx.chartArea.x + 16" [attr.y]="ctx.chartArea.y + 34" [attr.fill]="panelMuted()" font-size="9">H</svg:text>
-                                    <svg:text [attr.x]="ctx.chartArea.x + 26" [attr.y]="ctx.chartArea.y + 34" fill="#10a981" font-size="9" font-weight="600" font-family="ui-monospace,SFMono-Regular,monospace">{{ fmtHigh() }}</svg:text>
-                                    <svg:text [attr.x]="ctx.chartArea.x + 110" [attr.y]="ctx.chartArea.y + 34" [attr.fill]="panelMuted()" font-size="9">L</svg:text>
-                                    <svg:text [attr.x]="ctx.chartArea.x + 120" [attr.y]="ctx.chartArea.y + 34" fill="#e5484d" font-size="9" font-weight="600" font-family="ui-monospace,SFMono-Regular,monospace">{{ fmtLow() }}</svg:text>
-                                </svg:g>
-                            }
-                        </ng-template>
-                    </p-chart-annotation>
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                    <p-chart-hover />
-                    <p-chart-x-axis type="time" gapless [chartPaddingMax]="0.1" />
-                    <p-chart-y-axis position="right" [tickFormat]="formatPrice" />
-                    <p-chart-title text="BTC/USD — High-Frequency Stream" />
-                    <p-chart-caption text="Simulated 5-second candles · 48-window · live last-price tag, session high/low, and rolling VWAP" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg [animation]="{ duration: 300 }">
+                        <p-chart-candlestick [data]="data()" categoryXField="ts" openField="open" highField="high" lowField="low" closeField="close" upColor="#10a981" downColor="#e5484d" [barWidthRatio]="0.6" />
+                        <p-chart-reference-line [y]="vwap()" label="VWAP" stroke="#7c8cff" [lineStrokeWidth]="1" [lineDash]="[6, 4]" labelPosition="start" />
+                        <p-chart-annotation>
+                            <ng-template pChartAnnotationDef let-ctx>
+                                @if (ctx.chartArea && ctx.yScale) {
+                                    <svg:g pointer-events="none">
+                                        <svg:line
+                                            [attr.x1]="ctx.chartArea.x"
+                                            [attr.y1]="ctx.yScale(currentClose())"
+                                            [attr.x2]="ctx.chartArea.x + ctx.chartArea.width"
+                                            [attr.y2]="ctx.yScale(currentClose())"
+                                            [attr.stroke]="tickColor()"
+                                            stroke-dasharray="2 3"
+                                            stroke-width="1"
+                                            opacity="0.55"
+                                        />
+                                        <svg:rect [attr.x]="ctx.chartArea.x + ctx.chartArea.width - 90" [attr.y]="ctx.yScale(currentClose()) - 10" width="90" height="20" rx="3" [attr.fill]="tickColor()" opacity="0.95" />
+                                        <svg:text
+                                            [attr.x]="ctx.chartArea.x + ctx.chartArea.width - 45"
+                                            [attr.y]="ctx.yScale(currentClose()) + 1"
+                                            text-anchor="middle"
+                                            dominant-baseline="central"
+                                            fill="#fff"
+                                            font-size="11"
+                                            font-weight="700"
+                                            font-family="ui-monospace,SFMono-Regular,monospace"
+                                        >
+                                            {{ fmtClose() }}
+                                        </svg:text>
+                                        <svg:rect [attr.x]="ctx.chartArea.x + 8" [attr.y]="ctx.chartArea.y + 4" width="200" height="42" rx="4" [attr.fill]="panelFill()" />
+                                        <svg:text [attr.x]="ctx.chartArea.x + 16" [attr.y]="ctx.chartArea.y + 16" dominant-baseline="central" [attr.fill]="panelMuted()" font-size="9">5s agg · 48 window</svg:text>
+                                        <svg:text [attr.x]="ctx.chartArea.x + 16" [attr.y]="ctx.chartArea.y + 34" [attr.fill]="panelMuted()" font-size="9">H</svg:text>
+                                        <svg:text [attr.x]="ctx.chartArea.x + 26" [attr.y]="ctx.chartArea.y + 34" fill="#10a981" font-size="9" font-weight="600" font-family="ui-monospace,SFMono-Regular,monospace">{{ fmtHigh() }}</svg:text>
+                                        <svg:text [attr.x]="ctx.chartArea.x + 110" [attr.y]="ctx.chartArea.y + 34" [attr.fill]="panelMuted()" font-size="9">L</svg:text>
+                                        <svg:text [attr.x]="ctx.chartArea.x + 120" [attr.y]="ctx.chartArea.y + 34" fill="#e5484d" font-size="9" font-weight="600" font-family="ui-monospace,SFMono-Regular,monospace">{{ fmtLow() }}</svg:text>
+                                    </svg:g>
+                                }
+                            </ng-template>
+                        </p-chart-annotation>
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                        <p-chart-hover />
+                        <p-chart-x-axis type="time" gapless [chartPaddingMax]="0.1" />
+                        <p-chart-y-axis position="right" [tickFormat]="formatPrice" />
+                        <p-chart-title text="BTC/USD — High-Frequency Stream" />
+                        <p-chart-caption text="Simulated 5-second candles · 48-window · live last-price tag, session high/low, and rolling VWAP" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LiveDataBtcUsdHighFrequencyStreamDoc {
+export class CandlestickLiveDataBtcUsdHighFrequencyStreamDoc {
     readonly theme = injectChartTheme();
     readonly data = useCryptoStream();
     readonly currentClose = computed(() => this.data()[this.data().length - 1]?.close ?? 0);

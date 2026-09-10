@@ -41,36 +41,40 @@ function strengthTag(row: number, col: number, v: number): string {
             <p>#### SvgHeatmapSp500CorrelationDemo.ts</p>
             <p>#### sp500Correlation.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-heatmap
-                        [data]="data"
-                        categoryXField="col"
-                        categoryYField="row"
-                        valueField="corr"
-                        [colorRange]="['#eef6ff', '#b8e2ff', '#5bc8f5', '#2176ff', '#2531a8']"
-                        [colorScale]="[0, 0.25, 0.5, 0.75, 1]"
-                        [renderContent]="renderCell"
-                        [spacing]="3"
-                        [borderRadius]="4"
-                    />
-                    <p-chart-x-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
-                    <p-chart-y-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
-                    <p-chart-color-legend position="bottom" [height]="10" [borderRadius]="5" />
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                    <p-chart-hover />
-                    <p-chart-title text="S&P 500 sector correlation matrix — daily returns, 2023" />
-                    <p-chart-caption text="Pearson ρ of daily total returns across 9 SPDR sector ETFs · Source: state-street-global-advisors data" />
-                    <p-chart-export-menu filename="sp500-sector-correlation-2023" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-heatmap
+                            [data]="data"
+                            categoryXField="col"
+                            categoryYField="row"
+                            valueField="corr"
+                            [colorRange]="['#eef6ff', '#b8e2ff', '#5bc8f5', '#2176ff', '#2531a8']"
+                            [colorScale]="[0, 0.25, 0.5, 0.75, 1]"
+                            [renderContent]="renderCell"
+                            [spacing]="3"
+                            [borderRadius]="4"
+                        />
+                        <p-chart-x-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
+                        <p-chart-y-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
+                        <p-chart-color-legend position="bottom" [height]="10" [borderRadius]="5" />
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                        <p-chart-hover />
+                        <p-chart-title text="S&P 500 sector correlation matrix — daily returns, 2023" />
+                        <p-chart-caption text="Pearson ρ of daily total returns across 9 SPDR sector ETFs · Source: state-street-global-advisors data" />
+                        <p-chart-export-menu filename="sp500-sector-correlation-2023" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class HeatmapSandp500SectorCorrelationMatrixDailyReturns2023Doc {
+export class HeatmapHeatmapSandp500SectorCorrelationMatrixDailyReturns2023Doc {
     readonly data = sp500Correlation;
 
     readonly tooltipRows = (_value: number, ctx: TooltipValueContext): TooltipRow[] => {

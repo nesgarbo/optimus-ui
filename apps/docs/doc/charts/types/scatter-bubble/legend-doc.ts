@@ -12,19 +12,23 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             <p>Add <i>ChartLegend</i> to display an interactive legend. Each <i>ChartScatter</i> series appears as a separate entry; click any item to toggle that series.</p>
             <p>For full configuration see <a href="/charts/configuration/legend">Legend</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-scatter id="product-led" [data]="productLedData" valueXField="dealAge" valueYField="winRate" name="Product-led" color="#5daeea" [markerSize]="7" />
-                    <p-chart-scatter id="partner" [data]="partnerData" valueXField="dealAge" valueYField="winRate" name="Partner" color="#4ecdc4" [markerSize]="7" />
-                    <p-chart-scatter id="outbound" [data]="outboundData" valueXField="dealAge" valueYField="winRate" name="Outbound" color="#ffad5a" [markerSize]="7" />
-                    <p-chart-x-axis label="Deal age (days)" />
-                    <p-chart-y-axis label="Win rate (%)" />
-                    <p-chart-legend position="bottom" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-scatter id="product-led" [data]="productLedData" valueXField="dealAge" valueYField="winRate" name="Product-led" color="#5daeea" [markerSize]="7" />
+                        <p-chart-scatter id="partner" [data]="partnerData" valueXField="dealAge" valueYField="winRate" name="Partner" color="#4ecdc4" [markerSize]="7" />
+                        <p-chart-scatter id="outbound" [data]="outboundData" valueXField="dealAge" valueYField="winRate" name="Outbound" color="#ffad5a" [markerSize]="7" />
+                        <p-chart-x-axis label="Deal age (days)" />
+                        <p-chart-y-axis label="Win rate (%)" />
+                        <p-chart-legend position="bottom" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

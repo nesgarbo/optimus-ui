@@ -18,40 +18,44 @@ import { GRAND_TOTAL, type Row, alphabetRevenue } from '@/doc/charts/data/alphab
             <p>#### SvgTreemapAlphabetRevenueDemo.ts</p>
             <p>#### alphabetRevenue.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg [animation]="{ duration: 500 }">
-                    <p-chart-treemap
-                        [data]="data"
-                        categoryField="label"
-                        valueField="value"
-                        nodeId="id"
-                        parentField="parent"
-                        [drilldown]="true"
-                        rootLabel="Alphabet · Q3 2024"
-                        [color]="palette"
-                        [levels]="levels"
-                        [groupPadding]="4"
-                        [spacing]="3"
-                        borderColor="rgba(255,255,255,0.15)"
-                        [borderRadius]="3"
-                    />
-                    <p-chart-data-labels [formatter]="yoyLabel" />
-                    <p-chart-breadcrumb />
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                    <p-chart-hover />
-                    <p-chart-title text="Alphabet Inc. — Q3 2024 Revenue by Segment" />
-                    <p-chart-caption text="Click Google Services to drill in · breadcrumb navigates back · cells show YoY growth and revenue" />
-                    <p-chart-export-menu filename="alphabet-q3-2024-revenue" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg [animation]="{ duration: 500 }">
+                        <p-chart-treemap
+                            [data]="data"
+                            categoryField="label"
+                            valueField="value"
+                            nodeId="id"
+                            parentField="parent"
+                            [drilldown]="true"
+                            rootLabel="Alphabet · Q3 2024"
+                            [color]="palette"
+                            [levels]="levels"
+                            [groupPadding]="4"
+                            [spacing]="3"
+                            borderColor="rgba(255,255,255,0.15)"
+                            [borderRadius]="3"
+                        />
+                        <p-chart-data-labels [formatter]="yoyLabel" />
+                        <p-chart-breadcrumb />
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                        <p-chart-hover />
+                        <p-chart-title text="Alphabet Inc. — Q3 2024 Revenue by Segment" />
+                        <p-chart-caption text="Click Google Services to drill in · breadcrumb navigates back · cells show YoY growth and revenue" />
+                        <p-chart-export-menu filename="alphabet-q3-2024-revenue" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TreemapAlphabetIncQ32024RevenueBySegmentDoc {
+export class TreemapTreemapAlphabetIncQ32024RevenueBySegmentDoc {
     readonly data = alphabetRevenue;
     readonly palette = ['#4285F4', '#34A853', '#FBBC04', '#EA4335'];
     readonly levels = [

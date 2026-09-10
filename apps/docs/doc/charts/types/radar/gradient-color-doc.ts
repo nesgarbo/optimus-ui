@@ -11,16 +11,20 @@ import { ChartsModule, type FillValue } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Pass a radial gradient object to <i>color</i> when the fill needs softer emphasis than a solid stroke. Keep the stops controlled so the gradient supports comparison instead of turning the radar into decoration.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-radar id="alice" [data]="data" categoryXField="capability" valueYField="current" [color]="aliceColor" [fillOpacity]="0.7" [lineStrokeWidth]="2" name="Current" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-radar id="alice" [data]="data" categoryXField="capability" valueYField="current" [color]="aliceColor" [fillOpacity]="0.7" [lineStrokeWidth]="2" name="Current" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

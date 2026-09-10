@@ -15,16 +15,20 @@ import { ChartsModule, svgNode, type PointRenderContext, type SvgNode } from '@o
                 <i>PointRenderContext</i>; use <i>ctx.index</i> or <i>ctx.data</i> to vary the marker per point.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="health" [showMarkers]="true" [markerSize]="12" [renderMarker]="renderMarker" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="health" [showMarkers]="true" [markerSize]="12" [renderMarker]="renderMarker" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

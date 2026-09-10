@@ -18,20 +18,24 @@ interface Stats {
         <app-docsectiontext>
             <p>Reads every dataset on each frame and exposes live aggregates (count, total, average, max) through a signal. The chart analogue of a character-count plugin: pure data, no painting.</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="420" [plugins]="plugins">
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="bookings" color="#5ccf9f" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-            </p-chart-svg>
-            <div style="display: flex; gap: 16px; padding: 12px 4px 0; font-size: 13px; color: var(--p-text-color, #374151)">
-                <span><strong>Points:</strong> {{ liveStats().count }}</span>
-                <span><strong>Total:</strong> {{ liveStats().total.toLocaleString() }}</span>
-                <span><strong>Average:</strong> {{ round(liveStats().average).toLocaleString() }}</span>
-                <span><strong>Max:</strong> {{ liveStats().max.toLocaleString() }}</span>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="420" [plugins]="plugins">
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="bookings" color="#5ccf9f" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                </p-chart-svg>
+                <div style="display: flex; gap: 16px; padding: 12px 4px 0; font-size: 13px; color: var(--p-text-color, #374151)">
+                    <span><strong>Points:</strong> {{ liveStats().count }}</span>
+                    <span><strong>Total:</strong> {{ liveStats().total.toLocaleString() }}</span>
+                    <span><strong>Average:</strong> {{ round(liveStats().average).toLocaleString() }}</span>
+                    <span><strong>Max:</strong> {{ liveStats().max.toLocaleString() }}</span>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

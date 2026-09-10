@@ -30,43 +30,47 @@ function findEarningsForWeek(ts: number) {
             <p>#### SvgHollowTeslaEarningsDemo.ts</p>
             <p>#### teslaEarnings.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg [animation]="{ duration: 500 }">
-                    <p-chart-candlestick [data]="data" categoryXField="ts" openField="open" highField="high" lowField="low" closeField="close" variant="hollow" upColor="#10a981" downColor="#e5484d" [barWidthRatio]="0.62" />
-                    <p-chart-reference-line [y]="vwap52" label="52-week VWAP" stroke="#7c8cff" [lineStrokeWidth]="1" [lineDash]="[4, 4]" labelPosition="start" labelBackground="#7c8cff" labelColor="#fff" [labelPadding]="5" />
-                    <p-chart-annotation>
-                        <ng-template pChartAnnotationDef let-ctx>
-                            @if (ctx.xScale && ctx.chartArea) {
-                                <svg:g pointer-events="none">
-                                    @for (ev of earningsPins(ctx); track ev.label) {
-                                        <svg:g>
-                                            <svg:line [attr.x1]="ev.x" [attr.y1]="ev.y1" [attr.x2]="ev.x" [attr.y2]="ev.y2" [attr.stroke]="ev.color" stroke-dasharray="3 3" stroke-width="1" opacity="0.6" />
-                                            <svg:rect [attr.x]="ev.rx" [attr.y]="ev.ry" [attr.width]="ev.w" height="14" rx="3" [attr.fill]="ev.color" opacity="0.95" />
-                                            <svg:text [attr.x]="ev.x" [attr.y]="ev.ty" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="9" font-weight="600">{{ ev.label }}</svg:text>
-                                        </svg:g>
-                                    }
-                                </svg:g>
-                            }
-                        </ng-template>
-                    </p-chart-annotation>
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                    <p-chart-hover />
-                    <p-chart-zoom mode="x" />
-                    <p-chart-x-axis type="time" gapless />
-                    <p-chart-y-axis position="right" [tickFormat]="formatPrice" />
-                    <p-chart-title text="Tesla, Inc. (TSLA) — 2024 Weekly Hollow Candles" />
-                    <p-chart-caption text="Hollow-body convention flags weekly momentum · hover an earnings week for the EPS surprise breakdown" />
-                    <p-chart-export-menu filename="tsla-2024-weekly-hollow" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg [animation]="{ duration: 500 }">
+                        <p-chart-candlestick [data]="data" categoryXField="ts" openField="open" highField="high" lowField="low" closeField="close" variant="hollow" upColor="#10a981" downColor="#e5484d" [barWidthRatio]="0.62" />
+                        <p-chart-reference-line [y]="vwap52" label="52-week VWAP" stroke="#7c8cff" [lineStrokeWidth]="1" [lineDash]="[4, 4]" labelPosition="start" labelBackground="#7c8cff" labelColor="#fff" [labelPadding]="5" />
+                        <p-chart-annotation>
+                            <ng-template pChartAnnotationDef let-ctx>
+                                @if (ctx.xScale && ctx.chartArea) {
+                                    <svg:g pointer-events="none">
+                                        @for (ev of earningsPins(ctx); track ev.label) {
+                                            <svg:g>
+                                                <svg:line [attr.x1]="ev.x" [attr.y1]="ev.y1" [attr.x2]="ev.x" [attr.y2]="ev.y2" [attr.stroke]="ev.color" stroke-dasharray="3 3" stroke-width="1" opacity="0.6" />
+                                                <svg:rect [attr.x]="ev.rx" [attr.y]="ev.ry" [attr.width]="ev.w" height="14" rx="3" [attr.fill]="ev.color" opacity="0.95" />
+                                                <svg:text [attr.x]="ev.x" [attr.y]="ev.ty" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="9" font-weight="600">{{ ev.label }}</svg:text>
+                                            </svg:g>
+                                        }
+                                    </svg:g>
+                                }
+                            </ng-template>
+                        </p-chart-annotation>
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                        <p-chart-hover />
+                        <p-chart-zoom mode="x" />
+                        <p-chart-x-axis type="time" gapless />
+                        <p-chart-y-axis position="right" [tickFormat]="formatPrice" />
+                        <p-chart-title text="Tesla, Inc. (TSLA) — 2024 Weekly Hollow Candles" />
+                        <p-chart-caption text="Hollow-body convention flags weekly momentum · hover an earnings week for the EPS surprise breakdown" />
+                        <p-chart-export-menu filename="tsla-2024-weekly-hollow" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class HollowTeslaIncTsla2024WeeklyHollowCandlesDoc {
+export class CandlestickHollowTeslaIncTsla2024WeeklyHollowCandlesDoc {
     readonly data = teslaEarnings;
     readonly vwap52 = VWAP52;
     readonly formatPrice = (v: TickValue) => `$${Number(v).toFixed(0)}`;

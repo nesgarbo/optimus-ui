@@ -24,75 +24,79 @@ const EVENTS = [
             <p>#### SvgRangeOilDemo.ts</p>
             <p>#### oilPrices.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg [animation]="{ duration: 600, easing: 'easeOutCubic' }">
-                    <p-chart-range color="#ff7a66" [fillOpacity]="0.18">
-                        <p-chart-line [data]="data" categoryXField="year" valueYField="high" name="Annual High" color="#ffad5a" [fillOpacity]="0" curve="smooth" [lineStrokeWidth]="1.5" />
-                        <p-chart-line [data]="data" categoryXField="year" valueYField="low" name="Annual Low" color="#ffd166" [fillOpacity]="0" curve="smooth" [lineStrokeWidth]="1.5" />
-                    </p-chart-range>
-                    <p-chart-line [data]="data" categoryXField="year" valueYField="avg" name="Annual Avg" color="#E2E8F0" [fillOpacity]="0" curve="smooth" [lineStrokeWidth]="2.5" />
-                    <p-chart-reference-band [y1]="100" [y2]="150" fill="#e5484d" [fillOpacity]="0.04" />
-                    <p-chart-reference-band [y1]="50" [y2]="100" fill="#ffad5a" [fillOpacity]="0.04" />
-                    <p-chart-reference-band [y1]="0" [y2]="50" fill="#10a981" [fillOpacity]="0.04" />
-                    <p-chart-annotation>
-                        <ng-template pChartAnnotationDef let-ctx>
-                            @if (ctx.xScale && ctx.chartArea) {
-                                <svg:g>
-                                    @for (ev of eventPins(ctx); track ev.year) {
-                                        <svg:g>
-                                            <svg:line [attr.x1]="ev.x" [attr.y1]="ev.y1" [attr.x2]="ev.x" [attr.y2]="ev.y2" [attr.stroke]="ctx.textColor" stroke-opacity="0.18" stroke-dasharray="3 3" stroke-width="1" />
-                                            <svg:text [attr.x]="ev.tx" [attr.y]="ev.ty" opacity="0.5" font-size="10" dominant-baseline="middle">{{ ev.label }}</svg:text>
-                                        </svg:g>
-                                    }
-                                </svg:g>
-                            }
-                        </ng-template>
-                    </p-chart-annotation>
-                    <p-chart-tooltip mode="shared">
-                        <ng-template pChartTooltipDef let-ctx>
-                            @if (ctx.allSeries) {
-                                <div
-                                    style="padding: 10px 14px; min-width: 200px; background: var(--p-popover-background, var(--p-content-background)); backdrop-filter: blur(12px); border-radius: 8px; border: 1px solid var(--p-content-border-color); color: var(--p-text-color)"
-                                >
-                                    <div style="font-weight: 600; font-size: 13px; margin-bottom: 8px; opacity: 0.85">{{ ctx.label }}</div>
-                                    <div style="display: flex; justify-content: space-between; font-size: 12px">
-                                        <span style="opacity: 0.6">High</span>
-                                        <span style="font-weight: 600; color: #ffad5a">\${{ high(ctx) }}</span>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg [animation]="{ duration: 600, easing: 'easeOutCubic' }">
+                        <p-chart-range color="#ff7a66" [fillOpacity]="0.18">
+                            <p-chart-line [data]="data" categoryXField="year" valueYField="high" name="Annual High" color="#ffad5a" [fillOpacity]="0" curve="smooth" [lineStrokeWidth]="1.5" />
+                            <p-chart-line [data]="data" categoryXField="year" valueYField="low" name="Annual Low" color="#ffd166" [fillOpacity]="0" curve="smooth" [lineStrokeWidth]="1.5" />
+                        </p-chart-range>
+                        <p-chart-line [data]="data" categoryXField="year" valueYField="avg" name="Annual Avg" color="#E2E8F0" [fillOpacity]="0" curve="smooth" [lineStrokeWidth]="2.5" />
+                        <p-chart-reference-band [y1]="100" [y2]="150" fill="#e5484d" [fillOpacity]="0.04" />
+                        <p-chart-reference-band [y1]="50" [y2]="100" fill="#ffad5a" [fillOpacity]="0.04" />
+                        <p-chart-reference-band [y1]="0" [y2]="50" fill="#10a981" [fillOpacity]="0.04" />
+                        <p-chart-annotation>
+                            <ng-template pChartAnnotationDef let-ctx>
+                                @if (ctx.xScale && ctx.chartArea) {
+                                    <svg:g>
+                                        @for (ev of eventPins(ctx); track ev.year) {
+                                            <svg:g>
+                                                <svg:line [attr.x1]="ev.x" [attr.y1]="ev.y1" [attr.x2]="ev.x" [attr.y2]="ev.y2" [attr.stroke]="ctx.textColor" stroke-opacity="0.18" stroke-dasharray="3 3" stroke-width="1" />
+                                                <svg:text [attr.x]="ev.tx" [attr.y]="ev.ty" opacity="0.5" font-size="10" dominant-baseline="middle">{{ ev.label }}</svg:text>
+                                            </svg:g>
+                                        }
+                                    </svg:g>
+                                }
+                            </ng-template>
+                        </p-chart-annotation>
+                        <p-chart-tooltip mode="shared">
+                            <ng-template pChartTooltipDef let-ctx>
+                                @if (ctx.allSeries) {
+                                    <div
+                                        style="padding: 10px 14px; min-width: 200px; background: var(--p-popover-background, var(--p-content-background)); backdrop-filter: blur(12px); border-radius: 8px; border: 1px solid var(--p-content-border-color); color: var(--p-text-color)"
+                                    >
+                                        <div style="font-weight: 600; font-size: 13px; margin-bottom: 8px; opacity: 0.85">{{ ctx.label }}</div>
+                                        <div style="display: flex; justify-content: space-between; font-size: 12px">
+                                            <span style="opacity: 0.6">High</span>
+                                            <span style="font-weight: 600; color: #ffad5a">\${{ high(ctx) }}</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 3px">
+                                            <span style="opacity: 0.6">Low</span>
+                                            <span style="font-weight: 600; color: #ffd166">\${{ low(ctx) }}</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 3px">
+                                            <span style="opacity: 0.6">Average</span>
+                                            <span style="font-weight: 600">\${{ avg(ctx) }}</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--p-content-border-color)">
+                                            <span style="opacity: 0.6">Annual range</span>
+                                            <span style="font-weight: 600; color: #ff7a66">\${{ spread(ctx) }}/bbl</span>
+                                        </div>
                                     </div>
-                                    <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 3px">
-                                        <span style="opacity: 0.6">Low</span>
-                                        <span style="font-weight: 600; color: #ffd166">\${{ low(ctx) }}</span>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 3px">
-                                        <span style="opacity: 0.6">Average</span>
-                                        <span style="font-weight: 600">\${{ avg(ctx) }}</span>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--p-content-border-color)">
-                                        <span style="opacity: 0.6">Annual range</span>
-                                        <span style="font-weight: 600; color: #ff7a66">\${{ spread(ctx) }}/bbl</span>
-                                    </div>
-                                </div>
-                            }
-                        </ng-template>
-                    </p-chart-tooltip>
-                    <p-chart-hover />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis [tickCount]="7" [tickFormat]="formatDollar" />
-                    <p-chart-zoom mode="x" />
-                    <p-chart-navigator />
-                    <p-chart-title text="Brent crude oil annual price range 2005–2023" />
-                    <p-chart-caption text="Source: EIA · Brent crude spot price · USD per bbl · Shaded band = annual high–low range · Drag to zoom" />
-                    <p-chart-export-menu filename="brent-crude-annual-range-2005-2023" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
+                                }
+                            </ng-template>
+                        </p-chart-tooltip>
+                        <p-chart-hover />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis [tickCount]="7" [tickFormat]="formatDollar" />
+                        <p-chart-zoom mode="x" />
+                        <p-chart-navigator />
+                        <p-chart-title text="Brent crude oil annual price range 2005–2023" />
+                        <p-chart-caption text="Source: EIA · Brent crude spot price · USD per bbl · Shaded band = annual high–low range · Drag to zoom" />
+                        <p-chart-export-menu filename="brent-crude-annual-range-2005-2023" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class RangeBrentCrudeOilAnnualPriceRange2005To2023Doc {
+export class LineAreaRangeBrentCrudeOilAnnualPriceRange2005To2023Doc {
     readonly data = oilPrices;
     readonly formatDollar = (v: TickValue) => `$${v}`;
 

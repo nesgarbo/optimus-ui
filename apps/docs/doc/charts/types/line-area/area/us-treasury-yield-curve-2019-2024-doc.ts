@@ -17,30 +17,34 @@ import { treasuryYields } from '@/doc/charts/data/treasuryYields';
             <p>#### SvgAreaTreasuryYieldsDemo.ts</p>
             <p>#### treasuryYields.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg [animation]="{ duration: 500 }">
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="y30" name="30-Year" color="#94a3b8" [fillOpacity]="0.15" curve="smooth" [lineStrokeWidth]="1.5" />
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="y10" name="10-Year" color="#5daeea" [fillOpacity]="0.15" curve="smooth" [lineStrokeWidth]="2" />
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="y2" name="2-Year" color="#e5484d" [fillOpacity]="0.15" curve="smooth" [lineStrokeWidth]="1.5" />
-                    <p-chart-tooltip mode="shared" [valueFormatter]="yieldPct" />
-                    <p-chart-hover />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis [tickCount]="6" />
-                    <p-chart-zoom mode="x" />
-                    <p-chart-navigator />
-                    <p-chart-title text="US Treasury yield curve 2019–2024" />
-                    <p-chart-caption text="Source: Federal Reserve H.15 · Constant maturity rates · Monthly averages · Drag navigator to zoom" />
-                    <p-chart-export-menu filename="us-treasury-yields-2019-2024" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg [animation]="{ duration: 500 }">
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="y30" name="30-Year" color="#94a3b8" [fillOpacity]="0.15" curve="smooth" [lineStrokeWidth]="1.5" />
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="y10" name="10-Year" color="#5daeea" [fillOpacity]="0.15" curve="smooth" [lineStrokeWidth]="2" />
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="y2" name="2-Year" color="#e5484d" [fillOpacity]="0.15" curve="smooth" [lineStrokeWidth]="1.5" />
+                        <p-chart-tooltip mode="shared" [valueFormatter]="yieldPct" />
+                        <p-chart-hover />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis [tickCount]="6" />
+                        <p-chart-zoom mode="x" />
+                        <p-chart-navigator />
+                        <p-chart-title text="US Treasury yield curve 2019–2024" />
+                        <p-chart-caption text="Source: Federal Reserve H.15 · Constant maturity rates · Monthly averages · Drag navigator to zoom" />
+                        <p-chart-export-menu filename="us-treasury-yields-2019-2024" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AreaUsTreasuryYieldCurve20192024Doc {
+export class LineAreaAreaUsTreasuryYieldCurve20192024Doc {
     readonly data = treasuryYields;
     readonly yieldPct = (v: number) => `${v.toFixed(2)}%`;
 }

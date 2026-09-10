@@ -12,18 +12,22 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             <p>Add <i>ChartTitle</i> to display a title above the chart and <i>ChartCaption</i> for a descriptive line beneath it. Both reduce the chart area height together.</p>
             <p>For full configuration see <a href="/charts/configuration/title-caption">Title &amp; Caption</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-candlestick [data]="data" categoryXField="date" openField="open" highField="high" lowField="low" closeField="close" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                    <p-chart-title text="AAPL — January daily OHLC" />
-                    <p-chart-caption text="Open, high, low, and close remain visible while title and caption reserve compact chart context" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-candlestick [data]="data" categoryXField="date" openField="open" highField="high" lowField="low" closeField="close" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                        <p-chart-title text="AAPL — January daily OHLC" />
+                        <p-chart-caption text="Open, high, low, and close remain visible while title and caption reserve compact chart context" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

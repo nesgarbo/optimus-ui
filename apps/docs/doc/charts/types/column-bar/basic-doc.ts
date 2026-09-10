@@ -11,16 +11,20 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Set <i>categoryXField</i> and <i>valueYField</i> to bind data. Add <i>ChartXAxis</i> and <i>ChartYAxis</i> for axes and gridlines.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-bar [data]="data" categoryXField="month" valueYField="shipped" [borderRadius]="4" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis label="Orders shipped" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-bar [data]="data" categoryXField="month" valueYField="shipped" [borderRadius]="4" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis label="Orders shipped" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

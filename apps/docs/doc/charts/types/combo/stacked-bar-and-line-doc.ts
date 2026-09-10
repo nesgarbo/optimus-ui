@@ -14,22 +14,26 @@ import { ChartsModule, type TickValue } from '@openng/optimus-ui/charts';
                 <i>fillOpacity="0"</i> on the line to prevent it rendering as an area.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-stacked>
-                    <p-chart-bar [data]="data" categoryXField="quarter" valueYField="compute" name="Compute" color="#5daeea" />
-                    <p-chart-bar [data]="data" categoryXField="quarter" valueYField="storage" name="Storage" color="#7c8cff" />
-                    <p-chart-bar [data]="data" categoryXField="quarter" valueYField="network" name="Network" color="#4ecdc4" />
-                </p-chart-stacked>
-                <p-chart-line [data]="data" categoryXField="quarter" valueYField="total" name="Total" color="#ffad5a" [showMarkers]="true" [markerSize]="5" [lineStrokeWidth]="2.5" curve="smooth" [fillOpacity]="0" />
-                <p-chart-x-axis />
-                <p-chart-y-axis [tickFormat]="formatAxis" />
-                <p-chart-legend position="top" />
-                <p-chart-tooltip mode="shared" />
-                <p-chart-hover />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-stacked>
+                        <p-chart-bar [data]="data" categoryXField="quarter" valueYField="compute" name="Compute" color="#5daeea" />
+                        <p-chart-bar [data]="data" categoryXField="quarter" valueYField="storage" name="Storage" color="#7c8cff" />
+                        <p-chart-bar [data]="data" categoryXField="quarter" valueYField="network" name="Network" color="#4ecdc4" />
+                    </p-chart-stacked>
+                    <p-chart-line [data]="data" categoryXField="quarter" valueYField="total" name="Total" color="#ffad5a" [showMarkers]="true" [markerSize]="5" [lineStrokeWidth]="2.5" curve="smooth" [fillOpacity]="0" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis [tickFormat]="formatAxis" />
+                    <p-chart-legend position="top" />
+                    <p-chart-tooltip mode="shared" />
+                    <p-chart-hover />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

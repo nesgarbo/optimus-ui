@@ -36,17 +36,21 @@ function priceSeries(n: number) {
                 while scrolling a page.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-line [data]="data" categoryXField="timestamp" valueYField="price" color="#5daeea" curve="smooth" />
-                    <p-chart-x-axis type="time" />
-                    <p-chart-y-axis label="Price ($)" [startFromZero]="false" />
-                    <p-chart-zoom mode="x" [wheel]="{ enabled: true, speed: 0.1 }" [drag]="false" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-line [data]="data" categoryXField="timestamp" valueYField="price" color="#5daeea" curve="smooth" />
+                        <p-chart-x-axis type="time" />
+                        <p-chart-y-axis label="Price ($)" [startFromZero]="false" />
+                        <p-chart-zoom mode="x" [wheel]="{ enabled: true, speed: 0.1 }" [drag]="false" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

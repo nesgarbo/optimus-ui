@@ -28,18 +28,22 @@ const rules: ResponsiveRule[] = [
                 gap.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [responsive]="true" [height]="460">
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="sales" name="Sales" color="#5daeea" />
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="target" name="Target" color="#ffd166" />
-                <p-chart-x-axis />
-                <p-chart-y-axis label="($K)" />
-                <p-chart-legend position="bottom" />
-                <p-chart-title text="Monthly Sales vs Target" />
-                <p-chart-responsive [rules]="rules" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [responsive]="true" [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="sales" name="Sales" color="#5daeea" />
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="target" name="Target" color="#ffd166" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis label="($K)" />
+                    <p-chart-legend position="bottom" />
+                    <p-chart-title text="Monthly Sales vs Target" />
+                    <p-chart-responsive [rules]="rules" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

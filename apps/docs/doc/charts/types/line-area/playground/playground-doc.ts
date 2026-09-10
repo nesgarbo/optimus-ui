@@ -37,91 +37,132 @@ const DEFAULT_HOVER_MARK = '#ffd166';
         <app-docsectiontext>
             <p></p>
         </app-docsectiontext>
-        <div class="card">
-            <div class="chart-playground-layout">
-                <div class="chart-playground-stage">
-                    <p-chart-svg [responsive]="true" [height]="460">
-                        @if (isRange()) {
-                            <p-chart-range [fillOpacity]="fillOpacity() || 0.2">
-                                <p-chart-line
-                                    id="series-1"
-                                    [data]="activeData()"
-                                    categoryXField="month"
-                                    valueYField="value"
-                                    name="High"
-                                    [color]="seriesColors()[0]"
-                                    [lineStrokeWidth]="lineWidth()"
-                                    [borderColor]="borderColorProp()"
-                                    [borderStrokeWidth]="borderWidthProp()"
-                                    [borderDash]="borderDashProp()"
-                                    [borderCapStyle]="borderCapStyle()"
-                                    [borderJoinStyle]="borderJoinStyle()"
-                                    [lineDash]="lineDashProp()"
-                                    [lineDashOffset]="lineDashProp() ? lineDashOffset() : undefined"
-                                    [lineCapStyle]="lineCapStyle()"
-                                    [lineJoinStyle]="lineJoinStyle()"
-                                    [curve]="curve()"
-                                    [tension]="curve() === 'spline' ? tension() : undefined"
-                                    [showMarkers]="showMarkers()"
-                                    [markerSize]="markerSize()"
-                                    [markerShape]="markerShape()"
-                                    [pointRotation]="pointRotation()"
-                                    [pointBorderStrokeWidth]="pointBorderWidth() > 0 ? pointBorderWidth() : undefined"
-                                    [pointBorderColor]="pointBorderWidth() > 0 ? pointBorderColor() : undefined"
-                                    [pointBorderDash]="pointBorderWidth() > 0 ? pointBorderDashProp() : undefined"
-                                    [pointBorderDashOffset]="pointBorderWidth() > 0 && pointBorderDashProp() ? pointBorderDashOffset() : undefined"
-                                    [pointBorderJoinStyle]="pointBorderWidth() > 0 ? pointBorderJoinStyle() : undefined"
-                                    [connectNulls]="connectNullsProp()"
-                                    [lineStyle]="lineStyleMode() !== 'solid' ? lineStyleMode() : undefined"
-                                    [borderDashOffset]="borderDashProp() && borderDashOffset() > 0 ? borderDashOffset() : undefined"
-                                    [pointHitRadius]="pointHitRadius() !== 10 ? pointHitRadius() : undefined"
-                                    [pointHoverBackgroundColor]="pointHoverBgMode() === 'custom' ? pointHoverBackgroundColor() : undefined"
-                                    [hoverColor]="hoverColorMode() === 'custom' ? hoverColor() : undefined"
-                                    [hoverBorderColor]="hoverBorderColorMode() === 'custom' ? hoverBorderColor() : undefined"
-                                    [segmentStrokeWidth]="segmentWidth() > 0 ? segmentWidth() : undefined"
-                                    [segmentFillColor]="segmentFillColorMode() === 'custom' ? segmentFillColor() : undefined"
-                                />
-                                <p-chart-line
-                                    id="series-2"
-                                    [data]="activeData()"
-                                    categoryXField="month"
-                                    valueYField="series2"
-                                    name="Low"
-                                    [color]="seriesColors()[1]"
-                                    [lineStrokeWidth]="lineWidth()"
-                                    [borderColor]="borderColorProp()"
-                                    [borderStrokeWidth]="borderWidthProp()"
-                                    [borderDash]="borderDashProp()"
-                                    [borderCapStyle]="borderCapStyle()"
-                                    [borderJoinStyle]="borderJoinStyle()"
-                                    [lineDash]="lineDashProp()"
-                                    [curve]="curve()"
-                                    [tension]="curve() === 'spline' ? tension() : undefined"
-                                    [showMarkers]="showMarkers()"
-                                    [markerSize]="markerSize()"
-                                    [pointBorderStrokeWidth]="pointBorderWidth() > 0 ? pointBorderWidth() : undefined"
-                                    [pointBorderColor]="pointBorderWidth() > 0 ? pointBorderColor() : undefined"
-                                    [pointBorderDash]="pointBorderWidth() > 0 ? pointBorderDashProp() : undefined"
-                                    [pointBorderDashOffset]="pointBorderWidth() > 0 && pointBorderDashProp() ? pointBorderDashOffset() : undefined"
-                                    [pointBorderJoinStyle]="pointBorderWidth() > 0 ? pointBorderJoinStyle() : undefined"
-                                    [connectNulls]="connectNullsProp()"
-                                    [lineStyle]="lineStyleMode() !== 'solid' ? lineStyleMode() : undefined"
-                                    [borderDashOffset]="borderDashProp() && borderDashOffset() > 0 ? borderDashOffset() : undefined"
-                                    [pointHitRadius]="pointHitRadius() !== 10 ? pointHitRadius() : undefined"
-                                    [segmentStrokeWidth]="segmentWidth() > 0 ? segmentWidth() : undefined"
-                                    [segmentFillColor]="segmentFillColorMode() === 'custom' ? segmentFillColor() : undefined"
-                                />
-                            </p-chart-range>
-                        } @else if (isStacked()) {
-                            <p-chart-stacked [mode]="stackedMode()">
+        @defer (on viewport) {
+            <div class="card">
+                <div class="chart-playground-layout">
+                    <div class="chart-playground-stage">
+                        <p-chart-svg [responsive]="true" [height]="460">
+                            @if (isRange()) {
+                                <p-chart-range [fillOpacity]="fillOpacity() || 0.2">
+                                    <p-chart-line
+                                        id="series-1"
+                                        [data]="activeData()"
+                                        categoryXField="month"
+                                        valueYField="value"
+                                        name="High"
+                                        [color]="seriesColors()[0]"
+                                        [lineStrokeWidth]="lineWidth()"
+                                        [borderColor]="borderColorProp()"
+                                        [borderStrokeWidth]="borderWidthProp()"
+                                        [borderDash]="borderDashProp()"
+                                        [borderCapStyle]="borderCapStyle()"
+                                        [borderJoinStyle]="borderJoinStyle()"
+                                        [lineDash]="lineDashProp()"
+                                        [lineDashOffset]="lineDashProp() ? lineDashOffset() : undefined"
+                                        [lineCapStyle]="lineCapStyle()"
+                                        [lineJoinStyle]="lineJoinStyle()"
+                                        [curve]="curve()"
+                                        [tension]="curve() === 'spline' ? tension() : undefined"
+                                        [showMarkers]="showMarkers()"
+                                        [markerSize]="markerSize()"
+                                        [markerShape]="markerShape()"
+                                        [pointRotation]="pointRotation()"
+                                        [pointBorderStrokeWidth]="pointBorderWidth() > 0 ? pointBorderWidth() : undefined"
+                                        [pointBorderColor]="pointBorderWidth() > 0 ? pointBorderColor() : undefined"
+                                        [pointBorderDash]="pointBorderWidth() > 0 ? pointBorderDashProp() : undefined"
+                                        [pointBorderDashOffset]="pointBorderWidth() > 0 && pointBorderDashProp() ? pointBorderDashOffset() : undefined"
+                                        [pointBorderJoinStyle]="pointBorderWidth() > 0 ? pointBorderJoinStyle() : undefined"
+                                        [connectNulls]="connectNullsProp()"
+                                        [lineStyle]="lineStyleMode() !== 'solid' ? lineStyleMode() : undefined"
+                                        [borderDashOffset]="borderDashProp() && borderDashOffset() > 0 ? borderDashOffset() : undefined"
+                                        [pointHitRadius]="pointHitRadius() !== 10 ? pointHitRadius() : undefined"
+                                        [pointHoverBackgroundColor]="pointHoverBgMode() === 'custom' ? pointHoverBackgroundColor() : undefined"
+                                        [hoverColor]="hoverColorMode() === 'custom' ? hoverColor() : undefined"
+                                        [hoverBorderColor]="hoverBorderColorMode() === 'custom' ? hoverBorderColor() : undefined"
+                                        [segmentStrokeWidth]="segmentWidth() > 0 ? segmentWidth() : undefined"
+                                        [segmentFillColor]="segmentFillColorMode() === 'custom' ? segmentFillColor() : undefined"
+                                    />
+                                    <p-chart-line
+                                        id="series-2"
+                                        [data]="activeData()"
+                                        categoryXField="month"
+                                        valueYField="series2"
+                                        name="Low"
+                                        [color]="seriesColors()[1]"
+                                        [lineStrokeWidth]="lineWidth()"
+                                        [borderColor]="borderColorProp()"
+                                        [borderStrokeWidth]="borderWidthProp()"
+                                        [borderDash]="borderDashProp()"
+                                        [borderCapStyle]="borderCapStyle()"
+                                        [borderJoinStyle]="borderJoinStyle()"
+                                        [lineDash]="lineDashProp()"
+                                        [curve]="curve()"
+                                        [tension]="curve() === 'spline' ? tension() : undefined"
+                                        [showMarkers]="showMarkers()"
+                                        [markerSize]="markerSize()"
+                                        [pointBorderStrokeWidth]="pointBorderWidth() > 0 ? pointBorderWidth() : undefined"
+                                        [pointBorderColor]="pointBorderWidth() > 0 ? pointBorderColor() : undefined"
+                                        [pointBorderDash]="pointBorderWidth() > 0 ? pointBorderDashProp() : undefined"
+                                        [pointBorderDashOffset]="pointBorderWidth() > 0 && pointBorderDashProp() ? pointBorderDashOffset() : undefined"
+                                        [pointBorderJoinStyle]="pointBorderWidth() > 0 ? pointBorderJoinStyle() : undefined"
+                                        [connectNulls]="connectNullsProp()"
+                                        [lineStyle]="lineStyleMode() !== 'solid' ? lineStyleMode() : undefined"
+                                        [borderDashOffset]="borderDashProp() && borderDashOffset() > 0 ? borderDashOffset() : undefined"
+                                        [pointHitRadius]="pointHitRadius() !== 10 ? pointHitRadius() : undefined"
+                                        [segmentStrokeWidth]="segmentWidth() > 0 ? segmentWidth() : undefined"
+                                        [segmentFillColor]="segmentFillColorMode() === 'custom' ? segmentFillColor() : undefined"
+                                    />
+                                </p-chart-range>
+                            } @else if (isStacked()) {
+                                <p-chart-stacked [mode]="stackedMode()">
+                                    @for (i of seriesIndexes(); track i) {
+                                        <p-chart-line
+                                            [id]="'series-' + i"
+                                            [data]="activeData()"
+                                            categoryXField="month"
+                                            [valueYField]="i === 1 ? 'value' : 'series' + i"
+                                            [name]="'Series ' + i"
+                                            [color]="seriesColors()[i - 1]"
+                                            [lineStrokeWidth]="lineWidth()"
+                                            [borderColor]="borderColorProp()"
+                                            [borderStrokeWidth]="borderWidthProp()"
+                                            [borderDash]="borderDashProp()"
+                                            [borderCapStyle]="borderCapStyle()"
+                                            [borderJoinStyle]="borderJoinStyle()"
+                                            [lineDash]="lineDashProp()"
+                                            [lineDashOffset]="lineDashProp() ? lineDashOffset() : undefined"
+                                            [lineCapStyle]="lineCapStyle()"
+                                            [lineJoinStyle]="lineJoinStyle()"
+                                            [curve]="curve()"
+                                            [tension]="curve() === 'spline' ? tension() : undefined"
+                                            [fillOpacity]="fillOpacity()"
+                                            [showMarkers]="showMarkers()"
+                                            [markerSize]="markerSize()"
+                                            [markerShape]="markerShape()"
+                                            [pointRotation]="pointRotation()"
+                                            [pointBorderStrokeWidth]="pointBorderWidth() > 0 ? pointBorderWidth() : undefined"
+                                            [pointBorderColor]="pointBorderWidth() > 0 ? pointBorderColor() : undefined"
+                                            [pointBorderDash]="pointBorderWidth() > 0 ? pointBorderDashProp() : undefined"
+                                            [pointBorderDashOffset]="pointBorderWidth() > 0 && pointBorderDashProp() ? pointBorderDashOffset() : undefined"
+                                            [pointBorderJoinStyle]="pointBorderWidth() > 0 ? pointBorderJoinStyle() : undefined"
+                                            [connectNulls]="i === 1 ? connectNullsProp() : undefined"
+                                            [lineStyle]="lineStyleMode() !== 'solid' ? lineStyleMode() : undefined"
+                                            [borderDashOffset]="borderDashProp() && borderDashOffset() > 0 ? borderDashOffset() : undefined"
+                                            [pointHitRadius]="pointHitRadius() !== 10 ? pointHitRadius() : undefined"
+                                            [segmentStrokeWidth]="segmentWidth() > 0 ? segmentWidth() : undefined"
+                                            [segmentFillColor]="segmentFillColorMode() === 'custom' ? segmentFillColor() : undefined"
+                                        />
+                                    }
+                                </p-chart-stacked>
+                            } @else {
                                 @for (i of seriesIndexes(); track i) {
                                     <p-chart-line
                                         [id]="'series-' + i"
                                         [data]="activeData()"
                                         categoryXField="month"
                                         [valueYField]="i === 1 ? 'value' : 'series' + i"
-                                        [name]="'Series ' + i"
-                                        [color]="seriesColors()[i - 1]"
+                                        [name]="datasetCount() === 1 ? 'Value' : 'Series ' + i"
+                                        [color]="datasetCount() === 1 ? color() : seriesColors()[i - 1]"
                                         [lineStrokeWidth]="lineWidth()"
                                         [borderColor]="borderColorProp()"
                                         [borderStrokeWidth]="borderWidthProp()"
@@ -139,419 +180,387 @@ const DEFAULT_HOVER_MARK = '#ffd166';
                                         [markerSize]="markerSize()"
                                         [markerShape]="markerShape()"
                                         [pointRotation]="pointRotation()"
+                                        [pointBackgroundColor]="i === 1 ? pointBgColorProp() : undefined"
                                         [pointBorderStrokeWidth]="pointBorderWidth() > 0 ? pointBorderWidth() : undefined"
                                         [pointBorderColor]="pointBorderWidth() > 0 ? pointBorderColor() : undefined"
                                         [pointBorderDash]="pointBorderWidth() > 0 ? pointBorderDashProp() : undefined"
                                         [pointBorderDashOffset]="pointBorderWidth() > 0 && pointBorderDashProp() ? pointBorderDashOffset() : undefined"
                                         [pointBorderJoinStyle]="pointBorderWidth() > 0 ? pointBorderJoinStyle() : undefined"
+                                        [hoverPointRadius]="hoverPointRadiusProp()"
+                                        [pointHoverBorderColor]="pointHoverBorderColorMode() === 'custom' ? pointHoverBorderColor() : undefined"
+                                        [pointHoverBorderStrokeWidth]="pointHoverBorderStrokeWidthProp()"
                                         [connectNulls]="i === 1 ? connectNullsProp() : undefined"
+                                        [segmentColor]="i === 1 ? segmentColorProp() : undefined"
+                                        [segmentDash]="i === 1 ? segmentDashProp() : undefined"
                                         [lineStyle]="lineStyleMode() !== 'solid' ? lineStyleMode() : undefined"
                                         [borderDashOffset]="borderDashProp() && borderDashOffset() > 0 ? borderDashOffset() : undefined"
                                         [pointHitRadius]="pointHitRadius() !== 10 ? pointHitRadius() : undefined"
+                                        [pointHoverBackgroundColor]="i === 1 ? (pointHoverBgMode() === 'custom' ? pointHoverBackgroundColor() : undefined) : undefined"
+                                        [hoverColor]="hoverColorMode() === 'custom' ? hoverColor() : undefined"
+                                        [hoverBorderColor]="hoverBorderColorMode() === 'custom' ? hoverBorderColor() : undefined"
                                         [segmentStrokeWidth]="segmentWidth() > 0 ? segmentWidth() : undefined"
                                         [segmentFillColor]="segmentFillColorMode() === 'custom' ? segmentFillColor() : undefined"
                                     />
                                 }
-                            </p-chart-stacked>
-                        } @else {
-                            @for (i of seriesIndexes(); track i) {
-                                <p-chart-line
-                                    [id]="'series-' + i"
-                                    [data]="activeData()"
-                                    categoryXField="month"
-                                    [valueYField]="i === 1 ? 'value' : 'series' + i"
-                                    [name]="datasetCount() === 1 ? 'Value' : 'Series ' + i"
-                                    [color]="datasetCount() === 1 ? color() : seriesColors()[i - 1]"
-                                    [lineStrokeWidth]="lineWidth()"
-                                    [borderColor]="borderColorProp()"
-                                    [borderStrokeWidth]="borderWidthProp()"
-                                    [borderDash]="borderDashProp()"
-                                    [borderCapStyle]="borderCapStyle()"
-                                    [borderJoinStyle]="borderJoinStyle()"
-                                    [lineDash]="lineDashProp()"
-                                    [lineDashOffset]="lineDashProp() ? lineDashOffset() : undefined"
-                                    [lineCapStyle]="lineCapStyle()"
-                                    [lineJoinStyle]="lineJoinStyle()"
-                                    [curve]="curve()"
-                                    [tension]="curve() === 'spline' ? tension() : undefined"
-                                    [fillOpacity]="fillOpacity()"
-                                    [showMarkers]="showMarkers()"
-                                    [markerSize]="markerSize()"
-                                    [markerShape]="markerShape()"
-                                    [pointRotation]="pointRotation()"
-                                    [pointBackgroundColor]="i === 1 ? pointBgColorProp() : undefined"
-                                    [pointBorderStrokeWidth]="pointBorderWidth() > 0 ? pointBorderWidth() : undefined"
-                                    [pointBorderColor]="pointBorderWidth() > 0 ? pointBorderColor() : undefined"
-                                    [pointBorderDash]="pointBorderWidth() > 0 ? pointBorderDashProp() : undefined"
-                                    [pointBorderDashOffset]="pointBorderWidth() > 0 && pointBorderDashProp() ? pointBorderDashOffset() : undefined"
-                                    [pointBorderJoinStyle]="pointBorderWidth() > 0 ? pointBorderJoinStyle() : undefined"
-                                    [hoverPointRadius]="hoverPointRadiusProp()"
-                                    [pointHoverBorderColor]="pointHoverBorderColorMode() === 'custom' ? pointHoverBorderColor() : undefined"
-                                    [pointHoverBorderStrokeWidth]="pointHoverBorderStrokeWidthProp()"
-                                    [connectNulls]="i === 1 ? connectNullsProp() : undefined"
-                                    [segmentColor]="i === 1 ? segmentColorProp() : undefined"
-                                    [segmentDash]="i === 1 ? segmentDashProp() : undefined"
-                                    [lineStyle]="lineStyleMode() !== 'solid' ? lineStyleMode() : undefined"
-                                    [borderDashOffset]="borderDashProp() && borderDashOffset() > 0 ? borderDashOffset() : undefined"
-                                    [pointHitRadius]="pointHitRadius() !== 10 ? pointHitRadius() : undefined"
-                                    [pointHoverBackgroundColor]="i === 1 ? (pointHoverBgMode() === 'custom' ? pointHoverBackgroundColor() : undefined) : undefined"
-                                    [hoverColor]="hoverColorMode() === 'custom' ? hoverColor() : undefined"
-                                    [hoverBorderColor]="hoverBorderColorMode() === 'custom' ? hoverBorderColor() : undefined"
-                                    [segmentStrokeWidth]="segmentWidth() > 0 ? segmentWidth() : undefined"
-                                    [segmentFillColor]="segmentFillColorMode() === 'custom' ? segmentFillColor() : undefined"
-                                />
                             }
-                        }
-                        <p-chart-x-axis />
-                        <p-chart-y-axis />
-                        <p-chart-legend position="bottom" />
-                        <p-chart-tooltip mode="shared" crosshair />
-                        <p-chart-hover [radiusMultiplier]="hoverRadiusMultiplier()" [brightness]="hoverBrightness()" [dimOpacity]="hoverDimOpacity()" />
-                    </p-chart-svg>
-                </div>
+                            <p-chart-x-axis />
+                            <p-chart-y-axis />
+                            <p-chart-legend position="bottom" />
+                            <p-chart-tooltip mode="shared" crosshair />
+                            <p-chart-hover [radiusMultiplier]="hoverRadiusMultiplier()" [brightness]="hoverBrightness()" [dimOpacity]="hoverDimOpacity()" />
+                        </p-chart-svg>
+                    </div>
 
-                <div class="playground-controls">
-                    <div class="playground-controls-header">Controls</div>
+                    <div class="playground-controls">
+                        <div class="playground-controls-header">Controls</div>
 
-                    <app-playground-section title="Series" [open]="openGroups().series" (toggle)="toggleGroup('series')">
-                        <div class="px-3 py-3 flex flex-col gap-3">
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">datasets — {{ datasetCount() }}</label>
-                                <p-selectbutton [options]="datasetOptions" [ngModel]="datasetCountStr()" (ngModelChange)="setDatasetCountStr($event)" [allowEmpty]="false" />
-                            </div>
-                            @if (isMulti()) {
+                        <app-playground-section title="Series" [open]="openGroups().series" (toggle)="toggleGroup('series')">
+                            <div class="px-3 py-3 flex flex-col gap-3">
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-xs text-surface-500 dark:text-surface-400">mode</label>
-                                    <p-selectbutton [options]="stackOptions" [ngModel]="stackMode()" (ngModelChange)="stackMode.set($event)" [allowEmpty]="false" [disabled]="rangeMode()" />
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">datasets — {{ datasetCount() }}</label>
+                                    <p-selectbutton [options]="datasetOptions" [ngModel]="datasetCountStr()" (ngModelChange)="setDatasetCountStr($event)" [allowEmpty]="false" />
                                 </div>
-                            }
-                            @if (datasetCount() >= 2) {
-                                <div class="flex flex-col gap-1">
-                                    <label class="text-xs text-surface-500 dark:text-surface-400">range area</label>
-                                    <p-selectbutton [options]="onOffOptions" [ngModel]="rangeModeOpt()" (ngModelChange)="setRangeModeOpt($event)" [allowEmpty]="false" [disabled]="isStacked()" />
-                                </div>
-                            }
-                        </div>
-                    </app-playground-section>
-
-                    <app-playground-section title="Line Style" [open]="openGroups().line" (toggle)="toggleGroup('line')">
-                        <div class="px-3 py-3 flex flex-col gap-3">
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">lineStrokeWidth — {{ lineWidth() }}px</label>
-                                <p-slider [ngModel]="lineWidth()" (ngModelChange)="lineWidth.set($event)" [min]="0.5" [max]="8" [step]="0.5" styleClass="w-full" />
-                            </div>
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">lineStyle</label>
-                                <p-selectbutton [options]="lineStyleOptions" [ngModel]="lineStyleMode()" (ngModelChange)="lineStyleMode.set($event)" [allowEmpty]="false" />
-                            </div>
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">lineDash</label>
-                                <p-selectbutton [options]="lineDashOptions" [ngModel]="lineDashMode()" (ngModelChange)="lineDashMode.set($event)" [allowEmpty]="false" />
-                            </div>
-                            @if (lineDashMode() !== 'none') {
-                                <div class="flex flex-col gap-1">
-                                    <label class="text-xs text-surface-500 dark:text-surface-400">lineDashOffset — {{ lineDashOffset() }}</label>
-                                    <p-slider [ngModel]="lineDashOffset()" (ngModelChange)="lineDashOffset.set($event)" [min]="0" [max]="20" [step]="1" styleClass="w-full" />
-                                </div>
-                            }
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">lineCapStyle</label>
-                                <p-selectbutton [options]="capOptions" [ngModel]="lineCapStyle()" (ngModelChange)="lineCapStyle.set($event)" [allowEmpty]="false" />
-                            </div>
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">lineJoinStyle</label>
-                                <p-selectbutton [options]="lineJoinOptions" [ngModel]="lineJoinStyle()" (ngModelChange)="lineJoinStyle.set($event)" [allowEmpty]="false" />
-                            </div>
-                        </div>
-                    </app-playground-section>
-
-                    <app-playground-section title="Curve" [open]="openGroups().curve" (toggle)="toggleGroup('curve')">
-                        <div class="px-3 py-3 flex flex-col gap-3">
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">curve</label>
-                                <p-select [options]="curveOptions" [ngModel]="curve()" (ngModelChange)="curve.set($event)" styleClass="w-full" appendTo="body" />
-                            </div>
-                            @if (curve() === 'spline') {
-                                <div class="flex flex-col gap-1">
-                                    <label class="text-xs text-surface-500 dark:text-surface-400">tension — {{ tension().toFixed(2) }}</label>
-                                    <p-slider [ngModel]="tension()" (ngModelChange)="tension.set($event)" [min]="0" [max]="1" [step]="0.05" styleClass="w-full" />
-                                </div>
-                            }
-                        </div>
-                    </app-playground-section>
-
-                    <app-playground-section title="Area Fill" [open]="openGroups().area" (toggle)="toggleGroup('area')">
-                        <div class="px-3 py-3 flex flex-col gap-3">
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">fillOpacity — {{ fillOpacity().toFixed(2) }}</label>
-                                <p-slider [ngModel]="fillOpacity()" (ngModelChange)="fillOpacity.set($event)" [min]="0" [max]="1" [step]="0.05" styleClass="w-full" />
-                            </div>
-                        </div>
-                    </app-playground-section>
-
-                    <app-playground-section title="Segment Styling" [open]="openGroups().segment" (toggle)="toggleGroup('segment')">
-                        <div class="px-3 py-3 flex flex-col gap-3">
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">segment preset</label>
-                                <p-select [options]="segmentOptions" optionLabel="label" optionValue="value" [ngModel]="segmentMode()" (ngModelChange)="segmentMode.set($event)" styleClass="w-full" appendTo="body" />
-                            </div>
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">segmentStrokeWidth — {{ segmentWidth() === 0 ? 'auto' : segmentWidth() + 'px' }}</label>
-                                <p-slider [ngModel]="segmentWidth()" (ngModelChange)="segmentWidth.set($event)" [min]="0" [max]="10" [step]="0.5" styleClass="w-full" />
-                            </div>
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">segmentFillColor</label>
-                                <p-selectbutton [options]="autoCustomOptions" [ngModel]="segmentFillColorMode()" (ngModelChange)="segmentFillColorMode.set($event)" [allowEmpty]="false" />
-                            </div>
-                            @if (segmentFillColorMode() === 'custom') {
-                                <div class="flex flex-col gap-1">
-                                    <div class="flex items-center gap-2">
-                                        <input type="color" [value]="segmentFillColor()" (input)="segmentFillColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
-                                        <span class="text-xs font-semibold">{{ segmentFillColor() }}</span>
-                                    </div>
-                                </div>
-                            }
-                            @if (segmentMode() !== 'none') {
-                                <p class="text-[10px] text-surface-400 dark:text-surface-500 leading-relaxed">
-                                    {{ segmentMode() === 'trend' ? 'Segments rising to a higher value are green, falling segments are red.' : 'Every other segment uses a dashed stroke pattern.' }}
-                                </p>
-                            }
-                        </div>
-                    </app-playground-section>
-
-                    <app-playground-section title="Null Handling" [open]="openGroups().nulls" (toggle)="toggleGroup('nulls')">
-                        <div class="px-3 py-3 flex flex-col gap-3">
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">null data</label>
-                                <p-selectbutton [options]="onOffOptions" [ngModel]="showNullsOpt()" (ngModelChange)="setShowNullsOpt($event)" [allowEmpty]="false" />
-                            </div>
-                            @if (showNulls()) {
-                                <div class="flex flex-col gap-1">
-                                    <label class="text-xs text-surface-500 dark:text-surface-400">connectNulls</label>
-                                    <p-selectbutton [options]="connectNullsOptions" [ngModel]="connectNulls()" (ngModelChange)="connectNulls.set($event)" [allowEmpty]="false" />
-                                </div>
-                            }
-                        </div>
-                    </app-playground-section>
-
-                    <app-playground-section title="Color" [open]="openGroups().color" (toggle)="toggleGroup('color')">
-                        <div class="px-3 py-3 flex flex-col gap-3">
-                            @if (!isMulti()) {
-                                <div class="flex flex-col gap-1">
-                                    <label class="text-xs text-surface-500 dark:text-surface-400">color</label>
-                                    <div class="flex items-center gap-2">
-                                        <input type="color" [value]="color()" (input)="color.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
-                                        <span class="text-xs font-semibold">{{ color() }}</span>
-                                    </div>
-                                </div>
-                            } @else {
-                                <div class="flex flex-col gap-1">
-                                    <label class="text-xs text-surface-500 dark:text-surface-400">series colors</label>
-                                    <div class="flex items-center gap-2">
-                                        @for (i of seriesIndexes(); track i) {
-                                            <div class="flex items-center gap-1">
-                                                <input type="color" [value]="seriesColors()[i - 1]" (input)="setSeriesColor(i - 1, $event)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
-                                                <span class="text-[10px] opacity-60">S{{ i }}</span>
-                                            </div>
-                                        }
-                                    </div>
-                                </div>
-                            }
-                        </div>
-                    </app-playground-section>
-
-                    <app-playground-section title="Markers" [open]="openGroups().markers" (toggle)="toggleGroup('markers')">
-                        <div class="px-3 py-3 flex flex-col gap-3">
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">pointHitRadius — {{ pointHitRadius() }}px</label>
-                                <p-slider [ngModel]="pointHitRadius()" (ngModelChange)="pointHitRadius.set($event)" [min]="4" [max]="30" [step]="1" styleClass="w-full" />
-                            </div>
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">showMarkers</label>
-                                <p-selectbutton [options]="onOffOptions" [ngModel]="showMarkersOpt()" (ngModelChange)="setShowMarkersOpt($event)" [allowEmpty]="false" />
-                            </div>
-                            @if (showMarkers()) {
-                                <div class="flex flex-col gap-1">
-                                    <label class="text-xs text-surface-500 dark:text-surface-400">markerSize — {{ markerSize() }}px</label>
-                                    <p-slider [ngModel]="markerSize()" (ngModelChange)="markerSize.set($event)" [min]="2" [max]="16" [step]="1" styleClass="w-full" />
-                                </div>
-                                <div class="flex flex-col gap-1">
-                                    <label class="text-xs text-surface-500 dark:text-surface-400">markerShape</label>
-                                    <p-select [options]="markerShapeOptions" [ngModel]="markerShape()" (ngModelChange)="markerShape.set($event)" styleClass="w-full" appendTo="body" />
-                                </div>
-                                <div class="flex flex-col gap-1">
-                                    <label class="text-xs text-surface-500 dark:text-surface-400">pointRotation — {{ pointRotation() }}°</label>
-                                    <p-slider [ngModel]="pointRotation()" (ngModelChange)="pointRotation.set($event)" [min]="0" [max]="360" [step]="5" styleClass="w-full" />
-                                </div>
-                                <div class="flex flex-col gap-1">
-                                    <label class="text-xs text-surface-500 dark:text-surface-400">pointBackgroundColor</label>
-                                    <div class="flex items-center gap-2">
-                                        <input
-                                            type="color"
-                                            [value]="pointBackgroundColor() || color()"
-                                            (input)="pointBackgroundColor.set($any($event.target).value)"
-                                            style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0"
-                                        />
-                                        <span class="text-xs font-semibold">{{ pointBackgroundColor() || 'series color' }}</span>
-                                    </div>
-                                </div>
-                                <div class="flex flex-col gap-1">
-                                    <label class="text-xs text-surface-500 dark:text-surface-400">pointBorderStrokeWidth — {{ pointBorderWidth() }}px</label>
-                                    <p-slider [ngModel]="pointBorderWidth()" (ngModelChange)="pointBorderWidth.set($event)" [min]="0" [max]="8" [step]="0.5" styleClass="w-full" />
-                                </div>
-                                @if (pointBorderWidth() > 0) {
+                                @if (isMulti()) {
                                     <div class="flex flex-col gap-1">
-                                        <label class="text-xs text-surface-500 dark:text-surface-400">pointBorderColor</label>
+                                        <label class="text-xs text-surface-500 dark:text-surface-400">mode</label>
+                                        <p-selectbutton [options]="stackOptions" [ngModel]="stackMode()" (ngModelChange)="stackMode.set($event)" [allowEmpty]="false" [disabled]="rangeMode()" />
+                                    </div>
+                                }
+                                @if (datasetCount() >= 2) {
+                                    <div class="flex flex-col gap-1">
+                                        <label class="text-xs text-surface-500 dark:text-surface-400">range area</label>
+                                        <p-selectbutton [options]="onOffOptions" [ngModel]="rangeModeOpt()" (ngModelChange)="setRangeModeOpt($event)" [allowEmpty]="false" [disabled]="isStacked()" />
+                                    </div>
+                                }
+                            </div>
+                        </app-playground-section>
+
+                        <app-playground-section title="Line Style" [open]="openGroups().line" (toggle)="toggleGroup('line')">
+                            <div class="px-3 py-3 flex flex-col gap-3">
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">lineStrokeWidth — {{ lineWidth() }}px</label>
+                                    <p-slider [ngModel]="lineWidth()" (ngModelChange)="lineWidth.set($event)" [min]="0.5" [max]="8" [step]="0.5" styleClass="w-full" />
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">lineStyle</label>
+                                    <p-selectbutton [options]="lineStyleOptions" [ngModel]="lineStyleMode()" (ngModelChange)="lineStyleMode.set($event)" [allowEmpty]="false" />
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">lineDash</label>
+                                    <p-selectbutton [options]="lineDashOptions" [ngModel]="lineDashMode()" (ngModelChange)="lineDashMode.set($event)" [allowEmpty]="false" />
+                                </div>
+                                @if (lineDashMode() !== 'none') {
+                                    <div class="flex flex-col gap-1">
+                                        <label class="text-xs text-surface-500 dark:text-surface-400">lineDashOffset — {{ lineDashOffset() }}</label>
+                                        <p-slider [ngModel]="lineDashOffset()" (ngModelChange)="lineDashOffset.set($event)" [min]="0" [max]="20" [step]="1" styleClass="w-full" />
+                                    </div>
+                                }
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">lineCapStyle</label>
+                                    <p-selectbutton [options]="capOptions" [ngModel]="lineCapStyle()" (ngModelChange)="lineCapStyle.set($event)" [allowEmpty]="false" />
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">lineJoinStyle</label>
+                                    <p-selectbutton [options]="lineJoinOptions" [ngModel]="lineJoinStyle()" (ngModelChange)="lineJoinStyle.set($event)" [allowEmpty]="false" />
+                                </div>
+                            </div>
+                        </app-playground-section>
+
+                        <app-playground-section title="Curve" [open]="openGroups().curve" (toggle)="toggleGroup('curve')">
+                            <div class="px-3 py-3 flex flex-col gap-3">
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">curve</label>
+                                    <p-select [options]="curveOptions" [ngModel]="curve()" (ngModelChange)="curve.set($event)" styleClass="w-full" appendTo="body" />
+                                </div>
+                                @if (curve() === 'spline') {
+                                    <div class="flex flex-col gap-1">
+                                        <label class="text-xs text-surface-500 dark:text-surface-400">tension — {{ tension().toFixed(2) }}</label>
+                                        <p-slider [ngModel]="tension()" (ngModelChange)="tension.set($event)" [min]="0" [max]="1" [step]="0.05" styleClass="w-full" />
+                                    </div>
+                                }
+                            </div>
+                        </app-playground-section>
+
+                        <app-playground-section title="Area Fill" [open]="openGroups().area" (toggle)="toggleGroup('area')">
+                            <div class="px-3 py-3 flex flex-col gap-3">
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">fillOpacity — {{ fillOpacity().toFixed(2) }}</label>
+                                    <p-slider [ngModel]="fillOpacity()" (ngModelChange)="fillOpacity.set($event)" [min]="0" [max]="1" [step]="0.05" styleClass="w-full" />
+                                </div>
+                            </div>
+                        </app-playground-section>
+
+                        <app-playground-section title="Segment Styling" [open]="openGroups().segment" (toggle)="toggleGroup('segment')">
+                            <div class="px-3 py-3 flex flex-col gap-3">
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">segment preset</label>
+                                    <p-select [options]="segmentOptions" optionLabel="label" optionValue="value" [ngModel]="segmentMode()" (ngModelChange)="segmentMode.set($event)" styleClass="w-full" appendTo="body" />
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">segmentStrokeWidth — {{ segmentWidth() === 0 ? 'auto' : segmentWidth() + 'px' }}</label>
+                                    <p-slider [ngModel]="segmentWidth()" (ngModelChange)="segmentWidth.set($event)" [min]="0" [max]="10" [step]="0.5" styleClass="w-full" />
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">segmentFillColor</label>
+                                    <p-selectbutton [options]="autoCustomOptions" [ngModel]="segmentFillColorMode()" (ngModelChange)="segmentFillColorMode.set($event)" [allowEmpty]="false" />
+                                </div>
+                                @if (segmentFillColorMode() === 'custom') {
+                                    <div class="flex flex-col gap-1">
                                         <div class="flex items-center gap-2">
-                                            <input type="color" [value]="pointBorderColor()" (input)="pointBorderColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
-                                            <span class="text-xs font-semibold">{{ pointBorderColor() }}</span>
+                                            <input type="color" [value]="segmentFillColor()" (input)="segmentFillColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
+                                            <span class="text-xs font-semibold">{{ segmentFillColor() }}</span>
+                                        </div>
+                                    </div>
+                                }
+                                @if (segmentMode() !== 'none') {
+                                    <p class="text-[10px] text-surface-400 dark:text-surface-500 leading-relaxed">
+                                        {{ segmentMode() === 'trend' ? 'Segments rising to a higher value are green, falling segments are red.' : 'Every other segment uses a dashed stroke pattern.' }}
+                                    </p>
+                                }
+                            </div>
+                        </app-playground-section>
+
+                        <app-playground-section title="Null Handling" [open]="openGroups().nulls" (toggle)="toggleGroup('nulls')">
+                            <div class="px-3 py-3 flex flex-col gap-3">
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">null data</label>
+                                    <p-selectbutton [options]="onOffOptions" [ngModel]="showNullsOpt()" (ngModelChange)="setShowNullsOpt($event)" [allowEmpty]="false" />
+                                </div>
+                                @if (showNulls()) {
+                                    <div class="flex flex-col gap-1">
+                                        <label class="text-xs text-surface-500 dark:text-surface-400">connectNulls</label>
+                                        <p-selectbutton [options]="connectNullsOptions" [ngModel]="connectNulls()" (ngModelChange)="connectNulls.set($event)" [allowEmpty]="false" />
+                                    </div>
+                                }
+                            </div>
+                        </app-playground-section>
+
+                        <app-playground-section title="Color" [open]="openGroups().color" (toggle)="toggleGroup('color')">
+                            <div class="px-3 py-3 flex flex-col gap-3">
+                                @if (!isMulti()) {
+                                    <div class="flex flex-col gap-1">
+                                        <label class="text-xs text-surface-500 dark:text-surface-400">color</label>
+                                        <div class="flex items-center gap-2">
+                                            <input type="color" [value]="color()" (input)="color.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
+                                            <span class="text-xs font-semibold">{{ color() }}</span>
+                                        </div>
+                                    </div>
+                                } @else {
+                                    <div class="flex flex-col gap-1">
+                                        <label class="text-xs text-surface-500 dark:text-surface-400">series colors</label>
+                                        <div class="flex items-center gap-2">
+                                            @for (i of seriesIndexes(); track i) {
+                                                <div class="flex items-center gap-1">
+                                                    <input type="color" [value]="seriesColors()[i - 1]" (input)="setSeriesColor(i - 1, $event)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
+                                                    <span class="text-[10px] opacity-60">S{{ i }}</span>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </app-playground-section>
+
+                        <app-playground-section title="Markers" [open]="openGroups().markers" (toggle)="toggleGroup('markers')">
+                            <div class="px-3 py-3 flex flex-col gap-3">
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">pointHitRadius — {{ pointHitRadius() }}px</label>
+                                    <p-slider [ngModel]="pointHitRadius()" (ngModelChange)="pointHitRadius.set($event)" [min]="4" [max]="30" [step]="1" styleClass="w-full" />
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">showMarkers</label>
+                                    <p-selectbutton [options]="onOffOptions" [ngModel]="showMarkersOpt()" (ngModelChange)="setShowMarkersOpt($event)" [allowEmpty]="false" />
+                                </div>
+                                @if (showMarkers()) {
+                                    <div class="flex flex-col gap-1">
+                                        <label class="text-xs text-surface-500 dark:text-surface-400">markerSize — {{ markerSize() }}px</label>
+                                        <p-slider [ngModel]="markerSize()" (ngModelChange)="markerSize.set($event)" [min]="2" [max]="16" [step]="1" styleClass="w-full" />
+                                    </div>
+                                    <div class="flex flex-col gap-1">
+                                        <label class="text-xs text-surface-500 dark:text-surface-400">markerShape</label>
+                                        <p-select [options]="markerShapeOptions" [ngModel]="markerShape()" (ngModelChange)="markerShape.set($event)" styleClass="w-full" appendTo="body" />
+                                    </div>
+                                    <div class="flex flex-col gap-1">
+                                        <label class="text-xs text-surface-500 dark:text-surface-400">pointRotation — {{ pointRotation() }}°</label>
+                                        <p-slider [ngModel]="pointRotation()" (ngModelChange)="pointRotation.set($event)" [min]="0" [max]="360" [step]="5" styleClass="w-full" />
+                                    </div>
+                                    <div class="flex flex-col gap-1">
+                                        <label class="text-xs text-surface-500 dark:text-surface-400">pointBackgroundColor</label>
+                                        <div class="flex items-center gap-2">
+                                            <input
+                                                type="color"
+                                                [value]="pointBackgroundColor() || color()"
+                                                (input)="pointBackgroundColor.set($any($event.target).value)"
+                                                style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0"
+                                            />
+                                            <span class="text-xs font-semibold">{{ pointBackgroundColor() || 'series color' }}</span>
                                         </div>
                                     </div>
                                     <div class="flex flex-col gap-1">
-                                        <label class="text-xs text-surface-500 dark:text-surface-400">pointBorderDash</label>
-                                        <p-selectbutton [options]="dashOptions" [ngModel]="pointBorderDashMode()" (ngModelChange)="pointBorderDashMode.set($event)" [allowEmpty]="false" />
+                                        <label class="text-xs text-surface-500 dark:text-surface-400">pointBorderStrokeWidth — {{ pointBorderWidth() }}px</label>
+                                        <p-slider [ngModel]="pointBorderWidth()" (ngModelChange)="pointBorderWidth.set($event)" [min]="0" [max]="8" [step]="0.5" styleClass="w-full" />
                                     </div>
-                                    @if (pointBorderDashMode() !== 'none') {
+                                    @if (pointBorderWidth() > 0) {
                                         <div class="flex flex-col gap-1">
-                                            <label class="text-xs text-surface-500 dark:text-surface-400">pointBorderDashOffset — {{ pointBorderDashOffset() }}</label>
-                                            <p-slider [ngModel]="pointBorderDashOffset()" (ngModelChange)="pointBorderDashOffset.set($event)" [min]="0" [max]="20" [step]="1" styleClass="w-full" />
+                                            <label class="text-xs text-surface-500 dark:text-surface-400">pointBorderColor</label>
+                                            <div class="flex items-center gap-2">
+                                                <input
+                                                    type="color"
+                                                    [value]="pointBorderColor()"
+                                                    (input)="pointBorderColor.set($any($event.target).value)"
+                                                    style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0"
+                                                />
+                                                <span class="text-xs font-semibold">{{ pointBorderColor() }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex flex-col gap-1">
+                                            <label class="text-xs text-surface-500 dark:text-surface-400">pointBorderDash</label>
+                                            <p-selectbutton [options]="dashOptions" [ngModel]="pointBorderDashMode()" (ngModelChange)="pointBorderDashMode.set($event)" [allowEmpty]="false" />
+                                        </div>
+                                        @if (pointBorderDashMode() !== 'none') {
+                                            <div class="flex flex-col gap-1">
+                                                <label class="text-xs text-surface-500 dark:text-surface-400">pointBorderDashOffset — {{ pointBorderDashOffset() }}</label>
+                                                <p-slider [ngModel]="pointBorderDashOffset()" (ngModelChange)="pointBorderDashOffset.set($event)" [min]="0" [max]="20" [step]="1" styleClass="w-full" />
+                                            </div>
+                                        }
+                                        <div class="flex flex-col gap-1">
+                                            <label class="text-xs text-surface-500 dark:text-surface-400">pointBorderJoinStyle</label>
+                                            <p-selectbutton [options]="joinOptions" [ngModel]="pointBorderJoinStyle()" (ngModelChange)="pointBorderJoinStyle.set($event)" [allowEmpty]="false" />
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </app-playground-section>
+
+                        <app-playground-section title="Border" [open]="openGroups().border" (toggle)="toggleGroup('border')">
+                            <div class="px-3 py-3 flex flex-col gap-3">
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">borderWidth — {{ borderWidth() }}px</label>
+                                    <p-slider [ngModel]="borderWidth()" (ngModelChange)="borderWidth.set($event)" [min]="0" [max]="12" [step]="0.5" styleClass="w-full" />
+                                </div>
+                                @if (borderWidth() > 0) {
+                                    <div class="flex flex-col gap-1">
+                                        <label class="text-xs text-surface-500 dark:text-surface-400">borderColor</label>
+                                        <div class="flex items-center gap-2">
+                                            <input type="color" [value]="borderColor()" (input)="borderColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
+                                            <span class="text-xs font-semibold">{{ borderColor() }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-col gap-1">
+                                        <label class="text-xs text-surface-500 dark:text-surface-400">borderDash</label>
+                                        <p-selectbutton [options]="lineDashOptions" [ngModel]="borderDashMode()" (ngModelChange)="borderDashMode.set($event)" [allowEmpty]="false" />
+                                    </div>
+                                    @if (borderDashMode() !== 'none') {
+                                        <div class="flex flex-col gap-1">
+                                            <label class="text-xs text-surface-500 dark:text-surface-400">borderDashOffset — {{ borderDashOffset() }}</label>
+                                            <p-slider [ngModel]="borderDashOffset()" (ngModelChange)="borderDashOffset.set($event)" [min]="0" [max]="20" [step]="1" styleClass="w-full" />
                                         </div>
                                     }
                                     <div class="flex flex-col gap-1">
-                                        <label class="text-xs text-surface-500 dark:text-surface-400">pointBorderJoinStyle</label>
-                                        <p-selectbutton [options]="joinOptions" [ngModel]="pointBorderJoinStyle()" (ngModelChange)="pointBorderJoinStyle.set($event)" [allowEmpty]="false" />
+                                        <label class="text-xs text-surface-500 dark:text-surface-400">borderCapStyle</label>
+                                        <p-selectbutton [options]="capOptions" [ngModel]="borderCapStyle()" (ngModelChange)="borderCapStyle.set($event)" [allowEmpty]="false" />
                                     </div>
-                                }
-                            }
-                        </div>
-                    </app-playground-section>
-
-                    <app-playground-section title="Border" [open]="openGroups().border" (toggle)="toggleGroup('border')">
-                        <div class="px-3 py-3 flex flex-col gap-3">
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">borderWidth — {{ borderWidth() }}px</label>
-                                <p-slider [ngModel]="borderWidth()" (ngModelChange)="borderWidth.set($event)" [min]="0" [max]="12" [step]="0.5" styleClass="w-full" />
-                            </div>
-                            @if (borderWidth() > 0) {
-                                <div class="flex flex-col gap-1">
-                                    <label class="text-xs text-surface-500 dark:text-surface-400">borderColor</label>
-                                    <div class="flex items-center gap-2">
-                                        <input type="color" [value]="borderColor()" (input)="borderColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
-                                        <span class="text-xs font-semibold">{{ borderColor() }}</span>
-                                    </div>
-                                </div>
-                                <div class="flex flex-col gap-1">
-                                    <label class="text-xs text-surface-500 dark:text-surface-400">borderDash</label>
-                                    <p-selectbutton [options]="lineDashOptions" [ngModel]="borderDashMode()" (ngModelChange)="borderDashMode.set($event)" [allowEmpty]="false" />
-                                </div>
-                                @if (borderDashMode() !== 'none') {
                                     <div class="flex flex-col gap-1">
-                                        <label class="text-xs text-surface-500 dark:text-surface-400">borderDashOffset — {{ borderDashOffset() }}</label>
-                                        <p-slider [ngModel]="borderDashOffset()" (ngModelChange)="borderDashOffset.set($event)" [min]="0" [max]="20" [step]="1" styleClass="w-full" />
+                                        <label class="text-xs text-surface-500 dark:text-surface-400">borderJoinStyle</label>
+                                        <p-selectbutton [options]="lineJoinOptions" [ngModel]="borderJoinStyle()" (ngModelChange)="borderJoinStyle.set($event)" [allowEmpty]="false" />
+                                    </div>
+                                }
+                            </div>
+                        </app-playground-section>
+
+                        <app-playground-section title="Hover" [open]="openGroups().hover" (toggle)="toggleGroup('hover')">
+                            <div class="px-3 py-3 flex flex-col gap-3">
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">brightness — {{ hoverBrightness().toFixed(2) }}</label>
+                                    <p-slider [ngModel]="hoverBrightness()" (ngModelChange)="hoverBrightness.set($event)" [min]="1" [max]="1.5" [step]="0.05" styleClass="w-full" />
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">dimOpacity — {{ hoverDimOpacity().toFixed(2) }}</label>
+                                    <p-slider [ngModel]="hoverDimOpacity()" (ngModelChange)="hoverDimOpacity.set($event)" [min]="0" [max]="1" [step]="0.05" styleClass="w-full" />
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">radiusMultiplier — {{ hoverRadiusMultiplier().toFixed(2) }}</label>
+                                    <p-slider [ngModel]="hoverRadiusMultiplier()" (ngModelChange)="hoverRadiusMultiplier.set($event)" [min]="1" [max]="2" [step]="0.05" styleClass="w-full" />
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">hoverColor (series override)</label>
+                                    <p-selectbutton [options]="autoCustomOptions" [ngModel]="hoverColorMode()" (ngModelChange)="hoverColorMode.set($event)" [allowEmpty]="false" />
+                                </div>
+                                @if (hoverColorMode() === 'custom') {
+                                    <div class="flex flex-col gap-1">
+                                        <div class="flex items-center gap-2">
+                                            <input type="color" [value]="hoverColor()" (input)="hoverColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
+                                            <span class="text-xs font-semibold">{{ hoverColor() }}</span>
+                                        </div>
                                     </div>
                                 }
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-xs text-surface-500 dark:text-surface-400">borderCapStyle</label>
-                                    <p-selectbutton [options]="capOptions" [ngModel]="borderCapStyle()" (ngModelChange)="borderCapStyle.set($event)" [allowEmpty]="false" />
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">hoverBorderColor (series override)</label>
+                                    <p-selectbutton [options]="autoCustomOptions" [ngModel]="hoverBorderColorMode()" (ngModelChange)="hoverBorderColorMode.set($event)" [allowEmpty]="false" />
                                 </div>
-                                <div class="flex flex-col gap-1">
-                                    <label class="text-xs text-surface-500 dark:text-surface-400">borderJoinStyle</label>
-                                    <p-selectbutton [options]="lineJoinOptions" [ngModel]="borderJoinStyle()" (ngModelChange)="borderJoinStyle.set($event)" [allowEmpty]="false" />
-                                </div>
-                            }
-                        </div>
-                    </app-playground-section>
-
-                    <app-playground-section title="Hover" [open]="openGroups().hover" (toggle)="toggleGroup('hover')">
-                        <div class="px-3 py-3 flex flex-col gap-3">
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">brightness — {{ hoverBrightness().toFixed(2) }}</label>
-                                <p-slider [ngModel]="hoverBrightness()" (ngModelChange)="hoverBrightness.set($event)" [min]="1" [max]="1.5" [step]="0.05" styleClass="w-full" />
-                            </div>
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">dimOpacity — {{ hoverDimOpacity().toFixed(2) }}</label>
-                                <p-slider [ngModel]="hoverDimOpacity()" (ngModelChange)="hoverDimOpacity.set($event)" [min]="0" [max]="1" [step]="0.05" styleClass="w-full" />
-                            </div>
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">radiusMultiplier — {{ hoverRadiusMultiplier().toFixed(2) }}</label>
-                                <p-slider [ngModel]="hoverRadiusMultiplier()" (ngModelChange)="hoverRadiusMultiplier.set($event)" [min]="1" [max]="2" [step]="0.05" styleClass="w-full" />
-                            </div>
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">hoverColor (series override)</label>
-                                <p-selectbutton [options]="autoCustomOptions" [ngModel]="hoverColorMode()" (ngModelChange)="hoverColorMode.set($event)" [allowEmpty]="false" />
-                            </div>
-                            @if (hoverColorMode() === 'custom') {
-                                <div class="flex flex-col gap-1">
-                                    <div class="flex items-center gap-2">
-                                        <input type="color" [value]="hoverColor()" (input)="hoverColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
-                                        <span class="text-xs font-semibold">{{ hoverColor() }}</span>
+                                @if (hoverBorderColorMode() === 'custom') {
+                                    <div class="flex flex-col gap-1">
+                                        <div class="flex items-center gap-2">
+                                            <input type="color" [value]="hoverBorderColor()" (input)="hoverBorderColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
+                                            <span class="text-xs font-semibold">{{ hoverBorderColor() }}</span>
+                                        </div>
                                     </div>
-                                </div>
-                            }
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">hoverBorderColor (series override)</label>
-                                <p-selectbutton [options]="autoCustomOptions" [ngModel]="hoverBorderColorMode()" (ngModelChange)="hoverBorderColorMode.set($event)" [allowEmpty]="false" />
-                            </div>
-                            @if (hoverBorderColorMode() === 'custom') {
+                                }
                                 <div class="flex flex-col gap-1">
-                                    <div class="flex items-center gap-2">
-                                        <input type="color" [value]="hoverBorderColor()" (input)="hoverBorderColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
-                                        <span class="text-xs font-semibold">{{ hoverBorderColor() }}</span>
-                                    </div>
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">hoverPointRadius — {{ hoverPointRadius() === 0 ? 'auto' : hoverPointRadius() + 'px' }}</label>
+                                    <p-slider [ngModel]="hoverPointRadius()" (ngModelChange)="hoverPointRadius.set($event)" [min]="0" [max]="20" [step]="1" styleClass="w-full" />
                                 </div>
-                            }
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">hoverPointRadius — {{ hoverPointRadius() === 0 ? 'auto' : hoverPointRadius() + 'px' }}</label>
-                                <p-slider [ngModel]="hoverPointRadius()" (ngModelChange)="hoverPointRadius.set($event)" [min]="0" [max]="20" [step]="1" styleClass="w-full" />
-                            </div>
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">pointHoverBackgroundColor</label>
-                                <p-selectbutton [options]="autoCustomOptions" [ngModel]="pointHoverBgMode()" (ngModelChange)="pointHoverBgMode.set($event)" [allowEmpty]="false" />
-                            </div>
-                            @if (pointHoverBgMode() === 'custom') {
                                 <div class="flex flex-col gap-1">
-                                    <div class="flex items-center gap-2">
-                                        <input
-                                            type="color"
-                                            [value]="pointHoverBackgroundColor()"
-                                            (input)="pointHoverBackgroundColor.set($any($event.target).value)"
-                                            style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0"
-                                        />
-                                        <span class="text-xs font-semibold">{{ pointHoverBackgroundColor() }}</span>
-                                    </div>
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">pointHoverBackgroundColor</label>
+                                    <p-selectbutton [options]="autoCustomOptions" [ngModel]="pointHoverBgMode()" (ngModelChange)="pointHoverBgMode.set($event)" [allowEmpty]="false" />
                                 </div>
-                            }
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">pointHoverBorderStrokeWidth — {{ pointHoverBorderStrokeWidth() }}px</label>
-                                <p-slider [ngModel]="pointHoverBorderStrokeWidth()" (ngModelChange)="pointHoverBorderStrokeWidth.set($event)" [min]="0" [max]="5" [step]="0.5" styleClass="w-full" />
-                            </div>
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">pointHoverBorderColor</label>
-                                <p-selectbutton [options]="autoCustomOptions" [ngModel]="pointHoverBorderColorMode()" (ngModelChange)="pointHoverBorderColorMode.set($event)" [allowEmpty]="false" />
-                            </div>
-                            @if (pointHoverBorderColorMode() === 'custom') {
+                                @if (pointHoverBgMode() === 'custom') {
+                                    <div class="flex flex-col gap-1">
+                                        <div class="flex items-center gap-2">
+                                            <input
+                                                type="color"
+                                                [value]="pointHoverBackgroundColor()"
+                                                (input)="pointHoverBackgroundColor.set($any($event.target).value)"
+                                                style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0"
+                                            />
+                                            <span class="text-xs font-semibold">{{ pointHoverBackgroundColor() }}</span>
+                                        </div>
+                                    </div>
+                                }
                                 <div class="flex flex-col gap-1">
-                                    <div class="flex items-center gap-2">
-                                        <input
-                                            type="color"
-                                            [value]="pointHoverBorderColor()"
-                                            (input)="pointHoverBorderColor.set($any($event.target).value)"
-                                            style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0"
-                                        />
-                                        <span class="text-xs font-semibold">{{ pointHoverBorderColor() }}</span>
-                                    </div>
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">pointHoverBorderStrokeWidth — {{ pointHoverBorderStrokeWidth() }}px</label>
+                                    <p-slider [ngModel]="pointHoverBorderStrokeWidth()" (ngModelChange)="pointHoverBorderStrokeWidth.set($event)" [min]="0" [max]="5" [step]="0.5" styleClass="w-full" />
                                 </div>
-                            }
-                        </div>
-                    </app-playground-section>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">pointHoverBorderColor</label>
+                                    <p-selectbutton [options]="autoCustomOptions" [ngModel]="pointHoverBorderColorMode()" (ngModelChange)="pointHoverBorderColorMode.set($event)" [allowEmpty]="false" />
+                                </div>
+                                @if (pointHoverBorderColorMode() === 'custom') {
+                                    <div class="flex flex-col gap-1">
+                                        <div class="flex items-center gap-2">
+                                            <input
+                                                type="color"
+                                                [value]="pointHoverBorderColor()"
+                                                (input)="pointHoverBorderColor.set($any($event.target).value)"
+                                                style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0"
+                                            />
+                                            <span class="text-xs font-semibold">{{ pointHoverBorderColor() }}</span>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </app-playground-section>
+                    </div>
                 </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PlaygroundPlaygroundDoc {
+export class LineAreaPlaygroundPlaygroundDoc {
     readonly datasetOptions = ['1', '2', '3'];
     readonly stackOptions = ['none', 'normal', 'percent'];
     readonly onOffOptions = ['off', 'on'];

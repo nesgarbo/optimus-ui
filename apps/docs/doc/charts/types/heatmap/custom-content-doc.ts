@@ -30,16 +30,20 @@ function grade(score: number): string {
                 <i>renderContent</i> function; the context is pre-clipped to the cell bounds, so draw directly and return <i>null</i>. Both expose the cell's position, dimensions, value, resolved color, and row/column labels.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-heatmap [data]="data" categoryXField="quarter" categoryYField="team" valueField="score" [colorRange]="['#eef6ff', '#5bc8f5', '#2531a8']" [colorScale]="[65, 80, 95]" [renderContent]="renderContent" />
-                    <p-chart-x-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
-                    <p-chart-y-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-heatmap [data]="data" categoryXField="quarter" categoryYField="team" valueField="score" [colorRange]="['#eef6ff', '#5bc8f5', '#2531a8']" [colorScale]="[65, 80, 95]" [renderContent]="renderContent" />
+                        <p-chart-x-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
+                        <p-chart-y-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

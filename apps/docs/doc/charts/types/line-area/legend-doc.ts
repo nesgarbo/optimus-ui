@@ -12,19 +12,23 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             <p>Add <i>ChartLegend</i> to display an interactive legend. Each <i>ChartLine</i> series appears as a separate entry; click any item to toggle that series.</p>
             <p>For full configuration see <a href="/charts/configuration/legend">Legend</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="selfServe" name="Self-serve" />
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="salesAssist" name="Sales-assist" />
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="partner" name="Partner" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                    <p-chart-legend />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="selfServe" name="Self-serve" />
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="salesAssist" name="Sales-assist" />
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="partner" name="Partner" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                        <p-chart-legend />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

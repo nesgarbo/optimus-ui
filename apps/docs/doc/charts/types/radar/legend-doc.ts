@@ -12,19 +12,23 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             <p>Add <i>ChartLegend</i> to display an interactive legend. Each <i>ChartRadar</i> series appears as a separate entry. Click any item to toggle that series.</p>
             <p>For full configuration see <a href="/charts/configuration/legend">Legend</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-radar id="starter" [data]="data" categoryXField="area" valueYField="starter" [fillOpacity]="0.15" name="Starter" />
-                    <p-chart-radar id="growth" [data]="data" categoryXField="area" valueYField="growth" [fillOpacity]="0.15" name="Growth" />
-                    <p-chart-radar id="enterprise" [data]="data" categoryXField="area" valueYField="enterprise" [fillOpacity]="0.15" name="Enterprise" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                    <p-chart-legend position="bottom" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-radar id="starter" [data]="data" categoryXField="area" valueYField="starter" [fillOpacity]="0.15" name="Starter" />
+                        <p-chart-radar id="growth" [data]="data" categoryXField="area" valueYField="growth" [fillOpacity]="0.15" name="Growth" />
+                        <p-chart-radar id="enterprise" [data]="data" categoryXField="area" valueYField="enterprise" [fillOpacity]="0.15" name="Enterprise" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                        <p-chart-legend position="bottom" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

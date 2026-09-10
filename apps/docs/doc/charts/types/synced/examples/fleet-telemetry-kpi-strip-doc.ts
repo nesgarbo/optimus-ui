@@ -35,49 +35,53 @@ const KPIS: Kpi[] = [
             <p>#### SvgSyncedFleetTelemetryDemo.ts</p>
             <p>#### syncedFleetTelemetry.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-group>
-                <div style="display: flex; flex-direction: column; gap: 16px">
-                    <div class="vehicle-selector">
-                        @for (v of vans; track v.id) {
-                            <button class="vehicle-btn" [class.active]="selectedId() === v.id" (click)="selectedId.set(v.id)">{{ v.label }}</button>
-                        }
-                    </div>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-group>
+                    <div style="display: flex; flex-direction: column; gap: 16px">
+                        <div class="vehicle-selector">
+                            @for (v of vans; track v.id) {
+                                <button class="vehicle-btn" [class.active]="selectedId() === v.id" (click)="selectedId.set(v.id)">{{ v.label }}</button>
+                            }
+                        </div>
 
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 12px">
-                        @for (kpi of kpis; track kpi.key) {
-                            <div class="kpi-tile" [style.--kpi-color]="kpi.color">
-                                <div class="kpi-label">{{ kpi.label }}</div>
-                                <div class="kpi-value" [style.color]="kpi.color">
-                                    {{ displayPoint()[kpi.key].toFixed(kpi.decimals) }}<span class="kpi-unit">{{ kpi.unit }}</span>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 12px">
+                            @for (kpi of kpis; track kpi.key) {
+                                <div class="kpi-tile" [style.--kpi-color]="kpi.color">
+                                    <div class="kpi-label">{{ kpi.label }}</div>
+                                    <div class="kpi-value" [style.color]="kpi.color">
+                                        {{ displayPoint()[kpi.key].toFixed(kpi.decimals) }}<span class="kpi-unit">{{ kpi.unit }}</span>
+                                    </div>
+                                    <p-chart-svg [sync]="true" [height]="80">
+                                        <p-chart-line [data]="selected().data" categoryXField="t" [valueYField]="kpi.key" [name]="kpi.label" [color]="kpi.color" [lineStrokeWidth]="1.5" curve="smooth" [showMarkers]="false" [fillOpacity]="0.15" />
+                                        <p-chart-x-axis [minGridDistance]="50" />
+                                        <p-chart-y-axis [visible]="false" [min]="kpi.min" [max]="kpi.max" [tickFormat]="kpi.tickFormat" />
+                                        <p-chart-tooltip [crosshair]="true" mode="shared" />
+                                        <p-chart-hover />
+                                    </p-chart-svg>
                                 </div>
-                                <p-chart-svg [sync]="true" [height]="80">
-                                    <p-chart-line [data]="selected().data" categoryXField="t" [valueYField]="kpi.key" [name]="kpi.label" [color]="kpi.color" [lineStrokeWidth]="1.5" curve="smooth" [showMarkers]="false" [fillOpacity]="0.15" />
-                                    <p-chart-x-axis [minGridDistance]="50" />
-                                    <p-chart-y-axis [visible]="false" [min]="kpi.min" [max]="kpi.max" [tickFormat]="kpi.tickFormat" />
-                                    <p-chart-tooltip [crosshair]="true" mode="shared" />
-                                    <p-chart-hover />
-                                </p-chart-svg>
-                            </div>
-                        }
-                    </div>
+                            }
+                        </div>
 
-                    <p-chart-svg [sync]="true" [height]="240" (pointHover)="onHover($event)">
-                        <p-chart-line [data]="selected().data" categoryXField="t" valueYField="speed" name="Speed" color="#5daeea" curve="smooth" [showMarkers]="false" [lineStrokeWidth]="2" />
-                        <p-chart-line [data]="selected().data" categoryXField="t" valueYField="fuel" name="Fuel" color="#5ccf9f" curve="smooth" [showMarkers]="false" [lineStrokeWidth]="2" />
-                        <p-chart-line [data]="selected().data" categoryXField="t" valueYField="engine" name="Engine °" color="#ffad5a" curve="smooth" [showMarkers]="false" [lineStrokeWidth]="2" />
-                        <p-chart-line [data]="selected().data" categoryXField="t" valueYField="battery" name="Battery" color="#ffd166" curve="smooth" [showMarkers]="false" [lineStrokeWidth]="2" />
-                        <p-chart-reference-line [y]="100" stroke="#ffad5a4d" [lineDash]="[3, 4]" label="Engine warn" />
-                        <p-chart-x-axis label="seconds ago" [minGridDistance]="25" />
-                        <p-chart-y-axis [tickFormat]="formatInt" />
-                        <p-chart-tooltip [crosshair]="true" mode="shared" />
-                        <p-chart-hover />
-                    </p-chart-svg>
-                    <p-chart-legend position="bottom" />
-                </div>
-            </p-chart-group>
-        </div>
-        <app-code></app-code>
+                        <p-chart-svg [sync]="true" [height]="240" (pointHover)="onHover($event)">
+                            <p-chart-line [data]="selected().data" categoryXField="t" valueYField="speed" name="Speed" color="#5daeea" curve="smooth" [showMarkers]="false" [lineStrokeWidth]="2" />
+                            <p-chart-line [data]="selected().data" categoryXField="t" valueYField="fuel" name="Fuel" color="#5ccf9f" curve="smooth" [showMarkers]="false" [lineStrokeWidth]="2" />
+                            <p-chart-line [data]="selected().data" categoryXField="t" valueYField="engine" name="Engine °" color="#ffad5a" curve="smooth" [showMarkers]="false" [lineStrokeWidth]="2" />
+                            <p-chart-line [data]="selected().data" categoryXField="t" valueYField="battery" name="Battery" color="#ffd166" curve="smooth" [showMarkers]="false" [lineStrokeWidth]="2" />
+                            <p-chart-reference-line [y]="100" stroke="#ffad5a4d" [lineDash]="[3, 4]" label="Engine warn" />
+                            <p-chart-x-axis label="seconds ago" [minGridDistance]="25" />
+                            <p-chart-y-axis [tickFormat]="formatInt" />
+                            <p-chart-tooltip [crosshair]="true" mode="shared" />
+                            <p-chart-hover />
+                        </p-chart-svg>
+                        <p-chart-legend position="bottom" />
+                    </div>
+                </p-chart-group>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     styles: [
         `
@@ -152,7 +156,7 @@ const KPIS: Kpi[] = [
     ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ExamplesFleetTelemetryKpiStripDoc {
+export class SyncedExamplesFleetTelemetryKpiStripDoc {
     readonly vans = vans;
     readonly kpis = KPIS;
 

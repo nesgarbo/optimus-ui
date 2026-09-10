@@ -11,16 +11,20 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Set <i>gridShape="circle"</i> on <i>ChartYAxis</i> to render smooth concentric circles instead of the default polygon grid. Circle grids produce a softer appearance. Use this when the polygon grid feels too technical.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-radar id="perf" [data]="data" categoryXField="metric" valueYField="value" [fillOpacity]="0.2" />
-                    <p-chart-x-axis gridShape="circle" />
-                    <p-chart-y-axis gridShape="circle" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-radar id="perf" [data]="data" categoryXField="metric" valueYField="value" [fillOpacity]="0.2" />
+                        <p-chart-x-axis gridShape="circle" />
+                        <p-chart-y-axis gridShape="circle" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

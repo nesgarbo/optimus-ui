@@ -14,16 +14,20 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 stronger pop effect.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="display: flex; justify-content: center">
-                <p-chart-svg [width]="460" [height]="460">
-                    <p-chart-pie [data]="data" categoryField="category" valueField="value" name="Sales" />
-                    <p-chart-legend position="bottom" />
-                    <p-chart-hover [scale]="1.15" [brightness]="1.1" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="display: flex; justify-content: center">
+                    <p-chart-svg [width]="460" [height]="460">
+                        <p-chart-pie [data]="data" categoryField="category" valueField="value" name="Sales" />
+                        <p-chart-legend position="bottom" />
+                        <p-chart-hover [scale]="1.15" [brightness]="1.1" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

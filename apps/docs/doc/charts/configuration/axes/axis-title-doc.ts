@@ -11,14 +11,18 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Set <i>label</i> to display a title alongside the axis.</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="arr" color="#5daeea" />
-                <p-chart-x-axis label="Month" />
-                <p-chart-y-axis label="Expansion ARR ($K)" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="arr" color="#5daeea" />
+                    <p-chart-x-axis label="Month" />
+                    <p-chart-y-axis label="Expansion ARR ($K)" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

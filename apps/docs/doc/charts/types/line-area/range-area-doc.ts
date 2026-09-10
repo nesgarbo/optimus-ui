@@ -14,19 +14,23 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 that series is on top. <i>ChartRange</i> requires exactly two <i>ChartLine</i> children. Fewer renders nothing; more than two uses only the first two.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-range>
-                        <p-chart-line [data]="data" categoryXField="month" valueYField="high" name="High" curve="smooth" />
-                        <p-chart-line [data]="data" categoryXField="month" valueYField="low" name="Low" curve="smooth" />
-                    </p-chart-range>
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-range>
+                            <p-chart-line [data]="data" categoryXField="month" valueYField="high" name="High" curve="smooth" />
+                            <p-chart-line [data]="data" categoryXField="month" valueYField="low" name="Low" curve="smooth" />
+                        </p-chart-range>
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

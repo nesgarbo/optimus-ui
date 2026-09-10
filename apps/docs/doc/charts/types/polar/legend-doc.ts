@@ -12,17 +12,21 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             <p>Add <i>ChartLegend</i> to display an interactive legend. Each <i>ChartPolar</i> series appears as a separate entry; click any item to toggle that series.</p>
             <p>For full configuration see <a href="/charts/configuration/legend">Legend</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="display: flex; justify-content: center">
-                <p-chart-svg [width]="460" [height]="460">
-                    <p-chart-polar [data]="data" categoryXField="direction" valueYField="speed" name="Wind Speed" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                    <p-chart-legend position="bottom" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="display: flex; justify-content: center">
+                    <p-chart-svg [width]="460" [height]="460">
+                        <p-chart-polar [data]="data" categoryXField="direction" valueYField="speed" name="Wind Speed" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                        <p-chart-legend position="bottom" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

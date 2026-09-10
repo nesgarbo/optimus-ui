@@ -19,24 +19,28 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 >) by default, so binding values as text keeps your tooltip safe.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="data" categoryXField="product" valueYField="units" color="#5daeea" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-tooltip>
-                    <ng-template pChartTooltipDef let-ctx>
-                        @let item = data[ctx.index];
-                        <div style="display: flex; flex-direction: column; gap: 4px; background: #1f2937; padding: 10px 14px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3)">
-                            <div style="font-weight: 600; font-size: 13px; color: #f9fafb">{{ item.product }}</div>
-                            <div style="color: #9ca3af; font-size: 12px">{{ item.units.toLocaleString() }} units sold</div>
-                            <div style="color: #5ccf9f; font-weight: 500; font-size: 12px">\${{ item.revenue.toLocaleString() }} revenue</div>
-                        </div>
-                    </ng-template>
-                </p-chart-tooltip>
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="product" valueYField="units" color="#5daeea" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-tooltip>
+                        <ng-template pChartTooltipDef let-ctx>
+                            @let item = data[ctx.index];
+                            <div style="display: flex; flex-direction: column; gap: 4px; background: #1f2937; padding: 10px 14px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3)">
+                                <div style="font-weight: 600; font-size: 13px; color: #f9fafb">{{ item.product }}</div>
+                                <div style="color: #9ca3af; font-size: 12px">{{ item.units.toLocaleString() }} units sold</div>
+                                <div style="color: #5ccf9f; font-weight: 500; font-size: 12px">\${{ item.revenue.toLocaleString() }} revenue</div>
+                            </div>
+                        </ng-template>
+                    </p-chart-tooltip>
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

@@ -11,16 +11,20 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Bind <i>categoryYField</i> and <i>valueXField</i> instead of <i>categoryXField</i> and <i>valueYField</i> to render bars horizontally. The category axis moves to Y, which keeps long labels readable without rotation.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-bar [data]="data" categoryYField="service" valueXField="incidents" [borderRadius]="4" color="#5daeea" />
-                    <p-chart-x-axis label="Incidents in last 30 days" />
-                    <p-chart-y-axis />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-bar [data]="data" categoryYField="service" valueXField="incidents" [borderRadius]="4" color="#5daeea" />
+                        <p-chart-x-axis label="Incidents in last 30 days" />
+                        <p-chart-y-axis />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

@@ -29,19 +29,23 @@ const dateFormatter = new Intl.DateTimeFormat('ar-SA', { weekday: 'short', day: 
                 same locale and reading direction.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg locale="ar-SA" dir="rtl" [height]="420" [animation]="{ duration: 300 }">
-                <p-chart-line [data]="marketFlow" categoryXField="date" valueYField="value" name="قيمة المحفظة" color="#5ccf9f" curve="smooth" [lineStrokeWidth]="2.5" [fillOpacity]="0.14" [showMarkers]="true" />
-                <p-chart-tooltip [valueFormatter]="tooltipRows" snap="x" />
-                <p-chart-hover />
-                <p-chart-legend position="bottom" />
-                <p-chart-x-axis type="time" timezone="Asia/Riyadh" [dateTimeFormats]="dateTimeFormats" label="تاريخ التسوية" />
-                <p-chart-y-axis label="ريال سعودي" [startFromZero]="false" />
-                <p-chart-title text="محفظة سوق الرياض" />
-                <p-chart-caption text="تدفقات يومية بالريال السعودي مع محور زمني وأرقام منسقة للغة العربية." />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg locale="ar-SA" dir="rtl" [height]="420" [animation]="{ duration: 300 }">
+                    <p-chart-line [data]="marketFlow" categoryXField="date" valueYField="value" name="قيمة المحفظة" color="#5ccf9f" curve="smooth" [lineStrokeWidth]="2.5" [fillOpacity]="0.14" [showMarkers]="true" />
+                    <p-chart-tooltip [valueFormatter]="tooltipRows" snap="x" />
+                    <p-chart-hover />
+                    <p-chart-legend position="bottom" />
+                    <p-chart-x-axis type="time" timezone="Asia/Riyadh" [dateTimeFormats]="dateTimeFormats" label="تاريخ التسوية" />
+                    <p-chart-y-axis label="ريال سعودي" [startFromZero]="false" />
+                    <p-chart-title text="محفظة سوق الرياض" />
+                    <p-chart-caption text="تدفقات يومية بالريال السعودي مع محور زمني وأرقام منسقة للغة العربية." />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

@@ -30,14 +30,18 @@ const priceSeries = Array.from({ length: 730 }, (_, i) => {
         <app-docsectiontext>
             <p>Set <i>grouping</i> on a time axis to aggregate large datasets by time interval. The aggregation runs before the renderer, reducing years of data to a manageable density without rendering thousands of individual points.</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-line [data]="data" categoryXField="timestamp" valueYField="price" color="#5daeea" />
-                <p-chart-x-axis type="time" [grouping]="{ method: 'average', targetPoints: 24 }" />
-                <p-chart-y-axis label="Price ($)" [startFromZero]="false" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-line [data]="data" categoryXField="timestamp" valueYField="price" color="#5daeea" />
+                    <p-chart-x-axis type="time" [grouping]="{ method: 'average', targetPoints: 24 }" />
+                    <p-chart-y-axis label="Price ($)" [startFromZero]="false" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

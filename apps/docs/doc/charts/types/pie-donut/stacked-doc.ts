@@ -38,18 +38,22 @@ const PALETTE: Record<string, { base: string; enterprise: string; growth: string
                 between rings.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="display: flex; justify-content: center">
-                <p-chart-svg [width]="460" [height]="460">
-                    <p-chart-stacked [gap]="5">
-                        <p-chart-pie id="arr-segments" [data]="segments" valueField="arr" categoryField="slice" [color]="segmentColors" [spacing]="1" />
-                        <p-chart-pie id="arr-regions" [data]="regions" valueField="arr" categoryField="region" [color]="regionColors" [innerRadius]="0.42" [spacing]="2" />
-                    </p-chart-stacked>
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="display: flex; justify-content: center">
+                    <p-chart-svg [width]="460" [height]="460">
+                        <p-chart-stacked [gap]="5">
+                            <p-chart-pie id="arr-segments" [data]="segments" valueField="arr" categoryField="slice" [color]="segmentColors" [spacing]="1" />
+                            <p-chart-pie id="arr-regions" [data]="regions" valueField="arr" categoryField="region" [color]="regionColors" [innerRadius]="0.42" [spacing]="2" />
+                        </p-chart-stacked>
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

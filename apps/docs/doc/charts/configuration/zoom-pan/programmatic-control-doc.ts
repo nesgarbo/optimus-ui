@@ -39,24 +39,28 @@ const BTN = 'padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(128, 
                 <i>zoomRef.current.resetZoom</i> to return to the original view, and <i>zoomRef.current.getZoomState</i> to read the current state at any time without a re-render.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="display: flex; gap: 6px; margin-bottom: 8px">
-                <button (click)="panLeft()" [style]="btn" title="Pan left">‹</button>
-                <button (click)="zoomOut()" [style]="btn" title="Zoom out">−</button>
-                <button (click)="zoomIn()" [style]="btn" title="Zoom in">+</button>
-                <button (click)="panRight()" [style]="btn" title="Pan right">›</button>
-                <button (click)="zoomRef.current?.resetZoom()" [style]="btn">Reset</button>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="display: flex; gap: 6px; margin-bottom: 8px">
+                    <button (click)="panLeft()" [style]="btn" title="Pan left">‹</button>
+                    <button (click)="zoomOut()" [style]="btn" title="Zoom out">−</button>
+                    <button (click)="zoomIn()" [style]="btn" title="Zoom in">+</button>
+                    <button (click)="panRight()" [style]="btn" title="Pan right">›</button>
+                    <button (click)="zoomRef.current?.resetZoom()" [style]="btn">Reset</button>
+                </div>
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-line [data]="data" categoryXField="timestamp" valueYField="price" color="#5daeea" curve="smooth" />
+                        <p-chart-x-axis type="time" />
+                        <p-chart-y-axis label="Price ($)" [startFromZero]="false" />
+                        <p-chart-zoom mode="x" [zoomRef]="zoomRef" />
+                    </p-chart-svg>
+                </div>
             </div>
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-line [data]="data" categoryXField="timestamp" valueYField="price" color="#5daeea" curve="smooth" />
-                    <p-chart-x-axis type="time" />
-                    <p-chart-y-axis label="Price ($)" [startFromZero]="false" />
-                    <p-chart-zoom mode="x" [zoomRef]="zoomRef" />
-                </p-chart-svg>
-            </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

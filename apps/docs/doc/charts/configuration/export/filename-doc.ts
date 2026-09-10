@@ -11,16 +11,20 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Set <i>filename</i> to control the default filename used when saving. The extension is appended based on the selected format.</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-line [data]="data" categoryXField="month" valueYField="expansion" color="#5ccf9f" curve="smooth" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-title text="Expansion Trend Report" />
-                <p-chart-export-menu filename="expansion-trend-2026" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-line [data]="data" categoryXField="month" valueYField="expansion" color="#5ccf9f" curve="smooth" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-title text="Expansion Trend Report" />
+                    <p-chart-export-menu filename="expansion-trend-2026" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

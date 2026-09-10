@@ -11,16 +11,20 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Set <i>offset</i> to pop the hovered slice outward from the center along the slice angle. The chart reserves extra padding to prevent clipping. Also works on bar charts, where <i>offset</i> lifts the hovered bar upward.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="display: flex; justify-content: center">
-                <p-chart-svg [width]="460" [height]="460">
-                    <p-chart-pie [data]="data" categoryField="browser" valueField="share" name="Browser Share" />
-                    <p-chart-legend position="bottom" />
-                    <p-chart-hover [offset]="12" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="display: flex; justify-content: center">
+                    <p-chart-svg [width]="460" [height]="460">
+                        <p-chart-pie [data]="data" categoryField="browser" valueField="share" name="Browser Share" />
+                        <p-chart-legend position="bottom" />
+                        <p-chart-hover [offset]="12" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

@@ -15,18 +15,22 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             </p>
             <p>For full configuration see <a href="/charts/configuration/hover">Hover</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-scatter id="enterprise" [data]="enterpriseData" valueXField="onboardingDays" valueYField="health" name="Enterprise" color="#7c8cff" [markerSize]="7" />
-                    <p-chart-scatter id="mid-market" [data]="midMarketData" valueXField="onboardingDays" valueYField="health" name="Mid-market" color="#4ecdc4" [markerSize]="7" />
-                    <p-chart-x-axis label="Onboarding duration (days)" />
-                    <p-chart-y-axis label="Account health score" />
-                    <p-chart-hover />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-scatter id="enterprise" [data]="enterpriseData" valueXField="onboardingDays" valueYField="health" name="Enterprise" color="#7c8cff" [markerSize]="7" />
+                        <p-chart-scatter id="mid-market" [data]="midMarketData" valueXField="onboardingDays" valueYField="health" name="Mid-market" color="#4ecdc4" [markerSize]="7" />
+                        <p-chart-x-axis label="Onboarding duration (days)" />
+                        <p-chart-y-axis label="Account health score" />
+                        <p-chart-hover />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

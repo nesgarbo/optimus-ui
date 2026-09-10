@@ -11,18 +11,22 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Set <i>color</i> to apply a single color to the line and its area fill. Accepts any CSS color string.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="priority" color="#e5484d" name="Priority" />
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="standard" color="#ffad5a" name="Standard" />
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="deflected" color="#ffd166" name="Deflected" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="priority" color="#e5484d" name="Priority" />
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="standard" color="#ffad5a" name="Standard" />
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="deflected" color="#ffd166" name="Deflected" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

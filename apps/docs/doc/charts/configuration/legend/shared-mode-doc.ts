@@ -15,30 +15,34 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             </p>
             <p>For full configuration see <a href="/charts/types/synced">Synced Charts</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-group>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 16px">
-                    <p-chart-svg [sync]="{ visibility: true }" [height]="260">
-                        <p-chart-bar id="forecast" [data]="data" categoryXField="region" valueYField="forecast" color="#7c8cff" name="Forecast" />
-                        <p-chart-bar id="actual" [data]="data" categoryXField="region" valueYField="actual" color="#5daeea" name="Actual" />
-                        <p-chart-x-axis />
-                        <p-chart-y-axis />
-                        <p-chart-tooltip />
-                    </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-group>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 16px">
+                        <p-chart-svg [sync]="{ visibility: true }" [height]="260">
+                            <p-chart-bar id="forecast" [data]="data" categoryXField="region" valueYField="forecast" color="#7c8cff" name="Forecast" />
+                            <p-chart-bar id="actual" [data]="data" categoryXField="region" valueYField="actual" color="#5daeea" name="Actual" />
+                            <p-chart-x-axis />
+                            <p-chart-y-axis />
+                            <p-chart-tooltip />
+                        </p-chart-svg>
 
-                    <p-chart-svg [sync]="{ visibility: true }" [height]="260">
-                        <p-chart-line id="forecast" [data]="data" categoryXField="region" valueYField="forecast" color="#7c8cff" name="Forecast" [showMarkers]="true" />
-                        <p-chart-line id="actual" [data]="data" categoryXField="region" valueYField="actual" color="#5daeea" name="Actual" [showMarkers]="true" />
-                        <p-chart-x-axis />
-                        <p-chart-y-axis />
-                        <p-chart-tooltip />
-                    </p-chart-svg>
-                </div>
+                        <p-chart-svg [sync]="{ visibility: true }" [height]="260">
+                            <p-chart-line id="forecast" [data]="data" categoryXField="region" valueYField="forecast" color="#7c8cff" name="Forecast" [showMarkers]="true" />
+                            <p-chart-line id="actual" [data]="data" categoryXField="region" valueYField="actual" color="#5daeea" name="Actual" [showMarkers]="true" />
+                            <p-chart-x-axis />
+                            <p-chart-y-axis />
+                            <p-chart-tooltip />
+                        </p-chart-svg>
+                    </div>
 
-                <p-chart-legend align="center" />
-            </p-chart-group>
-        </div>
-        <app-code></app-code>
+                    <p-chart-legend align="center" />
+                </p-chart-group>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

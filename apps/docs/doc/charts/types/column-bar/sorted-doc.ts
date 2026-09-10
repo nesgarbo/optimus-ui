@@ -14,16 +14,20 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 <i>sortAggregate</i> controls how series values combine to determine rank. The default is <i>sum</i>.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-bar [data]="data" categoryXField="queue" valueYField="tickets" sort="value-desc" [borderRadius]="4" color="#5daeea" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis label="Open tickets" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-bar [data]="data" categoryXField="queue" valueYField="tickets" sort="value-desc" [borderRadius]="4" color="#5daeea" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis label="Open tickets" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

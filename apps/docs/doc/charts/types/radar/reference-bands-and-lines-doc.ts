@@ -15,18 +15,22 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             </p>
             <p>For full configuration see <a href="/charts/configuration/reference-lines-bands">Reference Band</a> and <a href="/charts/configuration/reference-lines-bands">Reference Line</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 400px">
-                <p-chart-svg>
-                    <p-chart-reference-band [y1]="70" [y2]="90" fill="#5ccf9f" [fillOpacity]="0.12" label="Target Zone" />
-                    <p-chart-reference-line [y]="50" stroke="#5daeea" [lineStrokeWidth]="1.5" [lineDash]="[5, 4]" label="Baseline" />
-                    <p-chart-radar [data]="data" categoryXField="skill" valueYField="score" color="#5daeea" [fillOpacity]="0.2" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 400px">
+                    <p-chart-svg>
+                        <p-chart-reference-band [y1]="70" [y2]="90" fill="#5ccf9f" [fillOpacity]="0.12" label="Target Zone" />
+                        <p-chart-reference-line [y]="50" stroke="#5daeea" [lineStrokeWidth]="1.5" [lineDash]="[5, 4]" label="Baseline" />
+                        <p-chart-radar [data]="data" categoryXField="skill" valueYField="score" color="#5daeea" [fillOpacity]="0.2" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

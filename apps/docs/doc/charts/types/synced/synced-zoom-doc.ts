@@ -39,28 +39,32 @@ const SERIES = buildSeries();
         <app-docsectiontext>
             <p>Add <i>ChartZoom</i> to each chart and <i>[sync]="true"</i> to synchronize zoom and pan ranges. Zooming or panning one chart automatically updates all others to the same visible range, keeping every metric on the same period.</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-group>
-                <div style="display: flex; flex-direction: column; gap: 8px">
-                    <p-chart-svg [sync]="true" [height]="250">
-                        <p-chart-line id="price" [data]="data" categoryXField="timestamp" valueYField="price" name="Price" curve="smooth" />
-                        <p-chart-x-axis type="time" />
-                        <p-chart-y-axis label="Price ($)" [startFromZero]="false" />
-                        <p-chart-tooltip [crosshair]="true" />
-                        <p-chart-zoom mode="x" />
-                    </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-group>
+                    <div style="display: flex; flex-direction: column; gap: 8px">
+                        <p-chart-svg [sync]="true" [height]="250">
+                            <p-chart-line id="price" [data]="data" categoryXField="timestamp" valueYField="price" name="Price" curve="smooth" />
+                            <p-chart-x-axis type="time" />
+                            <p-chart-y-axis label="Price ($)" [startFromZero]="false" />
+                            <p-chart-tooltip [crosshair]="true" />
+                            <p-chart-zoom mode="x" />
+                        </p-chart-svg>
 
-                    <p-chart-svg [sync]="true" [height]="150">
-                        <p-chart-bar id="volume" [data]="data" categoryXField="timestamp" valueYField="volume" name="Volume" />
-                        <p-chart-x-axis type="time" />
-                        <p-chart-y-axis label="Vol" />
-                        <p-chart-tooltip [crosshair]="true" />
-                        <p-chart-zoom mode="x" />
-                    </p-chart-svg>
-                </div>
-            </p-chart-group>
-        </div>
-        <app-code></app-code>
+                        <p-chart-svg [sync]="true" [height]="150">
+                            <p-chart-bar id="volume" [data]="data" categoryXField="timestamp" valueYField="volume" name="Volume" />
+                            <p-chart-x-axis type="time" />
+                            <p-chart-y-axis label="Vol" />
+                            <p-chart-tooltip [crosshair]="true" />
+                            <p-chart-zoom mode="x" />
+                        </p-chart-svg>
+                    </div>
+                </p-chart-group>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

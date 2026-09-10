@@ -15,25 +15,29 @@ import { injectIsDarkMode } from '@/doc/charts/_shared/inject-chart-theme';
                 content that is not text (such as an adaptive background fill) detects the scheme on its own, as the demo below does.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-line [data]="data" categoryXField="month" valueYField="value" color="#7c8cff" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-annotation>
-                    <ng-template pChartAnnotationDef let-ctx>
-                        @let b = box(ctx);
-                        @if (b) {
-                            <svg:g>
-                                <svg:rect [attr.x]="b.x" [attr.y]="b.y" [attr.width]="b.w" [attr.height]="b.h" rx="6" [attr.fill]="b.bg" />
-                                <svg:text [attr.x]="b.x + b.w / 2" [attr.y]="b.y + b.h / 2" text-anchor="middle" dominant-baseline="central" [attr.font-size]="b.fs" font-weight="500">{{ b.text }}</svg:text>
-                            </svg:g>
-                        }
-                    </ng-template>
-                </p-chart-annotation>
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-line [data]="data" categoryXField="month" valueYField="value" color="#7c8cff" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-annotation>
+                        <ng-template pChartAnnotationDef let-ctx>
+                            @let b = box(ctx);
+                            @if (b) {
+                                <svg:g>
+                                    <svg:rect [attr.x]="b.x" [attr.y]="b.y" [attr.width]="b.w" [attr.height]="b.h" rx="6" [attr.fill]="b.bg" />
+                                    <svg:text [attr.x]="b.x + b.w / 2" [attr.y]="b.y + b.h / 2" text-anchor="middle" dominant-baseline="central" [attr.font-size]="b.fs" font-weight="500">{{ b.text }}</svg:text>
+                                </svg:g>
+                            }
+                        </ng-template>
+                    </p-chart-annotation>
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

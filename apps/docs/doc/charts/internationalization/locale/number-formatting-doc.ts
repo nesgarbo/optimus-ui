@@ -15,24 +15,28 @@ const INACTIVE_BTN = 'font-medium text-surface-500 dark:text-surface-400 border-
         <app-docsectiontext>
             <p>Set <i>locale</i> to change how numeric axis labels and tooltip values are formatted. Number formatting follows <i>Intl.NumberFormat</i> conventions. Digit grouping, decimal separator, and notation all adapt to the locale.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div>
-                <div class="inline-flex gap-1 mb-4">
-                    @for (loc of locales; track loc) {
-                        <button [class]="baseBtn + (activeLocale() === loc ? activeBtn : inactiveBtn)" (click)="activeLocale.set(loc)">{{ loc }}</button>
-                    }
+        @defer (on viewport) {
+            <div class="card">
+                <div>
+                    <div class="inline-flex gap-1 mb-4">
+                        @for (loc of locales; track loc) {
+                            <button [class]="baseBtn + (activeLocale() === loc ? activeBtn : inactiveBtn)" (click)="activeLocale.set(loc)">{{ loc }}</button>
+                        }
+                    </div>
+                    <p-chart-svg [height]="400" [locale]="activeLocale()">
+                        <p-chart-bar [data]="data" categoryXField="quarter" valueYField="revenue" name="Revenue" />
+                        <p-chart-bar [data]="data" categoryXField="quarter" valueYField="expenses" name="Expenses" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                        <p-chart-legend />
+                        <p-chart-tooltip />
+                    </p-chart-svg>
                 </div>
-                <p-chart-svg [height]="400" [locale]="activeLocale()">
-                    <p-chart-bar [data]="data" categoryXField="quarter" valueYField="revenue" name="Revenue" />
-                    <p-chart-bar [data]="data" categoryXField="quarter" valueYField="expenses" name="Expenses" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                    <p-chart-legend />
-                    <p-chart-tooltip />
-                </p-chart-svg>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

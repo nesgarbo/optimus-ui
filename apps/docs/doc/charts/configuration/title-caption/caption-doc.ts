@@ -23,17 +23,21 @@ const ARR = [
                 For example, <i>position="bottom"</i> with a top title puts the title above the chart and the caption below it.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="arr" color="#5daeea" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-title text="Expansion ARR Run Rate" />
-                <p-chart-caption text="January - June 2026 pipeline-sourced accounts" />
-                <p-chart-tooltip />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="arr" color="#5daeea" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-title text="Expansion ARR Run Rate" />
+                    <p-chart-caption text="January - June 2026 pipeline-sourced accounts" />
+                    <p-chart-tooltip />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

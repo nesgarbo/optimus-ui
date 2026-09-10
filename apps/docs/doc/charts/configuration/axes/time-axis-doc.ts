@@ -33,14 +33,18 @@ const priceSeries = Array.from({ length: 30 }, (_, i) => {
                 years for long ranges. Pass Unix timestamps, JavaScript <i>Date</i> objects, or ISO date strings as category values.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-line [data]="data" categoryXField="timestamp" valueYField="price" color="#5daeea" curve="smooth" />
-                <p-chart-x-axis type="time" label="Date" />
-                <p-chart-y-axis label="Price ($)" [startFromZero]="false" [gridLines]="true" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-line [data]="data" categoryXField="timestamp" valueYField="price" color="#5daeea" curve="smooth" />
+                    <p-chart-x-axis type="time" label="Date" />
+                    <p-chart-y-axis label="Price ($)" [startFromZero]="false" [gridLines]="true" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

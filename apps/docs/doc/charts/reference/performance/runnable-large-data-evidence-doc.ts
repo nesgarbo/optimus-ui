@@ -36,22 +36,26 @@ import { generateClusters, CLUSTER_COUNT, CLUSTER_SEED } from '@/doc/charts/data
             <p>#### SvgLineNasaTempDemo.ts</p>
             <p>#### serverMetrics.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-canvas [theme]="theme()">
-                    <p-chart-scatter id="cloud" [data]="samples" valueXField="x" valueYField="y" name="Population sample" color="#7c8cff" [markerSize]="2" [pointFillOpacity]="0.4" [pointBorderStrokeWidth]="0" />
-                    <p-chart-zoom mode="xy" />
-                    <p-chart-tooltip />
-                    <p-chart-legend position="top" />
-                    <p-chart-x-axis label="Feature A" />
-                    <p-chart-y-axis label="Feature B" />
-                    <p-chart-title [text]="totalCount + ' points · Canvas + boost mode'" />
-                    <p-chart-caption text="Three Gaussian clusters drawn as a raw 100k point cloud · boost auto-activates above 50k points · hover lookup uses a quadtree (O(log n))" />
-                    <p-chart-export-menu filename="scatter-100k-boost" />
-                </p-chart-canvas>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-canvas [theme]="theme()">
+                        <p-chart-scatter id="cloud" [data]="samples" valueXField="x" valueYField="y" name="Population sample" color="#7c8cff" [markerSize]="2" [pointFillOpacity]="0.4" [pointBorderStrokeWidth]="0" />
+                        <p-chart-zoom mode="xy" />
+                        <p-chart-tooltip />
+                        <p-chart-legend position="top" />
+                        <p-chart-x-axis label="Feature A" />
+                        <p-chart-y-axis label="Feature B" />
+                        <p-chart-title [text]="totalCount + ' points · Canvas + boost mode'" />
+                        <p-chart-caption text="Three Gaussian clusters drawn as a raw 100k point cloud · boost auto-activates above 50k points · hover lookup uses a quadtree (O(log n))" />
+                        <p-chart-export-menu filename="scatter-100k-boost" />
+                    </p-chart-canvas>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

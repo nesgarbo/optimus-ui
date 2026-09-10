@@ -14,14 +14,18 @@ import { ChartsModule, type TickStyle } from '@openng/optimus-ui/charts';
                 to be highlighted. Set <i>tickRotation</i> to rotate labels, or use <i>autoRotate</i> to let the chart rotate them when they would otherwise overlap.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="data" categoryXField="quarter" valueYField="bookings" color="#5daeea" />
-                <p-chart-x-axis [tickStyle]="xTickStyle" [tickRotation]="-30" />
-                <p-chart-y-axis [tickStyle]="yTickStyle" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="quarter" valueYField="bookings" color="#5daeea" />
+                    <p-chart-x-axis [tickStyle]="xTickStyle" [tickRotation]="-30" />
+                    <p-chart-y-axis [tickStyle]="yTickStyle" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

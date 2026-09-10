@@ -12,17 +12,21 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             <p>Add <i>ChartDataLabels</i> to label data points. Line labels work best for endpoints, sparse checkpoints, or a few key events. Avoid labeling every vertex in dense time series.</p>
             <p>For full configuration see <a href="/charts/configuration/data-labels">Data Labels</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-line [data]="data" categoryXField="quarter" valueYField="revenue" showMarkers curve="smooth" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                    <p-chart-data-labels display="value" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-line [data]="data" categoryXField="quarter" valueYField="revenue" showMarkers curve="smooth" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                        <p-chart-data-labels display="value" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

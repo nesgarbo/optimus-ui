@@ -14,21 +14,25 @@ import { ChartsModule, type TickValue } from '@openng/optimus-ui/charts';
                 reference line across the chart. All series must share a common Y scale; use <i>yAxisId</i> to split series with incompatible units.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-bar [data]="data" categoryXField="month" valueYField="revenue" name="Revenue" color="#5daeea" />
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="forecast" name="Forecast" color="#64748b" [lineDash]="[5, 4]" [lineStrokeWidth]="2" [showMarkers]="false" [fillOpacity]="0" />
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="lastYear" name="Last year" color="#94a3b8" [lineDash]="[2, 3]" [lineStrokeWidth]="1.5" [showMarkers]="false" [fillOpacity]="0" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis [tickFormat]="formatK" />
-                    <p-chart-legend position="top" />
-                    <p-chart-tooltip mode="shared" [crosshair]="true" />
-                    <p-chart-hover />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-bar [data]="data" categoryXField="month" valueYField="revenue" name="Revenue" color="#5daeea" />
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="forecast" name="Forecast" color="#64748b" [lineDash]="[5, 4]" [lineStrokeWidth]="2" [showMarkers]="false" [fillOpacity]="0" />
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="lastYear" name="Last year" color="#94a3b8" [lineDash]="[2, 3]" [lineStrokeWidth]="1.5" [showMarkers]="false" [fillOpacity]="0" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis [tickFormat]="formatK" />
+                        <p-chart-legend position="top" />
+                        <p-chart-tooltip mode="shared" [crosshair]="true" />
+                        <p-chart-hover />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

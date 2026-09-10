@@ -24,32 +24,36 @@ const COLORS = {
             <p>#### SvgAreaElectricityMixDemo.ts</p>
             <p>#### usElectricityGeneration.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg [animation]="{ duration: 700 }">
-                    <p-chart-stacked>
-                        <p-chart-line [data]="data" categoryXField="year" valueYField="renewables" name="Renewables" [color]="colors.renewables" curve="smooth" [fillOpacity]="0.85" />
-                        <p-chart-line [data]="data" categoryXField="year" valueYField="nuclear" name="Nuclear" [color]="colors.nuclear" curve="smooth" [fillOpacity]="0.85" />
-                        <p-chart-line [data]="data" categoryXField="year" valueYField="coal" name="Coal" [color]="colors.coal" curve="smooth" [fillOpacity]="0.85" />
-                        <p-chart-line [data]="data" categoryXField="year" valueYField="natural_gas" name="Natural Gas" [color]="colors.natural_gas" curve="smooth" [fillOpacity]="0.85" />
-                    </p-chart-stacked>
-                    <p-chart-tooltip mode="shared" [valueFormatter]="formatTwh" />
-                    <p-chart-legend />
-                    <p-chart-hover />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis [tickCount]="6" />
-                    <p-chart-title text="US electricity generation by source 2010–2023" />
-                    <p-chart-caption text="Source: U.S. Energy Information Administration · Electric Power Monthly · Annual TWh" />
-                    <p-chart-export-menu filename="us-electricity-generation-mix" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg [animation]="{ duration: 700 }">
+                        <p-chart-stacked>
+                            <p-chart-line [data]="data" categoryXField="year" valueYField="renewables" name="Renewables" [color]="colors.renewables" curve="smooth" [fillOpacity]="0.85" />
+                            <p-chart-line [data]="data" categoryXField="year" valueYField="nuclear" name="Nuclear" [color]="colors.nuclear" curve="smooth" [fillOpacity]="0.85" />
+                            <p-chart-line [data]="data" categoryXField="year" valueYField="coal" name="Coal" [color]="colors.coal" curve="smooth" [fillOpacity]="0.85" />
+                            <p-chart-line [data]="data" categoryXField="year" valueYField="natural_gas" name="Natural Gas" [color]="colors.natural_gas" curve="smooth" [fillOpacity]="0.85" />
+                        </p-chart-stacked>
+                        <p-chart-tooltip mode="shared" [valueFormatter]="formatTwh" />
+                        <p-chart-legend />
+                        <p-chart-hover />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis [tickCount]="6" />
+                        <p-chart-title text="US electricity generation by source 2010–2023" />
+                        <p-chart-caption text="Source: U.S. Energy Information Administration · Electric Power Monthly · Annual TWh" />
+                        <p-chart-export-menu filename="us-electricity-generation-mix" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AreaUsElectricityGenerationMix20102023Doc {
+export class LineAreaAreaUsElectricityGenerationMix20102023Doc {
     readonly data = usElectricityGeneration;
     readonly colors = COLORS;
     readonly formatTwh = (v: number) => `${v.toLocaleString()} TWh`;

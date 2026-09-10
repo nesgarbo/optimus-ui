@@ -16,19 +16,23 @@ const easeOutCustom = 'easeOutCustom' as EasingFunctionName;
             <p>Register a custom easing function once at app startup using <i>registerEasing</i>, then reference it by name in <i>animation.easing</i> across the app.</p>
             <p>Use <i>getEasing</i> to retrieve a registered function by name, when applying the same curve in canvas <i>animate</i> callbacks inside <i>renderMarker</i>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div class="flex mb-2">
-                <button pButton type="button" severity="secondary" class="!text-surface-900 dark:!text-surface-100" (click)="replayKey.update((v) => v + 1)">Replay</button>
+        @defer (on viewport) {
+            <div class="card">
+                <div class="flex mb-2">
+                    <button pButton type="button" severity="secondary" class="!text-surface-900 dark:!text-surface-100" (click)="replayKey.update((v) => v + 1)">Replay</button>
+                </div>
+                @for (k of [replayKey()]; track k) {
+                    <p-chart-svg [height]="460" [animation]="{ duration: 800, easing: easing }">
+                        <p-chart-bar [data]="data" categoryXField="month" valueYField="signups" color="#5ccf9f" [borderRadius]="4" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                    </p-chart-svg>
+                }
             </div>
-            @for (k of [replayKey()]; track k) {
-                <p-chart-svg [height]="460" [animation]="{ duration: 800, easing: easing }">
-                    <p-chart-bar [data]="data" categoryXField="month" valueYField="signups" color="#5ccf9f" [borderRadius]="4" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                </p-chart-svg>
-            }
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

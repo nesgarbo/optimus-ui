@@ -11,15 +11,19 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Set <i>outerRadius</i> to control how much of the chart area the pie fills. The default <i>1</i> fills the available space. A smaller radius leaves room for external labels and leader lines.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="display: flex; justify-content: center">
-                <p-chart-svg [width]="460" [height]="460">
-                    <p-chart-pie [data]="data" valueField="share" categoryField="source" [outerRadius]="0.72" />
-                    <p-chart-data-labels display="label-percentage" lineStyle="angled" [fontSize]="11" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="display: flex; justify-content: center">
+                    <p-chart-svg [width]="460" [height]="460">
+                        <p-chart-pie [data]="data" valueField="share" categoryField="source" [outerRadius]="0.72" />
+                        <p-chart-data-labels display="label-percentage" lineStyle="angled" [fontSize]="11" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

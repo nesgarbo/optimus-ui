@@ -15,16 +15,20 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 <i>gridStyle</i> to <i>dashed</i> or <i>dotted</i> for non-solid grid lines.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-radar id="perf" [data]="data" categoryXField="metric" valueYField="value" [fillOpacity]="0.25" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis [tickCount]="4" gridStyle="dashed" [gridOpacity]="0.8" [showLabels]="false" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-radar id="perf" [data]="data" categoryXField="metric" valueYField="value" [fillOpacity]="0.25" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis [tickCount]="4" gridStyle="dashed" [gridOpacity]="0.8" [showLabels]="false" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

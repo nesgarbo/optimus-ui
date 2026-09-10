@@ -20,37 +20,41 @@ interface Stock {
                 mode, pass a <i>renderContent</i> function; the context is pre-clipped to the cell bounds, so draw directly and return <i>null</i>. Both expose the cell's position, dimensions, value, color, and label fields.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-treemap [data]="data" categoryField="name" valueField="value" [color]="palette">
-                        <ng-template pChartTreemapCellDef let-ctx>
-                            @if (ctx.width >= 60 && ctx.height >= 40) {
-                                <svg:text [attr.x]="ctx.x + 10" [attr.y]="ctx.y + 22" fill="#f8fafc" font-size="14" font-weight="700" font-family="system-ui, sans-serif" pointer-events="none">{{ ctx.label }}</svg:text>
-                                <svg:rect [attr.x]="ctx.x + 10" [attr.y]="ctx.y + 30" [attr.width]="badgeW(ctx)" [attr.height]="20" rx="10" [attr.fill]="badgeBg(ctx)" />
-                                <svg:text
-                                    [attr.x]="ctx.x + 10 + badgeW(ctx) / 2"
-                                    [attr.y]="ctx.y + 40"
-                                    [attr.fill]="changeColor(ctx)"
-                                    font-size="11"
-                                    font-weight="700"
-                                    font-family="system-ui, sans-serif"
-                                    text-anchor="middle"
-                                    dominant-baseline="central"
-                                    pointer-events="none"
-                                >
-                                    {{ changeText(ctx) }}
-                                </svg:text>
-                                @if (ctx.height > 70) {
-                                    <svg:text [attr.x]="ctx.x + 10" [attr.y]="ctx.y + ctx.height - 12" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif" pointer-events="none">{{ valueText(ctx) }}</svg:text>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-treemap [data]="data" categoryField="name" valueField="value" [color]="palette">
+                            <ng-template pChartTreemapCellDef let-ctx>
+                                @if (ctx.width >= 60 && ctx.height >= 40) {
+                                    <svg:text [attr.x]="ctx.x + 10" [attr.y]="ctx.y + 22" fill="#f8fafc" font-size="14" font-weight="700" font-family="system-ui, sans-serif" pointer-events="none">{{ ctx.label }}</svg:text>
+                                    <svg:rect [attr.x]="ctx.x + 10" [attr.y]="ctx.y + 30" [attr.width]="badgeW(ctx)" [attr.height]="20" rx="10" [attr.fill]="badgeBg(ctx)" />
+                                    <svg:text
+                                        [attr.x]="ctx.x + 10 + badgeW(ctx) / 2"
+                                        [attr.y]="ctx.y + 40"
+                                        [attr.fill]="changeColor(ctx)"
+                                        font-size="11"
+                                        font-weight="700"
+                                        font-family="system-ui, sans-serif"
+                                        text-anchor="middle"
+                                        dominant-baseline="central"
+                                        pointer-events="none"
+                                    >
+                                        {{ changeText(ctx) }}
+                                    </svg:text>
+                                    @if (ctx.height > 70) {
+                                        <svg:text [attr.x]="ctx.x + 10" [attr.y]="ctx.y + ctx.height - 12" fill="#94a3b8" font-size="11" font-family="system-ui, sans-serif" pointer-events="none">{{ valueText(ctx) }}</svg:text>
+                                    }
                                 }
-                            }
-                        </ng-template>
-                    </p-chart-treemap>
-                </p-chart-svg>
+                            </ng-template>
+                        </p-chart-treemap>
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

@@ -18,18 +18,22 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 navigation when a series exceeds a given size. Set <i>keyboardNavigation.wrapAround</i> to <i>false</i> to stop at the last point instead of cycling back to the first.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="data" categoryXField="queue" valueYField="opened" color="#5daeea" name="Opened tickets" />
-                <p-chart-bar [data]="data" categoryXField="queue" valueYField="resolved" color="#ffad5a" name="Resolved tickets" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-legend position="bottom" />
-                <p-chart-accessibility [keyboardNavigation]="{ enabled: true }" />
-                <p-chart-hover />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="queue" valueYField="opened" color="#5daeea" name="Opened tickets" />
+                    <p-chart-bar [data]="data" categoryXField="queue" valueYField="resolved" color="#ffad5a" name="Resolved tickets" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-legend position="bottom" />
+                    <p-chart-accessibility [keyboardNavigation]="{ enabled: true }" />
+                    <p-chart-hover />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

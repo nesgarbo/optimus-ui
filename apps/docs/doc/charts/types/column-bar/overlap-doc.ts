@@ -14,19 +14,23 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 comparisons without side-by-side grouping.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-overlap>
-                        <p-chart-bar [data]="data" categoryXField="month" valueYField="target" name="Target" color="#94a3b8" [opacity]="0.32" [borderRadius]="6" />
-                        <p-chart-bar [data]="data" categoryXField="month" valueYField="actual" name="Actual" color="#5daeea" [borderRadius]="6" />
-                    </p-chart-overlap>
-                    <p-chart-x-axis />
-                    <p-chart-y-axis label="% of goal" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-overlap>
+                            <p-chart-bar [data]="data" categoryXField="month" valueYField="target" name="Target" color="#94a3b8" [opacity]="0.32" [borderRadius]="6" />
+                            <p-chart-bar [data]="data" categoryXField="month" valueYField="actual" name="Actual" color="#5daeea" [borderRadius]="6" />
+                        </p-chart-overlap>
+                        <p-chart-x-axis />
+                        <p-chart-y-axis label="% of goal" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

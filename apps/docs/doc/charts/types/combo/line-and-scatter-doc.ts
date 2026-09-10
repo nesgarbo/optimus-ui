@@ -62,20 +62,24 @@ function regression(points: { spend: number; customers: number }[]) {
                 <i>ChartXAxis</i> when the X field is numeric rather than categorical.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-scatter [data]="campaigns" valueXField="spend" valueYField="customers" name="Monthly campaigns" color="#7c8cff" [pointFillOpacity]="0.65" [markerSize]="6" />
-                    <p-chart-line [data]="trend" valueXField="spend" valueYField="customers" name="Regression" color="#94a3b8" curve="linear" [lineStrokeWidth]="2" [lineDash]="[6, 4]" [showMarkers]="false" [fillOpacity]="0" />
-                    <p-chart-x-axis type="linear" label="Ad spend ($K)" [tickFormat]="formatSpend" />
-                    <p-chart-y-axis label="New customers" [startFromZero]="true" />
-                    <p-chart-legend position="top" />
-                    <p-chart-tooltip />
-                    <p-chart-hover />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-scatter [data]="campaigns" valueXField="spend" valueYField="customers" name="Monthly campaigns" color="#7c8cff" [pointFillOpacity]="0.65" [markerSize]="6" />
+                        <p-chart-line [data]="trend" valueXField="spend" valueYField="customers" name="Regression" color="#94a3b8" curve="linear" [lineStrokeWidth]="2" [lineDash]="[6, 4]" [showMarkers]="false" [fillOpacity]="0" />
+                        <p-chart-x-axis type="linear" label="Ad spend ($K)" [tickFormat]="formatSpend" />
+                        <p-chart-y-axis label="New customers" [startFromZero]="true" />
+                        <p-chart-legend position="top" />
+                        <p-chart-tooltip />
+                        <p-chart-hover />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

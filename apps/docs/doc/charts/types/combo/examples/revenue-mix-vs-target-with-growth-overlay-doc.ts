@@ -21,38 +21,42 @@ function formatCurrency(v: number): string {
             <p>#### SvgComboSalesBreakdownDemo.ts</p>
             <p>#### comboSalesBreakdown.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460" [animation]="{ duration: 650, easing: 'easeOutCubic' }">
-                <p-chart-stacked>
-                    <p-chart-bar [data]="data" categoryXField="quarter" valueYField="core" name="Core subscription" color="#5daeea" />
-                    <p-chart-bar [data]="data" categoryXField="quarter" valueYField="addons" name="Add-ons" color="#7c8cff" />
-                    <p-chart-bar [data]="data" categoryXField="quarter" valueYField="services" name="Professional svc." color="#ff6fae" />
-                </p-chart-stacked>
-                <p-chart-line [data]="data" categoryXField="quarter" valueYField="target" name="Quarterly target" color="#4ecdc4" curve="linear" [lineStrokeWidth]="2" [lineDash]="[5, 5]" [fillOpacity]="0" [showMarkers]="false" />
-                <p-chart-line [data]="data" categoryXField="quarter" valueYField="growth" name="YoY growth" color="#ffad5a" yAxisId="growth" curve="smooth" [lineStrokeWidth]="2.5" [showMarkers]="true" [markerSize]="5" />
-                <p-chart-reference-line yAxisId="growth" [y]="20" stroke="rgba(255,173,90,0.3)" [lineDash]="[2, 4]" label="20% growth floor" />
-                <p-chart-x-axis />
-                <p-chart-y-axis position="left" label="Revenue" [tickFormat]="formatRevenue" />
-                <p-chart-y-axis id="growth" position="right" label="YoY growth" [gridLines]="false" [tickFormat]="formatGrowth" [min]="0" [max]="40" />
-                <p-chart-data-labels>
-                    <ng-template pChartDataLabelDef let-ctx>
-                        @if (ctx.label !== 'Quarterly target') {
-                            <svg:text [attr.fill]="ctx.color" font-size="11">{{ format(ctx.value) }}</svg:text>
-                        }
-                    </ng-template>
-                </p-chart-data-labels>
-                <p-chart-legend position="top" />
-                <p-chart-tooltip mode="shared" />
-                <p-chart-hover />
-                <p-chart-title text="Revenue mix vs target with growth overlay" />
-                <p-chart-caption text="Stacked bars break revenue into core, add-ons, and services. Dashed line shows the quarterly target; the right axis tracks YoY growth rate." />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460" [animation]="{ duration: 650, easing: 'easeOutCubic' }">
+                    <p-chart-stacked>
+                        <p-chart-bar [data]="data" categoryXField="quarter" valueYField="core" name="Core subscription" color="#5daeea" />
+                        <p-chart-bar [data]="data" categoryXField="quarter" valueYField="addons" name="Add-ons" color="#7c8cff" />
+                        <p-chart-bar [data]="data" categoryXField="quarter" valueYField="services" name="Professional svc." color="#ff6fae" />
+                    </p-chart-stacked>
+                    <p-chart-line [data]="data" categoryXField="quarter" valueYField="target" name="Quarterly target" color="#4ecdc4" curve="linear" [lineStrokeWidth]="2" [lineDash]="[5, 5]" [fillOpacity]="0" [showMarkers]="false" />
+                    <p-chart-line [data]="data" categoryXField="quarter" valueYField="growth" name="YoY growth" color="#ffad5a" yAxisId="growth" curve="smooth" [lineStrokeWidth]="2.5" [showMarkers]="true" [markerSize]="5" />
+                    <p-chart-reference-line yAxisId="growth" [y]="20" stroke="rgba(255,173,90,0.3)" [lineDash]="[2, 4]" label="20% growth floor" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis position="left" label="Revenue" [tickFormat]="formatRevenue" />
+                    <p-chart-y-axis id="growth" position="right" label="YoY growth" [gridLines]="false" [tickFormat]="formatGrowth" [min]="0" [max]="40" />
+                    <p-chart-data-labels>
+                        <ng-template pChartDataLabelDef let-ctx>
+                            @if (ctx.label !== 'Quarterly target') {
+                                <svg:text [attr.fill]="ctx.color" font-size="11">{{ format(ctx.value) }}</svg:text>
+                            }
+                        </ng-template>
+                    </p-chart-data-labels>
+                    <p-chart-legend position="top" />
+                    <p-chart-tooltip mode="shared" />
+                    <p-chart-hover />
+                    <p-chart-title text="Revenue mix vs target with growth overlay" />
+                    <p-chart-caption text="Stacked bars break revenue into core, add-ons, and services. Dashed line shows the quarterly target; the right axis tracks YoY growth rate." />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ExamplesRevenueMixVsTargetWithGrowthOverlayDoc {
+export class ComboExamplesRevenueMixVsTargetWithGrowthOverlayDoc {
     readonly data = comboSalesBreakdown;
 
     readonly format = formatCurrency;

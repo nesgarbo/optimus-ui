@@ -42,21 +42,25 @@ function generateData(): { t: number; v: number }[] {
                 performance. The default is <i>500</i>.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div class="flex justify-start items-center mb-2 gap-3">
-                <span class="text-xs opacity-70">samples</span>
-                <input type="range" min="50" max="1000" step="50" style="width: 180px" [value]="samples()" (input)="samples.set(+asInput($event).value)" />
-                <span class="text-xs font-medium">{{ samples() }}</span>
+        @defer (on viewport) {
+            <div class="card">
+                <div class="flex justify-start items-center mb-2 gap-3">
+                    <span class="text-xs opacity-70">samples</span>
+                    <input type="range" min="50" max="1000" step="50" style="width: 180px" [value]="samples()" (input)="samples.set(+asInput($event).value)" />
+                    <span class="text-xs font-medium">{{ samples() }}</span>
+                </div>
+                <p-chart-svg [height]="460">
+                    <p-chart-line [data]="data" categoryXField="t" valueYField="v" color="#36b7d6" [lineStrokeWidth]="1.5" />
+                    <p-chart-x-axis type="time" />
+                    <p-chart-y-axis />
+                    <p-chart-tooltip />
+                    <p-chart-decimation [samples]="samples()" />
+                </p-chart-svg>
             </div>
-            <p-chart-svg [height]="460">
-                <p-chart-line [data]="data" categoryXField="t" valueYField="v" color="#36b7d6" [lineStrokeWidth]="1.5" />
-                <p-chart-x-axis type="time" />
-                <p-chart-y-axis />
-                <p-chart-tooltip />
-                <p-chart-decimation [samples]="samples()" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

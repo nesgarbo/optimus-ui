@@ -20,18 +20,22 @@ function seededRandom(seed: number) {
         <app-docsectiontext>
             <p>Set <i>height</i> to control how tall the navigator area is. Set <i>gap</i> to adjust the spacing between the main chart and the navigator.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-line [data]="data" categoryXField="day" valueYField="visitors" color="#5daeea" curve="smooth" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                    <p-chart-zoom mode="x" />
-                    <p-chart-navigator [height]="80" [gap]="12" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-line [data]="data" categoryXField="day" valueYField="visitors" color="#5daeea" curve="smooth" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                        <p-chart-zoom mode="x" />
+                        <p-chart-navigator [height]="80" [gap]="12" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

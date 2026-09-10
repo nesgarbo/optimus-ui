@@ -23,16 +23,20 @@ const COLORS = {
         <app-docsectiontext>
             <p>Pass a static color, array (cycles by index), field name, or function to <i>color</i> to control point fill. Use a static value for a uniform series color or a callback for per-point coloring based on data.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-scatter id="colored" [data]="data" valueXField="adoption" valueYField="renewal" [color]="colorFn" [markerSize]="8" />
-                    <p-chart-x-axis label="Product adoption (%)" />
-                    <p-chart-y-axis label="Renewal likelihood (%)" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-scatter id="colored" [data]="data" valueXField="adoption" valueYField="renewal" [color]="colorFn" [markerSize]="8" />
+                        <p-chart-x-axis label="Product adoption (%)" />
+                        <p-chart-y-axis label="Renewal likelihood (%)" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

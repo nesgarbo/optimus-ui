@@ -29,18 +29,22 @@ const RAW = [
                 <i>connectNulls="false"</i> when the line series has leading nulls, for example a 3-month moving average that only becomes valid from the third data point onward.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="shipments" name="Fulfilled orders" color="#36b7d6" [opacity]="0.75" />
-                <p-chart-line [data]="data" categoryXField="month" valueYField="ma3" name="3-month avg" color="#ffad5a" curve="smooth" [fillOpacity]="0.1" [lineStrokeWidth]="2.5" [showMarkers]="false" [connectNulls]="false" />
-                <p-chart-x-axis />
-                <p-chart-y-axis [tickFormat]="formatAxis" />
-                <p-chart-legend position="top" />
-                <p-chart-tooltip mode="shared" />
-                <p-chart-hover />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="shipments" name="Fulfilled orders" color="#36b7d6" [opacity]="0.75" />
+                    <p-chart-line [data]="data" categoryXField="month" valueYField="ma3" name="3-month avg" color="#ffad5a" curve="smooth" [fillOpacity]="0.1" [lineStrokeWidth]="2.5" [showMarkers]="false" [connectNulls]="false" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis [tickFormat]="formatAxis" />
+                    <p-chart-legend position="top" />
+                    <p-chart-tooltip mode="shared" />
+                    <p-chart-hover />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

@@ -14,16 +14,20 @@ import { ChartsModule, type ExportMenuItem } from '@openng/optimus-ui/charts';
                 canvas layers into a PNG image embedded inside an SVG wrapper. Include <i>'downloadCSV'</i> when users need the underlying chart data as spreadsheet-ready text.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="display: flex; justify-content: center">
-                <p-chart-svg [width]="460" [height]="460">
-                    <p-chart-pie [data]="data" valueField="value" categoryField="category" />
-                    <p-chart-legend position="bottom" />
-                    <p-chart-export-menu [menuItems]="menuItems" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="display: flex; justify-content: center">
+                    <p-chart-svg [width]="460" [height]="460">
+                        <p-chart-pie [data]="data" valueField="value" categoryField="category" />
+                        <p-chart-legend position="bottom" />
+                        <p-chart-export-menu [menuItems]="menuItems" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

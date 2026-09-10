@@ -31,38 +31,42 @@ interface Badge {
         <app-docsectiontext>
             <p>Add multiple <i>ChartAnnotation</i> components to layer independent overlays. Each renders in document order, so later annotations appear on top.</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="bookings" color="#5daeea" [borderRadius]="4" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-annotation>
-                    <ng-template pChartAnnotationDef let-ctx>
-                        @let b = badge(ctx, 'peak');
-                        @if (b) {
-                            <svg:g>
-                                <svg:line [attr.x1]="b.cx" [attr.y1]="b.top + b.bh" [attr.x2]="b.cx" [attr.y2]="b.cy" [attr.stroke]="b.color" stroke-width="1" opacity="0.4" />
-                                <svg:rect [attr.x]="b.cx - b.bw / 2" [attr.y]="b.top" [attr.width]="b.bw" [attr.height]="b.bh" rx="3" [attr.fill]="b.color" />
-                                <svg:text [attr.x]="b.cx" [attr.y]="b.top + b.bh / 2" text-anchor="middle" dominant-baseline="central" fill="white" [attr.font-size]="b.fs" font-weight="600">{{ b.text }}</svg:text>
-                            </svg:g>
-                        }
-                    </ng-template>
-                </p-chart-annotation>
-                <p-chart-annotation>
-                    <ng-template pChartAnnotationDef let-ctx>
-                        @let b = badge(ctx, 'trough');
-                        @if (b) {
-                            <svg:g>
-                                <svg:line [attr.x1]="b.cx" [attr.y1]="b.top + b.bh" [attr.x2]="b.cx" [attr.y2]="b.cy" [attr.stroke]="b.color" stroke-width="1" opacity="0.4" />
-                                <svg:rect [attr.x]="b.cx - b.bw / 2" [attr.y]="b.top" [attr.width]="b.bw" [attr.height]="b.bh" rx="3" [attr.fill]="b.color" />
-                                <svg:text [attr.x]="b.cx" [attr.y]="b.top + b.bh / 2" text-anchor="middle" dominant-baseline="central" fill="white" [attr.font-size]="b.fs" font-weight="600">{{ b.text }}</svg:text>
-                            </svg:g>
-                        }
-                    </ng-template>
-                </p-chart-annotation>
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="bookings" color="#5daeea" [borderRadius]="4" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-annotation>
+                        <ng-template pChartAnnotationDef let-ctx>
+                            @let b = badge(ctx, 'peak');
+                            @if (b) {
+                                <svg:g>
+                                    <svg:line [attr.x1]="b.cx" [attr.y1]="b.top + b.bh" [attr.x2]="b.cx" [attr.y2]="b.cy" [attr.stroke]="b.color" stroke-width="1" opacity="0.4" />
+                                    <svg:rect [attr.x]="b.cx - b.bw / 2" [attr.y]="b.top" [attr.width]="b.bw" [attr.height]="b.bh" rx="3" [attr.fill]="b.color" />
+                                    <svg:text [attr.x]="b.cx" [attr.y]="b.top + b.bh / 2" text-anchor="middle" dominant-baseline="central" fill="white" [attr.font-size]="b.fs" font-weight="600">{{ b.text }}</svg:text>
+                                </svg:g>
+                            }
+                        </ng-template>
+                    </p-chart-annotation>
+                    <p-chart-annotation>
+                        <ng-template pChartAnnotationDef let-ctx>
+                            @let b = badge(ctx, 'trough');
+                            @if (b) {
+                                <svg:g>
+                                    <svg:line [attr.x1]="b.cx" [attr.y1]="b.top + b.bh" [attr.x2]="b.cx" [attr.y2]="b.cy" [attr.stroke]="b.color" stroke-width="1" opacity="0.4" />
+                                    <svg:rect [attr.x]="b.cx - b.bw / 2" [attr.y]="b.top" [attr.width]="b.bw" [attr.height]="b.bh" rx="3" [attr.fill]="b.color" />
+                                    <svg:text [attr.x]="b.cx" [attr.y]="b.top + b.bh / 2" text-anchor="middle" dominant-baseline="central" fill="white" [attr.font-size]="b.fs" font-weight="600">{{ b.text }}</svg:text>
+                                </svg:g>
+                            }
+                        </ng-template>
+                    </p-chart-annotation>
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

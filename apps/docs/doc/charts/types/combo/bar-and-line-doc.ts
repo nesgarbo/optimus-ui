@@ -14,18 +14,22 @@ import { ChartsModule, type TickValue } from '@openng/optimus-ui/charts';
                 tooltip. Use <i>lineDash</i> on <i>ChartLine</i> to distinguish a target or forecast from the actual bars.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="revenue" name="Revenue" color="#5daeea" />
-                <p-chart-line [data]="data" categoryXField="month" valueYField="budget" name="Budget" color="#64748b" [lineDash]="[6, 4]" [lineStrokeWidth]="2" [showMarkers]="false" [fillOpacity]="0" />
-                <p-chart-x-axis />
-                <p-chart-y-axis [tickFormat]="formatAxis" />
-                <p-chart-legend position="top" />
-                <p-chart-tooltip mode="shared" />
-                <p-chart-hover />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="revenue" name="Revenue" color="#5daeea" />
+                    <p-chart-line [data]="data" categoryXField="month" valueYField="budget" name="Budget" color="#64748b" [lineDash]="[6, 4]" [lineStrokeWidth]="2" [showMarkers]="false" [fillOpacity]="0" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis [tickFormat]="formatAxis" />
+                    <p-chart-legend position="top" />
+                    <p-chart-tooltip mode="shared" />
+                    <p-chart-hover />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

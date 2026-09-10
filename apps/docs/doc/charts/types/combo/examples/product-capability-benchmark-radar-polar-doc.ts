@@ -17,28 +17,32 @@ import { industryAvg, ourProduct } from '@/doc/charts/data/comboProductBenchmark
             <p>#### SvgComboProductBenchmarkDemo.ts</p>
             <p>#### comboProductBenchmark.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="display: flex; justify-content: center">
-                <p-chart-svg [width]="460" [height]="460" [animation]="{ duration: 700, easing: 'easeOutCubic' }">
-                    <p-chart-polar id="industry" [data]="industryAvg" categoryXField="capability" valueYField="score" name="Industry average" color="rgba(148,163,184,0.55)" />
-                    <p-chart-radar id="ours" [data]="ourProduct" categoryXField="capability" valueYField="score" name="Our product" color="#7c8cff" [fillOpacity]="0.2" [lineStrokeWidth]="2.5" [showMarkers]="true" [markerSize]="5" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                    <p-chart-legend position="top" />
-                    <p-chart-tooltip mode="shared" />
-                    <p-chart-hover [brightness]="1.1" />
-                    <p-chart-title text="Product capability benchmark" />
-                    <p-chart-caption
-                        text="Grey polar sectors are the industry-average score per capability. The periwinkle radar overlays our product's score on the same axes — capabilities where the outline sits outside the grey are competitive strengths."
-                    />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="display: flex; justify-content: center">
+                    <p-chart-svg [width]="460" [height]="460" [animation]="{ duration: 700, easing: 'easeOutCubic' }">
+                        <p-chart-polar id="industry" [data]="industryAvg" categoryXField="capability" valueYField="score" name="Industry average" color="rgba(148,163,184,0.55)" />
+                        <p-chart-radar id="ours" [data]="ourProduct" categoryXField="capability" valueYField="score" name="Our product" color="#7c8cff" [fillOpacity]="0.2" [lineStrokeWidth]="2.5" [showMarkers]="true" [markerSize]="5" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                        <p-chart-legend position="top" />
+                        <p-chart-tooltip mode="shared" />
+                        <p-chart-hover [brightness]="1.1" />
+                        <p-chart-title text="Product capability benchmark" />
+                        <p-chart-caption
+                            text="Grey polar sectors are the industry-average score per capability. The periwinkle radar overlays our product's score on the same axes — capabilities where the outline sits outside the grey are competitive strengths."
+                        />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ExamplesProductCapabilityBenchmarkRadarPolarDoc {
+export class ComboExamplesProductCapabilityBenchmarkRadarPolarDoc {
     readonly industryAvg = industryAvg;
     readonly ourProduct = ourProduct;
 }

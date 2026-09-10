@@ -48,29 +48,33 @@ const SEPT_RALLY = {
             <p>#### SvgHollowEurUsdDemo.ts</p>
             <p>#### eurUsd.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg [animation]="{ duration: 400 }">
-                    <p-chart-candlestick [data]="data" categoryXField="ts" openField="open" highField="high" lowField="low" closeField="close" variant="hollow" [color]="candleColorAccessor" [barWidthRatio]="0.7" />
-                    <p-chart-reference-band [x1]="septRally.start" [x2]="septRally.end" [y1]="septRally.low" [y2]="septRally.high" label="Sep rally" fill="#4ecdc4" [fillOpacity]="0.08" labelPosition="start" />
-                    <p-chart-reference-line [y]="ytdOpen" label="YTD open · 1.1037" stroke="#7c8cff" [lineStrokeWidth]="1" [lineDash]="[4, 4]" labelPosition="start" labelBackground="#7c8cff" labelColor="#fff" [labelPadding]="5" />
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                    <p-chart-hover />
-                    <p-chart-zoom mode="x" />
-                    <p-chart-x-axis type="time" gapless />
-                    <p-chart-y-axis position="right" [tickFormat]="formatPrice" />
-                    <p-chart-title text="EUR/USD — H2 2024 Daily Hollow Candles" />
-                    <p-chart-caption text="Forex hollow bodies · per-bar aqua/negative color from EMA20 slope · tooltip reports pip change and EMA trend state" />
-                    <p-chart-export-menu filename="eur-usd-h2-2024-hollow" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg [animation]="{ duration: 400 }">
+                        <p-chart-candlestick [data]="data" categoryXField="ts" openField="open" highField="high" lowField="low" closeField="close" variant="hollow" [color]="candleColorAccessor" [barWidthRatio]="0.7" />
+                        <p-chart-reference-band [x1]="septRally.start" [x2]="septRally.end" [y1]="septRally.low" [y2]="septRally.high" label="Sep rally" fill="#4ecdc4" [fillOpacity]="0.08" labelPosition="start" />
+                        <p-chart-reference-line [y]="ytdOpen" label="YTD open · 1.1037" stroke="#7c8cff" [lineStrokeWidth]="1" [lineDash]="[4, 4]" labelPosition="start" labelBackground="#7c8cff" labelColor="#fff" [labelPadding]="5" />
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                        <p-chart-hover />
+                        <p-chart-zoom mode="x" />
+                        <p-chart-x-axis type="time" gapless />
+                        <p-chart-y-axis position="right" [tickFormat]="formatPrice" />
+                        <p-chart-title text="EUR/USD — H2 2024 Daily Hollow Candles" />
+                        <p-chart-caption text="Forex hollow bodies · per-bar aqua/negative color from EMA20 slope · tooltip reports pip change and EMA trend state" />
+                        <p-chart-export-menu filename="eur-usd-h2-2024-hollow" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class HollowEurUsdH22024DailyHollowCandlesDoc {
+export class CandlestickHollowEurUsdH22024DailyHollowCandlesDoc {
     readonly data = eurUsd;
     readonly ytdOpen = YTD_OPEN;
     readonly septRally = SEPT_RALLY;

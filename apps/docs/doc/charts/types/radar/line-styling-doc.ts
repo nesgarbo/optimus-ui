@@ -14,18 +14,22 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 <i>[dashLength, gapLength]</i> for distinguishing series when color alone is not enough.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-radar id="heavy" [data]="data" categoryXField="attribute" valueYField="reliability" [lineStrokeWidth]="3" [fillOpacity]="0.15" [markerSize]="6" name="Reliability" />
-                    <p-chart-radar id="swift" [data]="data" categoryXField="attribute" valueYField="growth" [lineStrokeWidth]="1.5" lineStyle="dashed" [fillOpacity]="0.1" [markerSize]="3" name="Growth" />
-                    <p-chart-radar id="balanced" [data]="data" categoryXField="attribute" valueYField="balanced" [lineStrokeWidth]="2" lineStyle="dotted" [fillOpacity]="0.2" [markerSize]="4" name="Balanced" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-radar id="heavy" [data]="data" categoryXField="attribute" valueYField="reliability" [lineStrokeWidth]="3" [fillOpacity]="0.15" [markerSize]="6" name="Reliability" />
+                        <p-chart-radar id="swift" [data]="data" categoryXField="attribute" valueYField="growth" [lineStrokeWidth]="1.5" lineStyle="dashed" [fillOpacity]="0.1" [markerSize]="3" name="Growth" />
+                        <p-chart-radar id="balanced" [data]="data" categoryXField="attribute" valueYField="balanced" [lineStrokeWidth]="2" lineStyle="dotted" [fillOpacity]="0.2" [markerSize]="4" name="Balanced" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

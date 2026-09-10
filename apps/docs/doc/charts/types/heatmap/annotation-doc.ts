@@ -21,28 +21,32 @@ const LABEL = 'Peak intake: Wed 12:00-14:00';
             <p>#### supportLoadMatrix.ts</p>
             <p>For full configuration see <a href="/charts/configuration/annotation">Annotation</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-heatmap [data]="data" categoryXField="day" categoryYField="window" valueField="tickets" [colorRange]="['#eef6ff', '#5bc8f5', '#2531a8']" [spacing]="2" [borderRadius]="4" />
-                    <p-chart-x-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
-                    <p-chart-y-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
-                    <p-chart-annotation>
-                        <ng-template pChartAnnotationDef let-ctx>
-                            @if (ctx.chartArea && ctx.chartArea.width) {
-                                <svg:g>
-                                    <svg:rect [attr.x]="boxX(ctx) - fontSize(ctx) / 2 - 3" [attr.y]="ctx.chartArea.y + 20 - fontSize(ctx) / 2 - 3" [attr.width]="textWidth(ctx) + 12" [attr.height]="fontSize(ctx) + 6" fill="rgba(31,79,122,0.88)" />
-                                    <svg:text [attr.x]="ctx.chartArea.x + ctx.chartArea.width - 8" [attr.y]="ctx.chartArea.y + 20" text-anchor="end" dominant-baseline="middle" [attr.font-size]="fontSize(ctx)" fill="#ffffff">
-                                        {{ label }}
-                                    </svg:text>
-                                </svg:g>
-                            }
-                        </ng-template>
-                    </p-chart-annotation>
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-heatmap [data]="data" categoryXField="day" categoryYField="window" valueField="tickets" [colorRange]="['#eef6ff', '#5bc8f5', '#2531a8']" [spacing]="2" [borderRadius]="4" />
+                        <p-chart-x-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
+                        <p-chart-y-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
+                        <p-chart-annotation>
+                            <ng-template pChartAnnotationDef let-ctx>
+                                @if (ctx.chartArea && ctx.chartArea.width) {
+                                    <svg:g>
+                                        <svg:rect [attr.x]="boxX(ctx) - fontSize(ctx) / 2 - 3" [attr.y]="ctx.chartArea.y + 20 - fontSize(ctx) / 2 - 3" [attr.width]="textWidth(ctx) + 12" [attr.height]="fontSize(ctx) + 6" fill="rgba(31,79,122,0.88)" />
+                                        <svg:text [attr.x]="ctx.chartArea.x + ctx.chartArea.width - 8" [attr.y]="ctx.chartArea.y + 20" text-anchor="end" dominant-baseline="middle" [attr.font-size]="fontSize(ctx)" fill="#ffffff">
+                                            {{ label }}
+                                        </svg:text>
+                                    </svg:g>
+                                }
+                            </ng-template>
+                        </p-chart-annotation>
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

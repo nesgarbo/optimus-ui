@@ -14,17 +14,21 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 font size. Use <i>padding</i> to control the space above and below the title or caption. Pass a number for uniform spacing or <i>{{ '{' }} top, bottom {{ '}' }}</i> for independent control.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-line [data]="data" categoryXField="month" valueYField="activation" color="#7c8cff" curve="smooth" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-title text="Activation Trend" [fontSize]="20" fontWeight="bold" fontFamily="Georgia, serif" fontStyle="italic" color="#7c8cff" />
-                <p-chart-caption text="H1 2026 enterprise cohort" [fontSize]="13" color="#94a3b8" />
-                <p-chart-tooltip />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-line [data]="data" categoryXField="month" valueYField="activation" color="#7c8cff" curve="smooth" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-title text="Activation Trend" [fontSize]="20" fontWeight="bold" fontFamily="Georgia, serif" fontStyle="italic" color="#7c8cff" />
+                    <p-chart-caption text="H1 2026 enterprise cohort" [fontSize]="13" color="#94a3b8" />
+                    <p-chart-tooltip />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

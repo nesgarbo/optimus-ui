@@ -14,15 +14,19 @@ import { ChartsModule, type ExportMenuButtonOptions } from '@openng/optimus-ui/c
                 button flips to the left side.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-line [data]="data" categoryXField="month" valueYField="backlog" color="#ffad5a" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-export-menu [buttons]="buttons" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-line [data]="data" categoryXField="month" valueYField="backlog" color="#ffad5a" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-export-menu [buttons]="buttons" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

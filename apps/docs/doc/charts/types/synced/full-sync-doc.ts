@@ -11,31 +11,35 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Combine crosshair sync, shared legend, and synced zoom in a single layout. The shared legend at the bottom controls visibility for all charts while crosshairs and zoom stay synchronized across every panel.</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-group>
-                <div style="display: flex; flex-direction: column; gap: 8px">
-                    <p-chart-svg [sync]="true" [height]="240">
-                        <p-chart-line id="revenue" [data]="data" categoryXField="month" valueYField="revenue" name="Revenue" curve="smooth" [showMarkers]="true" />
-                        <p-chart-line id="expenses" [data]="data" categoryXField="month" valueYField="expenses" name="Expenses" curve="smooth" [showMarkers]="true" />
-                        <p-chart-x-axis />
-                        <p-chart-y-axis label="Amount ($K)" />
-                        <p-chart-tooltip [crosshair]="true" />
-                        <p-chart-hover />
-                    </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-group>
+                    <div style="display: flex; flex-direction: column; gap: 8px">
+                        <p-chart-svg [sync]="true" [height]="240">
+                            <p-chart-line id="revenue" [data]="data" categoryXField="month" valueYField="revenue" name="Revenue" curve="smooth" [showMarkers]="true" />
+                            <p-chart-line id="expenses" [data]="data" categoryXField="month" valueYField="expenses" name="Expenses" curve="smooth" [showMarkers]="true" />
+                            <p-chart-x-axis />
+                            <p-chart-y-axis label="Amount ($K)" />
+                            <p-chart-tooltip [crosshair]="true" />
+                            <p-chart-hover />
+                        </p-chart-svg>
 
-                    <p-chart-svg [sync]="true" [height]="180">
-                        <p-chart-bar id="profit" [data]="data" categoryXField="month" valueYField="profit" name="Profit" />
-                        <p-chart-x-axis />
-                        <p-chart-y-axis label="Profit ($K)" />
-                        <p-chart-tooltip [crosshair]="true" />
-                        <p-chart-hover />
-                    </p-chart-svg>
-                </div>
+                        <p-chart-svg [sync]="true" [height]="180">
+                            <p-chart-bar id="profit" [data]="data" categoryXField="month" valueYField="profit" name="Profit" />
+                            <p-chart-x-axis />
+                            <p-chart-y-axis label="Profit ($K)" />
+                            <p-chart-tooltip [crosshair]="true" />
+                            <p-chart-hover />
+                        </p-chart-svg>
+                    </div>
 
-                <p-chart-legend align="center" />
-            </p-chart-group>
-        </div>
-        <app-code></app-code>
+                    <p-chart-legend align="center" />
+                </p-chart-group>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

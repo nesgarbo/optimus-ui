@@ -11,15 +11,19 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Add <i>ChartTooltip</i> to display a tooltip when hovering over data elements. The default <i>mode="item"</i> shows details for the specific element under the cursor: one series, one value.</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="bookings" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-tooltip />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="bookings" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-tooltip />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

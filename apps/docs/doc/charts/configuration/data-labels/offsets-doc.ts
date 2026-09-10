@@ -14,15 +14,19 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 the label text. Use <i>horizontalOffset</i> to shift labels horizontally after alignment.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div class="flex justify-center">
-                <p-chart-svg [width]="460" [height]="460">
-                    <p-chart-pie [data]="data" categoryField="category" valueField="amount" name="Budget" />
-                    <p-chart-data-labels lineStyle="angled" [distance]="20" [textGap]="8" [horizontalOffset]="20" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div class="flex justify-center">
+                    <p-chart-svg [width]="460" [height]="460">
+                        <p-chart-pie [data]="data" categoryField="category" valueField="amount" name="Budget" />
+                        <p-chart-data-labels lineStyle="angled" [distance]="20" [textGap]="8" [horizontalOffset]="20" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

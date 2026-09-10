@@ -20,30 +20,34 @@ const MALE_COLOR = '#5daeea';
             <p>#### SvgBarPopulationPyramidDemo.ts</p>
             <p>#### populationPyramid.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460" [animation]="{ duration: 700 }">
-                <p-chart-stacked>
-                    <p-chart-bar [data]="data" categoryYField="age" valueXField="female" name="Female" [color]="femaleColor" [borderRadius]="3" />
-                    <p-chart-bar [data]="data" categoryYField="age" valueXField="male" name="Male" [color]="maleColor" [borderRadius]="3" />
-                </p-chart-stacked>
-                <p-chart-reference-line [x]="0" stroke="#94a3b8" [lineStrokeWidth]="1.5" />
-                <p-chart-data-labels display="value" [formatter]="formatBillions" [fontSize]="10" />
-                <p-chart-tooltip mode="shared" [valueFormatter]="formatTooltip" />
-                <p-chart-legend position="top" />
-                <p-chart-hover />
-                <p-chart-x-axis [tickFormat]="formatAxis" />
-                <p-chart-y-axis />
-                <p-chart-title text="World population by age group and sex, 2024" />
-                <p-chart-caption text="Population in billions · Source: UN World Population Prospects 2024" />
-                <p-chart-export-menu filename="world-population-pyramid-2024" />
-                <p-chart-accessibility />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460" [animation]="{ duration: 700 }">
+                    <p-chart-stacked>
+                        <p-chart-bar [data]="data" categoryYField="age" valueXField="female" name="Female" [color]="femaleColor" [borderRadius]="3" />
+                        <p-chart-bar [data]="data" categoryYField="age" valueXField="male" name="Male" [color]="maleColor" [borderRadius]="3" />
+                    </p-chart-stacked>
+                    <p-chart-reference-line [x]="0" stroke="#94a3b8" [lineStrokeWidth]="1.5" />
+                    <p-chart-data-labels display="value" [formatter]="formatBillions" [fontSize]="10" />
+                    <p-chart-tooltip mode="shared" [valueFormatter]="formatTooltip" />
+                    <p-chart-legend position="top" />
+                    <p-chart-hover />
+                    <p-chart-x-axis [tickFormat]="formatAxis" />
+                    <p-chart-y-axis />
+                    <p-chart-title text="World population by age group and sex, 2024" />
+                    <p-chart-caption text="Population in billions · Source: UN World Population Prospects 2024" />
+                    <p-chart-export-menu filename="world-population-pyramid-2024" />
+                    <p-chart-accessibility />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class StackedWorldPopulationByAgeGroupAndSex2024Doc {
+export class ColumnBarStackedWorldPopulationByAgeGroupAndSex2024Doc {
     readonly data = data;
     readonly femaleColor = FEMALE_COLOR;
     readonly maleColor = MALE_COLOR;

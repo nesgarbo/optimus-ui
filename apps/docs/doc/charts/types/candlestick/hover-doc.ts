@@ -12,17 +12,21 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             <p>Add <i>ChartHover</i> to brighten the hovered candle while non-hovered candles stay at normal opacity. Set <i>dimOpacity</i> below <i>1</i> when you want the rest to fade.</p>
             <p>For full configuration see <a href="/charts/configuration/hover">Hover</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-candlestick [data]="data" categoryXField="date" openField="open" highField="high" lowField="low" closeField="close" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                    <p-chart-hover [brightness]="1.15" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-candlestick [data]="data" categoryXField="date" openField="open" highField="high" lowField="low" closeField="close" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                        <p-chart-hover [brightness]="1.15" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

@@ -11,17 +11,21 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Place multiple <i>ChartPolar</i> components as siblings; each series automatically positions its bars within each angular sector. Useful for comparing two or more datasets across the same categories on a shared radial axis.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="display: flex; justify-content: center">
-                <p-chart-svg [width]="460" [height]="460">
-                    <p-chart-polar [data]="morningData" categoryXField="direction" valueYField="speed" name="Morning" />
-                    <p-chart-polar [data]="afternoonData" categoryXField="direction" valueYField="speed" name="Afternoon" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="display: flex; justify-content: center">
+                    <p-chart-svg [width]="460" [height]="460">
+                        <p-chart-polar [data]="morningData" categoryXField="direction" valueYField="speed" name="Morning" />
+                        <p-chart-polar [data]="afternoonData" categoryXField="direction" valueYField="speed" name="Afternoon" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

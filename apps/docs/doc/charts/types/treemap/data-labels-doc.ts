@@ -24,15 +24,19 @@ interface Holding {
             </p>
             <p>For full configuration see <a href="/charts/configuration/data-labels">Data Labels</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-treemap [data]="data" categoryField="name" valueField="value" nodeId="id" parentField="parent" [labelMinSize]="40" [showGroupLabel]="true" [groupLabelHeight]="28" />
-                    <p-chart-data-labels [formatter]="labelFormatter" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-treemap [data]="data" categoryField="name" valueField="value" nodeId="id" parentField="parent" [labelMinSize]="40" [showGroupLabel]="true" [groupLabelHeight]="28" />
+                        <p-chart-data-labels [formatter]="labelFormatter" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

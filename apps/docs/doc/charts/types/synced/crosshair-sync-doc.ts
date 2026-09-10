@@ -14,28 +14,32 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 <i>ChartTooltip</i> with <i>crosshair</i> to display the vertical guide line.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-group>
-                <div style="display: flex; flex-direction: column; gap: 8px">
-                    <p-chart-svg [sync]="true" [height]="220">
-                        <p-chart-line id="revenue" [data]="data" categoryXField="month" valueYField="revenue" name="Revenue ($K)" curve="smooth" [showMarkers]="true" />
-                        <p-chart-x-axis />
-                        <p-chart-y-axis label="Revenue" />
-                        <p-chart-tooltip [crosshair]="true" />
-                        <p-chart-hover />
-                    </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-group>
+                    <div style="display: flex; flex-direction: column; gap: 8px">
+                        <p-chart-svg [sync]="true" [height]="220">
+                            <p-chart-line id="revenue" [data]="data" categoryXField="month" valueYField="revenue" name="Revenue ($K)" curve="smooth" [showMarkers]="true" />
+                            <p-chart-x-axis />
+                            <p-chart-y-axis label="Revenue" />
+                            <p-chart-tooltip [crosshair]="true" />
+                            <p-chart-hover />
+                        </p-chart-svg>
 
-                    <p-chart-svg [sync]="true" [height]="180">
-                        <p-chart-bar id="orders" [data]="data" categoryXField="month" valueYField="orders" name="Orders" />
-                        <p-chart-x-axis />
-                        <p-chart-y-axis label="Orders" />
-                        <p-chart-tooltip [crosshair]="true" />
-                        <p-chart-hover />
-                    </p-chart-svg>
-                </div>
-            </p-chart-group>
-        </div>
-        <app-code></app-code>
+                        <p-chart-svg [sync]="true" [height]="180">
+                            <p-chart-bar id="orders" [data]="data" categoryXField="month" valueYField="orders" name="Orders" />
+                            <p-chart-x-axis />
+                            <p-chart-y-axis label="Orders" />
+                            <p-chart-tooltip [crosshair]="true" />
+                            <p-chart-hover />
+                        </p-chart-svg>
+                    </div>
+                </p-chart-group>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

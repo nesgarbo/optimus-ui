@@ -14,14 +14,18 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 lines between major ticks. Use <i>alternateGridColor</i> to fill alternating bands between grid lines.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-line [data]="data" categoryXField="month" valueYField="latency" color="#36b7d6" curve="smooth" />
-                <p-chart-x-axis alternateGridColor="#5daeea" [alternateGridOpacity]="0.04" />
-                <p-chart-y-axis gridColor="#94a3b8" gridStyle="dashed" [gridOpacity]="0.5" [minorGridLines]="true" [minorGridOpacity]="0.2" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-line [data]="data" categoryXField="month" valueYField="latency" color="#36b7d6" curve="smooth" />
+                    <p-chart-x-axis alternateGridColor="#5daeea" [alternateGridOpacity]="0.04" />
+                    <p-chart-y-axis gridColor="#94a3b8" gridStyle="dashed" [gridOpacity]="0.5" [minorGridLines]="true" [minorGridOpacity]="0.2" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

@@ -11,15 +11,19 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>On candlestick charts, the tooltip renders open, high, low, and close values in a structured layout with no configuration. Use a <i>pChartTooltipDef</i> template to replace this layout with custom content if needed.</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-candlestick [data]="data" categoryXField="date" openField="open" highField="high" lowField="low" closeField="close" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-tooltip />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-candlestick [data]="data" categoryXField="date" openField="open" highField="high" lowField="low" closeField="close" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-tooltip />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

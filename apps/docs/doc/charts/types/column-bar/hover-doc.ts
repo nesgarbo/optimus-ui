@@ -12,17 +12,21 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             <p><i>ChartHover</i> brightens the hovered bar while the rest stay at normal opacity. Category snapping keeps the selected category obvious when the chart is dense.</p>
             <p>For full configuration see <a href="/charts/configuration/hover">Hover</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-bar [data]="data" categoryXField="city" valueYField="population" color="#5daeea" [borderRadius]="4" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis label="Population (M)" />
-                    <p-chart-hover [brightness]="1.15" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-bar [data]="data" categoryXField="city" valueYField="population" color="#5daeea" [borderRadius]="4" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis label="Population (M)" />
+                        <p-chart-hover [brightness]="1.15" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

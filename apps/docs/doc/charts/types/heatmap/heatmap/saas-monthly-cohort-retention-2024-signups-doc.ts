@@ -24,40 +24,44 @@ const CLIFF_BOX_H = 22;
             <p>#### SvgHeatmapSaasRetentionDemo.ts</p>
             <p>#### saasRetention.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-heatmap [data]="data" categoryXField="monthsSince" categoryYField="cohort" valueField="pct" [colorScale]="colorStops" [colorRange]="colorRange" nullColor="rgba(148,163,184,0.18)" [spacing]="2" [borderRadius]="3" />
-                    <p-chart-data-labels [formatter]="formatPct" />
-                    <p-chart-x-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
-                    <p-chart-y-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
-                    <p-chart-color-legend position="bottom" [steps]="5" [height]="10" [borderRadius]="5" />
-                    <p-chart-annotation>
-                        <ng-template pChartAnnotationDef let-ctx>
-                            @if (ctx.chartArea) {
-                                <svg:g>
-                                    <svg:line [attr.x1]="cliffX(ctx)" [attr.y1]="ctx.chartArea.y" [attr.x2]="cliffX(ctx)" [attr.y2]="cliffBoxY(ctx)" stroke="#e5484d" stroke-width="1" stroke-dasharray="4,3" opacity="0.5" />
-                                    <svg:rect [attr.x]="cliffX(ctx)" [attr.y]="cliffBoxY(ctx)" [attr.width]="cliffBoxW" [attr.height]="cliffBoxH" rx="4" ry="4" fill="#e5484d" />
-                                    <svg:text [attr.x]="cliffX(ctx) + cliffBoxW / 2" [attr.y]="cliffBoxY(ctx) + cliffBoxH / 2" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="600" fill="#ffffff">
-                                        {{ cliffLabel }}
-                                    </svg:text>
-                                </svg:g>
-                            }
-                        </ng-template>
-                    </p-chart-annotation>
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                    <p-chart-hover />
-                    <p-chart-title text="SaaS monthly-cohort retention — 2024 signups" />
-                    <p-chart-caption text="Rows = signup cohort · Columns = months since signup · Grey = not yet observed" />
-                    <p-chart-export-menu filename="saas-cohort-retention-2024" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-heatmap [data]="data" categoryXField="monthsSince" categoryYField="cohort" valueField="pct" [colorScale]="colorStops" [colorRange]="colorRange" nullColor="rgba(148,163,184,0.18)" [spacing]="2" [borderRadius]="3" />
+                        <p-chart-data-labels [formatter]="formatPct" />
+                        <p-chart-x-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
+                        <p-chart-y-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
+                        <p-chart-color-legend position="bottom" [steps]="5" [height]="10" [borderRadius]="5" />
+                        <p-chart-annotation>
+                            <ng-template pChartAnnotationDef let-ctx>
+                                @if (ctx.chartArea) {
+                                    <svg:g>
+                                        <svg:line [attr.x1]="cliffX(ctx)" [attr.y1]="ctx.chartArea.y" [attr.x2]="cliffX(ctx)" [attr.y2]="cliffBoxY(ctx)" stroke="#e5484d" stroke-width="1" stroke-dasharray="4,3" opacity="0.5" />
+                                        <svg:rect [attr.x]="cliffX(ctx)" [attr.y]="cliffBoxY(ctx)" [attr.width]="cliffBoxW" [attr.height]="cliffBoxH" rx="4" ry="4" fill="#e5484d" />
+                                        <svg:text [attr.x]="cliffX(ctx) + cliffBoxW / 2" [attr.y]="cliffBoxY(ctx) + cliffBoxH / 2" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="600" fill="#ffffff">
+                                            {{ cliffLabel }}
+                                        </svg:text>
+                                    </svg:g>
+                                }
+                            </ng-template>
+                        </p-chart-annotation>
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                        <p-chart-hover />
+                        <p-chart-title text="SaaS monthly-cohort retention — 2024 signups" />
+                        <p-chart-caption text="Rows = signup cohort · Columns = months since signup · Grey = not yet observed" />
+                        <p-chart-export-menu filename="saas-cohort-retention-2024" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class HeatmapSaasMonthlyCohortRetention2024SignupsDoc {
+export class HeatmapHeatmapSaasMonthlyCohortRetention2024SignupsDoc {
     readonly data = saasRetention;
     readonly colorStops = COLOR_STOPS;
     readonly colorRange = COLOR_RANGE;

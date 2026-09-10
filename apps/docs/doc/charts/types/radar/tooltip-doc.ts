@@ -12,17 +12,21 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             <p>Add <i>ChartTooltip</i> to show data details on hover. The tooltip displays the spoke label, value, and series name for the nearest vertex.</p>
             <p>For full configuration see <a href="/charts/configuration/tooltip">Tooltip</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-radar id="perf" [data]="data" categoryXField="metric" valueYField="value" [fillOpacity]="0.25" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                    <p-chart-tooltip />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-radar id="perf" [data]="data" categoryXField="metric" valueYField="value" [fillOpacity]="0.25" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                        <p-chart-tooltip />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

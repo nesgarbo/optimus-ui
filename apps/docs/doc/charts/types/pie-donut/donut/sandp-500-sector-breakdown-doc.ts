@@ -19,53 +19,57 @@ const colors = ['#5daeea', '#ffad5a', '#ffd166', '#4ecdc4', '#7c8cff', '#c084fc'
             <p>#### SvgDonutSp500SectorsDemo.ts</p>
             <p>#### sp500Sectors.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-pie id="sp500" [data]="data" valueField="weight" categoryField="sector" [color]="colors" [innerRadius]="0.55" [spacing]="2" [borderRadius]="3" sort="value-desc" />
-                    <p-chart-annotation>
-                        <ng-template pChartAnnotationDef let-ctx>
-                            @let st = annState(ctx);
-                            <svg:g text-anchor="middle">
-                                <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y - 28" dy="4" font-size="12" opacity="0.45" dominant-baseline="auto">S&amp;P 500</svg:text>
-                                @if (st.active) {
-                                    <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y - 4" dy="5" font-size="15" font-weight="bold" [attr.fill]="st.color" dominant-baseline="auto">{{ st.active.sector }}</svg:text>
-                                    <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y + 22" dy="9" font-size="26" font-weight="bold" dominant-baseline="auto">{{ st.pct.toFixed(1) }}%</svg:text>
-                                } @else {
-                                    <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y + 10" font-size="11" opacity="0.3" dominant-baseline="middle">hover to explore</svg:text>
-                                }
-                            </svg:g>
-                        </ng-template>
-                    </p-chart-annotation>
-                    <p-chart-data-labels display="percentage" [minPercentage]="5" [fontSize]="11" />
-                    <p-chart-legend position="right" verticalAlign="middle" [width]="250">
-                        <ng-template pChartLegendItemDef let-ctx>
-                            <div
-                                (click)="ctx.onClick()"
-                                (mouseenter)="ctx.onMouseEnter()"
-                                (mouseleave)="ctx.onMouseLeave()"
-                                [style]="'display:flex;align-items:center;gap:6px;padding:3px 8px;cursor:pointer;transition:opacity 0.2s;opacity:' + (ctx.visible ? 1 : 0.35)"
-                            >
-                                <span [style]="'width:8px;height:8px;border-radius:2px;flex-shrink:0;background:' + ctx.color"></span>
-                                <span style="font-size:11px;flex:1;white-space:nowrap">{{ ctx.label }}</span>
-                                <span [style]="'font-size:10px;font-weight:600;margin-left:6px;min-width:44px;text-align:right;flex-shrink:0;color:' + ytdColor(ctx.label)">{{ ytdLabel(ctx.label) }}</span>
-                            </div>
-                        </ng-template>
-                    </p-chart-legend>
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                    <p-chart-hover [offset]="6" [brightness]="1.08" />
-                    <p-chart-title text="S&P 500 sector composition & YTD performance" />
-                    <p-chart-caption text="Source: S&P Dow Jones Indices · December 2024 · YTD total returns" />
-                    <p-chart-export-menu filename="sp500-sectors-2024" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-pie id="sp500" [data]="data" valueField="weight" categoryField="sector" [color]="colors" [innerRadius]="0.55" [spacing]="2" [borderRadius]="3" sort="value-desc" />
+                        <p-chart-annotation>
+                            <ng-template pChartAnnotationDef let-ctx>
+                                @let st = annState(ctx);
+                                <svg:g text-anchor="middle">
+                                    <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y - 28" dy="4" font-size="12" opacity="0.45" dominant-baseline="auto">S&amp;P 500</svg:text>
+                                    @if (st.active) {
+                                        <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y - 4" dy="5" font-size="15" font-weight="bold" [attr.fill]="st.color" dominant-baseline="auto">{{ st.active.sector }}</svg:text>
+                                        <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y + 22" dy="9" font-size="26" font-weight="bold" dominant-baseline="auto">{{ st.pct.toFixed(1) }}%</svg:text>
+                                    } @else {
+                                        <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y + 10" font-size="11" opacity="0.3" dominant-baseline="middle">hover to explore</svg:text>
+                                    }
+                                </svg:g>
+                            </ng-template>
+                        </p-chart-annotation>
+                        <p-chart-data-labels display="percentage" [minPercentage]="5" [fontSize]="11" />
+                        <p-chart-legend position="right" verticalAlign="middle" [width]="250">
+                            <ng-template pChartLegendItemDef let-ctx>
+                                <div
+                                    (click)="ctx.onClick()"
+                                    (mouseenter)="ctx.onMouseEnter()"
+                                    (mouseleave)="ctx.onMouseLeave()"
+                                    [style]="'display:flex;align-items:center;gap:6px;padding:3px 8px;cursor:pointer;transition:opacity 0.2s;opacity:' + (ctx.visible ? 1 : 0.35)"
+                                >
+                                    <span [style]="'width:8px;height:8px;border-radius:2px;flex-shrink:0;background:' + ctx.color"></span>
+                                    <span style="font-size:11px;flex:1;white-space:nowrap">{{ ctx.label }}</span>
+                                    <span [style]="'font-size:10px;font-weight:600;margin-left:6px;min-width:44px;text-align:right;flex-shrink:0;color:' + ytdColor(ctx.label)">{{ ytdLabel(ctx.label) }}</span>
+                                </div>
+                            </ng-template>
+                        </p-chart-legend>
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                        <p-chart-hover [offset]="6" [brightness]="1.08" />
+                        <p-chart-title text="S&P 500 sector composition & YTD performance" />
+                        <p-chart-caption text="Source: S&P Dow Jones Indices · December 2024 · YTD total returns" />
+                        <p-chart-export-menu filename="sp500-sectors-2024" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DonutSandp500SectorBreakdownDoc {
+export class PieDonutDonutSandp500SectorBreakdownDoc {
     readonly data = data;
     readonly colors = colors;
     private lastHoveredIndex: number | null = null;

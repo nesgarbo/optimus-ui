@@ -24,16 +24,20 @@ import { ChartsModule, type NamedAnimationSpec } from '@openng/optimus-ui/charts
             </p>
             <p>This keeps interactive feedback responsive and predictable regardless of any background property animations.</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="barData" categoryXField="month" valueYField="bookings" color="#ffad5a" [borderRadius]="4" [animations]="barAnims" />
-                <p-chart-line id="activation" [data]="lineData" categoryXField="month" valueYField="activation" color="#5daeea" [showMarkers]="false" curve="spline" yAxisId="right" [animations]="lineAnims" />
-                <p-chart-x-axis />
-                <p-chart-y-axis id="default" />
-                <p-chart-y-axis id="right" position="right" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="barData" categoryXField="month" valueYField="bookings" color="#ffad5a" [borderRadius]="4" [animations]="barAnims" />
+                    <p-chart-line id="activation" [data]="lineData" categoryXField="month" valueYField="activation" color="#5daeea" [showMarkers]="false" curve="spline" yAxisId="right" [animations]="lineAnims" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis id="default" />
+                    <p-chart-y-axis id="right" position="right" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

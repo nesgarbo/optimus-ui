@@ -15,16 +15,20 @@ import { ChartsModule, type AccessibilityProps } from '@openng/optimus-ui/charts
                 custom ring entirely without disabling keyboard navigation.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-line [data]="data" categoryXField="month" valueYField="api" name="API latency" color="#5daeea" [showMarkers]="true" />
-                <p-chart-line [data]="data" categoryXField="month" valueYField="checkout" name="Checkout latency" color="#4ecdc4" [showMarkers]="true" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-accessibility [keyboardNavigation]="keyboardNavigation" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-line [data]="data" categoryXField="month" valueYField="api" name="API latency" color="#5daeea" [showMarkers]="true" />
+                    <p-chart-line [data]="data" categoryXField="month" valueYField="checkout" name="Checkout latency" color="#4ecdc4" [showMarkers]="true" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-accessibility [keyboardNavigation]="keyboardNavigation" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

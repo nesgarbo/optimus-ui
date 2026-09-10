@@ -14,30 +14,34 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 control. Use <i>borderDash</i> for a dashed stroke and <i>borderSkipped</i> to drop the border on specific edges.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-bar
-                        [data]="data"
-                        categoryXField="month"
-                        valueYField="passed"
-                        [borderStrokeWidth]="4"
-                        [borderColor]="BORDER_COLOR"
-                        [borderDash]="[6, 3]"
-                        borderSkipped="bottom"
-                        [borderRadius]="{
-                            topLeft: 8,
-                            topRight: 8,
-                            bottomLeft: 0,
-                            bottomRight: 0
-                        }"
-                    />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis label="SLA checks passed" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-bar
+                            [data]="data"
+                            categoryXField="month"
+                            valueYField="passed"
+                            [borderStrokeWidth]="4"
+                            [borderColor]="BORDER_COLOR"
+                            [borderDash]="[6, 3]"
+                            borderSkipped="bottom"
+                            [borderRadius]="{
+                                topLeft: 8,
+                                topRight: 8,
+                                bottomLeft: 0,
+                                bottomRight: 0
+                            }"
+                        />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis label="SLA checks passed" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

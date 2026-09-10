@@ -27,17 +27,21 @@ const TEMP_DATA = CITIES.flatMap((city) => MONTHS.map((month, i) => ({ month, ci
             </p>
             <p>For full configuration see <a href="/charts/configuration/legend">Legend</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-heatmap [data]="data" categoryXField="month" categoryYField="city" valueField="temp" [colorScale]="[0, 15, 30]" [colorRange]="['#eef6ff', '#ffd166', '#ff7a66']" [spacing]="3" [borderRadius]="6" />
-                    <p-chart-x-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
-                    <p-chart-y-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
-                    <p-chart-color-legend position="bottom" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-heatmap [data]="data" categoryXField="month" categoryYField="city" valueField="temp" [colorScale]="[0, 15, 30]" [colorRange]="['#eef6ff', '#ffd166', '#ff7a66']" [spacing]="3" [borderRadius]="6" />
+                        <p-chart-x-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
+                        <p-chart-y-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
+                        <p-chart-color-legend position="bottom" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

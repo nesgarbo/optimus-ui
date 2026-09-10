@@ -33,30 +33,34 @@ const positions = {
             <p>#### SvgScatterNbaPositionsDemo.ts</p>
             <p>#### nbaPositions.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-scatter id="pg" [data]="pointGuards" valueXField="ast" valueYField="pts" [color]="colors.pg" name="Point Guards" markerShape="circle" [markerSize]="9" />
-                    <p-chart-scatter id="sg" [data]="shootingGuards" valueXField="ast" valueYField="pts" [color]="colors.sg" name="Shooting Guards" markerShape="square" [markerSize]="9" />
-                    <p-chart-scatter id="sf" [data]="smallForwards" valueXField="ast" valueYField="pts" [color]="colors.sf" name="Small Forwards" markerShape="triangle" [markerSize]="10" />
-                    <p-chart-scatter id="pf" [data]="powerForwards" valueXField="ast" valueYField="pts" [color]="colors.pf" name="Power Forwards" markerShape="cross" [markerSize]="11" />
-                    <p-chart-scatter id="c" [data]="centers" valueXField="ast" valueYField="pts" [color]="colors.c" name="Centers" markerShape="star" [markerSize]="11" />
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                    <p-chart-legend position="top" />
-                    <p-chart-hover [brightness]="1.1" />
-                    <p-chart-x-axis label="Assists per game" />
-                    <p-chart-y-axis label="Points per game" />
-                    <p-chart-title text="NBA 2023-24 — scorers vs playmakers, by position" />
-                    <p-chart-caption text="Per-game averages · 18+ PPG or 7+ APG threshold · Source: NBA.com/stats · Basketball-Reference" />
-                    <p-chart-export-menu filename="nba-2023-24-scorers-vs-playmakers" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-scatter id="pg" [data]="pointGuards" valueXField="ast" valueYField="pts" [color]="colors.pg" name="Point Guards" markerShape="circle" [markerSize]="9" />
+                        <p-chart-scatter id="sg" [data]="shootingGuards" valueXField="ast" valueYField="pts" [color]="colors.sg" name="Shooting Guards" markerShape="square" [markerSize]="9" />
+                        <p-chart-scatter id="sf" [data]="smallForwards" valueXField="ast" valueYField="pts" [color]="colors.sf" name="Small Forwards" markerShape="triangle" [markerSize]="10" />
+                        <p-chart-scatter id="pf" [data]="powerForwards" valueXField="ast" valueYField="pts" [color]="colors.pf" name="Power Forwards" markerShape="cross" [markerSize]="11" />
+                        <p-chart-scatter id="c" [data]="centers" valueXField="ast" valueYField="pts" [color]="colors.c" name="Centers" markerShape="star" [markerSize]="11" />
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                        <p-chart-legend position="top" />
+                        <p-chart-hover [brightness]="1.1" />
+                        <p-chart-x-axis label="Assists per game" />
+                        <p-chart-y-axis label="Points per game" />
+                        <p-chart-title text="NBA 2023-24 — scorers vs playmakers, by position" />
+                        <p-chart-caption text="Per-game averages · 18+ PPG or 7+ APG threshold · Source: NBA.com/stats · Basketball-Reference" />
+                        <p-chart-export-menu filename="nba-2023-24-scorers-vs-playmakers" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ScatterNba202324ScorersVsPlaymakersByPositionDoc {
+export class ScatterBubbleScatterNba202324ScorersVsPlaymakersByPositionDoc {
     readonly pointGuards = pointGuards;
     readonly shootingGuards = shootingGuards;
     readonly smallForwards = smallForwards;

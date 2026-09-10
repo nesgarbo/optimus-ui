@@ -17,31 +17,35 @@ import { ukRenewables as data } from '@/doc/charts/data/ukRenewables';
             <p>#### SvgPolarRenewablesDemo.ts</p>
             <p>#### ukRenewables.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg [animation]="{ duration: 750 }">
-                    <p-chart-stacked>
-                        <p-chart-polar [data]="data" categoryXField="month" valueYField="hydro" name="Hydro" color="#36b7d6" [borderRadius]="4" [spacing]="6" />
-                        <p-chart-polar [data]="data" categoryXField="month" valueYField="solar" name="Solar" color="#ffad5a" [borderRadius]="4" [spacing]="6" />
-                        <p-chart-polar [data]="data" categoryXField="month" valueYField="wind" name="Wind" color="#7c8cff" [borderRadius]="4" [spacing]="6" />
-                    </p-chart-stacked>
-                    <p-chart-x-axis />
-                    <p-chart-y-axis [tickCount]="3" [gridOpacity]="0.28" />
-                    <p-chart-tooltip mode="shared" [valueFormatter]="format" />
-                    <p-chart-hover [brightness]="1.08" />
-                    <p-chart-legend position="bottom" />
-                    <p-chart-title text="UK Grid — Monthly Renewable Generation by Source" />
-                    <p-chart-caption text="Wind and solar are natural complements — Atlantic storms peak as solar fades each winter, summer reverses the split · hydro holds steady year-round · TWh, illustrative from National Grid ESO data" />
-                    <p-chart-export-menu filename="uk-renewables-monthly" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg [animation]="{ duration: 750 }">
+                        <p-chart-stacked>
+                            <p-chart-polar [data]="data" categoryXField="month" valueYField="hydro" name="Hydro" color="#36b7d6" [borderRadius]="4" [spacing]="6" />
+                            <p-chart-polar [data]="data" categoryXField="month" valueYField="solar" name="Solar" color="#ffad5a" [borderRadius]="4" [spacing]="6" />
+                            <p-chart-polar [data]="data" categoryXField="month" valueYField="wind" name="Wind" color="#7c8cff" [borderRadius]="4" [spacing]="6" />
+                        </p-chart-stacked>
+                        <p-chart-x-axis />
+                        <p-chart-y-axis [tickCount]="3" [gridOpacity]="0.28" />
+                        <p-chart-tooltip mode="shared" [valueFormatter]="format" />
+                        <p-chart-hover [brightness]="1.08" />
+                        <p-chart-legend position="bottom" />
+                        <p-chart-title text="UK Grid — Monthly Renewable Generation by Source" />
+                        <p-chart-caption text="Wind and solar are natural complements — Atlantic storms peak as solar fades each winter, summer reverses the split · hydro holds steady year-round · TWh, illustrative from National Grid ESO data" />
+                        <p-chart-export-menu filename="uk-renewables-monthly" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class StackedUkGridMonthlyRenewableGenerationBySourceDoc {
+export class PolarStackedUkGridMonthlyRenewableGenerationBySourceDoc {
     readonly data = data;
     readonly format = (v: number) => `${v} TWh`;
 }

@@ -14,19 +14,23 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 than direct comparison.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-stacked>
-                        <p-chart-radar id="automated" [data]="data" categoryXField="queue" valueYField="automated" [fillOpacity]="0.5" name="Automated" />
-                        <p-chart-radar id="assisted" [data]="data" categoryXField="queue" valueYField="assisted" [fillOpacity]="0.5" name="Assisted" />
-                    </p-chart-stacked>
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-stacked>
+                            <p-chart-radar id="automated" [data]="data" categoryXField="queue" valueYField="automated" [fillOpacity]="0.5" name="Automated" />
+                            <p-chart-radar id="assisted" [data]="data" categoryXField="queue" valueYField="assisted" [fillOpacity]="0.5" name="Assisted" />
+                        </p-chart-stacked>
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

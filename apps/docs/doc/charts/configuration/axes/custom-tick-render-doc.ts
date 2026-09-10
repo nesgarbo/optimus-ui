@@ -16,14 +16,18 @@ const peakMonths = ['Feb', 'Apr'];
                 <i>render</i> function that draws to <i>ctx</i> and returns <i>null</i>. Use the <i>pChartAxisTickMarkDef</i> seam (or the <i>renderTick</i> function) to replace the tick mark itself independently.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="signups" color="#5daeea" />
-                <p-chart-x-axis [tickStyle]="xTickStyle" />
-                <p-chart-y-axis />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="signups" color="#5daeea" />
+                    <p-chart-x-axis [tickStyle]="xTickStyle" />
+                    <p-chart-y-axis />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

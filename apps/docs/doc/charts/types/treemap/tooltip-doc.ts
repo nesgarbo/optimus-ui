@@ -12,15 +12,19 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             <p>Add <i>ChartTooltip</i> to show cell details on hover. The tooltip displays the label and value for the hovered cell.</p>
             <p>For full configuration see <a href="/charts/configuration/tooltip">Tooltip</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-treemap [data]="data" categoryField="name" valueField="population" />
-                    <p-chart-tooltip />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-treemap [data]="data" categoryField="name" valueField="population" />
+                        <p-chart-tooltip />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

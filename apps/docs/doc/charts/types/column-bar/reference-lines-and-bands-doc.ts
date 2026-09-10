@@ -12,18 +12,22 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             <p>Add <i>ChartReferenceLine</i> for threshold and divider lines. Add <i>ChartReferenceBand</i> to highlight value ranges such as targets, capacity limits, or threshold zones.</p>
             <p>For full configuration see <a href="/charts/configuration/reference-lines-bands">Reference Lines &amp; Bands</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-bar [data]="data" categoryXField="week" valueYField="throughput" color="#5daeea" [borderRadius]="4" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis label="Shipments/hour" />
-                    <p-chart-reference-line [y]="40" [stroke]="TARGET_COLOR" [lineStrokeWidth]="2" [lineDash]="[6, 3]" label="Target" />
-                    <p-chart-reference-band [y1]="35" [y2]="45" [fill]="TARGET_COLOR" [fillOpacity]="0.08" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-bar [data]="data" categoryXField="week" valueYField="throughput" color="#5daeea" [borderRadius]="4" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis label="Shipments/hour" />
+                        <p-chart-reference-line [y]="40" [stroke]="TARGET_COLOR" [lineStrokeWidth]="2" [lineDash]="[6, 3]" label="Target" />
+                        <p-chart-reference-band [y1]="35" [y2]="45" [fill]="TARGET_COLOR" [fillOpacity]="0.08" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

@@ -14,14 +14,18 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 <i>sliceDice</i> alternates between them by depth level.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-treemap [data]="data" categoryField="name" valueField="population" layout="slice" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-treemap [data]="data" categoryField="name" valueField="population" layout="slice" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

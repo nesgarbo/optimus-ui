@@ -14,22 +14,26 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 configurable <i>tension</i> for a looser curve. The step variants (<i>step</i>, <i>step-before</i>, <i>step-after</i>) draw discrete horizontal transitions, useful for state and threshold data.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-line [data]="data" categoryXField="hour" valueYField="linear" curve="linear" showMarkers [markerSize]="4" name="Linear" />
-                    <p-chart-line [data]="data" categoryXField="hour" valueYField="smooth" curve="smooth" showMarkers [markerSize]="4" name="Smooth" />
-                    <p-chart-line [data]="data" categoryXField="hour" valueYField="step" curve="step" showMarkers [markerSize]="4" name="Step" />
-                    <p-chart-line [data]="data" categoryXField="hour" valueYField="stepBefore" curve="step-before" showMarkers [markerSize]="4" name="Step Before" />
-                    <p-chart-line [data]="data" categoryXField="hour" valueYField="stepAfter" curve="step-after" showMarkers [markerSize]="4" name="Step After" />
-                    <p-chart-line [data]="data" categoryXField="hour" valueYField="spline" curve="smooth" [tension]="0.3" showMarkers [markerSize]="4" name="Spline (tension: 0.3)" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                    <p-chart-legend position="bottom" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-line [data]="data" categoryXField="hour" valueYField="linear" curve="linear" showMarkers [markerSize]="4" name="Linear" />
+                        <p-chart-line [data]="data" categoryXField="hour" valueYField="smooth" curve="smooth" showMarkers [markerSize]="4" name="Smooth" />
+                        <p-chart-line [data]="data" categoryXField="hour" valueYField="step" curve="step" showMarkers [markerSize]="4" name="Step" />
+                        <p-chart-line [data]="data" categoryXField="hour" valueYField="stepBefore" curve="step-before" showMarkers [markerSize]="4" name="Step Before" />
+                        <p-chart-line [data]="data" categoryXField="hour" valueYField="stepAfter" curve="step-after" showMarkers [markerSize]="4" name="Step After" />
+                        <p-chart-line [data]="data" categoryXField="hour" valueYField="spline" curve="smooth" [tension]="0.3" showMarkers [markerSize]="4" name="Spline (tension: 0.3)" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                        <p-chart-legend position="bottom" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

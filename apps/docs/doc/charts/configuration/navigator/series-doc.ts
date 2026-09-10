@@ -23,20 +23,24 @@ function seededRandom(seed: number) {
                 axis and gets the filled area treatment; remaining series appear as lines on a shared Y scale.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-line id="views" [data]="data" categoryXField="day" valueYField="pageViews" name="Page Views" color="#5daeea" curve="smooth" />
-                    <p-chart-line id="sessions" [data]="data" categoryXField="day" valueYField="sessions" name="Sessions" color="#5ccf9f" curve="smooth" />
-                    <p-chart-x-axis [minGridDistance]="80" />
-                    <p-chart-y-axis />
-                    <p-chart-legend position="top" />
-                    <p-chart-zoom mode="x" />
-                    <p-chart-navigator [series]="['views', 'sessions']" color="#5daeea" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-line id="views" [data]="data" categoryXField="day" valueYField="pageViews" name="Page Views" color="#5daeea" curve="smooth" />
+                        <p-chart-line id="sessions" [data]="data" categoryXField="day" valueYField="sessions" name="Sessions" color="#5ccf9f" curve="smooth" />
+                        <p-chart-x-axis [minGridDistance]="80" />
+                        <p-chart-y-axis />
+                        <p-chart-legend position="top" />
+                        <p-chart-zoom mode="x" />
+                        <p-chart-navigator [series]="['views', 'sessions']" color="#5daeea" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

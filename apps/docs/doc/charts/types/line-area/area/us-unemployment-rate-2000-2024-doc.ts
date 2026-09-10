@@ -19,40 +19,44 @@ const LONG_RUN_AVG = 5.7;
             <p>#### SvgAreaUnemploymentDemo.ts</p>
             <p>#### unemploymentAnnual.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg [animation]="{ duration: 600 }">
-                    <p-chart-line [data]="data" categoryXField="year" valueYField="rate" [fillOpacity]="1" [lineStrokeWidth]="2" showMarkers [markerSize]="3.5" curve="smooth" [segmentColor]="segmentColor" [segmentFillColor]="segmentFillColor" />
-                    <p-chart-reference-line [y]="longRunAvg" label="25-yr avg" stroke="#5daeea" [lineDash]="[5, 4]" />
-                    <p-chart-reference-band [y1]="7.5" [y2]="12" fill="#e5484d" [fillOpacity]="0.04" />
-                    <p-chart-annotation>
-                        <ng-template pChartAnnotationDef let-ctx>
-                            <svg:g text-anchor="end">
-                                @for (item of legendItems; track item.label; let i = $index) {
-                                    <svg:g [attr.transform]="'translate(0,' + (ctx.chartArea.y + 14 + i * 17) + ')'">
-                                        <svg:rect [attr.x]="ctx.chartArea.x + ctx.chartArea.width - 12" [attr.y]="-5" [attr.width]="8" [attr.height]="8" [attr.fill]="item.color" />
-                                        <svg:text [attr.x]="ctx.chartArea.x + ctx.chartArea.width - 18" [attr.y]="0" dy="1" opacity="0.6" font-size="11" dominant-baseline="middle">{{ item.label }}</svg:text>
-                                    </svg:g>
-                                }
-                            </svg:g>
-                        </ng-template>
-                    </p-chart-annotation>
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                    <p-chart-hover />
-                    <p-chart-x-axis [tickCount]="12" />
-                    <p-chart-y-axis [tickCount]="6" />
-                    <p-chart-title text="US civilian unemployment rate 2000–2024" />
-                    <p-chart-caption text="Source: U.S. Bureau of Labor Statistics · Series LNS14000000 · Annual averages" />
-                    <p-chart-export-menu filename="us-unemployment-2000-2024" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg [animation]="{ duration: 600 }">
+                        <p-chart-line [data]="data" categoryXField="year" valueYField="rate" [fillOpacity]="1" [lineStrokeWidth]="2" showMarkers [markerSize]="3.5" curve="smooth" [segmentColor]="segmentColor" [segmentFillColor]="segmentFillColor" />
+                        <p-chart-reference-line [y]="longRunAvg" label="25-yr avg" stroke="#5daeea" [lineDash]="[5, 4]" />
+                        <p-chart-reference-band [y1]="7.5" [y2]="12" fill="#e5484d" [fillOpacity]="0.04" />
+                        <p-chart-annotation>
+                            <ng-template pChartAnnotationDef let-ctx>
+                                <svg:g text-anchor="end">
+                                    @for (item of legendItems; track item.label; let i = $index) {
+                                        <svg:g [attr.transform]="'translate(0,' + (ctx.chartArea.y + 14 + i * 17) + ')'">
+                                            <svg:rect [attr.x]="ctx.chartArea.x + ctx.chartArea.width - 12" [attr.y]="-5" [attr.width]="8" [attr.height]="8" [attr.fill]="item.color" />
+                                            <svg:text [attr.x]="ctx.chartArea.x + ctx.chartArea.width - 18" [attr.y]="0" dy="1" opacity="0.6" font-size="11" dominant-baseline="middle">{{ item.label }}</svg:text>
+                                        </svg:g>
+                                    }
+                                </svg:g>
+                            </ng-template>
+                        </p-chart-annotation>
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                        <p-chart-hover />
+                        <p-chart-x-axis [tickCount]="12" />
+                        <p-chart-y-axis [tickCount]="6" />
+                        <p-chart-title text="US civilian unemployment rate 2000–2024" />
+                        <p-chart-caption text="Source: U.S. Bureau of Labor Statistics · Series LNS14000000 · Annual averages" />
+                        <p-chart-export-menu filename="us-unemployment-2000-2024" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AreaUsUnemploymentRate20002024Doc {
+export class LineAreaAreaUsUnemploymentRate20002024Doc {
     readonly data = unemploymentAnnual;
     readonly longRunAvg = LONG_RUN_AVG;
     readonly legendItems = [

@@ -17,28 +17,32 @@ import { ebitdaBridge as data, type EbitdaStep } from '@/doc/charts/data/ebitdaB
             <p>#### SvgBarStackedWaterfallDemo.ts</p>
             <p>#### ebitdaBridge.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460" [animation]="{ duration: 600 }">
-                <p-chart-waterfall totalField="isTotal">
-                    <p-chart-stacked>
-                        <p-chart-bar [data]="data" categoryXField="item" valueYField="core" name="Core" [color]="coreColor" [borderRadius]="2" />
-                        <p-chart-bar [data]="data" categoryXField="item" valueYField="incremental" name="Incremental" [color]="incrementalColor" [borderRadius]="2" />
-                    </p-chart-stacked>
-                </p-chart-waterfall>
-                <p-chart-reference-line [y]="breakeven" stroke="#94a3b8" [lineStrokeWidth]="1" [lineDash]="[4, 4]" label="Break-even" labelPosition="end" />
-                <p-chart-tooltip mode="shared" />
-                <p-chart-x-axis />
-                <p-chart-y-axis [tickFormat]="formatAxis" />
-                <p-chart-title text="FY 2023 EBITDA Bridge — Core & Incremental Drivers" />
-                <p-chart-caption text="P&L bridge in $M · bars split into core (darker) and incremental (lighter) drivers" />
-                <p-chart-accessibility />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460" [animation]="{ duration: 600 }">
+                    <p-chart-waterfall totalField="isTotal">
+                        <p-chart-stacked>
+                            <p-chart-bar [data]="data" categoryXField="item" valueYField="core" name="Core" [color]="coreColor" [borderRadius]="2" />
+                            <p-chart-bar [data]="data" categoryXField="item" valueYField="incremental" name="Incremental" [color]="incrementalColor" [borderRadius]="2" />
+                        </p-chart-stacked>
+                    </p-chart-waterfall>
+                    <p-chart-reference-line [y]="breakeven" stroke="#94a3b8" [lineStrokeWidth]="1" [lineDash]="[4, 4]" label="Break-even" labelPosition="end" />
+                    <p-chart-tooltip mode="shared" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis [tickFormat]="formatAxis" />
+                    <p-chart-title text="FY 2023 EBITDA Bridge — Core & Incremental Drivers" />
+                    <p-chart-caption text="P&L bridge in $M · bars split into core (darker) and incremental (lighter) drivers" />
+                    <p-chart-accessibility />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class WaterfallFy2023EbitdaBridgeStackedWaterfallDoc {
+export class ColumnBarWaterfallFy2023EbitdaBridgeStackedWaterfallDoc {
     readonly data = data;
     readonly breakeven = 0;
 

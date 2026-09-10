@@ -28,17 +28,21 @@ const TEMP_DATA = CITIES.flatMap((city) => MONTHS.map((month, i) => ({ month, ci
             </p>
             <p>For full configuration see <a href="/charts/configuration/data-labels">Data Labels</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-heatmap [data]="data" categoryXField="month" categoryYField="city" valueField="temp" [colorRange]="['#eef6ff', '#ffd166', '#ff7a66']" />
-                    <p-chart-data-labels [formatter]="formatter" />
-                    <p-chart-x-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
-                    <p-chart-y-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-heatmap [data]="data" categoryXField="month" categoryYField="city" valueField="temp" [colorRange]="['#eef6ff', '#ffd166', '#ff7a66']" />
+                        <p-chart-data-labels [formatter]="formatter" />
+                        <p-chart-x-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
+                        <p-chart-y-axis [showLine]="false" [showTicks]="false" [gridLines]="false" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

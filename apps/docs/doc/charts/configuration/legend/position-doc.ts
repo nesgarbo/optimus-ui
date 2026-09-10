@@ -11,16 +11,20 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Set <i>position</i> to place the legend on any side of the chart. Each position reduces the chart area to make room for the legend.</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="350">
-                <p-chart-bar [data]="data" categoryXField="quarter" valueYField="newArr" color="#5daeea" name="New ARR" />
-                <p-chart-bar [data]="data" categoryXField="quarter" valueYField="expansionArr" color="#ffad5a" name="Expansion ARR" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-legend position="right" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="350">
+                    <p-chart-bar [data]="data" categoryXField="quarter" valueYField="newArr" color="#5daeea" name="New ARR" />
+                    <p-chart-bar [data]="data" categoryXField="quarter" valueYField="expansionArr" color="#ffad5a" name="Expansion ARR" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-legend position="right" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

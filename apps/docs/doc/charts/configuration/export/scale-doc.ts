@@ -11,17 +11,21 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Set <i>scale</i> to control the pixel density of raster exports (PNG, JPEG, PDF). The default <i>2</i> produces a 2× retina-quality image. Set <i>scale</i> to <i>3</i> for print-quality exports or <i>1</i> for smaller file sizes.</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="data" categoryXField="segment" valueYField="lastQ" color="#5daeea" name="Last Q" />
-                <p-chart-bar [data]="data" categoryXField="segment" valueYField="currentQ" color="#ffad5a" name="Current Q" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-legend position="bottom" />
-                <p-chart-export-menu [scale]="3" filename="segment-retina-report" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="segment" valueYField="lastQ" color="#5daeea" name="Last Q" />
+                    <p-chart-bar [data]="data" categoryXField="segment" valueYField="currentQ" color="#ffad5a" name="Current Q" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-legend position="bottom" />
+                    <p-chart-export-menu [scale]="3" filename="segment-retina-report" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

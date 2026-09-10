@@ -23,17 +23,21 @@ function seededRandom(seed: number) {
                 dimensions are continuous.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-scatter id="points" [data]="data" valueXField="x" valueYField="y" color="#5daeea" [markerSize]="5" />
-                    <p-chart-x-axis label="X" />
-                    <p-chart-y-axis label="Y" />
-                    <p-chart-zoom mode="xy" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-scatter id="points" [data]="data" valueXField="x" valueYField="y" color="#5daeea" [markerSize]="5" />
+                        <p-chart-x-axis label="X" />
+                        <p-chart-y-axis label="Y" />
+                        <p-chart-zoom mode="xy" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

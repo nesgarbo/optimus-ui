@@ -15,18 +15,22 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             </p>
             <p>For full configuration see <a href="/charts/configuration/reference-lines-bands">Reference Lines &amp; Bands</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-scatter id="reliability" [data]="data" valueXField="latency" valueYField="reliability" color="#5daeea" [markerSize]="7" />
-                    <p-chart-reference-line [y]="99.9" label="SLO floor" stroke="#ff7a66" [lineDash]="[6, 4]" />
-                    <p-chart-reference-band [y1]="99.9" [y2]="100" fill="#5ccf9f" [fillOpacity]="0.1" label="Healthy zone" />
-                    <p-chart-x-axis label="P95 latency (ms)" />
-                    <p-chart-y-axis label="Availability (%)" [startFromZero]="false" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-scatter id="reliability" [data]="data" valueXField="latency" valueYField="reliability" color="#5daeea" [markerSize]="7" />
+                        <p-chart-reference-line [y]="99.9" label="SLO floor" stroke="#ff7a66" [lineDash]="[6, 4]" />
+                        <p-chart-reference-band [y1]="99.9" [y2]="100" fill="#5ccf9f" [fillOpacity]="0.1" label="Healthy zone" />
+                        <p-chart-x-axis label="P95 latency (ms)" />
+                        <p-chart-y-axis label="Availability (%)" [startFromZero]="false" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

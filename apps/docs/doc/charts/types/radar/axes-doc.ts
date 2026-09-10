@@ -14,23 +14,27 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 chart.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-radar id="perf" [data]="data" categoryXField="metric" valueYField="value" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis [min]="0" [max]="100" />
-                    <p-chart-y-axis category="Speed" [min]="0" [max]="300" />
-                    <p-chart-y-axis category="Reliability" [min]="0" [max]="1" />
-                    <p-chart-y-axis category="Usability" [min]="0" [max]="100" />
-                    <p-chart-y-axis category="Security" [min]="0" [max]="5" />
-                    <p-chart-y-axis category="Scalability" [min]="0" [max]="2000" />
-                    <p-chart-y-axis category="Documentation" [min]="0" [max]="1000" />
-                    <p-chart-y-axis category="Support" [min]="0" [max]="72" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-radar id="perf" [data]="data" categoryXField="metric" valueYField="value" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis [min]="0" [max]="100" />
+                        <p-chart-y-axis category="Speed" [min]="0" [max]="300" />
+                        <p-chart-y-axis category="Reliability" [min]="0" [max]="1" />
+                        <p-chart-y-axis category="Usability" [min]="0" [max]="100" />
+                        <p-chart-y-axis category="Security" [min]="0" [max]="5" />
+                        <p-chart-y-axis category="Scalability" [min]="0" [max]="2000" />
+                        <p-chart-y-axis category="Documentation" [min]="0" [max]="1000" />
+                        <p-chart-y-axis category="Support" [min]="0" [max]="72" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

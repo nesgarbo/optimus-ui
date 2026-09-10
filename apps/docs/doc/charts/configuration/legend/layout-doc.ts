@@ -11,17 +11,21 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Set <i>layout="vertical"</i> to stack legend items vertically instead of the default horizontal row. Vertical layout pairs well with <i>position="left"</i> or <i>position="right"</i>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="350">
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="shipped" color="#5daeea" name="Shipped" />
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="returns" color="#ffad5a" name="Returns" />
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="exchanges" color="#ff7a66" name="Exchanges" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-legend position="right" layout="vertical" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="350">
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="shipped" color="#5daeea" name="Shipped" />
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="returns" color="#ffad5a" name="Returns" />
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="exchanges" color="#ff7a66" name="Exchanges" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-legend position="right" layout="vertical" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

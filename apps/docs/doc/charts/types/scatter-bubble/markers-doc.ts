@@ -25,18 +25,22 @@ const BASE = [
                 orient the shape. In bubble mode <i>markerSize</i> is ignored and the radius comes from the <i>size</i> field instead.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-scatter id="checkout" [data]="data" valueXField="latency" valueYField="errorRate" name="Checkout" markerShape="circle" [markerSize]="7" />
-                    <p-chart-scatter id="search" [data]="data2" valueXField="latency" valueYField="errorRate" name="Search" markerShape="triangle" [markerSize]="7" />
-                    <p-chart-scatter id="billing" [data]="data3" valueXField="latency" valueYField="errorRate" name="Billing" markerShape="square" [markerSize]="7" />
-                    <p-chart-x-axis label="P95 latency (ms)" />
-                    <p-chart-y-axis label="Error rate (%)" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-scatter id="checkout" [data]="data" valueXField="latency" valueYField="errorRate" name="Checkout" markerShape="circle" [markerSize]="7" />
+                        <p-chart-scatter id="search" [data]="data2" valueXField="latency" valueYField="errorRate" name="Search" markerShape="triangle" [markerSize]="7" />
+                        <p-chart-scatter id="billing" [data]="data3" valueXField="latency" valueYField="errorRate" name="Billing" markerShape="square" [markerSize]="7" />
+                        <p-chart-x-axis label="P95 latency (ms)" />
+                        <p-chart-y-axis label="Error rate (%)" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

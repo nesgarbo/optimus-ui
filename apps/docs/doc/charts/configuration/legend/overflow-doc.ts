@@ -25,22 +25,26 @@ function makeData(base: number, seed: number) {
                 legends use <i>maxHeight</i>, for <i>left</i>/<i>right</i> legends use <i>maxWidth</i>. Use <i>width</i> and <i>height</i> to lock the container to a fixed size regardless of item count.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="350">
-                <p-chart-line [data]="data.direct" categoryXField="month" valueYField="value" name="Direct" color="#5daeea" />
-                <p-chart-line [data]="data.partner" categoryXField="month" valueYField="value" name="Partner" color="#ffad5a" />
-                <p-chart-line [data]="data.marketplace" categoryXField="month" valueYField="value" name="Marketplace" color="#ffd166" />
-                <p-chart-line [data]="data.enterprise" categoryXField="month" valueYField="value" name="Enterprise" color="#4ecdc4" />
-                <p-chart-line [data]="data.startup" categoryXField="month" valueYField="value" name="Startup" color="#7c8cff" />
-                <p-chart-line [data]="data.expansion" categoryXField="month" valueYField="value" name="Expansion" color="#c084fc" />
-                <p-chart-line [data]="data.services" categoryXField="month" valueYField="value" name="Services" color="#ff6fae" />
-                <p-chart-line [data]="data.training" categoryXField="month" valueYField="value" name="Training" color="#36b7d6" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-legend position="bottom" [maxHeight]="52" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="350">
+                    <p-chart-line [data]="data.direct" categoryXField="month" valueYField="value" name="Direct" color="#5daeea" />
+                    <p-chart-line [data]="data.partner" categoryXField="month" valueYField="value" name="Partner" color="#ffad5a" />
+                    <p-chart-line [data]="data.marketplace" categoryXField="month" valueYField="value" name="Marketplace" color="#ffd166" />
+                    <p-chart-line [data]="data.enterprise" categoryXField="month" valueYField="value" name="Enterprise" color="#4ecdc4" />
+                    <p-chart-line [data]="data.startup" categoryXField="month" valueYField="value" name="Startup" color="#7c8cff" />
+                    <p-chart-line [data]="data.expansion" categoryXField="month" valueYField="value" name="Expansion" color="#c084fc" />
+                    <p-chart-line [data]="data.services" categoryXField="month" valueYField="value" name="Services" color="#ff6fae" />
+                    <p-chart-line [data]="data.training" categoryXField="month" valueYField="value" name="Training" color="#36b7d6" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-legend position="bottom" [maxHeight]="52" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

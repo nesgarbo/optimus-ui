@@ -12,17 +12,21 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             <p>Add <i>ChartTooltip</i> to show OHLC details on hover. The tooltip renders open, high, low, and close values in a structured layout with no extra configuration. Use a <i>pChartTooltipDef</i> template for custom tooltip content.</p>
             <p>For full configuration see <a href="/charts/configuration/tooltip">Tooltip</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-candlestick [data]="data" categoryXField="date" openField="open" highField="high" lowField="low" closeField="close" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                    <p-chart-tooltip />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-candlestick [data]="data" categoryXField="date" openField="open" highField="high" lowField="low" closeField="close" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                        <p-chart-tooltip />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

@@ -14,15 +14,19 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 selection indicator that works alongside brightness and optional dimming.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="bookings" color="#5daeea" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-hover borderColor="#ffad5a" [borderStrokeWidth]="2" [brightness]="1.1" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="bookings" color="#5daeea" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-hover borderColor="#ffad5a" [borderStrokeWidth]="2" [brightness]="1.1" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

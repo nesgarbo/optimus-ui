@@ -16,22 +16,26 @@ const INACTIVE_BTN = 'font-medium text-surface-500 dark:text-surface-400 border-
             <p><i>locale</i> also drives date axis labels on time-series charts. The axis adapts its tick labels to match the locale's date conventions. Month names, day/month order, and calendar notation all change with the locale.</p>
             <p>Use <i>dateTimeFormats</i> on <i>ChartXAxis</i> to override the default format for a specific time unit without changing the locale.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div>
-                <div class="inline-flex gap-1 mb-4">
-                    @for (loc of locales; track loc) {
-                        <button [class]="baseBtn + (activeLocale() === loc ? activeBtn : inactiveBtn)" (click)="activeLocale.set(loc)">{{ loc }}</button>
-                    }
+        @defer (on viewport) {
+            <div class="card">
+                <div>
+                    <div class="inline-flex gap-1 mb-4">
+                        @for (loc of locales; track loc) {
+                            <button [class]="baseBtn + (activeLocale() === loc ? activeBtn : inactiveBtn)" (click)="activeLocale.set(loc)">{{ loc }}</button>
+                        }
+                    </div>
+                    <p-chart-svg [height]="400" [locale]="activeLocale()">
+                        <p-chart-line [data]="data" categoryXField="date" valueYField="value" name="Sales" curve="smooth" [showMarkers]="true" />
+                        <p-chart-x-axis type="time" />
+                        <p-chart-y-axis />
+                        <p-chart-tooltip />
+                    </p-chart-svg>
                 </div>
-                <p-chart-svg [height]="400" [locale]="activeLocale()">
-                    <p-chart-line [data]="data" categoryXField="date" valueYField="value" name="Sales" curve="smooth" [showMarkers]="true" />
-                    <p-chart-x-axis type="time" />
-                    <p-chart-y-axis />
-                    <p-chart-tooltip />
-                </p-chart-svg>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

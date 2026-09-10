@@ -11,18 +11,22 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Set <i>color</i> to apply a color to the polygon stroke and its area fill. Supports hex, RGB, and CSS color values.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-radar id="startup" [data]="data" categoryXField="capability" valueYField="startup" color="#5daeea" [fillOpacity]="0.2" name="Startup" />
-                    <p-chart-radar id="midMarket" [data]="data" categoryXField="capability" valueYField="midMarket" color="#ffad5a" [fillOpacity]="0.2" name="Mid-market" />
-                    <p-chart-radar id="enterprise" [data]="data" categoryXField="capability" valueYField="enterprise" color="#4ecdc4" [fillOpacity]="0.2" name="Enterprise" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-radar id="startup" [data]="data" categoryXField="capability" valueYField="startup" color="#5daeea" [fillOpacity]="0.2" name="Startup" />
+                        <p-chart-radar id="midMarket" [data]="data" categoryXField="capability" valueYField="midMarket" color="#ffad5a" [fillOpacity]="0.2" name="Mid-market" />
+                        <p-chart-radar id="enterprise" [data]="data" categoryXField="capability" valueYField="enterprise" color="#4ecdc4" [fillOpacity]="0.2" name="Enterprise" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

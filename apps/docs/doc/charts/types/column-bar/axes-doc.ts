@@ -15,18 +15,22 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             </p>
             <p>For full configuration see <a href="/charts/configuration/axes">Axes</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-bar [data]="data" categoryXField="month" valueYField="revenue" name="Revenue ($k)" yAxisId="revenue" color="#5daeea" />
-                    <p-chart-bar [data]="data" categoryXField="month" valueYField="orders" name="Orders" yAxisId="orders" color="#ffad5a" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis id="revenue" label="Revenue ($k)" position="left" />
-                    <p-chart-y-axis id="orders" label="Orders" position="right" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-bar [data]="data" categoryXField="month" valueYField="revenue" name="Revenue ($k)" yAxisId="revenue" color="#5daeea" />
+                        <p-chart-bar [data]="data" categoryXField="month" valueYField="orders" name="Orders" yAxisId="orders" color="#ffad5a" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis id="revenue" label="Revenue ($k)" position="left" />
+                        <p-chart-y-axis id="orders" label="Orders" position="right" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

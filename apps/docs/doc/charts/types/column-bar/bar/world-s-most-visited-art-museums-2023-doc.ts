@@ -34,39 +34,43 @@ interface Callout {
             <p>#### SvgBarMostVisitedMuseumsDemo.ts</p>
             <p>#### mostVisitedMuseums.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460" [animation]="{ duration: 700 }">
-                <p-chart-bar [data]="data" categoryXField="museum" valueYField="visitors" [color]="barColorAccessor" [borderRadius]="4" [categoryGap]="0.28" />
-                <p-chart-reference-band [y1]="blockbusterMin" [y2]="blockbusterMax" label="Blockbuster tier (5M+)" [fill]="blockbusterColor" [fillOpacity]="0.08" labelPosition="end" />
-                <p-chart-data-labels display="value" [formatter]="formatMillions" [fontSize]="10" />
-                <p-chart-annotation>
-                    <ng-template pChartAnnotationDef let-ctx>
-                        @let c = callout(ctx);
-                        @if (c) {
-                            <svg:g>
-                                <svg:line [attr.x1]="c.x1" [attr.y1]="c.y1" [attr.x2]="c.x2" [attr.y2]="c.y2" [attr.stroke]="calloutColor" stroke-width="1" stroke-dasharray="4 3" opacity="0.6" />
-                                <svg:rect [attr.x]="c.bx" [attr.y]="c.by" [attr.width]="c.bw" [attr.height]="c.bh" rx="4" fill="none" [attr.stroke]="calloutColor" stroke-width="1.5" opacity="0.7" />
-                                <svg:text [attr.x]="c.bx + 8" [attr.y]="c.by + 13" font-size="11" font-weight="600" opacity="0.9">Louvre: 8.86M visitors</svg:text>
-                                <svg:text [attr.x]="c.bx + 8" [attr.y]="c.by + 27" font-size="10" opacity="0.55">Still #1 worldwide · +14% YoY</svg:text>
-                            </svg:g>
-                        }
-                    </ng-template>
-                </p-chart-annotation>
-                <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                <p-chart-hover />
-                <p-chart-x-axis [tickRotation]="-30" />
-                <p-chart-y-axis [tickFormat]="formatAxis" />
-                <p-chart-title text="World's Most-Visited Art Museums, 2023" />
-                <p-chart-caption text="Annual visitors in millions · Source: TEA/AECOM Theme Index & Museum Report 2023" />
-                <p-chart-export-menu filename="most-visited-museums-2023" />
-                <p-chart-accessibility />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460" [animation]="{ duration: 700 }">
+                    <p-chart-bar [data]="data" categoryXField="museum" valueYField="visitors" [color]="barColorAccessor" [borderRadius]="4" [categoryGap]="0.28" />
+                    <p-chart-reference-band [y1]="blockbusterMin" [y2]="blockbusterMax" label="Blockbuster tier (5M+)" [fill]="blockbusterColor" [fillOpacity]="0.08" labelPosition="end" />
+                    <p-chart-data-labels display="value" [formatter]="formatMillions" [fontSize]="10" />
+                    <p-chart-annotation>
+                        <ng-template pChartAnnotationDef let-ctx>
+                            @let c = callout(ctx);
+                            @if (c) {
+                                <svg:g>
+                                    <svg:line [attr.x1]="c.x1" [attr.y1]="c.y1" [attr.x2]="c.x2" [attr.y2]="c.y2" [attr.stroke]="calloutColor" stroke-width="1" stroke-dasharray="4 3" opacity="0.6" />
+                                    <svg:rect [attr.x]="c.bx" [attr.y]="c.by" [attr.width]="c.bw" [attr.height]="c.bh" rx="4" fill="none" [attr.stroke]="calloutColor" stroke-width="1.5" opacity="0.7" />
+                                    <svg:text [attr.x]="c.bx + 8" [attr.y]="c.by + 13" font-size="11" font-weight="600" opacity="0.9">Louvre: 8.86M visitors</svg:text>
+                                    <svg:text [attr.x]="c.bx + 8" [attr.y]="c.by + 27" font-size="10" opacity="0.55">Still #1 worldwide · +14% YoY</svg:text>
+                                </svg:g>
+                            }
+                        </ng-template>
+                    </p-chart-annotation>
+                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                    <p-chart-hover />
+                    <p-chart-x-axis [tickRotation]="-30" />
+                    <p-chart-y-axis [tickFormat]="formatAxis" />
+                    <p-chart-title text="World's Most-Visited Art Museums, 2023" />
+                    <p-chart-caption text="Annual visitors in millions · Source: TEA/AECOM Theme Index & Museum Report 2023" />
+                    <p-chart-export-menu filename="most-visited-museums-2023" />
+                    <p-chart-accessibility />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class BarWorldSMostVisitedArtMuseums2023Doc {
+export class ColumnBarBarWorldSMostVisitedArtMuseums2023Doc {
     readonly data = data;
     readonly blockbusterMin = BLOCKBUSTER_MIN;
     readonly blockbusterMax = BLOCKBUSTER_MAX;

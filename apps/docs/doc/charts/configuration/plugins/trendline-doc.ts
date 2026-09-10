@@ -52,14 +52,18 @@ const trendline = (opts: { color?: string } = {}) =>
         <app-docsectiontext>
             <p>Fits a least-squares regression line to the series and paints it across the plot area. Useful for surfacing the underlying direction of noisy data.</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="420" [plugins]="plugins">
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="bookings" color="#5daeea" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="420" [plugins]="plugins">
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="bookings" color="#5daeea" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

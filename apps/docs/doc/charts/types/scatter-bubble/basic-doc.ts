@@ -11,16 +11,20 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Set <i>valueXField</i> and <i>valueYField</i> to map numeric data fields. Add <i>ChartXAxis</i> and <i>ChartYAxis</i> to render axes with labels and gridlines.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-scatter id="activation" [data]="data" valueXField="setupHours" valueYField="activation" color="#5daeea" [markerSize]="7" />
-                    <p-chart-x-axis label="Setup time (hours)" />
-                    <p-chart-y-axis label="First-week activation (%)" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-scatter id="activation" [data]="data" valueXField="setupHours" valueYField="activation" color="#5daeea" [markerSize]="7" />
+                        <p-chart-x-axis label="Setup time (hours)" />
+                        <p-chart-y-axis label="First-week activation (%)" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

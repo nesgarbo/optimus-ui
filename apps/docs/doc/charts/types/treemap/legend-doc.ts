@@ -15,15 +15,19 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             </p>
             <p>For full configuration see <a href="/charts/configuration/legend">Legend</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-treemap [data]="data" categoryField="name" valueField="revenue" colorValueField="growth" [colorScale]="colorScale" [colorRange]="colorRange" />
-                    <p-chart-color-legend position="bottom" [colorScale]="colorScale" [colorRange]="colorRange" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-treemap [data]="data" categoryField="name" valueField="revenue" colorValueField="growth" [colorScale]="colorScale" [colorRange]="colorRange" />
+                        <p-chart-color-legend position="bottom" [colorScale]="colorScale" [colorRange]="colorRange" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

@@ -18,15 +18,19 @@ import { ChartsModule, type TickValue } from '@openng/optimus-ui/charts';
                 literal text, not elements.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="data" categoryXField="region" valueYField="arr" color="#5ccf9f" [borderRadius]="4" />
-                <p-chart-x-axis />
-                <p-chart-y-axis [tickFormat]="axisFormatter" />
-                <p-chart-data-labels [formatter]="labelFormatter" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="region" valueYField="arr" color="#5ccf9f" [borderRadius]="4" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis [tickFormat]="axisFormatter" />
+                    <p-chart-data-labels [formatter]="labelFormatter" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

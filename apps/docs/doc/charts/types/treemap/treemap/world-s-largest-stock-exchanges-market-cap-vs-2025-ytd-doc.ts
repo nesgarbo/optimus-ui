@@ -22,98 +22,102 @@ const COLOR_RANGE = ['#e5484d', '#94a3b8', '#10a981'];
             <p>#### SvgTreemapStockExchangesDemo.ts</p>
             <p>#### stockExchanges.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg [animation]="{ duration: 500 }">
-                    <p-chart-treemap
-                        [data]="data"
-                        categoryField="label"
-                        valueField="marketCap"
-                        nodeId="nodeId"
-                        parentField="parent"
-                        colorValueField="ytd"
-                        [colorScale]="colorScale"
-                        [colorRange]="colorRange"
-                        [levels]="levels"
-                        [drilldown]="true"
-                        rootLabel="Global Exchanges · 2025"
-                        layout="squarify"
-                        [groupPadding]="4"
-                        [spacing]="5"
-                        [borderRadius]="3"
-                        borderColor="rgba(255,255,255,0.12)"
-                    >
-                        <ng-template pChartTreemapCellDef let-ctx>
-                            @if (visible(ctx)) {
-                                @if (showFlag(ctx)) {
-                                    <svg:text [attr.x]="ctx.x + 11" [attr.y]="ctx.y + 28" font-size="21" pointer-events="none">{{ node(ctx).flag }}</svg:text>
-                                }
-                                <svg:text
-                                    [attr.x]="ctx.x + 11"
-                                    [attr.y]="nameY(ctx)"
-                                    fill="#fff"
-                                    [attr.font-size]="nameSize(ctx)"
-                                    font-weight="700"
-                                    paint-order="stroke"
-                                    stroke="rgba(0,0,0,0.32)"
-                                    stroke-width="3"
-                                    stroke-linejoin="round"
-                                    pointer-events="none"
-                                >
-                                    {{ node(ctx).label }}
-                                </svg:text>
-                                @if (fits(ctx, 84, 52)) {
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg [animation]="{ duration: 500 }">
+                        <p-chart-treemap
+                            [data]="data"
+                            categoryField="label"
+                            valueField="marketCap"
+                            nodeId="nodeId"
+                            parentField="parent"
+                            colorValueField="ytd"
+                            [colorScale]="colorScale"
+                            [colorRange]="colorRange"
+                            [levels]="levels"
+                            [drilldown]="true"
+                            rootLabel="Global Exchanges · 2025"
+                            layout="squarify"
+                            [groupPadding]="4"
+                            [spacing]="5"
+                            [borderRadius]="3"
+                            borderColor="rgba(255,255,255,0.12)"
+                        >
+                            <ng-template pChartTreemapCellDef let-ctx>
+                                @if (visible(ctx)) {
+                                    @if (showFlag(ctx)) {
+                                        <svg:text [attr.x]="ctx.x + 11" [attr.y]="ctx.y + 28" font-size="21" pointer-events="none">{{ node(ctx).flag }}</svg:text>
+                                    }
                                     <svg:text
                                         [attr.x]="ctx.x + 11"
-                                        [attr.y]="capY(ctx)"
-                                        fill="rgba(255,255,255,0.92)"
-                                        [attr.font-size]="capSize(ctx)"
-                                        font-weight="600"
-                                        font-family="ui-monospace,SFMono-Regular,monospace"
+                                        [attr.y]="nameY(ctx)"
+                                        fill="#fff"
+                                        [attr.font-size]="nameSize(ctx)"
+                                        font-weight="700"
                                         paint-order="stroke"
                                         stroke="rgba(0,0,0,0.32)"
                                         stroke-width="3"
                                         stroke-linejoin="round"
                                         pointer-events="none"
                                     >
-                                        {{ '$' + node(ctx).marketCap.toFixed(1) + 'T' }}
+                                        {{ node(ctx).label }}
                                     </svg:text>
+                                    @if (fits(ctx, 84, 52)) {
+                                        <svg:text
+                                            [attr.x]="ctx.x + 11"
+                                            [attr.y]="capY(ctx)"
+                                            fill="rgba(255,255,255,0.92)"
+                                            [attr.font-size]="capSize(ctx)"
+                                            font-weight="600"
+                                            font-family="ui-monospace,SFMono-Regular,monospace"
+                                            paint-order="stroke"
+                                            stroke="rgba(0,0,0,0.32)"
+                                            stroke-width="3"
+                                            stroke-linejoin="round"
+                                            pointer-events="none"
+                                        >
+                                            {{ '$' + node(ctx).marketCap.toFixed(1) + 'T' }}
+                                        </svg:text>
+                                    }
+                                    @if (fits(ctx, 96, showFlag(ctx) ? 118 : 76)) {
+                                        <svg:rect [attr.x]="ctx.x + 11" [attr.y]="pillY(ctx)" [attr.width]="pillW(ctx)" [attr.height]="19" rx="9.5" fill="rgba(0,0,0,0.28)" pointer-events="none" />
+                                        <svg:text
+                                            [attr.x]="ctx.x + 11 + pillW(ctx) / 2"
+                                            [attr.y]="pillY(ctx) + 9.5"
+                                            text-anchor="middle"
+                                            dominant-baseline="central"
+                                            [attr.fill]="trendColor(node(ctx).ytd)"
+                                            font-size="11"
+                                            font-weight="700"
+                                            font-family="ui-monospace,SFMono-Regular,monospace"
+                                            pointer-events="none"
+                                        >
+                                            {{ ytdText(node(ctx).ytd) }}
+                                        </svg:text>
+                                    }
                                 }
-                                @if (fits(ctx, 96, showFlag(ctx) ? 118 : 76)) {
-                                    <svg:rect [attr.x]="ctx.x + 11" [attr.y]="pillY(ctx)" [attr.width]="pillW(ctx)" [attr.height]="19" rx="9.5" fill="rgba(0,0,0,0.28)" pointer-events="none" />
-                                    <svg:text
-                                        [attr.x]="ctx.x + 11 + pillW(ctx) / 2"
-                                        [attr.y]="pillY(ctx) + 9.5"
-                                        text-anchor="middle"
-                                        dominant-baseline="central"
-                                        [attr.fill]="trendColor(node(ctx).ytd)"
-                                        font-size="11"
-                                        font-weight="700"
-                                        font-family="ui-monospace,SFMono-Regular,monospace"
-                                        pointer-events="none"
-                                    >
-                                        {{ ytdText(node(ctx).ytd) }}
-                                    </svg:text>
-                                }
-                            }
-                        </ng-template>
-                    </p-chart-treemap>
-                    <p-chart-breadcrumb />
-                    <p-chart-color-legend position="bottom" [colorScale]="colorScale" [colorRange]="colorRange" />
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                    <p-chart-hover />
-                    <p-chart-title text="World's Largest Stock Exchanges — Market Cap vs 2025 YTD" />
-                    <p-chart-caption text="Grouped by region · click a region to drill in · cell area = market cap · color = YTD return · red ≤ −15% / slate ≈ flat / green ≥ +25%" />
-                    <p-chart-export-menu filename="global-stock-exchanges-2025" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
+                            </ng-template>
+                        </p-chart-treemap>
+                        <p-chart-breadcrumb />
+                        <p-chart-color-legend position="bottom" [colorScale]="colorScale" [colorRange]="colorRange" />
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                        <p-chart-hover />
+                        <p-chart-title text="World's Largest Stock Exchanges — Market Cap vs 2025 YTD" />
+                        <p-chart-caption text="Grouped by region · click a region to drill in · cell area = market cap · color = YTD return · red ≤ −15% / slate ≈ flat / green ≥ +25%" />
+                        <p-chart-export-menu filename="global-stock-exchanges-2025" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TreemapWorldSLargestStockExchangesMarketCapVs2025YtdDoc {
+export class TreemapTreemapWorldSLargestStockExchangesMarketCapVs2025YtdDoc {
     readonly colorScale = COLOR_SCALE;
     readonly colorRange = COLOR_RANGE;
     readonly levels = [

@@ -17,40 +17,44 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             <p>#### SvgBarLabourForceDemo.ts</p>
             <p>#### labourForce.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-bar [data]="data" categoryXField="region" valueYField="male" name="Male" [color]="COLORS.male" [borderRadius]="3" />
-                    <p-chart-bar [data]="data" categoryXField="region" valueYField="female" name="Female" [color]="COLORS.female" [borderRadius]="3" />
-                    <p-chart-tooltip mode="shared" [valueFormatter]="valueFormatter" />
-                    <p-chart-data-labels display="value" [formatter]="formatter" />
-                    <p-chart-legend position="top" />
-                    <p-chart-hover />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis [tickFormat]="tickFormat" />
-                    <p-chart-reference-line
-                        [y]="WORLD_AVG"
-                        stroke="#ffad5a"
-                        [lineStrokeWidth]="2.5"
-                        [lineDash]="[6, 4]"
-                        label="World avg (60%)"
-                        labelPosition="start"
-                        [labelPadding]="6"
-                        [labelBorderRadius]="4"
-                        [labelFontSize]="12"
-                        [labelFontWeight]="600"
-                    />
-                    <p-chart-title text="Labour force participation by gender & region, 2023" />
-                    <p-chart-caption text="% of working-age population (15+) in the labour force · Source: ILOSTAT — ILO modelled estimates" />
-                    <p-chart-export-menu filename="labour-force-by-gender-region-2023" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-bar [data]="data" categoryXField="region" valueYField="male" name="Male" [color]="COLORS.male" [borderRadius]="3" />
+                        <p-chart-bar [data]="data" categoryXField="region" valueYField="female" name="Female" [color]="COLORS.female" [borderRadius]="3" />
+                        <p-chart-tooltip mode="shared" [valueFormatter]="valueFormatter" />
+                        <p-chart-data-labels display="value" [formatter]="formatter" />
+                        <p-chart-legend position="top" />
+                        <p-chart-hover />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis [tickFormat]="tickFormat" />
+                        <p-chart-reference-line
+                            [y]="WORLD_AVG"
+                            stroke="#ffad5a"
+                            [lineStrokeWidth]="2.5"
+                            [lineDash]="[6, 4]"
+                            label="World avg (60%)"
+                            labelPosition="start"
+                            [labelPadding]="6"
+                            [labelBorderRadius]="4"
+                            [labelFontSize]="12"
+                            [labelFontWeight]="600"
+                        />
+                        <p-chart-title text="Labour force participation by gender & region, 2023" />
+                        <p-chart-caption text="% of working-age population (15+) in the labour force · Source: ILOSTAT — ILO modelled estimates" />
+                        <p-chart-export-menu filename="labour-force-by-gender-region-2023" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GroupedLabourForceParticipationByGenderAndRegion2023Doc {
+export class ColumnBarGroupedLabourForceParticipationByGenderAndRegion2023Doc {
     readonly valueFormatter = (v: number) => `${v}%`;
     readonly formatter = (v: number) => `${v}%`;
     readonly tickFormat = (v: string | number | Date) => `${v}%`;

@@ -16,22 +16,26 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             </p>
             <p>For full configuration see <a href="/charts/configuration/annotation">Annotation</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="display: flex; justify-content: center">
-                <p-chart-svg [width]="460" [height]="460">
-                    <p-chart-pie id="revenue" [data]="data" valueField="amount" categoryField="source" [innerRadius]="0.65" />
-                    <p-chart-annotation>
-                        <ng-template pChartAnnotationDef let-ctx>
-                            <svg:g text-anchor="middle">
-                                <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y - 8" dominant-baseline="central" [attr.font-size]="ctx.responsive.pick({ xs: 20, sm: 28 })" font-weight="bold">{{ formatted }}</svg:text>
-                                <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y + 16" dominant-baseline="central" [attr.font-size]="ctx.responsive.pick({ xs: 10, sm: 13 })" opacity="0.6">Total Revenue</svg:text>
-                            </svg:g>
-                        </ng-template>
-                    </p-chart-annotation>
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="display: flex; justify-content: center">
+                    <p-chart-svg [width]="460" [height]="460">
+                        <p-chart-pie id="revenue" [data]="data" valueField="amount" categoryField="source" [innerRadius]="0.65" />
+                        <p-chart-annotation>
+                            <ng-template pChartAnnotationDef let-ctx>
+                                <svg:g text-anchor="middle">
+                                    <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y - 8" dominant-baseline="central" [attr.font-size]="ctx.responsive.pick({ xs: 20, sm: 28 })" font-weight="bold">{{ formatted }}</svg:text>
+                                    <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y + 16" dominant-baseline="central" [attr.font-size]="ctx.responsive.pick({ xs: 10, sm: 13 })" opacity="0.6">Total Revenue</svg:text>
+                                </svg:g>
+                            </ng-template>
+                        </p-chart-annotation>
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

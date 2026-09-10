@@ -11,16 +11,20 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Set <i>weightField</i> to a numeric data field to make each bar's width proportional to that value. Wider bars represent larger weight values. Useful for Marimekko charts where two dimensions are encoded at once.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-bar [data]="data" categoryXField="country" valueYField="gdpPerCapita" weightField="population" [borderRadius]="2" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis label="GDP per Capita ($k)" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-bar [data]="data" categoryXField="country" valueYField="gdpPerCapita" weightField="population" [borderRadius]="2" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis label="GDP per Capita ($k)" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

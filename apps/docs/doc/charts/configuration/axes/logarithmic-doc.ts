@@ -11,14 +11,18 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Set <i>type="logarithmic"</i> on <i>ChartYAxis</i> to use a log scale. Each tick represents a power of ten. Use this for data spanning multiple orders of magnitude. Also supported on <i>ChartXAxis</i> for horizontal bar charts.</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-line [data]="data" categoryXField="year" valueYField="users" color="#7c8cff" [showMarkers]="true" />
-                <p-chart-x-axis label="Year" />
-                <p-chart-y-axis label="Users" type="logarithmic" [gridLines]="true" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-line [data]="data" categoryXField="year" valueYField="users" color="#7c8cff" [showMarkers]="true" />
+                    <p-chart-x-axis label="Year" />
+                    <p-chart-y-axis label="Users" type="logarithmic" [gridLines]="true" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

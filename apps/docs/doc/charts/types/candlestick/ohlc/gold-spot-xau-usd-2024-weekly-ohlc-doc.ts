@@ -38,43 +38,47 @@ const BREAKOUT_TS = Date.parse('2024-03-08');
             <p>#### SvgOhlcGold2024Demo.ts</p>
             <p>#### gold2024.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg [animation]="{ duration: 500 }">
-                    <p-chart-candlestick [data]="data" categoryXField="ts" openField="open" highField="high" lowField="low" closeField="close" variant="ohlc" [color]="candleColorAccessor" [wickStrokeWidth]="1.4" [barWidthRatio]="0.55" />
-                    <p-chart-reference-band [y1]="consolidation.low" [y2]="consolidation.high" [x1]="consolidation.start" [x2]="consolidation.end" label="Q4 consolidation" fill="#94a3b8" [fillOpacity]="0.08" labelPosition="start" />
-                    <p-chart-reference-line [y]="priorAth" label="Prior ATH · $2,075" stroke="#7c8cff" [lineStrokeWidth]="1" [lineDash]="[5, 4]" labelPosition="start" />
-                    <p-chart-annotation>
-                        <ng-template pChartAnnotationDef let-ctx>
-                            @if (ctx.xScale && ctx.yScale && ctx.chartArea) {
-                                @if (breakoutCallout(ctx); as c) {
-                                    <svg:g pointer-events="none">
-                                        <svg:line [attr.x1]="c.x" [attr.y1]="c.y" [attr.x2]="c.labelX" [attr.y2]="c.labelY" stroke="#ffad5a" stroke-width="1" opacity="0.7" />
-                                        <svg:circle [attr.cx]="c.x" [attr.cy]="c.y" r="3.5" fill="#ffad5a" />
-                                        <svg:rect [attr.x]="c.labelX" [attr.y]="c.ry" [attr.width]="c.bw" [attr.height]="c.bh" rx="3" fill="#ffad5a" opacity="0.95" />
-                                        <svg:text [attr.x]="c.tx" [attr.y]="c.labelY" dominant-baseline="central" fill="#fff" [attr.font-size]="c.fs" font-weight="600">Broke prior ATH $2075</svg:text>
-                                    </svg:g>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg [animation]="{ duration: 500 }">
+                        <p-chart-candlestick [data]="data" categoryXField="ts" openField="open" highField="high" lowField="low" closeField="close" variant="ohlc" [color]="candleColorAccessor" [wickStrokeWidth]="1.4" [barWidthRatio]="0.55" />
+                        <p-chart-reference-band [y1]="consolidation.low" [y2]="consolidation.high" [x1]="consolidation.start" [x2]="consolidation.end" label="Q4 consolidation" fill="#94a3b8" [fillOpacity]="0.08" labelPosition="start" />
+                        <p-chart-reference-line [y]="priorAth" label="Prior ATH · $2,075" stroke="#7c8cff" [lineStrokeWidth]="1" [lineDash]="[5, 4]" labelPosition="start" />
+                        <p-chart-annotation>
+                            <ng-template pChartAnnotationDef let-ctx>
+                                @if (ctx.xScale && ctx.yScale && ctx.chartArea) {
+                                    @if (breakoutCallout(ctx); as c) {
+                                        <svg:g pointer-events="none">
+                                            <svg:line [attr.x1]="c.x" [attr.y1]="c.y" [attr.x2]="c.labelX" [attr.y2]="c.labelY" stroke="#ffad5a" stroke-width="1" opacity="0.7" />
+                                            <svg:circle [attr.cx]="c.x" [attr.cy]="c.y" r="3.5" fill="#ffad5a" />
+                                            <svg:rect [attr.x]="c.labelX" [attr.y]="c.ry" [attr.width]="c.bw" [attr.height]="c.bh" rx="3" fill="#ffad5a" opacity="0.95" />
+                                            <svg:text [attr.x]="c.tx" [attr.y]="c.labelY" dominant-baseline="central" fill="#fff" [attr.font-size]="c.fs" font-weight="600">Broke prior ATH $2075</svg:text>
+                                        </svg:g>
+                                    }
                                 }
-                            }
-                        </ng-template>
-                    </p-chart-annotation>
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                    <p-chart-hover />
-                    <p-chart-zoom mode="x" />
-                    <p-chart-x-axis type="time" gapless />
-                    <p-chart-y-axis position="right" [tickFormat]="formatPrice" />
-                    <p-chart-title text="Gold Spot (XAU/USD) — 2024 Weekly OHLC" />
-                    <p-chart-caption text="OHLC bars · per-bar color from 20-week SMA filter · tooltip shows vs-SMA delta and full weekly range" />
-                    <p-chart-export-menu filename="xau-usd-2024-weekly" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
+                            </ng-template>
+                        </p-chart-annotation>
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                        <p-chart-hover />
+                        <p-chart-zoom mode="x" />
+                        <p-chart-x-axis type="time" gapless />
+                        <p-chart-y-axis position="right" [tickFormat]="formatPrice" />
+                        <p-chart-title text="Gold Spot (XAU/USD) — 2024 Weekly OHLC" />
+                        <p-chart-caption text="OHLC bars · per-bar color from 20-week SMA filter · tooltip shows vs-SMA delta and full weekly range" />
+                        <p-chart-export-menu filename="xau-usd-2024-weekly" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class OhlcGoldSpotXauUsd2024WeeklyOhlcDoc {
+export class CandlestickOhlcGoldSpotXauUsd2024WeeklyOhlcDoc {
     readonly data = gold2024;
     readonly priorAth = PRIOR_ATH;
     readonly consolidation = CONSOLIDATION;

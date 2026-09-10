@@ -14,15 +14,19 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 sides. Use <i>offsetX</i> and <i>offsetY</i> to adjust placement after the position is applied.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="sales" color="#5daeea" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-tooltip position="top" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="sales" color="#5daeea" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-tooltip position="top" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

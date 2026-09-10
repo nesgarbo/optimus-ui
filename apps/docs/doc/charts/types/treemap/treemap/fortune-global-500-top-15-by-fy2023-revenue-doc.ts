@@ -23,86 +23,90 @@ const fmtEmp = (n: number) => (n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M`
             <p>#### SvgTreemapFortune500Demo.ts</p>
             <p>#### fortune500.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg [animation]="{ duration: 500 }">
-                    <p-chart-treemap
-                        [data]="data"
-                        categoryField="name"
-                        valueField="revenue"
-                        nodeId="nodeId"
-                        parentField="parent"
-                        [color]="cellColor"
-                        [levels]="levels"
-                        [drilldown]="true"
-                        rootLabel="Fortune Global 500"
-                        layout="squarify"
-                        [groupPadding]="4"
-                        [spacing]="5"
-                        [borderRadius]="3"
-                        borderColor="rgba(255,255,255,0.12)"
-                    >
-                        <ng-template pChartTreemapCellDef let-ctx>
-                            @if (visible(ctx)) {
-                                @if (showFlag(ctx)) {
-                                    <svg:circle [attr.cx]="ctx.x + ctx.width - 18" [attr.cy]="ctx.y + 16" r="11" fill="rgba(255,255,255,0.92)" pointer-events="none" />
-                                    <svg:text [attr.x]="ctx.x + ctx.width - 18" [attr.y]="ctx.y + 16" text-anchor="middle" dominant-baseline="central" [attr.fill]="ctx.color" font-size="10" font-weight="800" pointer-events="none">
-                                        {{ node(ctx).rank }}
-                                    </svg:text>
-                                    <svg:text [attr.x]="ctx.x + 9" [attr.y]="ctx.y + 25" font-size="19" pointer-events="none">{{ node(ctx).flag }}</svg:text>
-                                }
-                                <svg:text
-                                    [attr.x]="ctx.x + 9"
-                                    [attr.y]="nameY(ctx)"
-                                    fill="#fff"
-                                    [attr.font-size]="nameSize(ctx)"
-                                    font-weight="700"
-                                    paint-order="stroke"
-                                    stroke="rgba(0,0,0,0.28)"
-                                    stroke-width="3"
-                                    stroke-linejoin="round"
-                                    pointer-events="none"
-                                >
-                                    {{ node(ctx).name }}
-                                </svg:text>
-                                @if (fits(ctx, 92, 52)) {
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg [animation]="{ duration: 500 }">
+                        <p-chart-treemap
+                            [data]="data"
+                            categoryField="name"
+                            valueField="revenue"
+                            nodeId="nodeId"
+                            parentField="parent"
+                            [color]="cellColor"
+                            [levels]="levels"
+                            [drilldown]="true"
+                            rootLabel="Fortune Global 500"
+                            layout="squarify"
+                            [groupPadding]="4"
+                            [spacing]="5"
+                            [borderRadius]="3"
+                            borderColor="rgba(255,255,255,0.12)"
+                        >
+                            <ng-template pChartTreemapCellDef let-ctx>
+                                @if (visible(ctx)) {
+                                    @if (showFlag(ctx)) {
+                                        <svg:circle [attr.cx]="ctx.x + ctx.width - 18" [attr.cy]="ctx.y + 16" r="11" fill="rgba(255,255,255,0.92)" pointer-events="none" />
+                                        <svg:text [attr.x]="ctx.x + ctx.width - 18" [attr.y]="ctx.y + 16" text-anchor="middle" dominant-baseline="central" [attr.fill]="ctx.color" font-size="10" font-weight="800" pointer-events="none">
+                                            {{ node(ctx).rank }}
+                                        </svg:text>
+                                        <svg:text [attr.x]="ctx.x + 9" [attr.y]="ctx.y + 25" font-size="19" pointer-events="none">{{ node(ctx).flag }}</svg:text>
+                                    }
                                     <svg:text
                                         [attr.x]="ctx.x + 9"
-                                        [attr.y]="revY(ctx)"
-                                        fill="rgba(255,255,255,0.92)"
-                                        [attr.font-size]="revSize(ctx)"
-                                        font-weight="600"
-                                        font-family="ui-monospace,SFMono-Regular,monospace"
+                                        [attr.y]="nameY(ctx)"
+                                        fill="#fff"
+                                        [attr.font-size]="nameSize(ctx)"
+                                        font-weight="700"
                                         paint-order="stroke"
                                         stroke="rgba(0,0,0,0.28)"
                                         stroke-width="3"
                                         stroke-linejoin="round"
                                         pointer-events="none"
                                     >
-                                        {{ '$' + node(ctx).revenue + 'B' }}
+                                        {{ node(ctx).name }}
                                     </svg:text>
+                                    @if (fits(ctx, 92, 52)) {
+                                        <svg:text
+                                            [attr.x]="ctx.x + 9"
+                                            [attr.y]="revY(ctx)"
+                                            fill="rgba(255,255,255,0.92)"
+                                            [attr.font-size]="revSize(ctx)"
+                                            font-weight="600"
+                                            font-family="ui-monospace,SFMono-Regular,monospace"
+                                            paint-order="stroke"
+                                            stroke="rgba(0,0,0,0.28)"
+                                            stroke-width="3"
+                                            stroke-linejoin="round"
+                                            pointer-events="none"
+                                        >
+                                            {{ '$' + node(ctx).revenue + 'B' }}
+                                        </svg:text>
+                                    }
+                                    @if (fits(ctx, 132, showFlag(ctx) ? 104 : 80)) {
+                                        <svg:text [attr.x]="ctx.x + 9" [attr.y]="empY(ctx)" fill="rgba(255,255,255,0.72)" font-size="11" font-weight="500" pointer-events="none">{{ empText(ctx) }}</svg:text>
+                                    }
                                 }
-                                @if (fits(ctx, 132, showFlag(ctx) ? 104 : 80)) {
-                                    <svg:text [attr.x]="ctx.x + 9" [attr.y]="empY(ctx)" fill="rgba(255,255,255,0.72)" font-size="11" font-weight="500" pointer-events="none">{{ empText(ctx) }}</svg:text>
-                                }
-                            }
-                        </ng-template>
-                    </p-chart-treemap>
-                    <p-chart-breadcrumb />
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                    <p-chart-hover />
-                    <p-chart-title text="Fortune Global 500 — Top 15 by FY2023 Revenue" />
-                    <p-chart-caption text="Grouped by industry · click an industry to drill in · cell area = revenue · rank badge + flag + revenue + headcount degrade gracefully as cells shrink" />
-                    <p-chart-export-menu filename="fortune-global-500-top-15" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
+                            </ng-template>
+                        </p-chart-treemap>
+                        <p-chart-breadcrumb />
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                        <p-chart-hover />
+                        <p-chart-title text="Fortune Global 500 — Top 15 by FY2023 Revenue" />
+                        <p-chart-caption text="Grouped by industry · click an industry to drill in · cell area = revenue · rank badge + flag + revenue + headcount degrade gracefully as cells shrink" />
+                        <p-chart-export-menu filename="fortune-global-500-top-15" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TreemapFortuneGlobal500Top15ByFy2023RevenueDoc {
+export class TreemapTreemapFortuneGlobal500Top15ByFy2023RevenueDoc {
     readonly levels = [
         { depth: 0, spacing: 5, showHeader: true, headerHeight: 24, borderStrokeWidth: 0, colorByPoint: true },
         { depth: 1, spacing: 3, borderStrokeWidth: 1 }

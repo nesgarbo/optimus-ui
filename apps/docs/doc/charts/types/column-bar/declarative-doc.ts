@@ -14,22 +14,26 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 floating bar definitions.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-bar>
-                        <p-chart-item categoryX="Promoters" [valueY]="42" color="#10a981" />
-                        <p-chart-item categoryX="Passives" [valueY]="28" color="#5daeea" />
-                        <p-chart-item categoryX="Neutral" [valueY]="18" color="#ffd166" />
-                        <p-chart-item categoryX="At Risk" [valueY]="8" color="#ffad5a" />
-                        <p-chart-item categoryX="Detractors" [valueY]="4" color="#e5484d" />
-                    </p-chart-bar>
-                    <p-chart-x-axis />
-                    <p-chart-y-axis label="Survey responses (%)" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-bar>
+                            <p-chart-item categoryX="Promoters" [valueY]="42" color="#10a981" />
+                            <p-chart-item categoryX="Passives" [valueY]="28" color="#5daeea" />
+                            <p-chart-item categoryX="Neutral" [valueY]="18" color="#ffd166" />
+                            <p-chart-item categoryX="At Risk" [valueY]="8" color="#ffad5a" />
+                            <p-chart-item categoryX="Detractors" [valueY]="4" color="#e5484d" />
+                        </p-chart-bar>
+                        <p-chart-x-axis />
+                        <p-chart-y-axis label="Survey responses (%)" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

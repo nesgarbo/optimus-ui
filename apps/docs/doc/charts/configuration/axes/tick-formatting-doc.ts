@@ -14,14 +14,18 @@ import { ChartsModule, type TickValue } from '@openng/optimus-ui/charts';
                 step between ticks instead of the auto-calculated interval.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="data" categoryXField="plan" valueYField="mrr" color="#5ccf9f" />
-                <p-chart-x-axis />
-                <p-chart-y-axis label="MRR" [tickFormat]="tickFormat" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="plan" valueYField="mrr" color="#5ccf9f" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis label="MRR" [tickFormat]="tickFormat" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

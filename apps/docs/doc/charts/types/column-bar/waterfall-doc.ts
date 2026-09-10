@@ -20,18 +20,22 @@ interface WaterfallRow {
                 reset from zero and display the cumulative sum.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-waterfall totalField="isTotal">
-                        <p-chart-bar [data]="data" categoryXField="item" valueYField="value" [color]="barColors" [borderRadius]="3" />
-                    </p-chart-waterfall>
-                    <p-chart-x-axis />
-                    <p-chart-y-axis [tickFormat]="tickFormat" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-waterfall totalField="isTotal">
+                            <p-chart-bar [data]="data" categoryXField="item" valueYField="value" [color]="barColors" [borderRadius]="3" />
+                        </p-chart-waterfall>
+                        <p-chart-x-axis />
+                        <p-chart-y-axis [tickFormat]="tickFormat" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

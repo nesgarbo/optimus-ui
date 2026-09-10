@@ -28,17 +28,21 @@ registerLocale('de', de);
                 Mocha, so rename it at the import site inside a spec file.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="400" locale="de" [numberFormat]="numberFormat">
-                <p-chart-bar [data]="data" categoryXField="quarter" valueYField="revenue" name="Umsatz" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-legend />
-                <p-chart-tooltip />
-                <p-chart-export-menu />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="400" locale="de" [numberFormat]="numberFormat">
+                    <p-chart-bar [data]="data" categoryXField="quarter" valueYField="revenue" name="Umsatz" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-legend />
+                    <p-chart-tooltip />
+                    <p-chart-export-menu />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

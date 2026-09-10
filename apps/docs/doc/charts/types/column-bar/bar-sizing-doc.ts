@@ -14,16 +14,20 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 spacing between groups.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-bar [data]="data" categoryXField="lane" valueYField="parcels" [barThickness]="24" [categoryGap]="0.3" [borderRadius]="4" color="#5daeea" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis label="Parcels per hour" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-bar [data]="data" categoryXField="lane" valueYField="parcels" [barThickness]="24" [categoryGap]="0.3" [borderRadius]="4" color="#5daeea" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis label="Parcels per hour" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

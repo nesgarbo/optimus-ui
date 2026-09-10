@@ -12,17 +12,21 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             <p>Add <i>ChartTooltip</i> to show data details on hover. The tooltip displays the category label, value, and series name for the hovered bar.</p>
             <p>For full configuration see <a href="/charts/configuration/tooltip">Tooltip</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="display: flex; justify-content: center">
-                <p-chart-svg [width]="460" [height]="460">
-                    <p-chart-polar [data]="data" categoryXField="direction" valueYField="speed" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                    <p-chart-tooltip />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="display: flex; justify-content: center">
+                    <p-chart-svg [width]="460" [height]="460">
+                        <p-chart-polar [data]="data" categoryXField="direction" valueYField="speed" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                        <p-chart-tooltip />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

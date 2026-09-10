@@ -14,21 +14,25 @@ import { ChartsModule, type TickValue } from '@openng/optimus-ui/charts';
                 <i>right</i>, and use <i>label</i> and <i>tickFormat</i> to annotate each scale independently. The category axis remains shared.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-bar [data]="data" categoryXField="month" valueYField="demand" name="Electricity demand" color="#5daeea" yAxisId="demand" />
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="temp" name="Mean temperature" color="#ffad5a" yAxisId="temp" curve="smooth" [showMarkers]="true" [markerSize]="5" [lineStrokeWidth]="2.5" [fillOpacity]="0" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis id="demand" position="left" label="Demand (TWh)" [tickFormat]="formatTwh" />
-                    <p-chart-y-axis id="temp" position="right" label="Temperature (°C)" [tickFormat]="formatTemp" />
-                    <p-chart-legend position="top" />
-                    <p-chart-tooltip mode="shared" [crosshair]="true" />
-                    <p-chart-hover />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-bar [data]="data" categoryXField="month" valueYField="demand" name="Electricity demand" color="#5daeea" yAxisId="demand" />
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="temp" name="Mean temperature" color="#ffad5a" yAxisId="temp" curve="smooth" [showMarkers]="true" [markerSize]="5" [lineStrokeWidth]="2.5" [fillOpacity]="0" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis id="demand" position="left" label="Demand (TWh)" [tickFormat]="formatTwh" />
+                        <p-chart-y-axis id="temp" position="right" label="Temperature (°C)" [tickFormat]="formatTemp" />
+                        <p-chart-legend position="top" />
+                        <p-chart-tooltip mode="shared" [crosshair]="true" />
+                        <p-chart-hover />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

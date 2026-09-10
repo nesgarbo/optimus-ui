@@ -14,18 +14,22 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 when zero is a meaningful value rather than missing data. <i>true</i> and <i>false</i> are aliases for <i>'connect'</i> and <i>'gap'</i>.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="gaps" name="With Gaps" showMarkers [markerSize]="5" />
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="bridged" name="connectNulls" showMarkers [markerSize]="5" connectNulls />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                    <p-chart-legend position="bottom" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="gaps" name="With Gaps" showMarkers [markerSize]="5" />
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="bridged" name="connectNulls" showMarkers [markerSize]="5" connectNulls />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                        <p-chart-legend position="bottom" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

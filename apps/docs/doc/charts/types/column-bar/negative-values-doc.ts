@@ -16,16 +16,20 @@ interface ProfitRow {
         <app-docsectiontext>
             <p>Bars extend below the zero line for negative values. Pass a function to <i>color</i> to color positive and negative bars differently.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-bar [data]="data" categoryXField="month" valueYField="profit" [color]="barColors" [borderRadius]="4" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis label="Operating margin delta ($M)" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-bar [data]="data" categoryXField="month" valueYField="profit" [color]="barColors" [borderRadius]="4" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis label="Operating margin delta ($M)" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

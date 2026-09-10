@@ -16,17 +16,21 @@ const HALO_COLOR = '#94a3b8';
                 <i>borderDash</i> for a dashed halo and <i>borderCapStyle</i> to control its line endings independently from the main stroke.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="actual" name="Actual" [lineStrokeWidth]="2" [fillOpacity]="0.25" [borderColor]="haloColor" [borderStrokeWidth]="2" curve="smooth" />
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="forecast" name="Forecast" [lineStrokeWidth]="2" [fillOpacity]="0.25" [borderColor]="haloColor" [borderStrokeWidth]="2" curve="smooth" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="actual" name="Actual" [lineStrokeWidth]="2" [fillOpacity]="0.25" [borderColor]="haloColor" [borderStrokeWidth]="2" curve="smooth" />
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="forecast" name="Forecast" [lineStrokeWidth]="2" [fillOpacity]="0.25" [borderColor]="haloColor" [borderStrokeWidth]="2" curve="smooth" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

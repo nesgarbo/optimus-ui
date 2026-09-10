@@ -42,14 +42,18 @@ const threshold = (opts: ThresholdOptions = { warn: 200, critical: 280, max: 350
         <app-docsectiontext>
             <p>Shades the plot area into ok / warning / critical zones at fixed value thresholds, so out-of-SLA regions are obvious at a glance. Ideal for monitoring and alerting dashboards.</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="420" [plugins]="plugins">
-                <p-chart-line [data]="data" categoryXField="hour" valueYField="latency" color="#36b7d6" [showMarkers]="true" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="420" [plugins]="plugins">
+                    <p-chart-line [data]="data" categoryXField="hour" valueYField="latency" color="#36b7d6" [showMarkers]="true" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

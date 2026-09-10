@@ -33,17 +33,21 @@ function priceSeries(n: number) {
         <app-docsectiontext>
             <p>Pinch-to-zoom is enabled by default on touch devices. Set <i>pinch</i> to <i>false</i> to disable it.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-line [data]="data" categoryXField="timestamp" valueYField="price" color="#5daeea" curve="smooth" />
-                    <p-chart-x-axis type="time" />
-                    <p-chart-y-axis label="Price ($)" [startFromZero]="false" />
-                    <p-chart-zoom [pinch]="false" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-line [data]="data" categoryXField="timestamp" valueYField="price" color="#5daeea" curve="smooth" />
+                        <p-chart-x-axis type="time" />
+                        <p-chart-y-axis label="Price ($)" [startFromZero]="false" />
+                        <p-chart-zoom [pinch]="false" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

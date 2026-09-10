@@ -14,19 +14,23 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 segments connect at data points.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="revenue" name="Revenue (round cap)" [lineStrokeWidth]="4" curve="smooth" lineCapStyle="round" />
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="forecast" name="Forecast (dashed)" [lineStrokeWidth]="2" [lineDash]="[8, 4]" curve="smooth" />
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="target" name="Target (dotted, square cap)" [lineStrokeWidth]="2" [lineDash]="[2, 4]" lineCapStyle="square" />
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="budget" name="Budget (dash offset)" [lineStrokeWidth]="2" [lineDash]="[10, 5]" [lineDashOffset]="5" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="revenue" name="Revenue (round cap)" [lineStrokeWidth]="4" curve="smooth" lineCapStyle="round" />
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="forecast" name="Forecast (dashed)" [lineStrokeWidth]="2" [lineDash]="[8, 4]" curve="smooth" />
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="target" name="Target (dotted, square cap)" [lineStrokeWidth]="2" [lineDash]="[2, 4]" lineCapStyle="square" />
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="budget" name="Budget (dash offset)" [lineStrokeWidth]="2" [lineDash]="[10, 5]" [lineDashOffset]="5" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

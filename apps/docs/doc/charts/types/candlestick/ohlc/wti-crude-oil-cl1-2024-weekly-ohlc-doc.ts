@@ -29,43 +29,47 @@ const OPEC_EVENTS = [
             <p>#### SvgOhlcCrudeOilDemo.ts</p>
             <p>#### crudeOil.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg [animation]="{ duration: 500 }">
-                    <p-chart-candlestick [data]="data" categoryXField="ts" openField="open" highField="high" lowField="low" closeField="close" variant="ohlc" upColor="#10a981" downColor="#e5484d" [wickStrokeWidth]="1.3" [barWidthRatio]="0.55" />
-                    <p-chart-reference-band [x1]="volatilitySpike.start" [x2]="volatilitySpike.end" label="April vol spike" fill="#ff7a66" [fillOpacity]="0.08" labelPosition="start" />
-                    <p-chart-annotation>
-                        <ng-template pChartAnnotationDef let-ctx>
-                            @if (ctx.xScale && ctx.chartArea) {
-                                <svg:g pointer-events="none">
-                                    @for (ev of opecPins(ctx); track ev.label) {
-                                        <svg:g>
-                                            <svg:line [attr.x1]="ev.x" [attr.y1]="ev.y1" [attr.x2]="ev.x" [attr.y2]="ev.y2" stroke="#36b7d6" stroke-dasharray="2 3" stroke-width="1" opacity="0.55" />
-                                            <svg:rect [attr.x]="ev.rx" [attr.y]="ev.ry" [attr.width]="ev.w" [attr.height]="ev.bh" rx="2" fill="#36b7d6" opacity="0.92" />
-                                            <svg:text [attr.x]="ev.x" [attr.y]="ev.ty" text-anchor="middle" dominant-baseline="central" fill="#fff" [attr.font-size]="ev.fs" font-weight="600">{{ ev.label }}</svg:text>
-                                        </svg:g>
-                                    }
-                                </svg:g>
-                            }
-                        </ng-template>
-                    </p-chart-annotation>
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                    <p-chart-hover />
-                    <p-chart-zoom mode="x" />
-                    <p-chart-x-axis type="time" gapless />
-                    <p-chart-y-axis position="right" [tickFormat]="formatPrice" />
-                    <p-chart-title text="WTI Crude Oil (CL1) — 2024 Weekly OHLC" />
-                    <p-chart-caption text="NYMEX front-month · OPEC+ policy decisions pinned along the X-axis · April volatility band highlights the geopolitical spike" />
-                    <p-chart-export-menu filename="wti-crude-2024-weekly" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg [animation]="{ duration: 500 }">
+                        <p-chart-candlestick [data]="data" categoryXField="ts" openField="open" highField="high" lowField="low" closeField="close" variant="ohlc" upColor="#10a981" downColor="#e5484d" [wickStrokeWidth]="1.3" [barWidthRatio]="0.55" />
+                        <p-chart-reference-band [x1]="volatilitySpike.start" [x2]="volatilitySpike.end" label="April vol spike" fill="#ff7a66" [fillOpacity]="0.08" labelPosition="start" />
+                        <p-chart-annotation>
+                            <ng-template pChartAnnotationDef let-ctx>
+                                @if (ctx.xScale && ctx.chartArea) {
+                                    <svg:g pointer-events="none">
+                                        @for (ev of opecPins(ctx); track ev.label) {
+                                            <svg:g>
+                                                <svg:line [attr.x1]="ev.x" [attr.y1]="ev.y1" [attr.x2]="ev.x" [attr.y2]="ev.y2" stroke="#36b7d6" stroke-dasharray="2 3" stroke-width="1" opacity="0.55" />
+                                                <svg:rect [attr.x]="ev.rx" [attr.y]="ev.ry" [attr.width]="ev.w" [attr.height]="ev.bh" rx="2" fill="#36b7d6" opacity="0.92" />
+                                                <svg:text [attr.x]="ev.x" [attr.y]="ev.ty" text-anchor="middle" dominant-baseline="central" fill="#fff" [attr.font-size]="ev.fs" font-weight="600">{{ ev.label }}</svg:text>
+                                            </svg:g>
+                                        }
+                                    </svg:g>
+                                }
+                            </ng-template>
+                        </p-chart-annotation>
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                        <p-chart-hover />
+                        <p-chart-zoom mode="x" />
+                        <p-chart-x-axis type="time" gapless />
+                        <p-chart-y-axis position="right" [tickFormat]="formatPrice" />
+                        <p-chart-title text="WTI Crude Oil (CL1) — 2024 Weekly OHLC" />
+                        <p-chart-caption text="NYMEX front-month · OPEC+ policy decisions pinned along the X-axis · April volatility band highlights the geopolitical spike" />
+                        <p-chart-export-menu filename="wti-crude-2024-weekly" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class OhlcWtiCrudeOilCl12024WeeklyOhlcDoc {
+export class CandlestickOhlcWtiCrudeOilCl12024WeeklyOhlcDoc {
     readonly data = crudeOil;
     readonly volatilitySpike = VOLATILITY_SPIKE;
     readonly formatPrice = (v: TickValue) => `$${Number(v).toFixed(0)}`;

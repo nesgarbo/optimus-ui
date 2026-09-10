@@ -17,32 +17,36 @@ import { KPIS, type KpiRow, quarters, TARGET, useKpiPlayback } from '@/doc/chart
             <p>#### SvgRadarKpiScorecardDemo.ts</p>
             <p>#### kpiScorecard.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div class="year-slider">
-                <button type="button" class="play-btn" [class.playing]="playback.isPlaying()" (click)="playback.togglePlay()">
-                    <i class="pi" [class.pi-pause]="playback.isPlaying()" [class.pi-play]="!playback.isPlaying()"></i>
-                    {{ playback.isPlaying() ? 'Pause' : 'Play' }}
-                </button>
-                <span class="year-value">{{ quarter() }}</span>
-                <input type="range" class="year-range" min="0" [max]="maxIdx" step="1" [value]="playback.selectedIdx()" [style.--fill]="fill()" (input)="onSlide($event)" />
+        @defer (on viewport) {
+            <div class="card">
+                <div class="year-slider">
+                    <button type="button" class="play-btn" [class.playing]="playback.isPlaying()" (click)="playback.togglePlay()">
+                        <i class="pi" [class.pi-pause]="playback.isPlaying()" [class.pi-play]="!playback.isPlaying()"></i>
+                        {{ playback.isPlaying() ? 'Pause' : 'Play' }}
+                    </button>
+                    <span class="year-value">{{ quarter() }}</span>
+                    <input type="range" class="year-range" min="0" [max]="maxIdx" step="1" [value]="playback.selectedIdx()" [style.--fill]="fill()" (input)="onSlide($event)" />
+                </div>
+                <div style="height: 460px">
+                    <p-chart-svg [animation]="{ duration: 500 }">
+                        <p-chart-radar id="target" [data]="targetData" categoryXField="kpi" valueYField="score" name="Target (75)" color="#94a3b8" [fillOpacity]="0" [lineStrokeWidth]="1.2" [lineDash]="[5, 4]" />
+                        <p-chart-radar id="actual" [data]="playback.data()" categoryXField="kpi" valueYField="score" name="Actual" color="#5daeea" [fillOpacity]="0.22" [lineStrokeWidth]="2.2" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                        <p-chart-hover />
+                        <p-chart-legend position="top" />
+                        <p-chart-title [text]="titleText()" />
+                        <p-chart-caption [text]="captionText()" />
+                        <p-chart-export-menu filename="kpi-scorecard-radar" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-            <div style="height: 460px">
-                <p-chart-svg [animation]="{ duration: 500 }">
-                    <p-chart-radar id="target" [data]="targetData" categoryXField="kpi" valueYField="score" name="Target (75)" color="#94a3b8" [fillOpacity]="0" [lineStrokeWidth]="1.2" [lineDash]="[5, 4]" />
-                    <p-chart-radar id="actual" [data]="playback.data()" categoryXField="kpi" valueYField="score" name="Actual" color="#5daeea" [fillOpacity]="0.22" [lineStrokeWidth]="2.2" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                    <p-chart-hover />
-                    <p-chart-legend position="top" />
-                    <p-chart-title [text]="titleText()" />
-                    <p-chart-caption [text]="captionText()" />
-                    <p-chart-export-menu filename="kpi-scorecard-radar" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
-            </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     styles: [
         `
@@ -165,7 +169,7 @@ import { KPIS, type KpiRow, quarters, TARGET, useKpiPlayback } from '@/doc/chart
     ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class RadarStartupKpiScorecardAnimatedQuarterlyProgressDoc {
+export class RadarRadarStartupKpiScorecardAnimatedQuarterlyProgressDoc {
     readonly playback = useKpiPlayback();
     readonly maxIdx = quarters.length - 1;
     readonly targetData: KpiRow[] = KPIS.map((kpi) => ({ kpi, score: TARGET }));

@@ -14,15 +14,19 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 to parent references. Parent nodes with a <i>null</i> or missing parent value become top-level containers.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-treemap [data]="data" categoryField="name" valueField="value" nodeId="id" parentField="parent" />
-                    <p-chart-tooltip />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-treemap [data]="data" categoryField="name" valueField="value" nodeId="id" parentField="parent" />
+                        <p-chart-tooltip />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

@@ -42,72 +42,76 @@ const subIndustryLeaders: Record<string, Company> = {
             <p>#### SvgScatterFortune100TechDemo.ts</p>
             <p>#### fortune100Tech.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div class="fortune-tech-chart" style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-scatter id="software" [data]="software" valueXField="rev" valueYField="margin" [color]="colors.software" name="Software" [markerSize]="9" />
-                    <p-chart-scatter id="hardware" [data]="hardware" valueXField="rev" valueYField="margin" [color]="colors.hardware" name="Hardware" [markerSize]="9" />
-                    <p-chart-scatter id="internet" [data]="internet" valueXField="rev" valueYField="margin" [color]="colors.internet" name="Internet & Services" [markerSize]="9" />
-                    <p-chart-scatter id="semis" [data]="semis" valueXField="rev" valueYField="margin" [color]="colors.semis" name="Semiconductors" [markerSize]="9" />
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                    <p-chart-legend position="top" [itemGap]="10" [height]="80">
-                        <ng-template pChartLegendItemDef let-ctx>
-                            <button
-                                (click)="ctx.onClick()"
-                                (mouseenter)="ctx.onMouseEnter()"
-                                (mouseleave)="ctx.onMouseLeave()"
-                                [style.border-top]="'3px solid ' + (ctx.visible ? ctx.color : 'rgba(100,116,139,0.35)')"
-                                [style.background]="ctx.visible ? ctx.color + '0a' : 'transparent'"
-                                [style.opacity]="ctx.isHovered ? 0.82 : 1"
-                                style="display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 150px; padding: 8px 12px; border-left: 1px solid var(--legend-border); border-right: 1px solid var(--legend-border); border-bottom: 1px solid var(--legend-border); border-radius: 0 0 6px 6px; cursor: pointer; transition: all 0.15s; text-align: left"
-                            >
-                                <span [style.color]="ctx.visible ? ctx.color : '#94a3b8'" [style.text-decoration]="ctx.visible ? 'none' : 'line-through'" style="font-size: 12px; font-weight: 700; letter-spacing: 0.01em">{{ ctx.label }}</span>
-                                @if (leader(ctx.label); as l) {
-                                    <span [style.color]="ctx.visible ? 'var(--legend-muted)' : '#64748b'" style="display: inline-flex; align-items: center; gap: 5px; font-size: 11px">
-                                        <span style="font-size: 10px; opacity: 0.75">Leader</span>
-                                        <span [style.color]="ctx.visible ? 'var(--legend-leader-name)' : '#94a3b8'" style="font-weight: 600">{{ l.name }}</span>
-                                        <span
-                                            [style.color]="ctx.visible ? 'var(--legend-badge-color)' : '#94a3b8'"
-                                            [style.background]="ctx.visible ? 'var(--legend-badge-bg)' : 'transparent'"
-                                            style="font-size: 10px; font-weight: 600; padding: 1px 5px; border-radius: 3px"
-                                        >
-                                            {{ l.margin.toFixed(1) }}%
+        @defer (on viewport) {
+            <div class="card">
+                <div class="fortune-tech-chart" style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-scatter id="software" [data]="software" valueXField="rev" valueYField="margin" [color]="colors.software" name="Software" [markerSize]="9" />
+                        <p-chart-scatter id="hardware" [data]="hardware" valueXField="rev" valueYField="margin" [color]="colors.hardware" name="Hardware" [markerSize]="9" />
+                        <p-chart-scatter id="internet" [data]="internet" valueXField="rev" valueYField="margin" [color]="colors.internet" name="Internet & Services" [markerSize]="9" />
+                        <p-chart-scatter id="semis" [data]="semis" valueXField="rev" valueYField="margin" [color]="colors.semis" name="Semiconductors" [markerSize]="9" />
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                        <p-chart-legend position="top" [itemGap]="10" [height]="80">
+                            <ng-template pChartLegendItemDef let-ctx>
+                                <button
+                                    (click)="ctx.onClick()"
+                                    (mouseenter)="ctx.onMouseEnter()"
+                                    (mouseleave)="ctx.onMouseLeave()"
+                                    [style.border-top]="'3px solid ' + (ctx.visible ? ctx.color : 'rgba(100,116,139,0.35)')"
+                                    [style.background]="ctx.visible ? ctx.color + '0a' : 'transparent'"
+                                    [style.opacity]="ctx.isHovered ? 0.82 : 1"
+                                    style="display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 150px; padding: 8px 12px; border-left: 1px solid var(--legend-border); border-right: 1px solid var(--legend-border); border-bottom: 1px solid var(--legend-border); border-radius: 0 0 6px 6px; cursor: pointer; transition: all 0.15s; text-align: left"
+                                >
+                                    <span [style.color]="ctx.visible ? ctx.color : '#94a3b8'" [style.text-decoration]="ctx.visible ? 'none' : 'line-through'" style="font-size: 12px; font-weight: 700; letter-spacing: 0.01em">{{ ctx.label }}</span>
+                                    @if (leader(ctx.label); as l) {
+                                        <span [style.color]="ctx.visible ? 'var(--legend-muted)' : '#64748b'" style="display: inline-flex; align-items: center; gap: 5px; font-size: 11px">
+                                            <span style="font-size: 10px; opacity: 0.75">Leader</span>
+                                            <span [style.color]="ctx.visible ? 'var(--legend-leader-name)' : '#94a3b8'" style="font-weight: 600">{{ l.name }}</span>
+                                            <span
+                                                [style.color]="ctx.visible ? 'var(--legend-badge-color)' : '#94a3b8'"
+                                                [style.background]="ctx.visible ? 'var(--legend-badge-bg)' : 'transparent'"
+                                                style="font-size: 10px; font-weight: 600; padding: 1px 5px; border-radius: 3px"
+                                            >
+                                                {{ l.margin.toFixed(1) }}%
+                                            </span>
                                         </span>
-                                    </span>
-                                }
-                            </button>
-                        </ng-template>
-                    </p-chart-legend>
-                    <p-chart-hover [brightness]="1.1" />
-                    <p-chart-x-axis label="Revenue ($B)" [tickFormat]="formatRev" />
-                    <p-chart-y-axis label="Net margin (%)" [tickFormat]="formatMargin" />
-                    <p-chart-reference-band [y1]="30" [y2]="60" fill="#10a981" [fillOpacity]="0.08" label="High-margin zone (30 %+)" labelPosition="start" labelColor="#15803d" [labelFontSize]="11" [labelFontWeight]="600" />
-                    <p-chart-reference-line
-                        [y]="industryAvgMargin"
-                        stroke="#64748b"
-                        [lineStrokeWidth]="1.5"
-                        [lineDash]="[5, 4]"
-                        [label]="'Industry avg · ' + industryAvgMargin.toFixed(1) + '%'"
-                        labelPosition="end"
-                        labelColor="#ffffff"
-                        labelBackground="#475569"
-                        [labelBackgroundOpacity]="0.85"
-                        [labelPadding]="6"
-                        [labelBorderRadius]="4"
-                        [labelFontSize]="11"
-                        [labelFontWeight]="600"
-                    />
-                    <p-chart-title text="US tech profitability — Fortune 100 by sub-industry, FY2023" />
-                    <p-chart-caption text="Revenue ($B) vs net margin (%) · Source: Fortune 500 · 10-K filings aggregated via Macrotrends" />
-                    <p-chart-export-menu filename="fortune-100-tech-margin-2023" />
-                </p-chart-svg>
+                                    }
+                                </button>
+                            </ng-template>
+                        </p-chart-legend>
+                        <p-chart-hover [brightness]="1.1" />
+                        <p-chart-x-axis label="Revenue ($B)" [tickFormat]="formatRev" />
+                        <p-chart-y-axis label="Net margin (%)" [tickFormat]="formatMargin" />
+                        <p-chart-reference-band [y1]="30" [y2]="60" fill="#10a981" [fillOpacity]="0.08" label="High-margin zone (30 %+)" labelPosition="start" labelColor="#15803d" [labelFontSize]="11" [labelFontWeight]="600" />
+                        <p-chart-reference-line
+                            [y]="industryAvgMargin"
+                            stroke="#64748b"
+                            [lineStrokeWidth]="1.5"
+                            [lineDash]="[5, 4]"
+                            [label]="'Industry avg · ' + industryAvgMargin.toFixed(1) + '%'"
+                            labelPosition="end"
+                            labelColor="#ffffff"
+                            labelBackground="#475569"
+                            [labelBackgroundOpacity]="0.85"
+                            [labelPadding]="6"
+                            [labelBorderRadius]="4"
+                            [labelFontSize]="11"
+                            [labelFontWeight]="600"
+                        />
+                        <p-chart-title text="US tech profitability — Fortune 100 by sub-industry, FY2023" />
+                        <p-chart-caption text="Revenue ($B) vs net margin (%) · Source: Fortune 500 · 10-K filings aggregated via Macrotrends" />
+                        <p-chart-export-menu filename="fortune-100-tech-margin-2023" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ScatterUsTechProfitabilityFortune100BySubIndustryFy2023Doc {
+export class ScatterBubbleScatterUsTechProfitabilityFortune100BySubIndustryFy2023Doc {
     readonly software = software;
     readonly hardware = hardware;
     readonly internet = internet;

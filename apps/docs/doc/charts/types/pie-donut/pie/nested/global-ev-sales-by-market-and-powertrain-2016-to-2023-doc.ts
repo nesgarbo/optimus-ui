@@ -39,54 +39,58 @@ const YOY: Record<string, { label: string; color: string } | null> = {
             <p>#### SvgNestedPieEvDemo.ts</p>
             <p>#### nestedEv.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; margin-bottom: 1rem">
-                @for (y of years; track y) {
-                    <button type="button" (click)="selectedYear.set(y)" [style]="buttonStyle(y)">{{ y }}</button>
-                }
-            </div>
-            <div style="height: 460px">
-                <p-chart-svg [animation]="{ duration: 600, easing: 'easeOutCubic' }">
-                    <p-chart-stacked [gap]="6">
-                        <p-chart-pie id="ev-powertrain" [data]="currentPt()" valueField="units" categoryField="sliceId" [color]="powertrainColors()" [startAngle]="-90" [spacing]="1" />
-                        <p-chart-pie id="ev-market" [data]="currentMarkets()" valueField="units" categoryField="market" [color]="marketColors" [innerRadius]="0.4" [startAngle]="-90" [spacing]="2">
-                            <ng-template pChartSliceDef let-ctx>
-                                @if (ctx.percentage >= 6 && abbrevFor(ctx)) {
-                                    <svg:g>
-                                        <svg:text y="-6" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" fill="#fff" opacity="0.95">{{ abbrevFor(ctx) }}</svg:text>
-                                        <svg:text y="8" text-anchor="middle" dominant-baseline="central" font-size="9" fill="#fff" opacity="0.65">{{ ctx.percentage.toFixed(0) }}%</svg:text>
-                                    </svg:g>
-                                }
+        @defer (on viewport) {
+            <div class="card">
+                <div style="display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; margin-bottom: 1rem">
+                    @for (y of years; track y) {
+                        <button type="button" (click)="selectedYear.set(y)" [style]="buttonStyle(y)">{{ y }}</button>
+                    }
+                </div>
+                <div style="height: 460px">
+                    <p-chart-svg [animation]="{ duration: 600, easing: 'easeOutCubic' }">
+                        <p-chart-stacked [gap]="6">
+                            <p-chart-pie id="ev-powertrain" [data]="currentPt()" valueField="units" categoryField="sliceId" [color]="powertrainColors()" [startAngle]="-90" [spacing]="1" />
+                            <p-chart-pie id="ev-market" [data]="currentMarkets()" valueField="units" categoryField="market" [color]="marketColors" [innerRadius]="0.4" [startAngle]="-90" [spacing]="2">
+                                <ng-template pChartSliceDef let-ctx>
+                                    @if (ctx.percentage >= 6 && abbrevFor(ctx)) {
+                                        <svg:g>
+                                            <svg:text y="-6" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" fill="#fff" opacity="0.95">{{ abbrevFor(ctx) }}</svg:text>
+                                            <svg:text y="8" text-anchor="middle" dominant-baseline="central" font-size="9" fill="#fff" opacity="0.65">{{ ctx.percentage.toFixed(0) }}%</svg:text>
+                                        </svg:g>
+                                    }
+                                </ng-template>
+                            </p-chart-pie>
+                        </p-chart-stacked>
+                        <p-chart-annotation>
+                            <ng-template pChartAnnotationDef let-ctx>
+                                <svg:g text-anchor="middle">
+                                    <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y + (yoy() ? -18 : -10)" font-size="28" font-weight="700" dominant-baseline="central">{{ currentTotal() }}M</svg:text>
+                                    <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y + (yoy() ? 6 : 12)" font-size="11" opacity="0.45" dominant-baseline="central">EVs sold · {{ selectedYear() }}</svg:text>
+                                    @if (yoy(); as y) {
+                                        <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y + 26" font-size="11" font-weight="600" [attr.fill]="y.color" dominant-baseline="central">{{ y.label }}</svg:text>
+                                    }
+                                </svg:g>
                             </ng-template>
-                        </p-chart-pie>
-                    </p-chart-stacked>
-                    <p-chart-annotation>
-                        <ng-template pChartAnnotationDef let-ctx>
-                            <svg:g text-anchor="middle">
-                                <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y + (yoy() ? -18 : -10)" font-size="28" font-weight="700" dominant-baseline="central">{{ currentTotal() }}M</svg:text>
-                                <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y + (yoy() ? 6 : 12)" font-size="11" opacity="0.45" dominant-baseline="central">EVs sold · {{ selectedYear() }}</svg:text>
-                                @if (yoy(); as y) {
-                                    <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y + 26" font-size="11" font-weight="600" [attr.fill]="y.color" dominant-baseline="central">{{ y.label }}</svg:text>
-                                }
-                            </svg:g>
-                        </ng-template>
-                    </p-chart-annotation>
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                    <p-chart-hover [brightness]="1.08" [offset]="4" />
-                    <p-chart-title text="Global EV sales by market and powertrain" />
-                    <p-chart-caption text="Source: IEA Global EV Outlook 2024 · Passenger EVs · Inner ring: market share · Outer ring: BEV (dark) vs PHEV (light)" />
-                    <p-chart-export-menu filename="global-ev-sales" />
-                    <p-chart-accessibility
-                        description="Nested donut chart of global passenger EV sales from 2016 to 2023. Inner ring shows market share for China, Europe, United States and Rest of World with abbreviated labels. Outer ring shows BEV vs PHEV split. Press year buttons to animate between years."
-                    />
-                </p-chart-svg>
+                        </p-chart-annotation>
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                        <p-chart-hover [brightness]="1.08" [offset]="4" />
+                        <p-chart-title text="Global EV sales by market and powertrain" />
+                        <p-chart-caption text="Source: IEA Global EV Outlook 2024 · Passenger EVs · Inner ring: market share · Outer ring: BEV (dark) vs PHEV (light)" />
+                        <p-chart-export-menu filename="global-ev-sales" />
+                        <p-chart-accessibility
+                            description="Nested donut chart of global passenger EV sales from 2016 to 2023. Inner ring shows market share for China, Europe, United States and Rest of World with abbreviated labels. Outer ring shows BEV vs PHEV split. Press year buttons to animate between years."
+                        />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NestedGlobalEvSalesByMarketAndPowertrain2016To2023Doc {
+export class PieDonutPieNestedGlobalEvSalesByMarketAndPowertrain2016To2023Doc {
     readonly years = Object.keys(YEAR_DATA);
     readonly selectedYear = signal('2023');
     readonly marketColors = MARKET_ORDER.map((m) => PALETTE[m].base);

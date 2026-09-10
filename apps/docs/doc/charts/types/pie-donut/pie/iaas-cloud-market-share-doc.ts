@@ -19,39 +19,43 @@ const TOTAL_MARKET = 171.8;
             <p>#### SvgPieCloudIaasDemo.ts</p>
             <p>#### cloudIaas.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-pie [data]="data" valueField="revenue" categoryField="provider" [color]="colors" [startAngle]="-90" sort="value-desc" [spacing]="3" [borderRadius]="4" />
-                    <p-chart-data-labels display="both" lineStyle="angled" [fontSize]="11" />
-                    <p-chart-legend position="right" [maxWidth]="260" [maxHeight]="170" verticalAlign="middle">
-                        <ng-template pChartLegendItemDef let-ctx>
-                            <div
-                                (click)="toggle(ctx.label, ctx.onClick)"
-                                (mouseenter)="ctx.onMouseEnter()"
-                                (mouseleave)="ctx.onMouseLeave()"
-                                [style]="'display:flex;align-items:center;gap:8px;padding:3px 8px;cursor:pointer;opacity:' + (ctx.visible ? 1 : 0.35) + ';transition:opacity 0.2s'"
-                            >
-                                <span [style]="'width:10px;height:10px;border-radius:50%;flex-shrink:0;background:' + ctx.color"></span>
-                                <span style="font-size:12px;min-width:110px">{{ ctx.label }}</span>
-                                <span style="font-size:12px;opacity:0.55;min-width:44px;text-align:right">{{ revenueLabel(ctx.label) }}</span>
-                                <span style="font-size:12px;font-weight:600;min-width:38px;text-align:right">{{ shareLabel(ctx) }}</span>
-                            </div>
-                        </ng-template>
-                    </p-chart-legend>
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                    <p-chart-hover [offset]="8" [brightness]="1.1" />
-                    <p-chart-title text="Worldwide IaaS market share 2024" />
-                    <p-chart-caption text="Source: Gartner, August 2025 · Total market $171.8B · 22.5% YoY growth" />
-                    <p-chart-export-menu filename="iaas-market-share-2024" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-pie [data]="data" valueField="revenue" categoryField="provider" [color]="colors" [startAngle]="-90" sort="value-desc" [spacing]="3" [borderRadius]="4" />
+                        <p-chart-data-labels display="both" lineStyle="angled" [fontSize]="11" />
+                        <p-chart-legend position="right" [maxWidth]="260" [maxHeight]="170" verticalAlign="middle">
+                            <ng-template pChartLegendItemDef let-ctx>
+                                <div
+                                    (click)="toggle(ctx.label, ctx.onClick)"
+                                    (mouseenter)="ctx.onMouseEnter()"
+                                    (mouseleave)="ctx.onMouseLeave()"
+                                    [style]="'display:flex;align-items:center;gap:8px;padding:3px 8px;cursor:pointer;opacity:' + (ctx.visible ? 1 : 0.35) + ';transition:opacity 0.2s'"
+                                >
+                                    <span [style]="'width:10px;height:10px;border-radius:50%;flex-shrink:0;background:' + ctx.color"></span>
+                                    <span style="font-size:12px;min-width:110px">{{ ctx.label }}</span>
+                                    <span style="font-size:12px;opacity:0.55;min-width:44px;text-align:right">{{ revenueLabel(ctx.label) }}</span>
+                                    <span style="font-size:12px;font-weight:600;min-width:38px;text-align:right">{{ shareLabel(ctx) }}</span>
+                                </div>
+                            </ng-template>
+                        </p-chart-legend>
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                        <p-chart-hover [offset]="8" [brightness]="1.1" />
+                        <p-chart-title text="Worldwide IaaS market share 2024" />
+                        <p-chart-caption text="Source: Gartner, August 2025 · Total market $171.8B · 22.5% YoY growth" />
+                        <p-chart-export-menu filename="iaas-market-share-2024" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PieIaasCloudMarketShareDoc {
+export class PieDonutPieIaasCloudMarketShareDoc {
     readonly data = cloudIaas;
     readonly colors = ['#5daeea', '#ffad5a', '#4ecdc4', '#7c8cff', '#ff7a66', '#94a3b8'];
 

@@ -48,4 +48,4 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TreemapLlmsIntegration2Doc {}
+export class TreemapTreemapLlmsIntegration2Doc {}

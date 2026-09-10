@@ -30,30 +30,34 @@ interface Snap {
         <app-docsectiontext>
             <p>On charts with multiple Y axes, use <i>getScale('axisId')</i> to retrieve the scale for a specific axis by its registered ID. Use this to position annotations relative to a secondary axis value.</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-line [data]="data" categoryXField="month" valueYField="arr" name="Expansion ARR" color="#5daeea" yAxisId="arr" />
-                <p-chart-line [data]="data" categoryXField="month" valueYField="temp" name="Temp (°C)" color="#ffad5a" yAxisId="temp" [lineDash]="[4, 3]" />
-                <p-chart-x-axis />
-                <p-chart-y-axis id="arr" label="Expansion ARR" />
-                <p-chart-y-axis id="temp" position="right" label="Temp (°C)" />
-                <p-chart-annotation>
-                    <ng-template pChartAnnotationDef let-ctx>
-                        @let s = snapshot(ctx);
-                        @if (s) {
-                            <svg:g>
-                                <svg:line [attr.x1]="s.cx" [attr.y1]="s.yRev" [attr.x2]="s.cx" [attr.y2]="s.yTemp" stroke="#7c8cff" stroke-width="1.5" stroke-dasharray="3 2" opacity="0.5" />
-                                <svg:circle [attr.cx]="s.cx" [attr.cy]="s.yRev" r="5" fill="none" stroke="#5daeea" stroke-width="2" />
-                                <svg:circle [attr.cx]="s.cx" [attr.cy]="s.yTemp" r="5" fill="none" stroke="#ffad5a" stroke-width="2" />
-                                <svg:text [attr.x]="s.cx + 10" [attr.y]="s.yMid" fill="#7c8cff" [attr.font-size]="s.fsA" font-weight="600">May snapshot</svg:text>
-                                <svg:text [attr.x]="s.cx + 10" [attr.y]="s.yMid + 14" fill="#7c8cff" [attr.font-size]="s.fsB" opacity="0.7">{{ s.sub }}</svg:text>
-                            </svg:g>
-                        }
-                    </ng-template>
-                </p-chart-annotation>
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-line [data]="data" categoryXField="month" valueYField="arr" name="Expansion ARR" color="#5daeea" yAxisId="arr" />
+                    <p-chart-line [data]="data" categoryXField="month" valueYField="temp" name="Temp (°C)" color="#ffad5a" yAxisId="temp" [lineDash]="[4, 3]" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis id="arr" label="Expansion ARR" />
+                    <p-chart-y-axis id="temp" position="right" label="Temp (°C)" />
+                    <p-chart-annotation>
+                        <ng-template pChartAnnotationDef let-ctx>
+                            @let s = snapshot(ctx);
+                            @if (s) {
+                                <svg:g>
+                                    <svg:line [attr.x1]="s.cx" [attr.y1]="s.yRev" [attr.x2]="s.cx" [attr.y2]="s.yTemp" stroke="#7c8cff" stroke-width="1.5" stroke-dasharray="3 2" opacity="0.5" />
+                                    <svg:circle [attr.cx]="s.cx" [attr.cy]="s.yRev" r="5" fill="none" stroke="#5daeea" stroke-width="2" />
+                                    <svg:circle [attr.cx]="s.cx" [attr.cy]="s.yTemp" r="5" fill="none" stroke="#ffad5a" stroke-width="2" />
+                                    <svg:text [attr.x]="s.cx + 10" [attr.y]="s.yMid" fill="#7c8cff" [attr.font-size]="s.fsA" font-weight="600">May snapshot</svg:text>
+                                    <svg:text [attr.x]="s.cx + 10" [attr.y]="s.yMid + 14" fill="#7c8cff" [attr.font-size]="s.fsB" opacity="0.7">{{ s.sub }}</svg:text>
+                                </svg:g>
+                            }
+                        </ng-template>
+                    </p-chart-annotation>
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

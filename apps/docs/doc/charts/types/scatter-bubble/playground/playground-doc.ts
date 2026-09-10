@@ -65,222 +65,231 @@ const dataVarNames = ['alphaData', 'betaData', 'gammaData'];
         <app-docsectiontext>
             <p></p>
         </app-docsectiontext>
-        <div class="card">
-            <div class="chart-playground-layout">
-                <div class="chart-playground-stage">
-                    <p-chart-svg [responsive]="true" [height]="460">
-                        @for (s of allSeries(); track s.name; let i = $index) {
-                            <p-chart-scatter
-                                [id]="'series-' + i"
-                                [data]="s.data"
-                                valueXField="x"
-                                valueYField="y"
-                                [name]="s.name"
-                                [color]="s.color"
-                                [markerShape]="markerShape()"
-                                [markerSize]="bubbleMode() ? undefined : markerSize()"
-                                [pointRotation]="markerShape() !== 'circle' ? pointRotation() : undefined"
-                                [pointBorderStrokeWidth]="pointBorderWidth() > 0 ? pointBorderWidth() : undefined"
-                                [pointBorderColor]="pointBorderWidth() > 0 ? pointBorderColor() : undefined"
-                                [pointBorderDash]="pointBorderWidth() > 0 ? pointBorderDashProp() : undefined"
-                                [pointBorderDashOffset]="pointBorderWidth() > 0 && pointBorderDashProp() ? pointBorderDashOffset() : undefined"
-                                [pointBorderJoinStyle]="pointBorderWidth() > 0 ? pointBorderJoinStyle() : undefined"
-                                [sizeField]="bubbleMode() ? 'size' : undefined"
-                                [minSize]="bubbleMode() ? minSize() : undefined"
-                                [maxSize]="bubbleMode() ? maxSize() : undefined"
-                                [hoverPointRadius]="hoverPointRadius() > 0 ? hoverPointRadius() : undefined"
-                                [pointHoverBackgroundColor]="pointHoverBgMode() === 'custom' ? pointHoverBackgroundColor() : undefined"
-                                [pointHoverBorderStrokeWidth]="pointHoverBorderStrokeWidth() > 0 ? pointHoverBorderStrokeWidth() : undefined"
-                                [pointHoverBorderColor]="pointHoverBorderColorMode() === 'custom' ? pointHoverBorderColor() : undefined"
-                                [pointHitRadius]="pointHitRadius() !== 1 ? pointHitRadius() : undefined"
-                                [connectNulls]="connectNullsMode() !== 'gap' ? connectNullsMode() : undefined"
-                                [opacity]="opacity() !== 1 ? opacity() : undefined"
-                                [pointFillOpacity]="pointFillOpacity() !== 0.7 ? pointFillOpacity() : undefined"
-                            />
-                        }
-                        <p-chart-x-axis label="X" />
-                        <p-chart-y-axis label="Y" />
-                        <p-chart-legend position="bottom" />
-                        <p-chart-tooltip />
-                        <p-chart-hover [radiusMultiplier]="hoverRadiusMultiplier()" [brightness]="hoverBrightness()" [dimOpacity]="hoverDimOpacity()" />
-                    </p-chart-svg>
-                </div>
+        @defer (on viewport) {
+            <div class="card">
+                <div class="chart-playground-layout">
+                    <div class="chart-playground-stage">
+                        <p-chart-svg [responsive]="true" [height]="460">
+                            @for (s of allSeries(); track s.name; let i = $index) {
+                                <p-chart-scatter
+                                    [id]="'series-' + i"
+                                    [data]="s.data"
+                                    valueXField="x"
+                                    valueYField="y"
+                                    [name]="s.name"
+                                    [color]="s.color"
+                                    [markerShape]="markerShape()"
+                                    [markerSize]="bubbleMode() ? undefined : markerSize()"
+                                    [pointRotation]="markerShape() !== 'circle' ? pointRotation() : undefined"
+                                    [pointBorderStrokeWidth]="pointBorderWidth() > 0 ? pointBorderWidth() : undefined"
+                                    [pointBorderColor]="pointBorderWidth() > 0 ? pointBorderColor() : undefined"
+                                    [pointBorderDash]="pointBorderWidth() > 0 ? pointBorderDashProp() : undefined"
+                                    [pointBorderDashOffset]="pointBorderWidth() > 0 && pointBorderDashProp() ? pointBorderDashOffset() : undefined"
+                                    [pointBorderJoinStyle]="pointBorderWidth() > 0 ? pointBorderJoinStyle() : undefined"
+                                    [sizeField]="bubbleMode() ? 'size' : undefined"
+                                    [minSize]="bubbleMode() ? minSize() : undefined"
+                                    [maxSize]="bubbleMode() ? maxSize() : undefined"
+                                    [hoverPointRadius]="hoverPointRadius() > 0 ? hoverPointRadius() : undefined"
+                                    [pointHoverBackgroundColor]="pointHoverBgMode() === 'custom' ? pointHoverBackgroundColor() : undefined"
+                                    [pointHoverBorderStrokeWidth]="pointHoverBorderStrokeWidth() > 0 ? pointHoverBorderStrokeWidth() : undefined"
+                                    [pointHoverBorderColor]="pointHoverBorderColorMode() === 'custom' ? pointHoverBorderColor() : undefined"
+                                    [pointHitRadius]="pointHitRadius() !== 1 ? pointHitRadius() : undefined"
+                                    [connectNulls]="connectNullsMode() !== 'gap' ? connectNullsMode() : undefined"
+                                    [opacity]="opacity() !== 1 ? opacity() : undefined"
+                                    [pointFillOpacity]="pointFillOpacity() !== 0.7 ? pointFillOpacity() : undefined"
+                                />
+                            }
+                            <p-chart-x-axis label="X" />
+                            <p-chart-y-axis label="Y" />
+                            <p-chart-legend position="bottom" />
+                            <p-chart-tooltip />
+                            <p-chart-hover [radiusMultiplier]="hoverRadiusMultiplier()" [brightness]="hoverBrightness()" [dimOpacity]="hoverDimOpacity()" />
+                        </p-chart-svg>
+                    </div>
 
-                <div class="playground-controls">
-                    <div class="playground-controls-header">Controls</div>
+                    <div class="playground-controls">
+                        <div class="playground-controls-header">Controls</div>
 
-                    <app-playground-section title="Series" [open]="openGroups().series" (toggle)="toggleGroup('series')">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">series</label>
-                            <p-selectbutton [options]="seriesOptions" [ngModel]="seriesCountStr()" (ngModelChange)="setSeriesCountStr($event)" [allowEmpty]="false" />
-                        </div>
-                    </app-playground-section>
+                        <app-playground-section title="Series" [open]="openGroups().series" (toggle)="toggleGroup('series')">
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">series</label>
+                                <p-selectbutton [options]="seriesOptions" [ngModel]="seriesCountStr()" (ngModelChange)="setSeriesCountStr($event)" [allowEmpty]="false" />
+                            </div>
+                        </app-playground-section>
 
-                    <app-playground-section title="Marker" [open]="openGroups().marker" (toggle)="toggleGroup('marker')">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">markerShape</label>
-                            <p-select [options]="markerShapeOptions" [ngModel]="markerShape()" (ngModelChange)="markerShape.set($event)" styleClass="w-full" appendTo="body" />
-                        </div>
-                        @if (!bubbleMode()) {
+                        <app-playground-section title="Marker" [open]="openGroups().marker" (toggle)="toggleGroup('marker')">
                             <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">markerSize — {{ markerSize() }}px</label>
-                                <p-slider [ngModel]="markerSize()" (ngModelChange)="markerSize.set($event)" [min]="2" [max]="30" [step]="1" styleClass="w-full" />
+                                <label class="text-xs text-surface-500 dark:text-surface-400">markerShape</label>
+                                <p-select [options]="markerShapeOptions" [ngModel]="markerShape()" (ngModelChange)="markerShape.set($event)" styleClass="w-full" appendTo="body" />
                             </div>
-                        }
-                        @if (markerShape() !== 'circle') {
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">pointRotation — {{ pointRotation() }}°</label>
-                                <p-slider [ngModel]="pointRotation()" (ngModelChange)="pointRotation.set($event)" [min]="0" [max]="360" [step]="5" styleClass="w-full" />
-                            </div>
-                        }
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">pointHitRadius — {{ pointHitRadius() }}px</label>
-                            <p-slider [ngModel]="pointHitRadius()" (ngModelChange)="pointHitRadius.set($event)" [min]="1" [max]="20" [step]="1" styleClass="w-full" />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">opacity — {{ opacity().toFixed(2) }}</label>
-                            <p-slider [ngModel]="opacity()" (ngModelChange)="opacity.set($event)" [min]="0.1" [max]="1" [step]="0.05" styleClass="w-full" />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">pointFillOpacity — {{ pointFillOpacity().toFixed(2) }}</label>
-                            <p-slider [ngModel]="pointFillOpacity()" (ngModelChange)="pointFillOpacity.set($event)" [min]="0" [max]="1" [step]="0.05" styleClass="w-full" />
-                        </div>
-                    </app-playground-section>
-
-                    <app-playground-section title="Bubble" [open]="openGroups().bubble" (toggle)="toggleGroup('bubble')">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">bubbleMode (size field)</label>
-                            <p-selectbutton [options]="onOffValueOptions" optionLabel="label" optionValue="value" [ngModel]="bubbleMode()" (ngModelChange)="bubbleMode.set($event)" [allowEmpty]="false" />
-                        </div>
-                        @if (bubbleMode()) {
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">minSize — {{ minSize() }}px</label>
-                                <p-slider [ngModel]="minSize()" (ngModelChange)="minSize.set($event)" [min]="2" [max]="20" [step]="1" styleClass="w-full" />
-                            </div>
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">maxSize — {{ maxSize() }}px</label>
-                                <p-slider [ngModel]="maxSize()" (ngModelChange)="maxSize.set($event)" [min]="10" [max]="80" [step]="2" styleClass="w-full" />
-                            </div>
-                        }
-                    </app-playground-section>
-
-                    <app-playground-section title="Color" [open]="openGroups().color" (toggle)="toggleGroup('color')">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">color (Alpha)</label>
-                            <div class="flex items-center gap-2">
-                                <input type="color" [value]="color()" (input)="color.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
-                                <span class="text-xs font-semibold">{{ color() }}</span>
-                            </div>
-                        </div>
-                        @if (seriesCount() >= 2) {
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">color (Beta)</label>
-                                <div class="flex items-center gap-2">
-                                    <input type="color" [value]="color2()" (input)="color2.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
-                                    <span class="text-xs font-semibold">{{ color2() }}</span>
-                                </div>
-                            </div>
-                        }
-                        @if (seriesCount() >= 3) {
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">color (Gamma)</label>
-                                <div class="flex items-center gap-2">
-                                    <input type="color" [value]="color3()" (input)="color3.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
-                                    <span class="text-xs font-semibold">{{ color3() }}</span>
-                                </div>
-                            </div>
-                        }
-                    </app-playground-section>
-
-                    <app-playground-section title="Border" [open]="openGroups().border" (toggle)="toggleGroup('border')">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">pointBorderStrokeWidth — {{ pointBorderWidth() }}px</label>
-                            <p-slider [ngModel]="pointBorderWidth()" (ngModelChange)="pointBorderWidth.set($event)" [min]="0" [max]="8" [step]="0.5" styleClass="w-full" />
-                        </div>
-                        @if (pointBorderWidth() > 0) {
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">pointBorderColor</label>
-                                <div class="flex items-center gap-2">
-                                    <input type="color" [value]="pointBorderColor()" (input)="pointBorderColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
-                                    <span class="text-xs font-semibold">{{ pointBorderColor() }}</span>
-                                </div>
-                            </div>
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">pointBorderDash</label>
-                                <p-selectbutton [options]="dashOptions" [ngModel]="pointBorderDashMode()" (ngModelChange)="pointBorderDashMode.set($event)" [allowEmpty]="false" />
-                            </div>
-                            @if (pointBorderDashMode() !== 'none') {
+                            @if (!bubbleMode()) {
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-xs text-surface-500 dark:text-surface-400">pointBorderDashOffset — {{ pointBorderDashOffset() }}</label>
-                                    <p-slider [ngModel]="pointBorderDashOffset()" (ngModelChange)="pointBorderDashOffset.set($event)" [min]="0" [max]="20" [step]="1" styleClass="w-full" />
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">markerSize — {{ markerSize() }}px</label>
+                                    <p-slider [ngModel]="markerSize()" (ngModelChange)="markerSize.set($event)" [min]="2" [max]="30" [step]="1" styleClass="w-full" />
+                                </div>
+                            }
+                            @if (markerShape() !== 'circle') {
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">pointRotation — {{ pointRotation() }}°</label>
+                                    <p-slider [ngModel]="pointRotation()" (ngModelChange)="pointRotation.set($event)" [min]="0" [max]="360" [step]="5" styleClass="w-full" />
                                 </div>
                             }
                             <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">pointBorderJoinStyle</label>
-                                <p-selectbutton [options]="joinOptions" [ngModel]="pointBorderJoinStyle()" (ngModelChange)="pointBorderJoinStyle.set($event)" [allowEmpty]="false" />
+                                <label class="text-xs text-surface-500 dark:text-surface-400">pointHitRadius — {{ pointHitRadius() }}px</label>
+                                <p-slider [ngModel]="pointHitRadius()" (ngModelChange)="pointHitRadius.set($event)" [min]="1" [max]="20" [step]="1" styleClass="w-full" />
                             </div>
-                        }
-                    </app-playground-section>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">opacity — {{ opacity().toFixed(2) }}</label>
+                                <p-slider [ngModel]="opacity()" (ngModelChange)="opacity.set($event)" [min]="0.1" [max]="1" [step]="0.05" styleClass="w-full" />
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">pointFillOpacity — {{ pointFillOpacity().toFixed(2) }}</label>
+                                <p-slider [ngModel]="pointFillOpacity()" (ngModelChange)="pointFillOpacity.set($event)" [min]="0" [max]="1" [step]="0.05" styleClass="w-full" />
+                            </div>
+                        </app-playground-section>
 
-                    <app-playground-section title="Hover" [open]="openGroups().hover" (toggle)="toggleGroup('hover')">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">brightness — {{ hoverBrightness().toFixed(2) }}</label>
-                            <p-slider [ngModel]="hoverBrightness()" (ngModelChange)="hoverBrightness.set($event)" [min]="1" [max]="1.5" [step]="0.05" styleClass="w-full" />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">dimOpacity — {{ hoverDimOpacity().toFixed(2) }}</label>
-                            <p-slider [ngModel]="hoverDimOpacity()" (ngModelChange)="hoverDimOpacity.set($event)" [min]="0" [max]="1" [step]="0.05" styleClass="w-full" />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">radiusMultiplier — {{ hoverRadiusMultiplier().toFixed(2) }}</label>
-                            <p-slider [ngModel]="hoverRadiusMultiplier()" (ngModelChange)="hoverRadiusMultiplier.set($event)" [min]="1" [max]="2" [step]="0.05" styleClass="w-full" />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">hoverPointRadius — {{ hoverPointRadius() === 0 ? 'same' : hoverPointRadius() + 'px' }}</label>
-                            <p-slider [ngModel]="hoverPointRadius()" (ngModelChange)="hoverPointRadius.set($event)" [min]="0" [max]="30" [step]="1" styleClass="w-full" />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">pointHoverBackgroundColor</label>
-                            <p-selectbutton [options]="autoCustomOptions" [ngModel]="pointHoverBgMode()" (ngModelChange)="pointHoverBgMode.set($event)" [allowEmpty]="false" />
-                        </div>
-                        @if (pointHoverBgMode() === 'custom') {
+                        <app-playground-section title="Bubble" [open]="openGroups().bubble" (toggle)="toggleGroup('bubble')">
                             <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">bubbleMode (size field)</label>
+                                <p-selectbutton [options]="onOffValueOptions" optionLabel="label" optionValue="value" [ngModel]="bubbleMode()" (ngModelChange)="bubbleMode.set($event)" [allowEmpty]="false" />
+                            </div>
+                            @if (bubbleMode()) {
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">minSize — {{ minSize() }}px</label>
+                                    <p-slider [ngModel]="minSize()" (ngModelChange)="minSize.set($event)" [min]="2" [max]="20" [step]="1" styleClass="w-full" />
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">maxSize — {{ maxSize() }}px</label>
+                                    <p-slider [ngModel]="maxSize()" (ngModelChange)="maxSize.set($event)" [min]="10" [max]="80" [step]="2" styleClass="w-full" />
+                                </div>
+                            }
+                        </app-playground-section>
+
+                        <app-playground-section title="Color" [open]="openGroups().color" (toggle)="toggleGroup('color')">
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">color (Alpha)</label>
                                 <div class="flex items-center gap-2">
-                                    <input
-                                        type="color"
-                                        [value]="pointHoverBackgroundColor()"
-                                        (input)="pointHoverBackgroundColor.set($any($event.target).value)"
-                                        style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0"
-                                    />
-                                    <span class="text-xs font-semibold">{{ pointHoverBackgroundColor() }}</span>
+                                    <input type="color" [value]="color()" (input)="color.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
+                                    <span class="text-xs font-semibold">{{ color() }}</span>
                                 </div>
                             </div>
-                        }
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">pointHoverBorderStrokeWidth — {{ pointHoverBorderStrokeWidth() }}px</label>
-                            <p-slider [ngModel]="pointHoverBorderStrokeWidth()" (ngModelChange)="pointHoverBorderStrokeWidth.set($event)" [min]="0" [max]="8" [step]="0.5" styleClass="w-full" />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">pointHoverBorderColor</label>
-                            <p-selectbutton [options]="autoCustomOptions" [ngModel]="pointHoverBorderColorMode()" (ngModelChange)="pointHoverBorderColorMode.set($event)" [allowEmpty]="false" />
-                        </div>
-                        @if (pointHoverBorderColorMode() === 'custom') {
-                            <div class="flex flex-col gap-1">
-                                <div class="flex items-center gap-2">
-                                    <input type="color" [value]="pointHoverBorderColor()" (input)="pointHoverBorderColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
-                                    <span class="text-xs font-semibold">{{ pointHoverBorderColor() }}</span>
+                            @if (seriesCount() >= 2) {
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">color (Beta)</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="color" [value]="color2()" (input)="color2.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
+                                        <span class="text-xs font-semibold">{{ color2() }}</span>
+                                    </div>
                                 </div>
+                            }
+                            @if (seriesCount() >= 3) {
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">color (Gamma)</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="color" [value]="color3()" (input)="color3.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
+                                        <span class="text-xs font-semibold">{{ color3() }}</span>
+                                    </div>
+                                </div>
+                            }
+                        </app-playground-section>
+
+                        <app-playground-section title="Border" [open]="openGroups().border" (toggle)="toggleGroup('border')">
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">pointBorderStrokeWidth — {{ pointBorderWidth() }}px</label>
+                                <p-slider [ngModel]="pointBorderWidth()" (ngModelChange)="pointBorderWidth.set($event)" [min]="0" [max]="8" [step]="0.5" styleClass="w-full" />
                             </div>
-                        }
-                    </app-playground-section>
+                            @if (pointBorderWidth() > 0) {
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">pointBorderColor</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="color" [value]="pointBorderColor()" (input)="pointBorderColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
+                                        <span class="text-xs font-semibold">{{ pointBorderColor() }}</span>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">pointBorderDash</label>
+                                    <p-selectbutton [options]="dashOptions" [ngModel]="pointBorderDashMode()" (ngModelChange)="pointBorderDashMode.set($event)" [allowEmpty]="false" />
+                                </div>
+                                @if (pointBorderDashMode() !== 'none') {
+                                    <div class="flex flex-col gap-1">
+                                        <label class="text-xs text-surface-500 dark:text-surface-400">pointBorderDashOffset — {{ pointBorderDashOffset() }}</label>
+                                        <p-slider [ngModel]="pointBorderDashOffset()" (ngModelChange)="pointBorderDashOffset.set($event)" [min]="0" [max]="20" [step]="1" styleClass="w-full" />
+                                    </div>
+                                }
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">pointBorderJoinStyle</label>
+                                    <p-selectbutton [options]="joinOptions" [ngModel]="pointBorderJoinStyle()" (ngModelChange)="pointBorderJoinStyle.set($event)" [allowEmpty]="false" />
+                                </div>
+                            }
+                        </app-playground-section>
+
+                        <app-playground-section title="Hover" [open]="openGroups().hover" (toggle)="toggleGroup('hover')">
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">brightness — {{ hoverBrightness().toFixed(2) }}</label>
+                                <p-slider [ngModel]="hoverBrightness()" (ngModelChange)="hoverBrightness.set($event)" [min]="1" [max]="1.5" [step]="0.05" styleClass="w-full" />
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">dimOpacity — {{ hoverDimOpacity().toFixed(2) }}</label>
+                                <p-slider [ngModel]="hoverDimOpacity()" (ngModelChange)="hoverDimOpacity.set($event)" [min]="0" [max]="1" [step]="0.05" styleClass="w-full" />
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">radiusMultiplier — {{ hoverRadiusMultiplier().toFixed(2) }}</label>
+                                <p-slider [ngModel]="hoverRadiusMultiplier()" (ngModelChange)="hoverRadiusMultiplier.set($event)" [min]="1" [max]="2" [step]="0.05" styleClass="w-full" />
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">hoverPointRadius — {{ hoverPointRadius() === 0 ? 'same' : hoverPointRadius() + 'px' }}</label>
+                                <p-slider [ngModel]="hoverPointRadius()" (ngModelChange)="hoverPointRadius.set($event)" [min]="0" [max]="30" [step]="1" styleClass="w-full" />
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">pointHoverBackgroundColor</label>
+                                <p-selectbutton [options]="autoCustomOptions" [ngModel]="pointHoverBgMode()" (ngModelChange)="pointHoverBgMode.set($event)" [allowEmpty]="false" />
+                            </div>
+                            @if (pointHoverBgMode() === 'custom') {
+                                <div class="flex flex-col gap-1">
+                                    <div class="flex items-center gap-2">
+                                        <input
+                                            type="color"
+                                            [value]="pointHoverBackgroundColor()"
+                                            (input)="pointHoverBackgroundColor.set($any($event.target).value)"
+                                            style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0"
+                                        />
+                                        <span class="text-xs font-semibold">{{ pointHoverBackgroundColor() }}</span>
+                                    </div>
+                                </div>
+                            }
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">pointHoverBorderStrokeWidth — {{ pointHoverBorderStrokeWidth() }}px</label>
+                                <p-slider [ngModel]="pointHoverBorderStrokeWidth()" (ngModelChange)="pointHoverBorderStrokeWidth.set($event)" [min]="0" [max]="8" [step]="0.5" styleClass="w-full" />
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">pointHoverBorderColor</label>
+                                <p-selectbutton [options]="autoCustomOptions" [ngModel]="pointHoverBorderColorMode()" (ngModelChange)="pointHoverBorderColorMode.set($event)" [allowEmpty]="false" />
+                            </div>
+                            @if (pointHoverBorderColorMode() === 'custom') {
+                                <div class="flex flex-col gap-1">
+                                    <div class="flex items-center gap-2">
+                                        <input
+                                            type="color"
+                                            [value]="pointHoverBorderColor()"
+                                            (input)="pointHoverBorderColor.set($any($event.target).value)"
+                                            style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0"
+                                        />
+                                        <span class="text-xs font-semibold">{{ pointHoverBorderColor() }}</span>
+                                    </div>
+                                </div>
+                            }
+                        </app-playground-section>
+                    </div>
                 </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PlaygroundPlaygroundDoc {
+export class ScatterBubblePlaygroundPlaygroundDoc {
     readonly seriesOptions = ['1', '2', '3'];
     readonly markerShapeOptions = ['circle', 'square', 'triangle', 'cross', 'star'];
     readonly dashOptions = ['none', 'dashed', 'dotted'];

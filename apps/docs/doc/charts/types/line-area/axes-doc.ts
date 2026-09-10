@@ -12,19 +12,23 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             <p>Use <i>label</i> on <i>ChartXAxis</i> and <i>ChartYAxis</i> to add axis titles. Time axes suit continuous dates; use a secondary Y axis only when one scale would hide a series because the units differ.</p>
             <p>For full configuration see <a href="/charts/configuration/axes">Axes</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="temp" name="Temperature (°C)" yAxisId="temp" curve="smooth" />
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="rainfall" name="Rainfall (mm)" yAxisId="rain" curve="smooth" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis id="temp" position="left" label="Temperature (°C)" />
-                    <p-chart-y-axis id="rain" position="right" label="Rainfall (mm)" />
-                    <p-chart-legend position="bottom" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="temp" name="Temperature (°C)" yAxisId="temp" curve="smooth" />
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="rainfall" name="Rainfall (mm)" yAxisId="rain" curve="smooth" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis id="temp" position="left" label="Temperature (°C)" />
+                        <p-chart-y-axis id="rain" position="right" label="Rainfall (mm)" />
+                        <p-chart-legend position="bottom" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

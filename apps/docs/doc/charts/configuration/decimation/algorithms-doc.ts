@@ -64,21 +64,25 @@ function generateData(): { t: number; v: number }[] {
                 point positions. On ordered series, <i>'k-means'</i> falls back to <i>'lttb'</i>.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div class="inline-flex mb-2 gap-1">
-                @for (alg of algorithms; track alg) {
-                    <button [class]="baseBtn + (algorithm() === alg ? activeBtn : inactiveBtn)" (click)="algorithm.set(alg)">{{ alg }}</button>
-                }
+        @defer (on viewport) {
+            <div class="card">
+                <div class="inline-flex mb-2 gap-1">
+                    @for (alg of algorithms; track alg) {
+                        <button [class]="baseBtn + (algorithm() === alg ? activeBtn : inactiveBtn)" (click)="algorithm.set(alg)">{{ alg }}</button>
+                    }
+                </div>
+                <p-chart-svg [height]="460">
+                    <p-chart-line [data]="data" categoryXField="t" valueYField="v" color="#36b7d6" [lineStrokeWidth]="1.5" />
+                    <p-chart-x-axis type="time" />
+                    <p-chart-y-axis />
+                    <p-chart-tooltip />
+                    <p-chart-decimation [algorithm]="algorithm()" [samples]="150" />
+                </p-chart-svg>
             </div>
-            <p-chart-svg [height]="460">
-                <p-chart-line [data]="data" categoryXField="t" valueYField="v" color="#36b7d6" [lineStrokeWidth]="1.5" />
-                <p-chart-x-axis type="time" />
-                <p-chart-y-axis />
-                <p-chart-tooltip />
-                <p-chart-decimation [algorithm]="algorithm()" [samples]="150" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

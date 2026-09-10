@@ -41,31 +41,35 @@ const GRAD: Record<string, FillValue> = {
             <p>#### SvgRadarStackedSaasTierDemo.ts</p>
             <p>#### saasTier.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg [animation]="{ duration: 700 }">
-                    <p-chart-stacked>
-                        <p-chart-radar id="free" [data]="data" categoryXField="metric" valueYField="free" name="Free" [color]="grad.free" [fillOpacity]="0.6" [lineStrokeWidth]="1.2" curve="smooth" />
-                        <p-chart-radar id="pro" [data]="data" categoryXField="metric" valueYField="pro" name="Pro" [color]="grad.pro" [fillOpacity]="0.65" [lineStrokeWidth]="1.2" curve="smooth" />
-                        <p-chart-radar id="enterprise" [data]="data" categoryXField="metric" valueYField="enterprise" name="Enterprise" [color]="grad.enterprise" [fillOpacity]="0.7" [lineStrokeWidth]="2" curve="smooth" />
-                    </p-chart-stacked>
-                    <p-chart-x-axis />
-                    <p-chart-y-axis gridShape="circle" [tickCount]="5" />
-                    <p-chart-tooltip mode="shared" [valueFormatter]="format" />
-                    <p-chart-hover />
-                    <p-chart-legend position="top" />
-                    <p-chart-title text="SaaS Platform — Monthly Usage by Plan Tier" />
-                    <p-chart-caption text="Enterprise leads API Calls, Integrations, and Workspace Seats · Free tier drives Active Users and Sessions · outer ring = total across all tiers" />
-                    <p-chart-export-menu filename="saas-usage-stacked-radar" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg [animation]="{ duration: 700 }">
+                        <p-chart-stacked>
+                            <p-chart-radar id="free" [data]="data" categoryXField="metric" valueYField="free" name="Free" [color]="grad.free" [fillOpacity]="0.6" [lineStrokeWidth]="1.2" curve="smooth" />
+                            <p-chart-radar id="pro" [data]="data" categoryXField="metric" valueYField="pro" name="Pro" [color]="grad.pro" [fillOpacity]="0.65" [lineStrokeWidth]="1.2" curve="smooth" />
+                            <p-chart-radar id="enterprise" [data]="data" categoryXField="metric" valueYField="enterprise" name="Enterprise" [color]="grad.enterprise" [fillOpacity]="0.7" [lineStrokeWidth]="2" curve="smooth" />
+                        </p-chart-stacked>
+                        <p-chart-x-axis />
+                        <p-chart-y-axis gridShape="circle" [tickCount]="5" />
+                        <p-chart-tooltip mode="shared" [valueFormatter]="format" />
+                        <p-chart-hover />
+                        <p-chart-legend position="top" />
+                        <p-chart-title text="SaaS Platform — Monthly Usage by Plan Tier" />
+                        <p-chart-caption text="Enterprise leads API Calls, Integrations, and Workspace Seats · Free tier drives Active Users and Sessions · outer ring = total across all tiers" />
+                        <p-chart-export-menu filename="saas-usage-stacked-radar" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class StackedSaasPlatformMonthlyUsageByPlanTierDoc {
+export class RadarStackedSaasPlatformMonthlyUsageByPlanTierDoc {
     readonly data = data;
     readonly grad = GRAD;
     readonly format = (v: number) => `${v}K`;

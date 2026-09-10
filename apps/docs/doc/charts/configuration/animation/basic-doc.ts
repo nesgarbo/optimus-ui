@@ -15,19 +15,23 @@ import { ButtonDirective } from '@openng/optimus-ui/button';
                 <i>&lt;p-chart-canvas&gt;</i>.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div class="flex mb-2">
-                <button pButton type="button" severity="secondary" class="!text-surface-900 dark:!text-surface-100" (click)="replayKey.update((v) => v + 1)">Replay</button>
+        @defer (on viewport) {
+            <div class="card">
+                <div class="flex mb-2">
+                    <button pButton type="button" severity="secondary" class="!text-surface-900 dark:!text-surface-100" (click)="replayKey.update((v) => v + 1)">Replay</button>
+                </div>
+                @for (k of [replayKey()]; track k) {
+                    <p-chart-svg [height]="460">
+                        <p-chart-bar [data]="data" categoryXField="month" valueYField="signups" [borderRadius]="4" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                    </p-chart-svg>
+                }
             </div>
-            @for (k of [replayKey()]; track k) {
-                <p-chart-svg [height]="460">
-                    <p-chart-bar [data]="data" categoryXField="month" valueYField="signups" [borderRadius]="4" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                </p-chart-svg>
-            }
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

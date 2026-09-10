@@ -20,16 +20,20 @@ interface Point {
                 chart handles translation to each point's position. In Canvas mode, pass a <i>renderMarker</i> function that draws at the origin and returns <i>null</i> (the context is pre-translated to the point).
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-scatter id="custom" [data]="data" valueXField="effort" valueYField="impact" [markerSize]="12" [renderMarker]="renderMarker" />
-                    <p-chart-x-axis label="Implementation effort (points)" />
-                    <p-chart-y-axis label="Estimated ARR impact ($K)" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-scatter id="custom" [data]="data" valueXField="effort" valueYField="impact" [markerSize]="12" [renderMarker]="renderMarker" />
+                        <p-chart-x-axis label="Implementation effort (points)" />
+                        <p-chart-y-axis label="Estimated ARR impact ($K)" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

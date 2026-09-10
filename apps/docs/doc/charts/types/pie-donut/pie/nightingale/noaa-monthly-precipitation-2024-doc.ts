@@ -29,64 +29,68 @@ const SEASON_ARCS = [
             <p>#### SvgPieNightingaleNoaaPrecipDemo.ts</p>
             <p>#### nightingaleNoaaPrecip.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg [animation]="{ duration: 700 }">
-                    <p-chart-pie
-                        id="precip"
-                        [data]="data"
-                        valueField="count"
-                        categoryField="month"
-                        sliceRadiusValue="precip"
-                        [color]="colors"
-                        [startAngle]="-90"
-                        [sweepAngle]="360"
-                        [innerRadius]="0.32"
-                        [outerRadius]="0.82"
-                        [borderRadius]="5"
-                        [spacing]="1.5"
-                        keyField="month"
-                    >
-                        <ng-template pChartSliceDef let-ctx>
-                            @if (isPeak(ctx)) {
-                                <svg:text text-anchor="middle" dominant-baseline="middle" font-size="9" font-weight="bold" fill="#fff">PEAK</svg:text>
-                            }
-                        </ng-template>
-                    </p-chart-pie>
-                    <p-chart-annotation>
-                        <ng-template pChartAnnotationDef let-ctx>
-                            <svg:g>
-                                <svg:g text-anchor="middle">
-                                    <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y - 14" font-size="10" opacity="0.45" dominant-baseline="middle">Annual avg</svg:text>
-                                    <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y + 10" font-size="22" font-weight="bold" dominant-baseline="middle">{{ annualAvg }}"</svg:text>
-                                </svg:g>
-                                @for (m of months(ctx); track m.month) {
-                                    <svg:line [attr.x1]="m.tx1" [attr.y1]="m.ty1" [attr.x2]="m.tx2" [attr.y2]="m.ty2" [attr.stroke]="m.color" stroke-width="1" opacity="0.45" />
-                                    <svg:g [attr.transform]="'translate(' + m.lx + ',' + m.ly + ')'" text-anchor="middle">
-                                        <svg:text y="-7" font-size="11" font-weight="600" [attr.fill]="m.color" dominant-baseline="middle">{{ m.month }}</svg:text>
-                                        <svg:text y="6" font-size="9" opacity="0.55" dominant-baseline="middle">{{ m.precip }}"</svg:text>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg [animation]="{ duration: 700 }">
+                        <p-chart-pie
+                            id="precip"
+                            [data]="data"
+                            valueField="count"
+                            categoryField="month"
+                            sliceRadiusValue="precip"
+                            [color]="colors"
+                            [startAngle]="-90"
+                            [sweepAngle]="360"
+                            [innerRadius]="0.32"
+                            [outerRadius]="0.82"
+                            [borderRadius]="5"
+                            [spacing]="1.5"
+                            keyField="month"
+                        >
+                            <ng-template pChartSliceDef let-ctx>
+                                @if (isPeak(ctx)) {
+                                    <svg:text text-anchor="middle" dominant-baseline="middle" font-size="9" font-weight="bold" fill="#fff">PEAK</svg:text>
+                                }
+                            </ng-template>
+                        </p-chart-pie>
+                        <p-chart-annotation>
+                            <ng-template pChartAnnotationDef let-ctx>
+                                <svg:g>
+                                    <svg:g text-anchor="middle">
+                                        <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y - 14" font-size="10" opacity="0.45" dominant-baseline="middle">Annual avg</svg:text>
+                                        <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y + 10" font-size="22" font-weight="bold" dominant-baseline="middle">{{ annualAvg }}"</svg:text>
                                     </svg:g>
-                                }
-                                @for (a of arcs(ctx); track a.name) {
-                                    <svg:path [attr.d]="a.d" fill="none" [attr.stroke]="a.color" stroke-width="2" stroke-linecap="round" opacity="0.45" />
-                                }
-                            </svg:g>
-                        </ng-template>
-                    </p-chart-annotation>
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                    <p-chart-hover [offset]="5" [brightness]="1.1" />
-                    <p-chart-title text="US average monthly precipitation 2024" />
-                    <p-chart-caption text="Source: NOAA Climate Data Online · 48 contiguous states average · 2024 data" />
-                    <p-chart-export-menu filename="noaa-monthly-precipitation-2024" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
+                                    @for (m of months(ctx); track m.month) {
+                                        <svg:line [attr.x1]="m.tx1" [attr.y1]="m.ty1" [attr.x2]="m.tx2" [attr.y2]="m.ty2" [attr.stroke]="m.color" stroke-width="1" opacity="0.45" />
+                                        <svg:g [attr.transform]="'translate(' + m.lx + ',' + m.ly + ')'" text-anchor="middle">
+                                            <svg:text y="-7" font-size="11" font-weight="600" [attr.fill]="m.color" dominant-baseline="middle">{{ m.month }}</svg:text>
+                                            <svg:text y="6" font-size="9" opacity="0.55" dominant-baseline="middle">{{ m.precip }}"</svg:text>
+                                        </svg:g>
+                                    }
+                                    @for (a of arcs(ctx); track a.name) {
+                                        <svg:path [attr.d]="a.d" fill="none" [attr.stroke]="a.color" stroke-width="2" stroke-linecap="round" opacity="0.45" />
+                                    }
+                                </svg:g>
+                            </ng-template>
+                        </p-chart-annotation>
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                        <p-chart-hover [offset]="5" [brightness]="1.1" />
+                        <p-chart-title text="US average monthly precipitation 2024" />
+                        <p-chart-caption text="Source: NOAA Climate Data Online · 48 contiguous states average · 2024 data" />
+                        <p-chart-export-menu filename="noaa-monthly-precipitation-2024" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NightingaleNoaaMonthlyPrecipitation2024Doc {
+export class PieDonutPieNightingaleNoaaMonthlyPrecipitation2024Doc {
     readonly data = data;
     readonly colors = colors;
     readonly annualAvg = ANNUAL_AVG;

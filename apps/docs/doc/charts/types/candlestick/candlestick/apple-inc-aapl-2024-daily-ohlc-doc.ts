@@ -30,44 +30,48 @@ const AVG_200 = (() => {
             <p>#### SvgCandlestickAaplDailyDemo.ts</p>
             <p>#### aaplDaily.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg [animation]="{ duration: 400 }">
-                    <p-chart-candlestick [data]="data" categoryXField="ts" openField="open" highField="high" lowField="low" closeField="close" upColor="#10a981" downColor="#e5484d" [barWidthRatio]="0.72" />
-                    <p-chart-reference-line [y]="avg200" label="200-day avg" stroke="#7c8cff" [lineStrokeWidth]="1" [lineDash]="[5, 4]" labelPosition="start" />
-                    <p-chart-annotation>
-                        <ng-template pChartAnnotationDef let-ctx>
-                            @if (ctx.xScale && ctx.chartArea) {
-                                <svg:g pointer-events="none">
-                                    @for (ev of earningsPins(ctx); track ev.ts) {
-                                        <svg:g>
-                                            <svg:line [attr.x1]="ev.x" [attr.y1]="ev.top" [attr.x2]="ev.x" [attr.y2]="ev.bottom" stroke="#7c8cff" stroke-dasharray="3 3" stroke-width="1" opacity="0.5" />
-                                            <svg:rect [attr.x]="ev.rx" [attr.y]="ev.ry" [attr.width]="ev.bw" [attr.height]="ev.bh" rx="3" fill="#7c8cff" opacity="0.9" />
-                                            <svg:text [attr.x]="ev.x" [attr.y]="ev.ty" text-anchor="middle" dominant-baseline="central" fill="#fff" [attr.font-size]="ev.fs" font-weight="600">{{ ev.label }}</svg:text>
-                                        </svg:g>
-                                    }
-                                </svg:g>
-                            }
-                        </ng-template>
-                    </p-chart-annotation>
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" [crosshair]="{ x: true, y: true, dashArray: [3, 3], color: '#94a3b8' }" />
-                    <p-chart-hover />
-                    <p-chart-zoom mode="x" />
-                    <p-chart-navigator [height]="42" />
-                    <p-chart-x-axis type="time" gapless />
-                    <p-chart-y-axis position="right" [tickFormat]="formatPrice" />
-                    <p-chart-title text="Apple Inc. (AAPL) — 2024 Daily OHLC" />
-                    <p-chart-caption text="Nasdaq · split-adjusted · quarterly earnings marked with indigo pins · hover for crosshair · drag navigator to zoom" />
-                    <p-chart-export-menu filename="aapl-2024-daily" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg [animation]="{ duration: 400 }">
+                        <p-chart-candlestick [data]="data" categoryXField="ts" openField="open" highField="high" lowField="low" closeField="close" upColor="#10a981" downColor="#e5484d" [barWidthRatio]="0.72" />
+                        <p-chart-reference-line [y]="avg200" label="200-day avg" stroke="#7c8cff" [lineStrokeWidth]="1" [lineDash]="[5, 4]" labelPosition="start" />
+                        <p-chart-annotation>
+                            <ng-template pChartAnnotationDef let-ctx>
+                                @if (ctx.xScale && ctx.chartArea) {
+                                    <svg:g pointer-events="none">
+                                        @for (ev of earningsPins(ctx); track ev.ts) {
+                                            <svg:g>
+                                                <svg:line [attr.x1]="ev.x" [attr.y1]="ev.top" [attr.x2]="ev.x" [attr.y2]="ev.bottom" stroke="#7c8cff" stroke-dasharray="3 3" stroke-width="1" opacity="0.5" />
+                                                <svg:rect [attr.x]="ev.rx" [attr.y]="ev.ry" [attr.width]="ev.bw" [attr.height]="ev.bh" rx="3" fill="#7c8cff" opacity="0.9" />
+                                                <svg:text [attr.x]="ev.x" [attr.y]="ev.ty" text-anchor="middle" dominant-baseline="central" fill="#fff" [attr.font-size]="ev.fs" font-weight="600">{{ ev.label }}</svg:text>
+                                            </svg:g>
+                                        }
+                                    </svg:g>
+                                }
+                            </ng-template>
+                        </p-chart-annotation>
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" [crosshair]="{ x: true, y: true, dashArray: [3, 3], color: '#94a3b8' }" />
+                        <p-chart-hover />
+                        <p-chart-zoom mode="x" />
+                        <p-chart-navigator [height]="42" />
+                        <p-chart-x-axis type="time" gapless />
+                        <p-chart-y-axis position="right" [tickFormat]="formatPrice" />
+                        <p-chart-title text="Apple Inc. (AAPL) — 2024 Daily OHLC" />
+                        <p-chart-caption text="Nasdaq · split-adjusted · quarterly earnings marked with indigo pins · hover for crosshair · drag navigator to zoom" />
+                        <p-chart-export-menu filename="aapl-2024-daily" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CandlestickAppleIncAapl2024DailyOhlcDoc {
+export class CandlestickCandlestickAppleIncAapl2024DailyOhlcDoc {
     readonly data = aaplDaily;
     readonly avg200 = AVG_200;
     readonly formatPrice = (v: TickValue) => `$${Number(v).toFixed(0)}`;

@@ -27,34 +27,38 @@ interface Badge {
             <p>#### SvgBarOlympicGoldDemo.ts</p>
             <p>#### olympicGold.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460" [animation]="{ duration: 700 }">
-                <p-chart-bar [data]="data" categoryXField="country" valueYField="gold" [color]="rankGradient" [borderRadius]="3" />
-                <p-chart-annotation>
-                    <ng-template pChartAnnotationDef let-ctx>
-                        <svg:g>
-                            @for (b of badges(ctx); track b.label + b.cx) {
-                                <svg:rect [attr.x]="b.cx - 12" [attr.y]="b.cy - 8" [attr.width]="24" [attr.height]="16" rx="3" [attr.fill]="b.fill" />
-                                <svg:text [attr.x]="b.cx" [attr.y]="b.cy" text-anchor="middle" dominant-baseline="central" fill="white" font-size="9" font-weight="700">{{ b.label }}</svg:text>
-                            }
-                        </svg:g>
-                    </ng-template>
-                </p-chart-annotation>
-                <p-chart-tooltip />
-                <p-chart-hover />
-                <p-chart-x-axis [tickRotation]="-25" />
-                <p-chart-y-axis />
-                <p-chart-title text="Paris 2024 Summer Olympics - Gold Medals, Top 12 Countries" />
-                <p-chart-caption text="Source: International Olympic Committee, official Paris 2024 medal table" />
-                <p-chart-export-menu filename="paris-2024-gold-medals" />
-                <p-chart-accessibility />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460" [animation]="{ duration: 700 }">
+                    <p-chart-bar [data]="data" categoryXField="country" valueYField="gold" [color]="rankGradient" [borderRadius]="3" />
+                    <p-chart-annotation>
+                        <ng-template pChartAnnotationDef let-ctx>
+                            <svg:g>
+                                @for (b of badges(ctx); track b.label + b.cx) {
+                                    <svg:rect [attr.x]="b.cx - 12" [attr.y]="b.cy - 8" [attr.width]="24" [attr.height]="16" rx="3" [attr.fill]="b.fill" />
+                                    <svg:text [attr.x]="b.cx" [attr.y]="b.cy" text-anchor="middle" dominant-baseline="central" fill="white" font-size="9" font-weight="700">{{ b.label }}</svg:text>
+                                }
+                            </svg:g>
+                        </ng-template>
+                    </p-chart-annotation>
+                    <p-chart-tooltip />
+                    <p-chart-hover />
+                    <p-chart-x-axis [tickRotation]="-25" />
+                    <p-chart-y-axis />
+                    <p-chart-title text="Paris 2024 Summer Olympics - Gold Medals, Top 12 Countries" />
+                    <p-chart-caption text="Source: International Olympic Committee, official Paris 2024 medal table" />
+                    <p-chart-export-menu filename="paris-2024-gold-medals" />
+                    <p-chart-accessibility />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class BarParis2024SummerOlympicsGoldMedalsTop12CountriesDoc {
+export class ColumnBarBarParis2024SummerOlympicsGoldMedalsTop12CountriesDoc {
     readonly data = data;
 
     readonly rankGradient: GradientColor = {

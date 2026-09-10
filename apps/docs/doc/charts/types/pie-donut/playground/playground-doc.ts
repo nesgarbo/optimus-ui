@@ -40,25 +40,102 @@ const ring3Data = [
         <app-docsectiontext>
             <p></p>
         </app-docsectiontext>
-        <div class="card">
-            <div class="chart-playground-layout">
-                <div class="chart-playground-stage">
-                    <p-chart-svg [responsive]="true" [height]="460">
-                        @if (isStacked()) {
-                            <p-chart-stacked [gap]="stackGap()">
+        @defer (on viewport) {
+            <div class="card">
+                <div class="chart-playground-layout">
+                    <div class="chart-playground-stage">
+                        <p-chart-svg [responsive]="true" [height]="460">
+                            @if (isStacked()) {
+                                <p-chart-stacked [gap]="stackGap()">
+                                    <p-chart-pie
+                                        id="ring1"
+                                        [data]="activeData()"
+                                        valueField="share"
+                                        categoryField="browser"
+                                        [color]="colorsRing1()"
+                                        name="Browser"
+                                        [order]="0"
+                                        [outerRadius]="outerRadius()"
+                                        [innerRadius]="innerRadius()"
+                                        [startAngle]="startAngle()"
+                                        [sweepAngle]="sweepAngle()"
+                                        [spacing]="spacing()"
+                                        [borderRadius]="borderRadius()"
+                                        [borderStrokeWidth]="borderWidth()"
+                                        [borderColor]="borderWidth() > 0 ? borderColor() : undefined"
+                                        [borderAlign]="borderWidth() > 0 ? borderAlign() : undefined"
+                                        [borderDash]="borderDashProp()"
+                                        [borderDashOffset]="borderDashProp() ? borderDashOffset() : undefined"
+                                        [borderJoinStyle]="borderJoinStyle()"
+                                        [sort]="sortProp()"
+                                        [opacity]="opacity() !== 1 ? opacity() : undefined"
+                                        [hoverColor]="hoverColorMode() === 'custom' ? hoverColor() : undefined"
+                                        [hoverBorderColor]="hoverBorderColorMode() === 'custom' ? hoverBorderColor() : undefined"
+                                    />
+                                    @if (ringCount() >= 2) {
+                                        <p-chart-pie
+                                            id="ring2"
+                                            [data]="ring2Data"
+                                            valueField="value"
+                                            categoryField="label"
+                                            [color]="colorsRing2()"
+                                            name="Device"
+                                            [order]="1"
+                                            [startAngle]="startAngle()"
+                                            [sweepAngle]="sweepAngle()"
+                                            [spacing]="spacing()"
+                                            [borderRadius]="borderRadius()"
+                                            [borderStrokeWidth]="borderWidth()"
+                                            [borderColor]="borderWidth() > 0 ? borderColor() : undefined"
+                                            [borderAlign]="borderWidth() > 0 ? borderAlign() : undefined"
+                                            [borderDash]="borderDashProp()"
+                                            [borderDashOffset]="borderDashProp() ? borderDashOffset() : undefined"
+                                            [borderJoinStyle]="borderJoinStyle()"
+                                            [sort]="sortProp()"
+                                            [opacity]="opacity() !== 1 ? opacity() : undefined"
+                                            [hoverColor]="hoverColorMode() === 'custom' ? hoverColor() : undefined"
+                                            [hoverBorderColor]="hoverBorderColorMode() === 'custom' ? hoverBorderColor() : undefined"
+                                        />
+                                    }
+                                    @if (ringCount() >= 3) {
+                                        <p-chart-pie
+                                            id="ring3"
+                                            [data]="ring3Data"
+                                            valueField="value"
+                                            categoryField="label"
+                                            [color]="colorsRing3()"
+                                            name="Source"
+                                            [order]="2"
+                                            [startAngle]="startAngle()"
+                                            [sweepAngle]="sweepAngle()"
+                                            [spacing]="spacing()"
+                                            [borderRadius]="borderRadius()"
+                                            [borderStrokeWidth]="borderWidth()"
+                                            [borderColor]="borderWidth() > 0 ? borderColor() : undefined"
+                                            [borderAlign]="borderWidth() > 0 ? borderAlign() : undefined"
+                                            [borderDash]="borderDashProp()"
+                                            [borderDashOffset]="borderDashProp() ? borderDashOffset() : undefined"
+                                            [borderJoinStyle]="borderJoinStyle()"
+                                            [sort]="sortProp()"
+                                            [opacity]="opacity() !== 1 ? opacity() : undefined"
+                                            [hoverColor]="hoverColorMode() === 'custom' ? hoverColor() : undefined"
+                                            [hoverBorderColor]="hoverBorderColorMode() === 'custom' ? hoverBorderColor() : undefined"
+                                        />
+                                    }
+                                </p-chart-stacked>
+                            } @else {
                                 <p-chart-pie
-                                    id="ring1"
+                                    id="pie"
                                     [data]="activeData()"
                                     valueField="share"
                                     categoryField="browser"
                                     [color]="colorsRing1()"
-                                    name="Browser"
-                                    [order]="0"
                                     [outerRadius]="outerRadius()"
                                     [innerRadius]="innerRadius()"
                                     [startAngle]="startAngle()"
                                     [sweepAngle]="sweepAngle()"
                                     [spacing]="spacing()"
+                                    [sliceRadiusValue]="sliceRadiusProp()"
                                     [borderRadius]="borderRadius()"
                                     [borderStrokeWidth]="borderWidth()"
                                     [borderColor]="borderWidth() > 0 ? borderColor() : undefined"
@@ -71,281 +148,208 @@ const ring3Data = [
                                     [hoverColor]="hoverColorMode() === 'custom' ? hoverColor() : undefined"
                                     [hoverBorderColor]="hoverBorderColorMode() === 'custom' ? hoverBorderColor() : undefined"
                                 />
+                            }
+                            <p-chart-legend position="bottom" />
+                            <p-chart-tooltip />
+                            <p-chart-hover [offset]="hoverOffset()" [scale]="hoverScale()" [brightness]="hoverBrightness()" [dimOpacity]="hoverDimOpacity()" />
+                        </p-chart-svg>
+                    </div>
+
+                    <div class="playground-controls">
+                        <div class="playground-controls-header">Controls</div>
+
+                        <app-playground-section title="Series" [open]="openGroups().series" (toggle)="toggleGroup('series')">
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">items — {{ itemCount() }}</label>
+                                <p-slider [ngModel]="itemCount()" (ngModelChange)="itemCount.set($event)" [min]="2" [max]="8" [step]="1" styleClass="w-full" />
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">outerRadius — {{ outerRadius().toFixed(2) }}</label>
+                                <p-slider [ngModel]="outerRadius()" (ngModelChange)="outerRadius.set($event)" [min]="0.3" [max]="1" [step]="0.05" styleClass="w-full" />
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">innerRadius — {{ innerRadius().toFixed(2) }}</label>
+                                <p-slider [ngModel]="innerRadius()" (ngModelChange)="innerRadius.set($event)" [min]="0" [max]="0.9" [step]="0.05" styleClass="w-full" />
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">startAngle — {{ startAngle() }}°</label>
+                                <p-slider [ngModel]="startAngle()" (ngModelChange)="startAngle.set($event)" [min]="-180" [max]="180" [step]="5" styleClass="w-full" />
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">sweepAngle — {{ sweepAngle() }}°</label>
+                                <p-slider [ngModel]="sweepAngle()" (ngModelChange)="sweepAngle.set($event)" [min]="30" [max]="360" [step]="5" styleClass="w-full" />
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">spacing — {{ spacing() }}px</label>
+                                <p-slider [ngModel]="spacing()" (ngModelChange)="spacing.set($event)" [min]="0" [max]="10" [step]="1" styleClass="w-full" />
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">opacity — {{ opacity().toFixed(2) }}</label>
+                                <p-slider [ngModel]="opacity()" (ngModelChange)="opacity.set($event)" [min]="0.1" [max]="1" [step]="0.05" styleClass="w-full" />
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">nightingale (sliceRadiusValue)</label>
+                                <p-selectbutton [options]="onOffOptions" [ngModel]="nightingaleOpt()" (ngModelChange)="setNightingaleOpt($event)" [allowEmpty]="false" [disabled]="isStacked()" />
+                            </div>
+                        </app-playground-section>
+
+                        <app-playground-section title="Concentric Rings" [open]="openGroups().stacked" (toggle)="toggleGroup('stacked')">
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">rings — {{ ringCount() }}</label>
+                                <p-selectbutton [options]="ringOptions" [ngModel]="ringCountStr()" (ngModelChange)="setRingCountStr($event)" [allowEmpty]="false" />
+                            </div>
+                            @if (isStacked()) {
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">gap — {{ stackGap() }}px</label>
+                                    <p-slider [ngModel]="stackGap()" (ngModelChange)="stackGap.set($event)" [min]="0" [max]="24" [step]="2" styleClass="w-full" />
+                                </div>
+                            }
+                        </app-playground-section>
+
+                        <app-playground-section title="Color" [open]="openGroups().color" (toggle)="toggleGroup('color')">
+                            @if (!isStacked()) {
+                                <label class="text-xs text-surface-500 dark:text-surface-400">slice colors</label>
+                                <div class="flex flex-wrap gap-x-3 gap-y-2">
+                                    @for (item of activeData(); track item.browser; let i = $index) {
+                                        <div class="flex items-center gap-1">
+                                            <input type="color" [value]="colorsRing1()[i]" (input)="setColor(colorsRing1, i, $event)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
+                                            <span class="text-[10px] opacity-60">{{ item.browser }}</span>
+                                        </div>
+                                    }
+                                </div>
+                            } @else {
+                                <label class="text-xs text-surface-500 dark:text-surface-400">ring 1</label>
+                                <div class="flex flex-wrap gap-x-3 gap-y-2">
+                                    @for (item of activeData(); track item.browser; let i = $index) {
+                                        <div class="flex items-center gap-1">
+                                            <input type="color" [value]="colorsRing1()[i]" (input)="setColor(colorsRing1, i, $event)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
+                                            <span class="text-[10px] opacity-60">{{ item.browser }}</span>
+                                        </div>
+                                    }
+                                </div>
                                 @if (ringCount() >= 2) {
-                                    <p-chart-pie
-                                        id="ring2"
-                                        [data]="ring2Data"
-                                        valueField="value"
-                                        categoryField="label"
-                                        [color]="colorsRing2()"
-                                        name="Device"
-                                        [order]="1"
-                                        [startAngle]="startAngle()"
-                                        [sweepAngle]="sweepAngle()"
-                                        [spacing]="spacing()"
-                                        [borderRadius]="borderRadius()"
-                                        [borderStrokeWidth]="borderWidth()"
-                                        [borderColor]="borderWidth() > 0 ? borderColor() : undefined"
-                                        [borderAlign]="borderWidth() > 0 ? borderAlign() : undefined"
-                                        [borderDash]="borderDashProp()"
-                                        [borderDashOffset]="borderDashProp() ? borderDashOffset() : undefined"
-                                        [borderJoinStyle]="borderJoinStyle()"
-                                        [sort]="sortProp()"
-                                        [opacity]="opacity() !== 1 ? opacity() : undefined"
-                                        [hoverColor]="hoverColorMode() === 'custom' ? hoverColor() : undefined"
-                                        [hoverBorderColor]="hoverBorderColorMode() === 'custom' ? hoverBorderColor() : undefined"
-                                    />
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">ring 2</label>
+                                    <div class="flex flex-wrap gap-x-3 gap-y-2">
+                                        @for (item of ring2Data; track item.label; let i = $index) {
+                                            <div class="flex items-center gap-1">
+                                                <input type="color" [value]="colorsRing2()[i]" (input)="setColor(colorsRing2, i, $event)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
+                                                <span class="text-[10px] opacity-60">{{ item.label }}</span>
+                                            </div>
+                                        }
+                                    </div>
                                 }
                                 @if (ringCount() >= 3) {
-                                    <p-chart-pie
-                                        id="ring3"
-                                        [data]="ring3Data"
-                                        valueField="value"
-                                        categoryField="label"
-                                        [color]="colorsRing3()"
-                                        name="Source"
-                                        [order]="2"
-                                        [startAngle]="startAngle()"
-                                        [sweepAngle]="sweepAngle()"
-                                        [spacing]="spacing()"
-                                        [borderRadius]="borderRadius()"
-                                        [borderStrokeWidth]="borderWidth()"
-                                        [borderColor]="borderWidth() > 0 ? borderColor() : undefined"
-                                        [borderAlign]="borderWidth() > 0 ? borderAlign() : undefined"
-                                        [borderDash]="borderDashProp()"
-                                        [borderDashOffset]="borderDashProp() ? borderDashOffset() : undefined"
-                                        [borderJoinStyle]="borderJoinStyle()"
-                                        [sort]="sortProp()"
-                                        [opacity]="opacity() !== 1 ? opacity() : undefined"
-                                        [hoverColor]="hoverColorMode() === 'custom' ? hoverColor() : undefined"
-                                        [hoverBorderColor]="hoverBorderColorMode() === 'custom' ? hoverBorderColor() : undefined"
-                                    />
-                                }
-                            </p-chart-stacked>
-                        } @else {
-                            <p-chart-pie
-                                id="pie"
-                                [data]="activeData()"
-                                valueField="share"
-                                categoryField="browser"
-                                [color]="colorsRing1()"
-                                [outerRadius]="outerRadius()"
-                                [innerRadius]="innerRadius()"
-                                [startAngle]="startAngle()"
-                                [sweepAngle]="sweepAngle()"
-                                [spacing]="spacing()"
-                                [sliceRadiusValue]="sliceRadiusProp()"
-                                [borderRadius]="borderRadius()"
-                                [borderStrokeWidth]="borderWidth()"
-                                [borderColor]="borderWidth() > 0 ? borderColor() : undefined"
-                                [borderAlign]="borderWidth() > 0 ? borderAlign() : undefined"
-                                [borderDash]="borderDashProp()"
-                                [borderDashOffset]="borderDashProp() ? borderDashOffset() : undefined"
-                                [borderJoinStyle]="borderJoinStyle()"
-                                [sort]="sortProp()"
-                                [opacity]="opacity() !== 1 ? opacity() : undefined"
-                                [hoverColor]="hoverColorMode() === 'custom' ? hoverColor() : undefined"
-                                [hoverBorderColor]="hoverBorderColorMode() === 'custom' ? hoverBorderColor() : undefined"
-                            />
-                        }
-                        <p-chart-legend position="bottom" />
-                        <p-chart-tooltip />
-                        <p-chart-hover [offset]="hoverOffset()" [scale]="hoverScale()" [brightness]="hoverBrightness()" [dimOpacity]="hoverDimOpacity()" />
-                    </p-chart-svg>
-                </div>
-
-                <div class="playground-controls">
-                    <div class="playground-controls-header">Controls</div>
-
-                    <app-playground-section title="Series" [open]="openGroups().series" (toggle)="toggleGroup('series')">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">items — {{ itemCount() }}</label>
-                            <p-slider [ngModel]="itemCount()" (ngModelChange)="itemCount.set($event)" [min]="2" [max]="8" [step]="1" styleClass="w-full" />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">outerRadius — {{ outerRadius().toFixed(2) }}</label>
-                            <p-slider [ngModel]="outerRadius()" (ngModelChange)="outerRadius.set($event)" [min]="0.3" [max]="1" [step]="0.05" styleClass="w-full" />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">innerRadius — {{ innerRadius().toFixed(2) }}</label>
-                            <p-slider [ngModel]="innerRadius()" (ngModelChange)="innerRadius.set($event)" [min]="0" [max]="0.9" [step]="0.05" styleClass="w-full" />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">startAngle — {{ startAngle() }}°</label>
-                            <p-slider [ngModel]="startAngle()" (ngModelChange)="startAngle.set($event)" [min]="-180" [max]="180" [step]="5" styleClass="w-full" />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">sweepAngle — {{ sweepAngle() }}°</label>
-                            <p-slider [ngModel]="sweepAngle()" (ngModelChange)="sweepAngle.set($event)" [min]="30" [max]="360" [step]="5" styleClass="w-full" />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">spacing — {{ spacing() }}px</label>
-                            <p-slider [ngModel]="spacing()" (ngModelChange)="spacing.set($event)" [min]="0" [max]="10" [step]="1" styleClass="w-full" />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">opacity — {{ opacity().toFixed(2) }}</label>
-                            <p-slider [ngModel]="opacity()" (ngModelChange)="opacity.set($event)" [min]="0.1" [max]="1" [step]="0.05" styleClass="w-full" />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">nightingale (sliceRadiusValue)</label>
-                            <p-selectbutton [options]="onOffOptions" [ngModel]="nightingaleOpt()" (ngModelChange)="setNightingaleOpt($event)" [allowEmpty]="false" [disabled]="isStacked()" />
-                        </div>
-                    </app-playground-section>
-
-                    <app-playground-section title="Concentric Rings" [open]="openGroups().stacked" (toggle)="toggleGroup('stacked')">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">rings — {{ ringCount() }}</label>
-                            <p-selectbutton [options]="ringOptions" [ngModel]="ringCountStr()" (ngModelChange)="setRingCountStr($event)" [allowEmpty]="false" />
-                        </div>
-                        @if (isStacked()) {
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">gap — {{ stackGap() }}px</label>
-                                <p-slider [ngModel]="stackGap()" (ngModelChange)="stackGap.set($event)" [min]="0" [max]="24" [step]="2" styleClass="w-full" />
-                            </div>
-                        }
-                    </app-playground-section>
-
-                    <app-playground-section title="Color" [open]="openGroups().color" (toggle)="toggleGroup('color')">
-                        @if (!isStacked()) {
-                            <label class="text-xs text-surface-500 dark:text-surface-400">slice colors</label>
-                            <div class="flex flex-wrap gap-x-3 gap-y-2">
-                                @for (item of activeData(); track item.browser; let i = $index) {
-                                    <div class="flex items-center gap-1">
-                                        <input type="color" [value]="colorsRing1()[i]" (input)="setColor(colorsRing1, i, $event)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
-                                        <span class="text-[10px] opacity-60">{{ item.browser }}</span>
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">ring 3</label>
+                                    <div class="flex flex-wrap gap-x-3 gap-y-2">
+                                        @for (item of ring3Data; track item.label; let i = $index) {
+                                            <div class="flex items-center gap-1">
+                                                <input type="color" [value]="colorsRing3()[i]" (input)="setColor(colorsRing3, i, $event)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
+                                                <span class="text-[10px] opacity-60">{{ item.label }}</span>
+                                            </div>
+                                        }
                                     </div>
                                 }
-                            </div>
-                        } @else {
-                            <label class="text-xs text-surface-500 dark:text-surface-400">ring 1</label>
-                            <div class="flex flex-wrap gap-x-3 gap-y-2">
-                                @for (item of activeData(); track item.browser; let i = $index) {
-                                    <div class="flex items-center gap-1">
-                                        <input type="color" [value]="colorsRing1()[i]" (input)="setColor(colorsRing1, i, $event)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
-                                        <span class="text-[10px] opacity-60">{{ item.browser }}</span>
-                                    </div>
-                                }
-                            </div>
-                            @if (ringCount() >= 2) {
-                                <label class="text-xs text-surface-500 dark:text-surface-400">ring 2</label>
-                                <div class="flex flex-wrap gap-x-3 gap-y-2">
-                                    @for (item of ring2Data; track item.label; let i = $index) {
-                                        <div class="flex items-center gap-1">
-                                            <input type="color" [value]="colorsRing2()[i]" (input)="setColor(colorsRing2, i, $event)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
-                                            <span class="text-[10px] opacity-60">{{ item.label }}</span>
-                                        </div>
-                                    }
-                                </div>
                             }
-                            @if (ringCount() >= 3) {
-                                <label class="text-xs text-surface-500 dark:text-surface-400">ring 3</label>
-                                <div class="flex flex-wrap gap-x-3 gap-y-2">
-                                    @for (item of ring3Data; track item.label; let i = $index) {
-                                        <div class="flex items-center gap-1">
-                                            <input type="color" [value]="colorsRing3()[i]" (input)="setColor(colorsRing3, i, $event)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
-                                            <span class="text-[10px] opacity-60">{{ item.label }}</span>
-                                        </div>
-                                    }
-                                </div>
-                            }
-                        }
-                    </app-playground-section>
+                        </app-playground-section>
 
-                    <app-playground-section title="Border" [open]="openGroups().border" (toggle)="toggleGroup('border')">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">borderRadius — {{ borderRadius() }}px</label>
-                            <p-slider [ngModel]="borderRadius()" (ngModelChange)="borderRadius.set($event)" [min]="0" [max]="20" [step]="1" styleClass="w-full" />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">borderWidth — {{ borderWidth() }}px</label>
-                            <p-slider [ngModel]="borderWidth()" (ngModelChange)="borderWidth.set($event)" [min]="0" [max]="5" [step]="0.5" styleClass="w-full" />
-                        </div>
-                        @if (borderWidth() > 0) {
+                        <app-playground-section title="Border" [open]="openGroups().border" (toggle)="toggleGroup('border')">
                             <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">borderColor</label>
-                                <div class="flex items-center gap-2">
-                                    <input type="color" [value]="borderColor()" (input)="borderColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
-                                    <span class="text-xs font-semibold">{{ borderColor() }}</span>
-                                </div>
+                                <label class="text-xs text-surface-500 dark:text-surface-400">borderRadius — {{ borderRadius() }}px</label>
+                                <p-slider [ngModel]="borderRadius()" (ngModelChange)="borderRadius.set($event)" [min]="0" [max]="20" [step]="1" styleClass="w-full" />
                             </div>
                             <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">borderAlign</label>
-                                <p-selectbutton [options]="alignOptions" [ngModel]="borderAlign()" (ngModelChange)="borderAlign.set($event)" [allowEmpty]="false" />
+                                <label class="text-xs text-surface-500 dark:text-surface-400">borderWidth — {{ borderWidth() }}px</label>
+                                <p-slider [ngModel]="borderWidth()" (ngModelChange)="borderWidth.set($event)" [min]="0" [max]="5" [step]="0.5" styleClass="w-full" />
                             </div>
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">borderDash</label>
-                                <p-selectbutton [options]="dashOptions" [ngModel]="borderDashMode()" (ngModelChange)="borderDashMode.set($event)" [allowEmpty]="false" />
-                            </div>
-                            @if (borderDashMode() !== 'none') {
+                            @if (borderWidth() > 0) {
                                 <div class="flex flex-col gap-1">
-                                    <label class="text-xs text-surface-500 dark:text-surface-400">borderDashOffset — {{ borderDashOffset() }}</label>
-                                    <p-slider [ngModel]="borderDashOffset()" (ngModelChange)="borderDashOffset.set($event)" [min]="0" [max]="20" [step]="1" styleClass="w-full" />
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">borderColor</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="color" [value]="borderColor()" (input)="borderColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
+                                        <span class="text-xs font-semibold">{{ borderColor() }}</span>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">borderAlign</label>
+                                    <p-selectbutton [options]="alignOptions" [ngModel]="borderAlign()" (ngModelChange)="borderAlign.set($event)" [allowEmpty]="false" />
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">borderDash</label>
+                                    <p-selectbutton [options]="dashOptions" [ngModel]="borderDashMode()" (ngModelChange)="borderDashMode.set($event)" [allowEmpty]="false" />
+                                </div>
+                                @if (borderDashMode() !== 'none') {
+                                    <div class="flex flex-col gap-1">
+                                        <label class="text-xs text-surface-500 dark:text-surface-400">borderDashOffset — {{ borderDashOffset() }}</label>
+                                        <p-slider [ngModel]="borderDashOffset()" (ngModelChange)="borderDashOffset.set($event)" [min]="0" [max]="20" [step]="1" styleClass="w-full" />
+                                    </div>
+                                }
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-xs text-surface-500 dark:text-surface-400">borderJoinStyle</label>
+                                    <p-selectbutton [options]="joinOptions" [ngModel]="borderJoinStyle()" (ngModelChange)="borderJoinStyle.set($event)" [allowEmpty]="false" />
+                                </div>
+                            }
+                        </app-playground-section>
+
+                        <app-playground-section title="Hover" [open]="openGroups().hover" (toggle)="toggleGroup('hover')">
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">brightness — {{ hoverBrightness().toFixed(2) }}</label>
+                                <p-slider [ngModel]="hoverBrightness()" (ngModelChange)="hoverBrightness.set($event)" [min]="1" [max]="1.5" [step]="0.05" styleClass="w-full" />
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">dimOpacity — {{ hoverDimOpacity().toFixed(2) }}</label>
+                                <p-slider [ngModel]="hoverDimOpacity()" (ngModelChange)="hoverDimOpacity.set($event)" [min]="0" [max]="1" [step]="0.05" styleClass="w-full" />
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">offset — {{ hoverOffset() }}px</label>
+                                <p-slider [ngModel]="hoverOffset()" (ngModelChange)="hoverOffset.set($event)" [min]="0" [max]="24" [step]="1" styleClass="w-full" />
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">scale — {{ hoverScale().toFixed(2) }}</label>
+                                <p-slider [ngModel]="hoverScale()" (ngModelChange)="hoverScale.set($event)" [min]="1" [max]="1.5" [step]="0.05" styleClass="w-full" />
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">hoverColor (slice override)</label>
+                                <p-selectbutton [options]="autoCustomOptions" [ngModel]="hoverColorMode()" (ngModelChange)="hoverColorMode.set($event)" [allowEmpty]="false" />
+                            </div>
+                            @if (hoverColorMode() === 'custom') {
+                                <div class="flex flex-col gap-1">
+                                    <div class="flex items-center gap-2">
+                                        <input type="color" [value]="hoverColor()" (input)="hoverColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
+                                        <span class="text-xs font-semibold">{{ hoverColor() }}</span>
+                                    </div>
                                 </div>
                             }
                             <div class="flex flex-col gap-1">
-                                <label class="text-xs text-surface-500 dark:text-surface-400">borderJoinStyle</label>
-                                <p-selectbutton [options]="joinOptions" [ngModel]="borderJoinStyle()" (ngModelChange)="borderJoinStyle.set($event)" [allowEmpty]="false" />
+                                <label class="text-xs text-surface-500 dark:text-surface-400">hoverBorderColor (slice override)</label>
+                                <p-selectbutton [options]="autoCustomOptions" [ngModel]="hoverBorderColorMode()" (ngModelChange)="hoverBorderColorMode.set($event)" [allowEmpty]="false" />
                             </div>
-                        }
-                    </app-playground-section>
-
-                    <app-playground-section title="Hover" [open]="openGroups().hover" (toggle)="toggleGroup('hover')">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">brightness — {{ hoverBrightness().toFixed(2) }}</label>
-                            <p-slider [ngModel]="hoverBrightness()" (ngModelChange)="hoverBrightness.set($event)" [min]="1" [max]="1.5" [step]="0.05" styleClass="w-full" />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">dimOpacity — {{ hoverDimOpacity().toFixed(2) }}</label>
-                            <p-slider [ngModel]="hoverDimOpacity()" (ngModelChange)="hoverDimOpacity.set($event)" [min]="0" [max]="1" [step]="0.05" styleClass="w-full" />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">offset — {{ hoverOffset() }}px</label>
-                            <p-slider [ngModel]="hoverOffset()" (ngModelChange)="hoverOffset.set($event)" [min]="0" [max]="24" [step]="1" styleClass="w-full" />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">scale — {{ hoverScale().toFixed(2) }}</label>
-                            <p-slider [ngModel]="hoverScale()" (ngModelChange)="hoverScale.set($event)" [min]="1" [max]="1.5" [step]="0.05" styleClass="w-full" />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">hoverColor (slice override)</label>
-                            <p-selectbutton [options]="autoCustomOptions" [ngModel]="hoverColorMode()" (ngModelChange)="hoverColorMode.set($event)" [allowEmpty]="false" />
-                        </div>
-                        @if (hoverColorMode() === 'custom') {
-                            <div class="flex flex-col gap-1">
-                                <div class="flex items-center gap-2">
-                                    <input type="color" [value]="hoverColor()" (input)="hoverColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
-                                    <span class="text-xs font-semibold">{{ hoverColor() }}</span>
+                            @if (hoverBorderColorMode() === 'custom') {
+                                <div class="flex flex-col gap-1">
+                                    <div class="flex items-center gap-2">
+                                        <input type="color" [value]="hoverBorderColor()" (input)="hoverBorderColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
+                                        <span class="text-xs font-semibold">{{ hoverBorderColor() }}</span>
+                                    </div>
                                 </div>
-                            </div>
-                        }
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">hoverBorderColor (slice override)</label>
-                            <p-selectbutton [options]="autoCustomOptions" [ngModel]="hoverBorderColorMode()" (ngModelChange)="hoverBorderColorMode.set($event)" [allowEmpty]="false" />
-                        </div>
-                        @if (hoverBorderColorMode() === 'custom') {
-                            <div class="flex flex-col gap-1">
-                                <div class="flex items-center gap-2">
-                                    <input type="color" [value]="hoverBorderColor()" (input)="hoverBorderColor.set($any($event.target).value)" style="width: 20px; height: 20px; border: none; background: none; cursor: pointer; padding: 0" />
-                                    <span class="text-xs font-semibold">{{ hoverBorderColor() }}</span>
-                                </div>
-                            </div>
-                        }
-                    </app-playground-section>
+                            }
+                        </app-playground-section>
 
-                    <app-playground-section title="Sort" [open]="openGroups().sort" (toggle)="toggleGroup('sort')">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs text-surface-500 dark:text-surface-400">sort</label>
-                            <p-select [options]="sortOptions" [ngModel]="sortMode()" (ngModelChange)="sortMode.set($event)" styleClass="w-full" appendTo="body" />
-                        </div>
-                    </app-playground-section>
+                        <app-playground-section title="Sort" [open]="openGroups().sort" (toggle)="toggleGroup('sort')">
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-surface-500 dark:text-surface-400">sort</label>
+                                <p-select [options]="sortOptions" [ngModel]="sortMode()" (ngModelChange)="sortMode.set($event)" styleClass="w-full" appendTo="body" />
+                            </div>
+                        </app-playground-section>
+                    </div>
                 </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PlaygroundPlaygroundDoc {
+export class PieDonutPlaygroundPlaygroundDoc {
     readonly ring2Data = ring2Data;
     readonly ring3Data = ring3Data;
 

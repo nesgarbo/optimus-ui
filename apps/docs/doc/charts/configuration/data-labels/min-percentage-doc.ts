@@ -11,16 +11,20 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Set <i>minPercentage</i> to hide labels on slices or segments smaller than a threshold. Applies to pie, donut, polar, and radar charts.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div class="flex justify-center">
-                <p-chart-svg [width]="460" [height]="460">
-                    <p-chart-pie [data]="data" categoryField="language" valueField="usage" name="Language Usage" />
-                    <p-chart-legend position="bottom" />
-                    <p-chart-data-labels display="percentage" [minPercentage]="5" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div class="flex justify-center">
+                    <p-chart-svg [width]="460" [height]="460">
+                        <p-chart-pie [data]="data" categoryField="language" valueField="usage" name="Language Usage" />
+                        <p-chart-legend position="bottom" />
+                        <p-chart-data-labels display="percentage" [minPercentage]="5" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

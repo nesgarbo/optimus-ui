@@ -32,17 +32,21 @@ const centerBrightGradient = {
                 <i>{{ '{' }} x1: 0, y1: 0, x2: 0, y2: 1 {{ '}' }}</i> creates a top-to-bottom gradient. Line strokes default to horizontal; area fills default to vertical.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="pipeline" [color]="topToBottomGradient" name="Pipeline coverage" [fillOpacity]="1" />
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="confidence" [color]="centerBrightGradient" name="Renewal confidence" [fillOpacity]="1" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="pipeline" [color]="topToBottomGradient" name="Pipeline coverage" [fillOpacity]="1" />
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="confidence" [color]="centerBrightGradient" name="Renewal confidence" [fillOpacity]="1" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

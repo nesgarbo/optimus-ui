@@ -57,14 +57,18 @@ const annotations = (opts: { events: EventMarker[] }) =>
         <app-docsectiontext>
             <p>Draws vertical markers and labels at given category positions: deploys, campaigns, incidents. The data series is untouched; the events live entirely in the overlay.</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="420" [plugins]="plugins">
-                <p-chart-line [data]="data" categoryXField="day" valueYField="users" color="#5ccf9f" [showMarkers]="true" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="420" [plugins]="plugins">
+                    <p-chart-line [data]="data" categoryXField="day" valueYField="users" color="#5ccf9f" [showMarkers]="true" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

@@ -39,75 +39,89 @@ interface UsaCallout {
             <p>#### SvgBubbleOecdHealthcareDemo.ts</p>
             <p>#### oecdHealthcare.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-scatter id="europe" [data]="regions.europe.data" valueXField="spend" valueYField="life" sizeField="pop" [color]="regions.europe.color" [name]="regions.europe.name" [minSize]="8" [maxSize]="44" />
-                    <p-chart-scatter id="northamerica" [data]="regions.northamerica.data" valueXField="spend" valueYField="life" sizeField="pop" [color]="regions.northamerica.color" [name]="regions.northamerica.name" [minSize]="8" [maxSize]="44" />
-                    <p-chart-scatter id="asiapacific" [data]="regions.asiapacific.data" valueXField="spend" valueYField="life" sizeField="pop" [color]="regions.asiapacific.color" [name]="regions.asiapacific.name" [minSize]="8" [maxSize]="44" />
-                    <p-chart-scatter id="latinother" [data]="regions.latinother.data" valueXField="spend" valueYField="life" sizeField="pop" [color]="regions.latinother.color" [name]="regions.latinother.name" [minSize]="8" [maxSize]="44" />
-                    <p-chart-reference-line
-                        [x]="oecdAvgSpend"
-                        stroke="#64748b"
-                        [lineStrokeWidth]="1.25"
-                        [lineDash]="[4, 4]"
-                        [label]="'OECD avg spend · $' + oecdAvgSpend.toLocaleString()"
-                        labelPosition="end"
-                        labelColor="#ffffff"
-                        labelBackground="#475569"
-                        [labelBackgroundOpacity]="0.85"
-                        [labelPadding]="6"
-                        [labelBorderRadius]="4"
-                        [labelFontSize]="11"
-                        [labelFontWeight]="600"
-                    />
-                    <p-chart-reference-line
-                        [y]="oecdAvgLife"
-                        stroke="#64748b"
-                        [lineStrokeWidth]="1.25"
-                        [lineDash]="[4, 4]"
-                        [label]="'OECD avg life · ' + oecdAvgLife + ' yr'"
-                        labelPosition="start"
-                        labelColor="#ffffff"
-                        labelBackground="#475569"
-                        [labelBackgroundOpacity]="0.85"
-                        [labelPadding]="6"
-                        [labelBorderRadius]="4"
-                        [labelFontSize]="11"
-                        [labelFontWeight]="600"
-                    />
-                    <p-chart-annotation>
-                        <ng-template pChartAnnotationDef let-ctx>
-                            @if (usaCallout(ctx); as u) {
-                                <svg:g>
-                                    <svg:circle [attr.cx]="u.cx" [attr.cy]="u.cy" r="40" fill="none" stroke="#e5484d" stroke-width="1.25" stroke-dasharray="4 3" opacity="0.45" />
-                                    <svg:line [attr.x1]="u.bx + u.bw" [attr.y1]="u.by + u.bh / 2" [attr.x2]="u.cx - 41" [attr.y2]="u.cy" stroke="#e5484d" stroke-width="1" opacity="0.9" />
-                                    <svg:rect [attr.x]="u.bx" [attr.y]="u.by" [attr.width]="u.bw" [attr.height]="u.bh" rx="4" ry="4" fill="rgba(239,68,68,0.95)" />
-                                    @for (line of u.lines; track line; let i = $index) {
-                                        <svg:text [attr.x]="u.bx + u.bw / 2" [attr.y]="u.by + u.padY + u.lineH / 2 + i * u.lineH" text-anchor="middle" dominant-baseline="central" [attr.font-size]="u.fs" font-weight="600" fill="#ffffff">
-                                            {{ line }}
-                                        </svg:text>
-                                    }
-                                </svg:g>
-                            }
-                        </ng-template>
-                    </p-chart-annotation>
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                    <p-chart-legend position="top" />
-                    <p-chart-hover [brightness]="1.1" />
-                    <p-chart-x-axis label="Health spending per capita (PPP USD, 2022)" [tickFormat]="formatSpend" />
-                    <p-chart-y-axis label="Life expectancy at birth (years)" [startFromZero]="false" [tickFormat]="formatLife" />
-                    <p-chart-title text="OECD healthcare — spend vs outcome, 2022" />
-                    <p-chart-caption text="Bubble = population (M) · Source: OECD Health Statistics 2023 · World Bank · UN Population Division" />
-                    <p-chart-export-menu filename="oecd-healthcare-2022" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-scatter id="europe" [data]="regions.europe.data" valueXField="spend" valueYField="life" sizeField="pop" [color]="regions.europe.color" [name]="regions.europe.name" [minSize]="8" [maxSize]="44" />
+                        <p-chart-scatter
+                            id="northamerica"
+                            [data]="regions.northamerica.data"
+                            valueXField="spend"
+                            valueYField="life"
+                            sizeField="pop"
+                            [color]="regions.northamerica.color"
+                            [name]="regions.northamerica.name"
+                            [minSize]="8"
+                            [maxSize]="44"
+                        />
+                        <p-chart-scatter id="asiapacific" [data]="regions.asiapacific.data" valueXField="spend" valueYField="life" sizeField="pop" [color]="regions.asiapacific.color" [name]="regions.asiapacific.name" [minSize]="8" [maxSize]="44" />
+                        <p-chart-scatter id="latinother" [data]="regions.latinother.data" valueXField="spend" valueYField="life" sizeField="pop" [color]="regions.latinother.color" [name]="regions.latinother.name" [minSize]="8" [maxSize]="44" />
+                        <p-chart-reference-line
+                            [x]="oecdAvgSpend"
+                            stroke="#64748b"
+                            [lineStrokeWidth]="1.25"
+                            [lineDash]="[4, 4]"
+                            [label]="'OECD avg spend · $' + oecdAvgSpend.toLocaleString()"
+                            labelPosition="end"
+                            labelColor="#ffffff"
+                            labelBackground="#475569"
+                            [labelBackgroundOpacity]="0.85"
+                            [labelPadding]="6"
+                            [labelBorderRadius]="4"
+                            [labelFontSize]="11"
+                            [labelFontWeight]="600"
+                        />
+                        <p-chart-reference-line
+                            [y]="oecdAvgLife"
+                            stroke="#64748b"
+                            [lineStrokeWidth]="1.25"
+                            [lineDash]="[4, 4]"
+                            [label]="'OECD avg life · ' + oecdAvgLife + ' yr'"
+                            labelPosition="start"
+                            labelColor="#ffffff"
+                            labelBackground="#475569"
+                            [labelBackgroundOpacity]="0.85"
+                            [labelPadding]="6"
+                            [labelBorderRadius]="4"
+                            [labelFontSize]="11"
+                            [labelFontWeight]="600"
+                        />
+                        <p-chart-annotation>
+                            <ng-template pChartAnnotationDef let-ctx>
+                                @if (usaCallout(ctx); as u) {
+                                    <svg:g>
+                                        <svg:circle [attr.cx]="u.cx" [attr.cy]="u.cy" r="40" fill="none" stroke="#e5484d" stroke-width="1.25" stroke-dasharray="4 3" opacity="0.45" />
+                                        <svg:line [attr.x1]="u.bx + u.bw" [attr.y1]="u.by + u.bh / 2" [attr.x2]="u.cx - 41" [attr.y2]="u.cy" stroke="#e5484d" stroke-width="1" opacity="0.9" />
+                                        <svg:rect [attr.x]="u.bx" [attr.y]="u.by" [attr.width]="u.bw" [attr.height]="u.bh" rx="4" ry="4" fill="rgba(239,68,68,0.95)" />
+                                        @for (line of u.lines; track line; let i = $index) {
+                                            <svg:text [attr.x]="u.bx + u.bw / 2" [attr.y]="u.by + u.padY + u.lineH / 2 + i * u.lineH" text-anchor="middle" dominant-baseline="central" [attr.font-size]="u.fs" font-weight="600" fill="#ffffff">
+                                                {{ line }}
+                                            </svg:text>
+                                        }
+                                    </svg:g>
+                                }
+                            </ng-template>
+                        </p-chart-annotation>
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                        <p-chart-legend position="top" />
+                        <p-chart-hover [brightness]="1.1" />
+                        <p-chart-x-axis label="Health spending per capita (PPP USD, 2022)" [tickFormat]="formatSpend" />
+                        <p-chart-y-axis label="Life expectancy at birth (years)" [startFromZero]="false" [tickFormat]="formatLife" />
+                        <p-chart-title text="OECD healthcare — spend vs outcome, 2022" />
+                        <p-chart-caption text="Bubble = population (M) · Source: OECD Health Statistics 2023 · World Bank · UN Population Division" />
+                        <p-chart-export-menu filename="oecd-healthcare-2022" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class BubbleOecdHealthcareSpendVsOutcome2022Doc {
+export class ScatterBubbleBubbleOecdHealthcareSpendVsOutcome2022Doc {
     readonly regions = REGIONS;
     readonly oecdAvgSpend = OECD_AVG_SPEND;
     readonly oecdAvgLife = OECD_AVG_LIFE;

@@ -11,14 +11,18 @@ import { ChartsModule, type TickValue } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Set <i>type="linear"</i> on <i>ChartXAxis</i> to treat category values as continuous numbers rather than discrete labels. Use this for numeric X/Y scatter data where the X axis represents a continuous numeric dimension.</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-scatter [data]="data" valueXField="age" valueYField="salary" color="#5daeea" [markerSize]="8" />
-                <p-chart-x-axis type="linear" label="Age (years)" />
-                <p-chart-y-axis label="Salary ($)" [startFromZero]="false" [tickFormat]="tickFormat" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-scatter [data]="data" valueXField="age" valueYField="salary" color="#5daeea" [markerSize]="8" />
+                    <p-chart-x-axis type="linear" label="Age (years)" />
+                    <p-chart-y-axis label="Salary ($)" [startFromZero]="false" [tickFormat]="tickFormat" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

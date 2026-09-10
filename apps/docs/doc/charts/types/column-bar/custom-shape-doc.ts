@@ -14,14 +14,18 @@ import { ChartsModule, type BarShapeInfo } from '@openng/optimus-ui/charts';
                 <i>isNegative</i>) and returns an SVG path <i>d</i> string. Works in both SVG and Canvas renderers via <i>Path2D</i>.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="data" categoryXField="stage" valueYField="accounts" [renderShape]="arrowShape" color="#7c8cff" />
-                <p-chart-x-axis />
-                <p-chart-y-axis label="Accounts" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="stage" valueYField="accounts" [renderShape]="arrowShape" color="#7c8cff" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis label="Accounts" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

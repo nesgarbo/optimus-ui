@@ -15,18 +15,22 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             </p>
             <p>For full configuration see <a href="/charts/configuration/hover">Hover</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-radar id="current" [data]="data" categoryXField="capability" valueYField="current" [fillOpacity]="0.2" name="Current" />
-                    <p-chart-radar id="benchmark" [data]="data" categoryXField="capability" valueYField="benchmark" [fillOpacity]="0.2" name="Benchmark" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                    <p-chart-hover [brightness]="1.2" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-radar id="current" [data]="data" categoryXField="capability" valueYField="current" [fillOpacity]="0.2" name="Current" />
+                        <p-chart-radar id="benchmark" [data]="data" categoryXField="capability" valueYField="benchmark" [fillOpacity]="0.2" name="Benchmark" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                        <p-chart-hover [brightness]="1.2" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

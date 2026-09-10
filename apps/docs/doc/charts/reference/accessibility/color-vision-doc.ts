@@ -22,25 +22,29 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 <i>diagonal</i>, <i>diagonal-reverse</i>, <i>grid</i>, <i>crosshatch</i>, and <i>zigzag</i>. Set <i>size</i> to change the tile size and <i>strokeWidth</i> to change the texture line weight.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div class="flex justify-center mb-2">
-                <button
-                    class="px-3 py-1 text-xs font-mono font-medium tracking-wide uppercase rounded-md border border-transparent text-surface-500 dark:text-surface-400 hover:text-surface-900 dark:hover:text-surface-100 hover:border-surface-200 dark:hover:border-surface-700 hover:bg-surface-100 dark:hover:bg-surface-800 cursor-pointer transition-colors"
-                    (click)="colorblind.set(!colorblind())"
-                >
-                    {{ colorblind() ? 'Colorblind mode' : 'Normal mode' }}
-                </button>
+        @defer (on viewport) {
+            <div class="card">
+                <div class="flex justify-center mb-2">
+                    <button
+                        class="px-3 py-1 text-xs font-mono font-medium tracking-wide uppercase rounded-md border border-transparent text-surface-500 dark:text-surface-400 hover:text-surface-900 dark:hover:text-surface-100 hover:border-surface-200 dark:hover:border-surface-700 hover:bg-surface-100 dark:hover:bg-surface-800 cursor-pointer transition-colors"
+                        (click)="colorblind.set(!colorblind())"
+                    >
+                        {{ colorblind() ? 'Colorblind mode' : 'Normal mode' }}
+                    </button>
+                </div>
+                <div style="display: flex; justify-content: center">
+                    <p-chart-svg [width]="480" [height]="460">
+                        <p-chart-pie [data]="data" valueField="share" categoryField="browser" />
+                        <p-chart-legend />
+                        <p-chart-tooltip />
+                        <p-chart-accessibility [patterns]="colorblind()" description="Browser market share as a pie chart: Chrome 63 percent, Safari 20 percent, Edge 9 percent, Firefox 5 percent, Other 3 percent." />
+                    </p-chart-svg>
+                </div>
             </div>
-            <div style="display: flex; justify-content: center">
-                <p-chart-svg [width]="480" [height]="460">
-                    <p-chart-pie [data]="data" valueField="share" categoryField="browser" />
-                    <p-chart-legend />
-                    <p-chart-tooltip />
-                    <p-chart-accessibility [patterns]="colorblind()" description="Browser market share as a pie chart: Chrome 63 percent, Safari 20 percent, Edge 9 percent, Firefox 5 percent, Other 3 percent." />
-                </p-chart-svg>
-            </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

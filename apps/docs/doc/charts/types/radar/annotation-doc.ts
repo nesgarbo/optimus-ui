@@ -27,24 +27,28 @@ const AVG = Math.round(data.reduce((s, d) => s + d.value, 0) / data.length);
             </p>
             <p>For full configuration see <a href="/charts/configuration/annotation">Annotation</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-radar id="perf" [data]="data" categoryXField="metric" valueYField="value" [fillOpacity]="0.2" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                    <p-chart-annotation>
-                        <ng-template pChartAnnotationDef let-ctx>
-                            <svg:g text-anchor="middle">
-                                <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y - 8" font-size="22" font-weight="700">{{ avg }}</svg:text>
-                                <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y + 12" font-size="11" opacity="0.5">avg score</svg:text>
-                            </svg:g>
-                        </ng-template>
-                    </p-chart-annotation>
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-radar id="perf" [data]="data" categoryXField="metric" valueYField="value" [fillOpacity]="0.2" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                        <p-chart-annotation>
+                            <ng-template pChartAnnotationDef let-ctx>
+                                <svg:g text-anchor="middle">
+                                    <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y - 8" font-size="22" font-weight="700">{{ avg }}</svg:text>
+                                    <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y + 12" font-size="11" opacity="0.5">avg score</svg:text>
+                                </svg:g>
+                            </ng-template>
+                        </p-chart-annotation>
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

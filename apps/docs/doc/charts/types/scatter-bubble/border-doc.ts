@@ -11,17 +11,21 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Set <i>pointBorderColor</i> and <i>pointBorderStrokeWidth</i> to add an outline stroke around each marker. A white border helps separate overlapping points and makes multi-series charts easier to read at a glance.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-scatter id="group-a" [data]="groupA" valueXField="usage" valueYField="health" name="Expansion fit" color="#5daeea" [markerSize]="8" pointBorderColor="#64748b" [pointBorderStrokeWidth]="2" />
-                    <p-chart-scatter id="group-b" [data]="groupB" valueXField="usage" valueYField="health" name="Churn watch" color="#ff7a66" [markerSize]="8" pointBorderColor="#64748b" [pointBorderStrokeWidth]="2" />
-                    <p-chart-x-axis label="Feature usage depth (%)" />
-                    <p-chart-y-axis label="Account health score" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-scatter id="group-a" [data]="groupA" valueXField="usage" valueYField="health" name="Expansion fit" color="#5daeea" [markerSize]="8" pointBorderColor="#64748b" [pointBorderStrokeWidth]="2" />
+                        <p-chart-scatter id="group-b" [data]="groupB" valueXField="usage" valueYField="health" name="Churn watch" color="#ff7a66" [markerSize]="8" pointBorderColor="#64748b" [pointBorderStrokeWidth]="2" />
+                        <p-chart-x-axis label="Feature usage depth (%)" />
+                        <p-chart-y-axis label="Account health score" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

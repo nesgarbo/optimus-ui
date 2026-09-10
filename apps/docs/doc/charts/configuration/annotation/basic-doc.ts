@@ -14,22 +14,26 @@ import { ChartsModule, type AnnotationContext } from '@openng/optimus-ui/charts'
                 context. Use these to position content at specific data values.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="data" categoryXField="quarter" valueYField="bookings" color="#5ccf9f" [borderRadius]="4" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-annotation>
-                    <ng-template pChartAnnotationDef let-ctx>
-                        @let l = label(ctx);
-                        @if (l) {
-                            <svg:text [attr.x]="l.x" [attr.y]="l.y" text-anchor="end" [attr.font-size]="l.fs" opacity="0.6">{{ l.text }}</svg:text>
-                        }
-                    </ng-template>
-                </p-chart-annotation>
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="quarter" valueYField="bookings" color="#5ccf9f" [borderRadius]="4" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-annotation>
+                        <ng-template pChartAnnotationDef let-ctx>
+                            @let l = label(ctx);
+                            @if (l) {
+                                <svg:text [attr.x]="l.x" [attr.y]="l.y" text-anchor="end" [attr.font-size]="l.fs" opacity="0.6">{{ l.text }}</svg:text>
+                            }
+                        </ng-template>
+                    </p-chart-annotation>
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

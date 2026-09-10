@@ -31,44 +31,48 @@ function isDarkScheme(annotation: string): boolean {
             <p>#### SvgLiveForexTickDemo.ts</p>
             <p>#### forexTick.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg [animation]="{ duration: 250 }">
-                    <p-chart-candlestick [data]="data()" categoryXField="ts" openField="open" highField="high" lowField="low" closeField="close" upColor="#10a981" downColor="#e5484d" [barWidthRatio]="0.65" />
-                    <p-chart-reference-line [y]="currentClose()" stroke="#ffad5a" [lineStrokeWidth]="1" [lineDash]="[3, 3]" />
-                    <p-chart-annotation>
-                        <ng-template pChartAnnotationDef let-ctx>
-                            @if (ctx.chartArea) {
-                                <svg:g pointer-events="none">
-                                    <svg:rect [attr.x]="ctx.chartArea.x + ctx.chartArea.width - 170" [attr.y]="ctx.chartArea.y + 4" width="170" height="36" rx="4" [attr.fill]="panelFill()" />
-                                    <svg:text [attr.x]="ctx.chartArea.x + ctx.chartArea.width - 160" [attr.y]="ctx.chartArea.y + 16" fill="#e5484d" font-size="9" font-weight="600">BID</svg:text>
-                                    <svg:text [attr.x]="ctx.chartArea.x + ctx.chartArea.width - 140" [attr.y]="ctx.chartArea.y + 16" [attr.fill]="panelText()" font-size="11" font-weight="700" font-family="ui-monospace,SFMono-Regular,monospace">
-                                        {{ bid() }}
-                                    </svg:text>
-                                    <svg:text [attr.x]="ctx.chartArea.x + ctx.chartArea.width - 80" [attr.y]="ctx.chartArea.y + 16" fill="#10a981" font-size="9" font-weight="600">ASK</svg:text>
-                                    <svg:text [attr.x]="ctx.chartArea.x + ctx.chartArea.width - 60" [attr.y]="ctx.chartArea.y + 16" [attr.fill]="panelText()" font-size="11" font-weight="700" font-family="ui-monospace,SFMono-Regular,monospace">
-                                        {{ ask() }}
-                                    </svg:text>
-                                    <svg:text [attr.x]="ctx.chartArea.x + ctx.chartArea.width - 160" [attr.y]="ctx.chartArea.y + 32" [attr.fill]="panelMuted()" font-size="9">Spread {{ spreadLabel() }} pip · 1s tick</svg:text>
-                                </svg:g>
-                            }
-                        </ng-template>
-                    </p-chart-annotation>
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                    <p-chart-hover />
-                    <p-chart-x-axis type="time" gapless [chartPaddingMax]="0.1" />
-                    <p-chart-y-axis position="right" [tickFormat]="formatPrice" />
-                    <p-chart-title text="EUR/USD — Live Tick Stream" />
-                    <p-chart-caption text="Simulated 1-second candles · 60-tick rolling window · live bid/ask + spread in corner · dashed amber line tracks current close" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg [animation]="{ duration: 250 }">
+                        <p-chart-candlestick [data]="data()" categoryXField="ts" openField="open" highField="high" lowField="low" closeField="close" upColor="#10a981" downColor="#e5484d" [barWidthRatio]="0.65" />
+                        <p-chart-reference-line [y]="currentClose()" stroke="#ffad5a" [lineStrokeWidth]="1" [lineDash]="[3, 3]" />
+                        <p-chart-annotation>
+                            <ng-template pChartAnnotationDef let-ctx>
+                                @if (ctx.chartArea) {
+                                    <svg:g pointer-events="none">
+                                        <svg:rect [attr.x]="ctx.chartArea.x + ctx.chartArea.width - 170" [attr.y]="ctx.chartArea.y + 4" width="170" height="36" rx="4" [attr.fill]="panelFill()" />
+                                        <svg:text [attr.x]="ctx.chartArea.x + ctx.chartArea.width - 160" [attr.y]="ctx.chartArea.y + 16" fill="#e5484d" font-size="9" font-weight="600">BID</svg:text>
+                                        <svg:text [attr.x]="ctx.chartArea.x + ctx.chartArea.width - 140" [attr.y]="ctx.chartArea.y + 16" [attr.fill]="panelText()" font-size="11" font-weight="700" font-family="ui-monospace,SFMono-Regular,monospace">
+                                            {{ bid() }}
+                                        </svg:text>
+                                        <svg:text [attr.x]="ctx.chartArea.x + ctx.chartArea.width - 80" [attr.y]="ctx.chartArea.y + 16" fill="#10a981" font-size="9" font-weight="600">ASK</svg:text>
+                                        <svg:text [attr.x]="ctx.chartArea.x + ctx.chartArea.width - 60" [attr.y]="ctx.chartArea.y + 16" [attr.fill]="panelText()" font-size="11" font-weight="700" font-family="ui-monospace,SFMono-Regular,monospace">
+                                            {{ ask() }}
+                                        </svg:text>
+                                        <svg:text [attr.x]="ctx.chartArea.x + ctx.chartArea.width - 160" [attr.y]="ctx.chartArea.y + 32" [attr.fill]="panelMuted()" font-size="9">Spread {{ spreadLabel() }} pip · 1s tick</svg:text>
+                                    </svg:g>
+                                }
+                            </ng-template>
+                        </p-chart-annotation>
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                        <p-chart-hover />
+                        <p-chart-x-axis type="time" gapless [chartPaddingMax]="0.1" />
+                        <p-chart-y-axis position="right" [tickFormat]="formatPrice" />
+                        <p-chart-title text="EUR/USD — Live Tick Stream" />
+                        <p-chart-caption text="Simulated 1-second candles · 60-tick rolling window · live bid/ask + spread in corner · dashed amber line tracks current close" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LiveDataEurUsdLiveTickStreamDoc {
+export class CandlestickLiveDataEurUsdLiveTickStreamDoc {
     readonly theme = injectChartTheme();
     private readonly feed = useForexTick();
     readonly data = this.feed.data;

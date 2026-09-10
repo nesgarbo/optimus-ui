@@ -12,17 +12,21 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             <p>Add <i>ChartDataLabels</i> to display sparse point labels or values. Set <i>display</i> to <i>value</i>, <i>percentage</i>, <i>both</i>, <i>label</i>, <i>label-percentage</i>, or <i>none</i>.</p>
             <p>For full configuration see <a href="/charts/configuration/data-labels">Data Labels</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-scatter id="points" [data]="data" valueXField="load" valueYField="risk" color="#7c8cff" [markerSize]="7" />
-                    <p-chart-x-axis label="Hub load (%)" />
-                    <p-chart-y-axis label="Delay risk (%)" />
-                    <p-chart-data-labels display="label" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-scatter id="points" [data]="data" valueXField="load" valueYField="risk" color="#7c8cff" [markerSize]="7" />
+                        <p-chart-x-axis label="Hub load (%)" />
+                        <p-chart-y-axis label="Delay risk (%)" />
+                        <p-chart-data-labels display="label" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

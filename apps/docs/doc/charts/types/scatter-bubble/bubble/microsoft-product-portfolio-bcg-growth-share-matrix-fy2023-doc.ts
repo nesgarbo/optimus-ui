@@ -60,63 +60,79 @@ interface QuadrantPill {
             <p>#### SvgBubbleBcgMatrixDemo.ts</p>
             <p>#### bcgMatrix.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-annotation>
-                        <ng-template pChartAnnotationDef let-ctx>
-                            <svg:g>
-                                @for (r of quadrantRects(ctx); track r.fill) {
-                                    <svg:rect [attr.x]="r.x" [attr.y]="r.y" [attr.width]="r.width" [attr.height]="r.height" [attr.fill]="r.fill" />
-                                }
-                                @for (p of quadrantPills(ctx); track p.text) {
-                                    <svg:rect [attr.x]="p.rectX" [attr.y]="p.rectY" [attr.width]="p.rectW" [attr.height]="p.pillH" rx="4" ry="4" [attr.fill]="p.fill" [attr.stroke]="p.stroke" stroke-width="1.25" opacity="0.95" />
-                                    <svg:text [attr.x]="p.anchorX" [attr.y]="p.anchorY" [attr.text-anchor]="p.anchor" [attr.dominant-baseline]="p.vAlign" [attr.font-size]="p.fontSize" font-weight="700" [attr.fill]="p.color" opacity="0.85">
-                                        {{ p.text }}
-                                    </svg:text>
-                                }
-                            </svg:g>
-                        </ng-template>
-                    </p-chart-annotation>
-                    <p-chart-scatter id="questions" [data]="quadrants.questions.data" valueXField="share" valueYField="growth" sizeField="revenue" [color]="quadrants.questions.color" [name]="quadrants.questions.name" [minSize]="14" [maxSize]="46" />
-                    <p-chart-scatter id="stars" [data]="quadrants.stars.data" valueXField="share" valueYField="growth" sizeField="revenue" [color]="quadrants.stars.color" [name]="quadrants.stars.name" [minSize]="14" [maxSize]="46" />
-                    <p-chart-scatter id="dogs" [data]="quadrants.dogs.data" valueXField="share" valueYField="growth" sizeField="revenue" [color]="quadrants.dogs.color" [name]="quadrants.dogs.name" [minSize]="14" [maxSize]="46" />
-                    <p-chart-scatter id="cows" [data]="quadrants.cows.data" valueXField="share" valueYField="growth" sizeField="revenue" [color]="quadrants.cows.color" [name]="quadrants.cows.name" [minSize]="14" [maxSize]="46" />
-                    <p-chart-reference-line [x]="shareThreshold" stroke="#94a3b8" [lineStrokeWidth]="1.25" [lineDash]="[4, 4]" />
-                    <p-chart-reference-line [y]="growthThreshold" stroke="#94a3b8" [lineStrokeWidth]="1.25" [lineDash]="[4, 4]" />
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                    <p-chart-legend position="top" [itemGap]="12" [height]="90">
-                        <ng-template pChartLegendItemDef let-ctx>
-                            <button
-                                (click)="ctx.onClick()"
-                                (mouseenter)="ctx.onMouseEnter()"
-                                (mouseleave)="ctx.onMouseLeave()"
-                                [style.opacity]="!ctx.visible ? 0.35 : ctx.isHovered ? 0.82 : 1"
-                                style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 4px 14px 6px; min-width: 120px; border: none; background: transparent; cursor: pointer; transition: opacity 0.15s; text-align: left"
-                            >
-                                <span [style.color]="ctx.color" style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase">{{ ctx.label }}</span>
-                                <span [style.text-decoration]="!ctx.visible ? 'line-through' : 'none'" style="font-size: 18px; font-weight: 700; color: var(--p-chart-neutral-100, #0f172a); line-height: 1">\${{ totals(ctx.label).revenue }}B</span>
-                                <span style="position: relative; width: 100%; height: 3px; border-radius: 2px; background: rgba(148, 163, 184, 0.22); overflow: hidden">
-                                    <span [style.width.%]="sharePct(ctx.label)" [style.background]="ctx.color" style="position: absolute; left: 0; top: 0; bottom: 0; border-radius: 2px"></span>
-                                </span>
-                                <span style="font-size: 10px; color: var(--p-chart-caption-color, #64748b)">{{ sharePct(ctx.label).toFixed(0) }}% of revenue · {{ totals(ctx.label).count }} segment{{ totals(ctx.label).count === 1 ? '' : 's' }}</span>
-                            </button>
-                        </ng-template>
-                    </p-chart-legend>
-                    <p-chart-hover [brightness]="1.08" />
-                    <p-chart-x-axis label="Relative market share (× largest competitor)" type="logarithmic" [tickFormat]="formatShare" />
-                    <p-chart-y-axis label="Market growth rate (%)" [tickFormat]="formatGrowth" />
-                    <p-chart-title text="Microsoft product portfolio — BCG Growth-Share Matrix, FY2023" />
-                    <p-chart-caption text="Bubble = segment revenue ($B) · Log X · Source: Microsoft 10-K + IDC/Gartner/StatCounter share data" />
-                    <p-chart-export-menu filename="microsoft-bcg-matrix-fy2023" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-annotation>
+                            <ng-template pChartAnnotationDef let-ctx>
+                                <svg:g>
+                                    @for (r of quadrantRects(ctx); track r.fill) {
+                                        <svg:rect [attr.x]="r.x" [attr.y]="r.y" [attr.width]="r.width" [attr.height]="r.height" [attr.fill]="r.fill" />
+                                    }
+                                    @for (p of quadrantPills(ctx); track p.text) {
+                                        <svg:rect [attr.x]="p.rectX" [attr.y]="p.rectY" [attr.width]="p.rectW" [attr.height]="p.pillH" rx="4" ry="4" [attr.fill]="p.fill" [attr.stroke]="p.stroke" stroke-width="1.25" opacity="0.95" />
+                                        <svg:text [attr.x]="p.anchorX" [attr.y]="p.anchorY" [attr.text-anchor]="p.anchor" [attr.dominant-baseline]="p.vAlign" [attr.font-size]="p.fontSize" font-weight="700" [attr.fill]="p.color" opacity="0.85">
+                                            {{ p.text }}
+                                        </svg:text>
+                                    }
+                                </svg:g>
+                            </ng-template>
+                        </p-chart-annotation>
+                        <p-chart-scatter
+                            id="questions"
+                            [data]="quadrants.questions.data"
+                            valueXField="share"
+                            valueYField="growth"
+                            sizeField="revenue"
+                            [color]="quadrants.questions.color"
+                            [name]="quadrants.questions.name"
+                            [minSize]="14"
+                            [maxSize]="46"
+                        />
+                        <p-chart-scatter id="stars" [data]="quadrants.stars.data" valueXField="share" valueYField="growth" sizeField="revenue" [color]="quadrants.stars.color" [name]="quadrants.stars.name" [minSize]="14" [maxSize]="46" />
+                        <p-chart-scatter id="dogs" [data]="quadrants.dogs.data" valueXField="share" valueYField="growth" sizeField="revenue" [color]="quadrants.dogs.color" [name]="quadrants.dogs.name" [minSize]="14" [maxSize]="46" />
+                        <p-chart-scatter id="cows" [data]="quadrants.cows.data" valueXField="share" valueYField="growth" sizeField="revenue" [color]="quadrants.cows.color" [name]="quadrants.cows.name" [minSize]="14" [maxSize]="46" />
+                        <p-chart-reference-line [x]="shareThreshold" stroke="#94a3b8" [lineStrokeWidth]="1.25" [lineDash]="[4, 4]" />
+                        <p-chart-reference-line [y]="growthThreshold" stroke="#94a3b8" [lineStrokeWidth]="1.25" [lineDash]="[4, 4]" />
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                        <p-chart-legend position="top" [itemGap]="12" [height]="90">
+                            <ng-template pChartLegendItemDef let-ctx>
+                                <button
+                                    (click)="ctx.onClick()"
+                                    (mouseenter)="ctx.onMouseEnter()"
+                                    (mouseleave)="ctx.onMouseLeave()"
+                                    [style.opacity]="!ctx.visible ? 0.35 : ctx.isHovered ? 0.82 : 1"
+                                    style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 4px 14px 6px; min-width: 120px; border: none; background: transparent; cursor: pointer; transition: opacity 0.15s; text-align: left"
+                                >
+                                    <span [style.color]="ctx.color" style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase">{{ ctx.label }}</span>
+                                    <span [style.text-decoration]="!ctx.visible ? 'line-through' : 'none'" style="font-size: 18px; font-weight: 700; color: var(--p-chart-neutral-100, #0f172a); line-height: 1">\${{ totals(ctx.label).revenue }}B</span>
+                                    <span style="position: relative; width: 100%; height: 3px; border-radius: 2px; background: rgba(148, 163, 184, 0.22); overflow: hidden">
+                                        <span [style.width.%]="sharePct(ctx.label)" [style.background]="ctx.color" style="position: absolute; left: 0; top: 0; bottom: 0; border-radius: 2px"></span>
+                                    </span>
+                                    <span style="font-size: 10px; color: var(--p-chart-caption-color, #64748b)"
+                                        >{{ sharePct(ctx.label).toFixed(0) }}% of revenue · {{ totals(ctx.label).count }} segment{{ totals(ctx.label).count === 1 ? '' : 's' }}</span
+                                    >
+                                </button>
+                            </ng-template>
+                        </p-chart-legend>
+                        <p-chart-hover [brightness]="1.08" />
+                        <p-chart-x-axis label="Relative market share (× largest competitor)" type="logarithmic" [tickFormat]="formatShare" />
+                        <p-chart-y-axis label="Market growth rate (%)" [tickFormat]="formatGrowth" />
+                        <p-chart-title text="Microsoft product portfolio — BCG Growth-Share Matrix, FY2023" />
+                        <p-chart-caption text="Bubble = segment revenue ($B) · Log X · Source: Microsoft 10-K + IDC/Gartner/StatCounter share data" />
+                        <p-chart-export-menu filename="microsoft-bcg-matrix-fy2023" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class BubbleMicrosoftProductPortfolioBcgGrowthShareMatrixFy2023Doc {
+export class ScatterBubbleBubbleMicrosoftProductPortfolioBcgGrowthShareMatrixFy2023Doc {
     readonly quadrants = QUADRANTS;
     readonly shareThreshold = SHARE_THRESHOLD;
     readonly growthThreshold = GROWTH_THRESHOLD;

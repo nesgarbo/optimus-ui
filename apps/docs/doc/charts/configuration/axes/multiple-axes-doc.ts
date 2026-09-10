@@ -14,18 +14,22 @@ import { ChartsModule, type TickValue } from '@openng/optimus-ui/charts';
                 side.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="arr" name="Expansion ARR" color="#5daeea" yAxisId="arr" />
-                <p-chart-line [data]="data" categoryXField="month" valueYField="seats" name="Seats Added" color="#ffad5a" yAxisId="seats" [showMarkers]="true" />
-                <p-chart-x-axis />
-                <p-chart-y-axis id="arr" label="Expansion ARR" position="left" [tickFormat]="tickFormat" />
-                <p-chart-y-axis id="seats" label="Seats Added" position="right" />
-                <p-chart-legend position="bottom" />
-                <p-chart-tooltip />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="arr" name="Expansion ARR" color="#5daeea" yAxisId="arr" />
+                    <p-chart-line [data]="data" categoryXField="month" valueYField="seats" name="Seats Added" color="#ffad5a" yAxisId="seats" [showMarkers]="true" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis id="arr" label="Expansion ARR" position="left" [tickFormat]="tickFormat" />
+                    <p-chart-y-axis id="seats" label="Seats Added" position="right" />
+                    <p-chart-legend position="bottom" />
+                    <p-chart-tooltip />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

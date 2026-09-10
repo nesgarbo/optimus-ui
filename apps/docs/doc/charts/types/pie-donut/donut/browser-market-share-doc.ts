@@ -17,38 +17,42 @@ import { browsers, useBrowserPlayback, yearlyData } from '@/doc/charts/data/glob
             <p>#### SvgDonutGlobalBrowserDemo.ts</p>
             <p>#### globalBrowser.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div class="year-slider">
-                <button type="button" class="play-btn" [class.playing]="playback.isPlaying()" (click)="playback.togglePlay()">
-                    <i class="pi" [class.pi-pause]="playback.isPlaying()" [class.pi-play]="!playback.isPlaying()"></i>
-                    {{ playback.isPlaying() ? 'Pause' : 'Play' }}
-                </button>
-                <span class="year-value">{{ playback.selectedYear() }}</span>
-                <input type="range" class="year-range" min="2009" max="2023" step="1" [value]="playback.selectedYear()" [style.--fill]="fill()" (input)="onSlide($event)" />
+        @defer (on viewport) {
+            <div class="card">
+                <div class="year-slider">
+                    <button type="button" class="play-btn" [class.playing]="playback.isPlaying()" (click)="playback.togglePlay()">
+                        <i class="pi" [class.pi-pause]="playback.isPlaying()" [class.pi-play]="!playback.isPlaying()"></i>
+                        {{ playback.isPlaying() ? 'Pause' : 'Play' }}
+                    </button>
+                    <span class="year-value">{{ playback.selectedYear() }}</span>
+                    <input type="range" class="year-range" min="2009" max="2023" step="1" [value]="playback.selectedYear()" [style.--fill]="fill()" (input)="onSlide($event)" />
+                </div>
+                <div style="height: 460px">
+                    <p-chart-svg [animation]="{ duration: 500 }">
+                        <p-chart-pie id="browsers" [data]="playback.data()" valueField="share" categoryField="browser" [color]="colors" [innerRadius]="0.55" [spacing]="2" [borderRadius]="3" sort="value-desc" />
+                        <p-chart-annotation>
+                            <ng-template pChartAnnotationDef let-ctx>
+                                <svg:g text-anchor="middle">
+                                    <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y - 26" font-size="11" opacity="0.45" dominant-baseline="central">Browser</svg:text>
+                                    <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y" font-size="26" font-weight="bold" dominant-baseline="central">{{ playback.selectedYear() }}</svg:text>
+                                    <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y + 28" font-size="11" opacity="0.5" dominant-baseline="central">Market Share</svg:text>
+                                </svg:g>
+                            </ng-template>
+                        </p-chart-annotation>
+                        <p-chart-data-labels display="label-percentage" [minPercentage]="4" />
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                        <p-chart-hover [offset]="6" [brightness]="1.08" />
+                        <p-chart-title text="Global browser market share 2009–2023" />
+                        <p-chart-caption text="Source: StatCounter GlobalStats · Microsoft = IE (2009–2019) + Edge (2020–2023)" />
+                        <p-chart-export-menu filename="browser-market-share" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-            <div style="height: 460px">
-                <p-chart-svg [animation]="{ duration: 500 }">
-                    <p-chart-pie id="browsers" [data]="playback.data()" valueField="share" categoryField="browser" [color]="colors" [innerRadius]="0.55" [spacing]="2" [borderRadius]="3" sort="value-desc" />
-                    <p-chart-annotation>
-                        <ng-template pChartAnnotationDef let-ctx>
-                            <svg:g text-anchor="middle">
-                                <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y - 26" font-size="11" opacity="0.45" dominant-baseline="central">Browser</svg:text>
-                                <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y" font-size="26" font-weight="bold" dominant-baseline="central">{{ playback.selectedYear() }}</svg:text>
-                                <svg:text [attr.x]="ctx.center.x" [attr.y]="ctx.center.y + 28" font-size="11" opacity="0.5" dominant-baseline="central">Market Share</svg:text>
-                            </svg:g>
-                        </ng-template>
-                    </p-chart-annotation>
-                    <p-chart-data-labels display="label-percentage" [minPercentage]="4" />
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                    <p-chart-hover [offset]="6" [brightness]="1.08" />
-                    <p-chart-title text="Global browser market share 2009–2023" />
-                    <p-chart-caption text="Source: StatCounter GlobalStats · Microsoft = IE (2009–2019) + Edge (2020–2023)" />
-                    <p-chart-export-menu filename="browser-market-share" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
-            </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     styles: [
         `
@@ -171,7 +175,7 @@ import { browsers, useBrowserPlayback, yearlyData } from '@/doc/charts/data/glob
     ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DonutBrowserMarketShareDoc {
+export class PieDonutDonutBrowserMarketShareDoc {
     readonly playback = useBrowserPlayback();
     readonly colors = ['#5daeea', '#36b7d6', '#ffad5a', '#7c8cff', '#ff7a66'];
 

@@ -14,17 +14,21 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 positioning (tooltip, data labels) follows the RTL direction.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460" dir="rtl">
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="revenue" name="الإيرادات" color="#5daeea" />
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="costs" name="التكاليف" color="#ffad5a" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-legend position="bottom" />
-                <p-chart-tooltip />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460" dir="rtl">
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="revenue" name="الإيرادات" color="#5daeea" />
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="costs" name="التكاليف" color="#ffad5a" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-legend position="bottom" />
+                    <p-chart-tooltip />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

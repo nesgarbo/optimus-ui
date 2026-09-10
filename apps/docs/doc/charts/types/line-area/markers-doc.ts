@@ -14,18 +14,22 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 <i>markerSize</i> to control the radius and <i>pointRotation</i> to rotate the marker shape.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="desktop" name="Desktop" showMarkers [markerSize]="6" markerShape="circle" />
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="mobile" name="Mobile" showMarkers [markerSize]="8" markerShape="star" />
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="tablet" name="Tablet" showMarkers [markerSize]="7" markerShape="triangle" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="desktop" name="Desktop" showMarkers [markerSize]="6" markerShape="circle" />
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="mobile" name="Mobile" showMarkers [markerSize]="8" markerShape="star" />
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="tablet" name="Tablet" showMarkers [markerSize]="7" markerShape="triangle" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

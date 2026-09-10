@@ -15,17 +15,21 @@ import { ChartsModule, type PointDescriptionContext } from '@openng/optimus-ui/c
                 charts expose the same data through the screen-reader data table instead.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="revenue" name="Revenue" color="#5daeea" />
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="costs" name="Costs" color="#ffad5a" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-legend position="bottom" />
-                <p-chart-accessibility [pointDescriptionFormatter]="pointFormatter" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="revenue" name="Revenue" color="#5daeea" />
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="costs" name="Costs" color="#ffad5a" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-legend position="bottom" />
+                    <p-chart-accessibility [pointDescriptionFormatter]="pointFormatter" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

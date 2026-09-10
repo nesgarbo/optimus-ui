@@ -40,24 +40,28 @@ function formatDate(ms: number) {
                 charts.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="margin-bottom: 8px; font-size: 12px; opacity: 0.7; min-height: 20px">
-                @if (zoomState()?.x; as x) {
-                    <span>Zoomed: {{ fmt(x.min) }} — {{ fmt(x.max) }}</span>
-                } @else {
-                    <span>Scroll or drag to zoom</span>
-                }
+        @defer (on viewport) {
+            <div class="card">
+                <div style="margin-bottom: 8px; font-size: 12px; opacity: 0.7; min-height: 20px">
+                    @if (zoomState()?.x; as x) {
+                        <span>Zoomed: {{ fmt(x.min) }} — {{ fmt(x.max) }}</span>
+                    } @else {
+                        <span>Scroll or drag to zoom</span>
+                    }
+                </div>
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-line [data]="data" categoryXField="timestamp" valueYField="price" color="#5daeea" curve="smooth" />
+                        <p-chart-x-axis type="time" />
+                        <p-chart-y-axis label="Price ($)" [startFromZero]="false" />
+                        <p-chart-zoom [onZoomChange]="handleZoomChange" />
+                    </p-chart-svg>
+                </div>
             </div>
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-line [data]="data" categoryXField="timestamp" valueYField="price" color="#5daeea" curve="smooth" />
-                    <p-chart-x-axis type="time" />
-                    <p-chart-y-axis label="Price ($)" [startFromZero]="false" />
-                    <p-chart-zoom [onZoomChange]="handleZoomChange" />
-                </p-chart-svg>
-            </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

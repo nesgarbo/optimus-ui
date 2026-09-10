@@ -40,16 +40,20 @@ function generateData(): { t: number; v: number }[] {
                 lower <i>samples</i> values for speed, and higher values or zoom windows when small movements matter.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-line [data]="data" categoryXField="t" valueYField="v" color="#36b7d6" [lineStrokeWidth]="1.5" />
-                <p-chart-x-axis type="time" />
-                <p-chart-y-axis />
-                <p-chart-tooltip />
-                <p-chart-decimation />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-line [data]="data" categoryXField="t" valueYField="v" color="#36b7d6" [lineStrokeWidth]="1.5" />
+                    <p-chart-x-axis type="time" />
+                    <p-chart-y-axis />
+                    <p-chart-tooltip />
+                    <p-chart-decimation />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

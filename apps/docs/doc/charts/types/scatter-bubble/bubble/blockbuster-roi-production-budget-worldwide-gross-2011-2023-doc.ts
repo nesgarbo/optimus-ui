@@ -80,51 +80,55 @@ interface Highlight {
             <p>#### SvgBubbleBoxOfficeDemo.ts</p>
             <p>#### boxOffice.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-annotation>
-                        <ng-template pChartAnnotationDef let-ctx>
-                            <svg:g>
-                                @for (l of roiLines(ctx); track l.label) {
-                                    <svg:line [attr.x1]="l.x1" [attr.y1]="l.y1" [attr.x2]="l.x2" [attr.y2]="l.y2" stroke="#94a3b8" stroke-width="1" stroke-dasharray="5 4" opacity="0.55" />
-                                    <svg:text [attr.x]="l.x2 - 6" [attr.y]="l.y2 - 4" text-anchor="end" [attr.font-size]="l.fs" font-weight="600" opacity="0.85">{{ l.label }}</svg:text>
-                                }
-                            </svg:g>
-                        </ng-template>
-                    </p-chart-annotation>
-                    <p-chart-scatter id="disney" [data]="studios.disney.data" valueXField="budget" valueYField="gross" sizeField="franchise" [color]="studios.disney.color" [name]="studios.disney.name" [minSize]="8" [maxSize]="28" />
-                    <p-chart-scatter id="universal" [data]="studios.universal.data" valueXField="budget" valueYField="gross" sizeField="franchise" [color]="studios.universal.color" [name]="studios.universal.name" [minSize]="8" [maxSize]="28" />
-                    <p-chart-scatter id="warner" [data]="studios.warner.data" valueXField="budget" valueYField="gross" sizeField="franchise" [color]="studios.warner.color" [name]="studios.warner.name" [minSize]="8" [maxSize]="28" />
-                    <p-chart-scatter id="paramount" [data]="studios.paramount.data" valueXField="budget" valueYField="gross" sizeField="franchise" [color]="studios.paramount.color" [name]="studios.paramount.name" [minSize]="8" [maxSize]="28" />
-                    <p-chart-scatter id="sony" [data]="studios.sony.data" valueXField="budget" valueYField="gross" sizeField="franchise" [color]="studios.sony.color" [name]="studios.sony.name" [minSize]="8" [maxSize]="28" />
-                    <p-chart-annotation>
-                        <ng-template pChartAnnotationDef let-ctx>
-                            <svg:g>
-                                @for (c of highlights(ctx); track c.title) {
-                                    <svg:line [attr.x1]="c.px" [attr.y1]="c.py" [attr.x2]="c.tx" [attr.y2]="c.ty" [attr.stroke]="c.connector" stroke-width="1" stroke-dasharray="2 3" />
-                                    <svg:rect [attr.x]="c.rx" [attr.y]="c.ty - c.bh / 2" [attr.width]="c.w" [attr.height]="c.bh" rx="4" ry="4" [attr.fill]="c.bg" [attr.stroke]="c.border" stroke-width="1" />
-                                    <svg:text [attr.x]="c.tx" [attr.y]="c.ty" [attr.text-anchor]="c.anchor" dominant-baseline="central" [attr.font-size]="c.fs" font-weight="600" [attr.fill]="c.text">{{ c.title }}</svg:text>
-                                }
-                            </svg:g>
-                        </ng-template>
-                    </p-chart-annotation>
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                    <p-chart-legend position="top" />
-                    <p-chart-hover [brightness]="1.1" />
-                    <p-chart-x-axis label="Production budget" type="logarithmic" [tickFormat]="formatMoney" />
-                    <p-chart-y-axis label="Worldwide box-office gross" type="logarithmic" [tickFormat]="formatMoney" />
-                    <p-chart-title text="Blockbuster ROI — budget vs worldwide gross, 2011–2023" />
-                    <p-chart-caption text="Bubble = films in franchise · Log-log axes collapse constant-ROI lines into straight parallels · Source: Box Office Mojo · The-Numbers.com" />
-                    <p-chart-export-menu filename="blockbuster-roi-2011-2023" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-annotation>
+                            <ng-template pChartAnnotationDef let-ctx>
+                                <svg:g>
+                                    @for (l of roiLines(ctx); track l.label) {
+                                        <svg:line [attr.x1]="l.x1" [attr.y1]="l.y1" [attr.x2]="l.x2" [attr.y2]="l.y2" stroke="#94a3b8" stroke-width="1" stroke-dasharray="5 4" opacity="0.55" />
+                                        <svg:text [attr.x]="l.x2 - 6" [attr.y]="l.y2 - 4" text-anchor="end" [attr.font-size]="l.fs" font-weight="600" opacity="0.85">{{ l.label }}</svg:text>
+                                    }
+                                </svg:g>
+                            </ng-template>
+                        </p-chart-annotation>
+                        <p-chart-scatter id="disney" [data]="studios.disney.data" valueXField="budget" valueYField="gross" sizeField="franchise" [color]="studios.disney.color" [name]="studios.disney.name" [minSize]="8" [maxSize]="28" />
+                        <p-chart-scatter id="universal" [data]="studios.universal.data" valueXField="budget" valueYField="gross" sizeField="franchise" [color]="studios.universal.color" [name]="studios.universal.name" [minSize]="8" [maxSize]="28" />
+                        <p-chart-scatter id="warner" [data]="studios.warner.data" valueXField="budget" valueYField="gross" sizeField="franchise" [color]="studios.warner.color" [name]="studios.warner.name" [minSize]="8" [maxSize]="28" />
+                        <p-chart-scatter id="paramount" [data]="studios.paramount.data" valueXField="budget" valueYField="gross" sizeField="franchise" [color]="studios.paramount.color" [name]="studios.paramount.name" [minSize]="8" [maxSize]="28" />
+                        <p-chart-scatter id="sony" [data]="studios.sony.data" valueXField="budget" valueYField="gross" sizeField="franchise" [color]="studios.sony.color" [name]="studios.sony.name" [minSize]="8" [maxSize]="28" />
+                        <p-chart-annotation>
+                            <ng-template pChartAnnotationDef let-ctx>
+                                <svg:g>
+                                    @for (c of highlights(ctx); track c.title) {
+                                        <svg:line [attr.x1]="c.px" [attr.y1]="c.py" [attr.x2]="c.tx" [attr.y2]="c.ty" [attr.stroke]="c.connector" stroke-width="1" stroke-dasharray="2 3" />
+                                        <svg:rect [attr.x]="c.rx" [attr.y]="c.ty - c.bh / 2" [attr.width]="c.w" [attr.height]="c.bh" rx="4" ry="4" [attr.fill]="c.bg" [attr.stroke]="c.border" stroke-width="1" />
+                                        <svg:text [attr.x]="c.tx" [attr.y]="c.ty" [attr.text-anchor]="c.anchor" dominant-baseline="central" [attr.font-size]="c.fs" font-weight="600" [attr.fill]="c.text">{{ c.title }}</svg:text>
+                                    }
+                                </svg:g>
+                            </ng-template>
+                        </p-chart-annotation>
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                        <p-chart-legend position="top" />
+                        <p-chart-hover [brightness]="1.1" />
+                        <p-chart-x-axis label="Production budget" type="logarithmic" [tickFormat]="formatMoney" />
+                        <p-chart-y-axis label="Worldwide box-office gross" type="logarithmic" [tickFormat]="formatMoney" />
+                        <p-chart-title text="Blockbuster ROI — budget vs worldwide gross, 2011–2023" />
+                        <p-chart-caption text="Bubble = films in franchise · Log-log axes collapse constant-ROI lines into straight parallels · Source: Box Office Mojo · The-Numbers.com" />
+                        <p-chart-export-menu filename="blockbuster-roi-2011-2023" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class BubbleBlockbusterRoiProductionBudgetWorldwideGross20112023Doc {
+export class ScatterBubbleBubbleBlockbusterRoiProductionBudgetWorldwideGross20112023Doc {
     readonly isDark = injectIsDarkMode();
     readonly studios = STUDIOS;
     readonly formatMoney = (v: TickValue) => formatMoneyValue(Number(v));

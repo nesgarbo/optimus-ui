@@ -80,16 +80,20 @@ import { ChartsModule, type ChartTheme } from '@openng/optimus-ui/charts';
             <p>### More Than 14 Series Colors</p>
             <p>By default colors cycle back to slot 0 after the 14th series. For charts with more than 14 series, define additional <i>--p-chart-color-N</i> slots in CSS:</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460" [theme]="theme">
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="north" name="North" [borderRadius]="4" />
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="south" name="South" [borderRadius]="4" />
-                <p-chart-line [data]="data" categoryXField="month" valueYField="west" name="West" [lineStrokeWidth]="3" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460" [theme]="theme">
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="north" name="North" [borderRadius]="4" />
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="south" name="South" [borderRadius]="4" />
+                    <p-chart-line [data]="data" categoryXField="month" valueYField="west" name="West" [lineStrokeWidth]="3" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

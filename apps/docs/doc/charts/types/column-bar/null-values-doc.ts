@@ -14,18 +14,22 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 for bars. <i>'connect'</i> behaves the same as <i>'zero'</i>.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-bar [data]="data" categoryXField="week" valueYField="reported" name="Sensor gap" color="#5daeea" />
-                    <p-chart-bar [data]="data" categoryXField="week" valueYField="zeroBaseline" name="connectNulls: zero" color="#ffad5a" connectNulls="zero" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis label="Processed batches" />
-                    <p-chart-legend position="bottom" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-bar [data]="data" categoryXField="week" valueYField="reported" name="Sensor gap" color="#5daeea" />
+                        <p-chart-bar [data]="data" categoryXField="week" valueYField="zeroBaseline" name="connectNulls: zero" color="#ffad5a" connectNulls="zero" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis label="Processed batches" />
+                        <p-chart-legend position="bottom" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

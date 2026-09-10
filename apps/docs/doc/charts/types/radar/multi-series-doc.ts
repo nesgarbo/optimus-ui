@@ -11,20 +11,24 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Place multiple <i>ChartRadar</i> components as siblings to overlay separate datasets. Each series renders its own polygon. Overlay multiple series to compare profiles side by side.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-radar id="selfServe" [data]="data" categoryXField="dimension" valueYField="selfServe" [fillOpacity]="0.2" name="Self-serve" />
-                    <p-chart-radar id="enterprise" [data]="data" categoryXField="dimension" valueYField="enterprise" [fillOpacity]="0.2" name="Enterprise" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                    <p-chart-legend position="bottom" />
-                    <p-chart-tooltip />
-                    <p-chart-hover [brightness]="1.1" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-radar id="selfServe" [data]="data" categoryXField="dimension" valueYField="selfServe" [fillOpacity]="0.2" name="Self-serve" />
+                        <p-chart-radar id="enterprise" [data]="data" categoryXField="dimension" valueYField="enterprise" [fillOpacity]="0.2" name="Enterprise" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                        <p-chart-legend position="bottom" />
+                        <p-chart-tooltip />
+                        <p-chart-hover [brightness]="1.1" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

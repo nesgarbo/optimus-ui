@@ -24,37 +24,41 @@ const CONTINENT_COLOR: Record<Continent, string> = {
             <p>#### SvgBarMetroPopulationDemo.ts</p>
             <p>#### metroPopulation.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460" [animation]="{ duration: 700 }">
-                <p-chart-bar [data]="data" categoryYField="metro" valueXField="population" name="Metro population (millions)" [color]="barColorAccessor" [borderRadius]="3" sort="value-desc" [categoryGap]="0.3" />
-                <p-chart-data-labels display="value" [formatter]="formatMillions" [fontSize]="10" />
-                <p-chart-legend position="top" [interactive]="false">
-                    <ng-template pChartLegendItemDef>
-                        <span style="display: flex; align-items: center; gap: 18px">
-                            @for (c of continents; track c) {
-                                <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 11px; opacity: 0.85">
-                                    <span [style.background]="continentColor[c]" style="width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0"></span>
-                                    {{ c }}
-                                </span>
-                            }
-                        </span>
-                    </ng-template>
-                </p-chart-legend>
-                <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                <p-chart-hover />
-                <p-chart-x-axis [tickFormat]="formatAxis" />
-                <p-chart-y-axis />
-                <p-chart-title text="World's Largest Metropolitan Areas by Population, 2024" />
-                <p-chart-caption text="Population in millions · Source: UN World Urbanization Prospects" />
-                <p-chart-export-menu filename="world-largest-metro-areas-2024" />
-                <p-chart-accessibility />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460" [animation]="{ duration: 700 }">
+                    <p-chart-bar [data]="data" categoryYField="metro" valueXField="population" name="Metro population (millions)" [color]="barColorAccessor" [borderRadius]="3" sort="value-desc" [categoryGap]="0.3" />
+                    <p-chart-data-labels display="value" [formatter]="formatMillions" [fontSize]="10" />
+                    <p-chart-legend position="top" [interactive]="false">
+                        <ng-template pChartLegendItemDef>
+                            <span style="display: flex; align-items: center; gap: 18px">
+                                @for (c of continents; track c) {
+                                    <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 11px; opacity: 0.85">
+                                        <span [style.background]="continentColor[c]" style="width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0"></span>
+                                        {{ c }}
+                                    </span>
+                                }
+                            </span>
+                        </ng-template>
+                    </p-chart-legend>
+                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                    <p-chart-hover />
+                    <p-chart-x-axis [tickFormat]="formatAxis" />
+                    <p-chart-y-axis />
+                    <p-chart-title text="World's Largest Metropolitan Areas by Population, 2024" />
+                    <p-chart-caption text="Population in millions · Source: UN World Urbanization Prospects" />
+                    <p-chart-export-menu filename="world-largest-metro-areas-2024" />
+                    <p-chart-accessibility />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class BarWorldSLargestMetropolitanAreasByPopulation2024Doc {
+export class ColumnBarBarWorldSLargestMetropolitanAreasByPopulation2024Doc {
     readonly data = data;
     readonly continentColor = CONTINENT_COLOR;
     readonly continents = Object.keys(CONTINENT_COLOR) as Continent[];

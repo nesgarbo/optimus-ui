@@ -21,69 +21,73 @@ const spread5 = movingAverage('spreadBps', 5);
             <p>#### syncedFinancialWorkstation.ts</p>
             <p>#### syncedCandlestickVolume.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-group>
-                <div class="finance-workstation">
-                    <div class="finance-workstation__metrics" aria-label="NVDA trading desk metrics">
-                        <div>
-                            <span>Last</span><strong>{{ priceLabel(summary.lastClose) }}</strong>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-group>
+                    <div class="finance-workstation">
+                        <div class="finance-workstation__metrics" aria-label="NVDA trading desk metrics">
+                            <div>
+                                <span>Last</span><strong>{{ priceLabel(summary.lastClose) }}</strong>
+                            </div>
+                            <div>
+                                <span>Spread</span><strong>{{ summary.lastSpreadBps.toFixed(1) }} bps</strong>
+                            </div>
+                            <div>
+                                <span>Avg volume</span><strong>{{ summary.averageVolume.toFixed(1) }}M</strong>
+                            </div>
+                            <div>
+                                <span>Low depth</span><strong>{{ summary.lowDepth.toFixed(1) }}M</strong>
+                            </div>
                         </div>
-                        <div>
-                            <span>Spread</span><strong>{{ summary.lastSpreadBps.toFixed(1) }} bps</strong>
-                        </div>
-                        <div>
-                            <span>Avg volume</span><strong>{{ summary.averageVolume.toFixed(1) }}M</strong>
-                        </div>
-                        <div>
-                            <span>Low depth</span><strong>{{ summary.lowDepth.toFixed(1) }}M</strong>
-                        </div>
-                    </div>
 
-                    <div class="finance-workstation__pane finance-workstation__pane--price">
-                        <p-chart-svg [sync]="sync" [height]="300" [animation]="{ duration: 420, easing: 'easeOutCubic' }">
-                            <p-chart-candlestick [data]="data" categoryXField="date" openField="open" highField="high" lowField="low" closeField="close" name="NVDA" upColor="#10a981" downColor="#e5484d" [barWidthRatio]="0.62" />
-                            <p-chart-line [data]="vwap5" categoryXField="date" valueYField="value" name="VWAP 5" color="#5daeea" [lineStrokeWidth]="2" [showMarkers]="false" curve="smooth" />
-                            <p-chart-x-axis [visible]="false" />
-                            <p-chart-y-axis position="right" [tickCount]="5" [tickFormat]="priceLabel" />
-                            <p-chart-tooltip mode="shared" [crosshair]="true" />
-                            <p-chart-hover [brightness]="1.08" />
-                            <p-chart-zoom mode="x" />
-                            <p-chart-title text="NVDA execution workstation - price" />
-                            <p-chart-export-menu filename="nvda-price-workstation" />
-                            <p-chart-accessibility />
-                        </p-chart-svg>
-                    </div>
+                        <div class="finance-workstation__pane finance-workstation__pane--price">
+                            <p-chart-svg [sync]="sync" [height]="300" [animation]="{ duration: 420, easing: 'easeOutCubic' }">
+                                <p-chart-candlestick [data]="data" categoryXField="date" openField="open" highField="high" lowField="low" closeField="close" name="NVDA" upColor="#10a981" downColor="#e5484d" [barWidthRatio]="0.62" />
+                                <p-chart-line [data]="vwap5" categoryXField="date" valueYField="value" name="VWAP 5" color="#5daeea" [lineStrokeWidth]="2" [showMarkers]="false" curve="smooth" />
+                                <p-chart-x-axis [visible]="false" />
+                                <p-chart-y-axis position="right" [tickCount]="5" [tickFormat]="priceLabel" />
+                                <p-chart-tooltip mode="shared" [crosshair]="true" />
+                                <p-chart-hover [brightness]="1.08" />
+                                <p-chart-zoom mode="x" />
+                                <p-chart-title text="NVDA execution workstation - price" />
+                                <p-chart-export-menu filename="nvda-price-workstation" />
+                                <p-chart-accessibility />
+                            </p-chart-svg>
+                        </div>
 
-                    <div class="finance-workstation__pane">
-                        <p-chart-svg [sync]="sync" [height]="150" [animation]="{ duration: 420, easing: 'easeOutCubic' }">
-                            <p-chart-bar [data]="data" categoryXField="date" valueYField="volume" name="Volume" color="barColor" [opacity]="0.78" [borderRadius]="2" />
-                            <p-chart-reference-line [y]="summary.averageVolume" stroke="#7c8cff8c" [lineDash]="[4, 4]" label="Avg volume" />
-                            <p-chart-x-axis [visible]="false" />
-                            <p-chart-y-axis position="right" [tickCount]="3" [tickFormat]="volumeLabel" />
-                            <p-chart-tooltip mode="shared" [crosshair]="true" />
-                            <p-chart-hover [brightness]="1.08" />
-                            <p-chart-zoom mode="x" />
-                        </p-chart-svg>
-                    </div>
+                        <div class="finance-workstation__pane">
+                            <p-chart-svg [sync]="sync" [height]="150" [animation]="{ duration: 420, easing: 'easeOutCubic' }">
+                                <p-chart-bar [data]="data" categoryXField="date" valueYField="volume" name="Volume" color="barColor" [opacity]="0.78" [borderRadius]="2" />
+                                <p-chart-reference-line [y]="summary.averageVolume" stroke="#7c8cff8c" [lineDash]="[4, 4]" label="Avg volume" />
+                                <p-chart-x-axis [visible]="false" />
+                                <p-chart-y-axis position="right" [tickCount]="3" [tickFormat]="volumeLabel" />
+                                <p-chart-tooltip mode="shared" [crosshair]="true" />
+                                <p-chart-hover [brightness]="1.08" />
+                                <p-chart-zoom mode="x" />
+                            </p-chart-svg>
+                        </div>
 
-                    <div class="finance-workstation__pane finance-workstation__pane--spread">
-                        <p-chart-svg [sync]="sync" [height]="170" [animation]="{ duration: 420, easing: 'easeOutCubic' }">
-                            <p-chart-bar [data]="data" categoryXField="date" valueYField="spreadBps" name="Quoted spread" color="spreadColor" [opacity]="0.34" [borderRadius]="2" />
-                            <p-chart-line [data]="spread5" categoryXField="date" valueYField="value" name="5-day spread avg" color="#4ecdc4" [lineStrokeWidth]="2" [showMarkers]="false" curve="smooth" />
-                            <p-chart-reference-line [y]="summary.averageSpreadBps" stroke="#ffad5aa6" [lineDash]="[4, 4]" label="Avg spread" />
-                            <p-chart-x-axis [tickRotation]="-35" />
-                            <p-chart-y-axis position="right" [tickCount]="4" [tickFormat]="bpsLabel" />
-                            <p-chart-tooltip mode="shared" [crosshair]="true" />
-                            <p-chart-hover [brightness]="1.08" />
-                            <p-chart-zoom mode="x" />
-                            <p-chart-accessibility />
-                        </p-chart-svg>
+                        <div class="finance-workstation__pane finance-workstation__pane--spread">
+                            <p-chart-svg [sync]="sync" [height]="170" [animation]="{ duration: 420, easing: 'easeOutCubic' }">
+                                <p-chart-bar [data]="data" categoryXField="date" valueYField="spreadBps" name="Quoted spread" color="spreadColor" [opacity]="0.34" [borderRadius]="2" />
+                                <p-chart-line [data]="spread5" categoryXField="date" valueYField="value" name="5-day spread avg" color="#4ecdc4" [lineStrokeWidth]="2" [showMarkers]="false" curve="smooth" />
+                                <p-chart-reference-line [y]="summary.averageSpreadBps" stroke="#ffad5aa6" [lineDash]="[4, 4]" label="Avg spread" />
+                                <p-chart-x-axis [tickRotation]="-35" />
+                                <p-chart-y-axis position="right" [tickCount]="4" [tickFormat]="bpsLabel" />
+                                <p-chart-tooltip mode="shared" [crosshair]="true" />
+                                <p-chart-hover [brightness]="1.08" />
+                                <p-chart-zoom mode="x" />
+                                <p-chart-accessibility />
+                            </p-chart-svg>
+                        </div>
                     </div>
-                </div>
-                <p-chart-caption text="Drag any pane to zoom all three. Crosshair sync keeps price, volume, and spread aligned on the same trading day." />
-            </p-chart-group>
-        </div>
-        <app-code></app-code>
+                    <p-chart-caption text="Drag any pane to zoom all three. Crosshair sync keeps price, volume, and spread aligned on the same trading day." />
+                </p-chart-group>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     styles: [
         `
@@ -151,7 +155,7 @@ const spread5 = movingAverage('spreadBps', 5);
     ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ExamplesFinancialWorkstationPriceVolumeSpreadDoc {
+export class SyncedExamplesFinancialWorkstationPriceVolumeSpreadDoc {
     readonly data = data;
     readonly vwap5 = vwap5;
     readonly spread5 = spread5;

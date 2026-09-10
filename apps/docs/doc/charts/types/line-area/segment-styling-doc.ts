@@ -14,16 +14,20 @@ import { ChartsModule, type SegmentContext } from '@openng/optimus-ui/charts';
                 <i>p1</i>) with their values and positions. Return <i>undefined</i> from a callback to fall back to the series default for that segment.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-line [data]="data" categoryXField="month" valueYField="price" showMarkers [markerSize]="5" [segmentColor]="segmentColor" [segmentStrokeWidth]="segmentWidth" curve="smooth" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-line [data]="data" categoryXField="month" valueYField="price" showMarkers [markerSize]="5" [segmentColor]="segmentColor" [segmentStrokeWidth]="segmentWidth" curve="smooth" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

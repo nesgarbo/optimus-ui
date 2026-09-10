@@ -11,22 +11,26 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Wrap multiple <i>ChartBar</i> components inside <i>ChartStacked</i> to stack bars vertically. Each series accumulates on top of the previous one. Negative values stack downward from zero.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-stacked>
-                        <p-chart-bar [data]="data" categoryXField="year" valueYField="enterprise" name="Enterprise" color="#5daeea" />
-                        <p-chart-bar [data]="data" categoryXField="year" valueYField="midmarket" name="Mid-market" color="#4ecdc4" />
-                        <p-chart-bar [data]="data" categoryXField="year" valueYField="startup" name="Startup" color="#ffad5a" />
-                    </p-chart-stacked>
-                    <p-chart-x-axis />
-                    <p-chart-y-axis label="ARR ($M)" />
-                    <p-chart-legend position="top" />
-                    <p-chart-tooltip mode="shared" [valueFormatter]="valueFormatter" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-stacked>
+                            <p-chart-bar [data]="data" categoryXField="year" valueYField="enterprise" name="Enterprise" color="#5daeea" />
+                            <p-chart-bar [data]="data" categoryXField="year" valueYField="midmarket" name="Mid-market" color="#4ecdc4" />
+                            <p-chart-bar [data]="data" categoryXField="year" valueYField="startup" name="Startup" color="#ffad5a" />
+                        </p-chart-stacked>
+                        <p-chart-x-axis />
+                        <p-chart-y-axis label="ARR ($M)" />
+                        <p-chart-legend position="top" />
+                        <p-chart-tooltip mode="shared" [valueFormatter]="valueFormatter" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

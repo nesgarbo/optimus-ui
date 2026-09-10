@@ -42,58 +42,62 @@ for (const zone of ZONES) {
             <p>#### SvgGaugeCarbonIntensityDemo.ts</p>
             <p>#### carbonIntensity.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 360px">
-                <p-chart-svg [animation]="{ duration: 900 }">
-                    <p-chart-pie [data]="gaugeData" valueField="value" categoryField="label" [color]="gaugeColors" [startAngle]="startAngle" [sweepAngle]="sweepAngle" [innerRadius]="0.72">
-                        <ng-template pChartSliceDef let-ctx>
-                            @if (ctx.percentage >= 4) {
-                                @let li = labelInfo(ctx);
-                                <svg:text text-anchor="middle" dominant-baseline="central" font-size="11" [attr.font-weight]="li.weight" [attr.fill]="li.color" [attr.opacity]="li.opacity">{{ li.text }}</svg:text>
-                            }
-                        </ng-template>
-                    </p-chart-pie>
-                    <p-chart-annotation>
-                        <ng-template pChartAnnotationDef let-ctx>
-                            @let n = needle(ctx);
-                            <svg:g>
-                                <svg:polygon [attr.points]="n.points" [attr.fill]="ctx.textColor" opacity="0.85" />
-                                <svg:circle [attr.cx]="n.cx" [attr.cy]="n.cy" r="10" [attr.fill]="ctx.textColor" opacity="0.85" />
-                                <svg:circle [attr.cx]="n.cx" [attr.cy]="n.cy" r="5" [attr.fill]="currentColor" />
-                            </svg:g>
-                        </ng-template>
-                    </p-chart-annotation>
-                    <p-chart-tooltip>
-                        <ng-template pChartTooltipDef let-ctx>
-                            @let z = zoneFor(ctx.label);
-                            @if (z) {
-                                <div [style]="cardStyle">
-                                    <div [style]="'width:4px;flex-shrink:0;background:' + z.color"></div>
-                                    <div style="padding:10px 12px;flex:1">
-                                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-                                            <span [style]="'font-weight:700;font-size:13px;color:' + z.color">{{ z.label }}</span>
-                                            <span style="font-size:11px;font-weight:500;color:var(--p-text-muted-color, #64748b)">{{ isFaded(ctx.label) ? 'ahead' : 'current' }}</span>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 360px">
+                    <p-chart-svg [animation]="{ duration: 900 }">
+                        <p-chart-pie [data]="gaugeData" valueField="value" categoryField="label" [color]="gaugeColors" [startAngle]="startAngle" [sweepAngle]="sweepAngle" [innerRadius]="0.72">
+                            <ng-template pChartSliceDef let-ctx>
+                                @if (ctx.percentage >= 4) {
+                                    @let li = labelInfo(ctx);
+                                    <svg:text text-anchor="middle" dominant-baseline="central" font-size="11" [attr.font-weight]="li.weight" [attr.fill]="li.color" [attr.opacity]="li.opacity">{{ li.text }}</svg:text>
+                                }
+                            </ng-template>
+                        </p-chart-pie>
+                        <p-chart-annotation>
+                            <ng-template pChartAnnotationDef let-ctx>
+                                @let n = needle(ctx);
+                                <svg:g>
+                                    <svg:polygon [attr.points]="n.points" [attr.fill]="ctx.textColor" opacity="0.85" />
+                                    <svg:circle [attr.cx]="n.cx" [attr.cy]="n.cy" r="10" [attr.fill]="ctx.textColor" opacity="0.85" />
+                                    <svg:circle [attr.cx]="n.cx" [attr.cy]="n.cy" r="5" [attr.fill]="currentColor" />
+                                </svg:g>
+                            </ng-template>
+                        </p-chart-annotation>
+                        <p-chart-tooltip>
+                            <ng-template pChartTooltipDef let-ctx>
+                                @let z = zoneFor(ctx.label);
+                                @if (z) {
+                                    <div [style]="cardStyle">
+                                        <div [style]="'width:4px;flex-shrink:0;background:' + z.color"></div>
+                                        <div style="padding:10px 12px;flex:1">
+                                            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                                                <span [style]="'font-weight:700;font-size:13px;color:' + z.color">{{ z.label }}</span>
+                                                <span style="font-size:11px;font-weight:500;color:var(--p-text-muted-color, #64748b)">{{ isFaded(ctx.label) ? 'ahead' : 'current' }}</span>
+                                            </div>
+                                            <div style="font-size:12px;font-weight:600;margin-bottom:4px">{{ z.range }} gCO₂/kWh</div>
+                                            <div style="font-size:11px;line-height:1.5;color:var(--p-text-muted-color, #64748b)">{{ z.desc }}</div>
                                         </div>
-                                        <div style="font-size:12px;font-weight:600;margin-bottom:4px">{{ z.range }} gCO₂/kWh</div>
-                                        <div style="font-size:11px;line-height:1.5;color:var(--p-text-muted-color, #64748b)">{{ z.desc }}</div>
                                     </div>
-                                </div>
-                            }
-                        </ng-template>
-                    </p-chart-tooltip>
-                    <p-chart-hover [brightness]="1.1" />
-                    <p-chart-title text="GB grid carbon intensity" />
-                    <p-chart-caption text="Source: National Grid ESO Carbon Intensity API · Representative data for Wed 13 Nov 2024, 14:30 UTC · Great Britain only" />
-                    <p-chart-export-menu filename="gb-carbon-intensity" />
-                    <p-chart-accessibility description="Half-circle speedometer gauge showing GB grid carbon intensity at 178 gCO₂/kWh, rated low. Zone bands from very low (green) to high (red), with faded colours showing zones ahead." />
-                </p-chart-svg>
+                                }
+                            </ng-template>
+                        </p-chart-tooltip>
+                        <p-chart-hover [brightness]="1.1" />
+                        <p-chart-title text="GB grid carbon intensity" />
+                        <p-chart-caption text="Source: National Grid ESO Carbon Intensity API · Representative data for Wed 13 Nov 2024, 14:30 UTC · Great Britain only" />
+                        <p-chart-export-menu filename="gb-carbon-intensity" />
+                        <p-chart-accessibility description="Half-circle speedometer gauge showing GB grid carbon intensity at 178 gCO₂/kWh, rated low. Zone bands from very low (green) to high (red), with faded colours showing zones ahead." />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GaugeGbGridCarbonIntensityDoc {
+export class PieDonutGaugeGbGridCarbonIntensityDoc {
     readonly gaugeData = gaugeData;
     readonly gaugeColors = gaugeColors;
     readonly startAngle = START_ANGLE;

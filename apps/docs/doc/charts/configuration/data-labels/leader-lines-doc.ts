@@ -14,15 +14,19 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 line), or <i>none</i> (no connector). Set <i>alignTo</i> to <i>labelLine</i> (labels align to the line end) or <i>edge</i> (labels align flush to the chart boundary).
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div class="flex justify-center">
-                <p-chart-svg [width]="460" [height]="460">
-                    <p-chart-pie [data]="data" categoryField="category" valueField="amount" name="Budget" />
-                    <p-chart-data-labels display="both" lineStyle="angled" [formatter]="formatter" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div class="flex justify-center">
+                    <p-chart-svg [width]="460" [height]="460">
+                        <p-chart-pie [data]="data" categoryField="category" valueField="amount" name="Budget" />
+                        <p-chart-data-labels display="both" lineStyle="angled" [formatter]="formatter" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

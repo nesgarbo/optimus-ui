@@ -25,18 +25,22 @@ const rules: ResponsiveRule[] = [
                 values. All matching rules are applied. Last rule wins on conflicting keys.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [responsive]="true" [height]="460">
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="sales" name="Sales" color="#5daeea" />
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="returns" name="Returns" color="#ff7a66" />
-                <p-chart-x-axis />
-                <p-chart-y-axis label="Amount ($K)" />
-                <p-chart-legend position="bottom" />
-                <p-chart-tooltip />
-                <p-chart-responsive [rules]="rules" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [responsive]="true" [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="sales" name="Sales" color="#5daeea" />
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="returns" name="Returns" color="#ff7a66" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis label="Amount ($K)" />
+                    <p-chart-legend position="bottom" />
+                    <p-chart-tooltip />
+                    <p-chart-responsive [rules]="rules" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

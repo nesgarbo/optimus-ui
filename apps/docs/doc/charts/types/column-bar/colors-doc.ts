@@ -11,16 +11,20 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Pass an array to <i>color</i> to assign a custom palette. Bars cycle through colors by index. For conditional coloring, pass a function that receives each data item and returns a color string.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-bar [data]="data" categoryXField="priority" valueYField="tickets" [color]="barColors" [borderRadius]="4" />
-                    <p-chart-x-axis />
-                    <p-chart-y-axis label="Open tickets" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-bar [data]="data" categoryXField="priority" valueYField="tickets" [color]="barColors" [borderRadius]="4" />
+                        <p-chart-x-axis />
+                        <p-chart-y-axis label="Open tickets" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

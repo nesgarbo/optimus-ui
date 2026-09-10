@@ -33,39 +33,43 @@ const avgVolume = +(data.reduce((s, d) => s + d.volume, 0) / data.length).toFixe
             <p>#### SvgSyncedCandlestickVolumePaneDemo.ts</p>
             <p>#### syncedCandlestickVolume.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-group>
-                <div class="pane-stack">
-                    <div class="pane-stack__price">
-                        <p-chart-svg [sync]="true" [height]="320" [animation]="{ duration: 400, easing: 'easeOutCubic' }">
-                            <p-chart-candlestick [data]="data" categoryXField="date" openField="open" highField="high" lowField="low" closeField="close" name="NVDA" upColor="#10a981" downColor="#e5484d" [barWidthRatio]="0.65" />
-                            <p-chart-line [data]="sma10" categoryXField="date" valueYField="value" name="SMA 10" color="#ffad5a" curve="smooth" [lineStrokeWidth]="1.5" [showMarkers]="false" [fillOpacity]="0" />
-                            <p-chart-line [data]="sma20" categoryXField="date" valueYField="value" name="SMA 20" color="#7c8cff" curve="smooth" [lineStrokeWidth]="1.5" [showMarkers]="false" [fillOpacity]="0" />
-                            <p-chart-x-axis [visible]="false" />
-                            <p-chart-y-axis position="right" [tickFormat]="formatPrice" [chartPaddingMin]="0.05" />
-                            <p-chart-legend position="top" />
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-group>
+                    <div class="pane-stack">
+                        <div class="pane-stack__price">
+                            <p-chart-svg [sync]="true" [height]="320" [animation]="{ duration: 400, easing: 'easeOutCubic' }">
+                                <p-chart-candlestick [data]="data" categoryXField="date" openField="open" highField="high" lowField="low" closeField="close" name="NVDA" upColor="#10a981" downColor="#e5484d" [barWidthRatio]="0.65" />
+                                <p-chart-line [data]="sma10" categoryXField="date" valueYField="value" name="SMA 10" color="#ffad5a" curve="smooth" [lineStrokeWidth]="1.5" [showMarkers]="false" [fillOpacity]="0" />
+                                <p-chart-line [data]="sma20" categoryXField="date" valueYField="value" name="SMA 20" color="#7c8cff" curve="smooth" [lineStrokeWidth]="1.5" [showMarkers]="false" [fillOpacity]="0" />
+                                <p-chart-x-axis [visible]="false" />
+                                <p-chart-y-axis position="right" [tickFormat]="formatPrice" [chartPaddingMin]="0.05" />
+                                <p-chart-legend position="top" />
+                                <p-chart-tooltip mode="shared" [crosshair]="true" />
+                                <p-chart-hover />
+                                <p-chart-zoom mode="x" />
+                                <p-chart-title text="NVDA · Q1 2024 · Daily Candlestick with SMA Overlays" />
+                                <p-chart-export-menu filename="nvda-q1-2024-pane" />
+                                <p-chart-accessibility />
+                            </p-chart-svg>
+                        </div>
+                        <p-chart-svg [sync]="true" [height]="140" [animation]="{ duration: 400, easing: 'easeOutCubic' }">
+                            <p-chart-bar [data]="data" categoryXField="date" valueYField="volume" name="Volume" color="barColor" [opacity]="0.75" />
+                            <p-chart-reference-line [y]="avgVolume" stroke="#7c8cff80" [lineDash]="[3, 3]" label="Avg" />
+                            <p-chart-x-axis [tickRotation]="-35" />
+                            <p-chart-y-axis position="right" label="Vol (M)" [tickCount]="3" [tickFormat]="formatVolume" />
                             <p-chart-tooltip mode="shared" [crosshair]="true" />
                             <p-chart-hover />
                             <p-chart-zoom mode="x" />
-                            <p-chart-title text="NVDA · Q1 2024 · Daily Candlestick with SMA Overlays" />
-                            <p-chart-export-menu filename="nvda-q1-2024-pane" />
-                            <p-chart-accessibility />
                         </p-chart-svg>
                     </div>
-                    <p-chart-svg [sync]="true" [height]="140" [animation]="{ duration: 400, easing: 'easeOutCubic' }">
-                        <p-chart-bar [data]="data" categoryXField="date" valueYField="volume" name="Volume" color="barColor" [opacity]="0.75" />
-                        <p-chart-reference-line [y]="avgVolume" stroke="#7c8cff80" [lineDash]="[3, 3]" label="Avg" />
-                        <p-chart-x-axis [tickRotation]="-35" />
-                        <p-chart-y-axis position="right" label="Vol (M)" [tickCount]="3" [tickFormat]="formatVolume" />
-                        <p-chart-tooltip mode="shared" [crosshair]="true" />
-                        <p-chart-hover />
-                        <p-chart-zoom mode="x" />
-                    </p-chart-svg>
-                </div>
-                <p-chart-caption text="SMA(10) amber · SMA(20) periwinkle · volume bars colored by direction · Feb 21 earnings spike · drag either pane to zoom both" />
-            </p-chart-group>
-        </div>
-        <app-code></app-code>
+                    <p-chart-caption text="SMA(10) amber · SMA(20) periwinkle · volume bars colored by direction · Feb 21 earnings spike · drag either pane to zoom both" />
+                </p-chart-group>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     styles: [
         `
@@ -82,7 +86,7 @@ const avgVolume = +(data.reduce((s, d) => s + d.volume, 0) / data.length).toFixe
     ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ExamplesCandlestickVolumeStackedPanesDoc {
+export class SyncedExamplesCandlestickVolumeStackedPanesDoc {
     readonly data = data;
     readonly sma10 = sma10;
     readonly sma20 = sma20;

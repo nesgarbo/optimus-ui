@@ -12,15 +12,19 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
             <p>Add <i>ChartTooltip</i> to show slice details on hover. The tooltip includes the percentage alongside the value with no extra configuration. Use a <i>pChartTooltipDef</i> template for custom tooltip content.</p>
             <p>For full configuration see <a href="/charts/configuration/tooltip">Tooltip</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="display: flex; justify-content: center">
-                <p-chart-svg [width]="460" [height]="460">
-                    <p-chart-pie [data]="data" valueField="bookings" categoryField="channel" />
-                    <p-chart-tooltip />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="display: flex; justify-content: center">
+                    <p-chart-svg [width]="460" [height]="460">
+                        <p-chart-pie [data]="data" valueField="bookings" categoryField="channel" />
+                        <p-chart-tooltip />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

@@ -17,31 +17,35 @@ import { retailRegion as data } from '@/doc/charts/data/retailRegion';
             <p>#### SvgRadarStackedRetailRegionDemo.ts</p>
             <p>#### retailRegion.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg [animation]="{ duration: 700 }">
-                    <p-chart-stacked>
-                        <p-chart-radar id="americas" [data]="data" categoryXField="product" valueYField="americas" name="Americas" color="#5daeea" [fillOpacity]="0.6" [lineStrokeWidth]="1.5" />
-                        <p-chart-radar id="emea" [data]="data" categoryXField="product" valueYField="emea" name="EMEA" color="#ffad5a" [fillOpacity]="0.55" [lineStrokeWidth]="1.5" />
-                        <p-chart-radar id="apac" [data]="data" categoryXField="product" valueYField="apac" name="APAC" color="#5ccf9f" [fillOpacity]="0.5" [lineStrokeWidth]="2.5" />
-                    </p-chart-stacked>
-                    <p-chart-x-axis />
-                    <p-chart-y-axis />
-                    <p-chart-tooltip mode="shared" [valueFormatter]="format" />
-                    <p-chart-hover />
-                    <p-chart-legend position="top" />
-                    <p-chart-title text="Global Retailer — Revenue Mix by Region, Q3 2025" />
-                    <p-chart-caption text="Electronics ($810M) and Grocery ($750M) are the two largest categories · APAC leads Beauty; Americas leads Electronics and Home & Kitchen" />
-                    <p-chart-export-menu filename="retail-revenue-stacked-radar" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg [animation]="{ duration: 700 }">
+                        <p-chart-stacked>
+                            <p-chart-radar id="americas" [data]="data" categoryXField="product" valueYField="americas" name="Americas" color="#5daeea" [fillOpacity]="0.6" [lineStrokeWidth]="1.5" />
+                            <p-chart-radar id="emea" [data]="data" categoryXField="product" valueYField="emea" name="EMEA" color="#ffad5a" [fillOpacity]="0.55" [lineStrokeWidth]="1.5" />
+                            <p-chart-radar id="apac" [data]="data" categoryXField="product" valueYField="apac" name="APAC" color="#5ccf9f" [fillOpacity]="0.5" [lineStrokeWidth]="2.5" />
+                        </p-chart-stacked>
+                        <p-chart-x-axis />
+                        <p-chart-y-axis />
+                        <p-chart-tooltip mode="shared" [valueFormatter]="format" />
+                        <p-chart-hover />
+                        <p-chart-legend position="top" />
+                        <p-chart-title text="Global Retailer — Revenue Mix by Region, Q3 2025" />
+                        <p-chart-caption text="Electronics ($810M) and Grocery ($750M) are the two largest categories · APAC leads Beauty; Americas leads Electronics and Home & Kitchen" />
+                        <p-chart-export-menu filename="retail-revenue-stacked-radar" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class StackedGlobalRetailerRevenueMixByRegionQ32025Doc {
+export class RadarStackedGlobalRetailerRevenueMixByRegionQ32025Doc {
     readonly data = data;
     readonly format = (v: number) => `$${v}`;
 }

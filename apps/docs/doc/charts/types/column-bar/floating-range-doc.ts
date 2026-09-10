@@ -11,16 +11,20 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
         <app-docsectiontext>
             <p>Set <i>openField</i> to anchor each bar at a specific starting value instead of zero. The bar spans from <i>openField</i> to <i>valueYField</i>. This is the standard approach for Gantt-style timelines and range charts.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-bar [data]="data" categoryYField="phase" valueXField="end" openField="start" [borderRadius]="4" color="#5daeea" />
-                    <p-chart-x-axis label="Weeks" />
-                    <p-chart-y-axis />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-bar [data]="data" categoryYField="phase" valueXField="end" openField="start" [borderRadius]="4" color="#5daeea" />
+                        <p-chart-x-axis label="Weeks" />
+                        <p-chart-y-axis />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

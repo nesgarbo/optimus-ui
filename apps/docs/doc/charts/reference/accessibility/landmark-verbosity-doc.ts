@@ -14,18 +14,22 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 <i>'disabled'</i> adds none, which is appropriate when the chart sits inside an already-labeled region.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-line [data]="data" categoryXField="month" valueYField="chat" name="Chat" color="#5daeea" />
-                <p-chart-line [data]="data" categoryXField="month" valueYField="email" name="Email" color="#4ecdc4" />
-                <p-chart-line [data]="data" categoryXField="month" valueYField="escalation" name="Escalations" color="#ffad5a" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-legend position="bottom" />
-                <p-chart-accessibility landmarkVerbosity="all" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-line [data]="data" categoryXField="month" valueYField="chat" name="Chat" color="#5daeea" />
+                    <p-chart-line [data]="data" categoryXField="month" valueYField="email" name="Email" color="#4ecdc4" />
+                    <p-chart-line [data]="data" categoryXField="month" valueYField="escalation" name="Escalations" color="#ffad5a" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-legend position="bottom" />
+                    <p-chart-accessibility landmarkVerbosity="all" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

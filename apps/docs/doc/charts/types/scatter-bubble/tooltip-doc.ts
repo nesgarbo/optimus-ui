@@ -25,17 +25,21 @@ const DATA = [
             <p>Add <i>ChartTooltip</i> to show data details on hover. Unlike line charts, scatter tooltip hit-testing uses 2D Euclidean distance. The nearest point within <i>pointHitRadius</i> pixels is highlighted regardless of axis position.</p>
             <p>For full configuration see <a href="/charts/configuration/tooltip">Tooltip</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg>
-                    <p-chart-scatter id="accounts" [data]="data" valueXField="activation" valueYField="conversion" sizeField="seats" color="#5daeea" [minSize]="6" [maxSize]="24" />
-                    <p-chart-x-axis label="Activation depth (%)" />
-                    <p-chart-y-axis label="Trial conversion (%)" />
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg>
+                        <p-chart-scatter id="accounts" [data]="data" valueXField="activation" valueYField="conversion" sizeField="seats" color="#5daeea" [minSize]="6" [maxSize]="24" />
+                        <p-chart-x-axis label="Activation depth (%)" />
+                        <p-chart-y-axis label="Trial conversion (%)" />
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

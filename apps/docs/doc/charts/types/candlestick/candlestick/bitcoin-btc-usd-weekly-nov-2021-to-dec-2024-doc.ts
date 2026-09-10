@@ -27,45 +27,49 @@ const EVENTS = [
             <p>#### SvgCandlestickBtcCycleDemo.ts</p>
             <p>#### btcCycle.ts</p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="height: 460px">
-                <p-chart-svg [animation]="{ duration: 400 }">
-                    <p-chart-candlestick [data]="data" categoryXField="ts" openField="open" highField="high" lowField="low" closeField="close" upColor="#10a981" downColor="#e5484d" [barWidthRatio]="0.6" />
-                    <p-chart-reference-band [x1]="bearStart" [x2]="bearEnd" label="2022 bear market" fill="#e5484d" [fillOpacity]="0.06" labelPosition="start" />
-                    <p-chart-reference-line [y]="priorAth" label="Prior ATH · $68.7k" stroke="#ffad5a" [lineStrokeWidth]="1.2" [lineDash]="[6, 4]" labelPosition="start" labelBackground="#ffad5a" labelColor="#fff" [labelPadding]="5" />
-                    <p-chart-annotation>
-                        <ng-template pChartAnnotationDef let-ctx>
-                            @if (ctx.xScale && ctx.chartArea) {
-                                <svg:g pointer-events="none">
-                                    @for (ev of eventPins(ctx); track ev.label) {
-                                        <svg:g>
-                                            <svg:line [attr.x1]="ev.x" [attr.y1]="ev.top" [attr.x2]="ev.x" [attr.y2]="ev.bottom" [attr.stroke]="ev.color" stroke-dasharray="3 3" stroke-width="1" opacity="0.55" />
-                                            <svg:rect [attr.x]="ev.rx" [attr.y]="ev.ry" [attr.width]="ev.w" [attr.height]="ev.bh" rx="3" [attr.fill]="ev.color" opacity="0.92" />
-                                            <svg:text [attr.x]="ev.x" [attr.y]="ev.ty" text-anchor="middle" dominant-baseline="central" fill="#fff" [attr.font-size]="ev.fs" font-weight="600">{{ ev.label }}</svg:text>
-                                        </svg:g>
-                                    }
-                                </svg:g>
-                            }
-                        </ng-template>
-                    </p-chart-annotation>
-                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
-                    <p-chart-hover />
-                    <p-chart-zoom mode="x" />
-                    <p-chart-navigator />
-                    <p-chart-x-axis type="time" gapless />
-                    <p-chart-y-axis type="logarithmic" position="right" [tickFormat]="formatPrice" />
-                    <p-chart-title text="Bitcoin (BTC/USD) — Weekly, Nov 2021 → Dec 2024" />
-                    <p-chart-caption text="Log-scale Y-axis compresses the full cycle · reference band shades the bear market · macro events marked on top" />
-                    <p-chart-export-menu filename="btc-cycle-2021-2024" />
-                    <p-chart-accessibility />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="height: 460px">
+                    <p-chart-svg [animation]="{ duration: 400 }">
+                        <p-chart-candlestick [data]="data" categoryXField="ts" openField="open" highField="high" lowField="low" closeField="close" upColor="#10a981" downColor="#e5484d" [barWidthRatio]="0.6" />
+                        <p-chart-reference-band [x1]="bearStart" [x2]="bearEnd" label="2022 bear market" fill="#e5484d" [fillOpacity]="0.06" labelPosition="start" />
+                        <p-chart-reference-line [y]="priorAth" label="Prior ATH · $68.7k" stroke="#ffad5a" [lineStrokeWidth]="1.2" [lineDash]="[6, 4]" labelPosition="start" labelBackground="#ffad5a" labelColor="#fff" [labelPadding]="5" />
+                        <p-chart-annotation>
+                            <ng-template pChartAnnotationDef let-ctx>
+                                @if (ctx.xScale && ctx.chartArea) {
+                                    <svg:g pointer-events="none">
+                                        @for (ev of eventPins(ctx); track ev.label) {
+                                            <svg:g>
+                                                <svg:line [attr.x1]="ev.x" [attr.y1]="ev.top" [attr.x2]="ev.x" [attr.y2]="ev.bottom" [attr.stroke]="ev.color" stroke-dasharray="3 3" stroke-width="1" opacity="0.55" />
+                                                <svg:rect [attr.x]="ev.rx" [attr.y]="ev.ry" [attr.width]="ev.w" [attr.height]="ev.bh" rx="3" [attr.fill]="ev.color" opacity="0.92" />
+                                                <svg:text [attr.x]="ev.x" [attr.y]="ev.ty" text-anchor="middle" dominant-baseline="central" fill="#fff" [attr.font-size]="ev.fs" font-weight="600">{{ ev.label }}</svg:text>
+                                            </svg:g>
+                                        }
+                                    </svg:g>
+                                }
+                            </ng-template>
+                        </p-chart-annotation>
+                        <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                        <p-chart-hover />
+                        <p-chart-zoom mode="x" />
+                        <p-chart-navigator />
+                        <p-chart-x-axis type="time" gapless />
+                        <p-chart-y-axis type="logarithmic" position="right" [tickFormat]="formatPrice" />
+                        <p-chart-title text="Bitcoin (BTC/USD) — Weekly, Nov 2021 → Dec 2024" />
+                        <p-chart-caption text="Log-scale Y-axis compresses the full cycle · reference band shades the bear market · macro events marked on top" />
+                        <p-chart-export-menu filename="btc-cycle-2021-2024" />
+                        <p-chart-accessibility />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CandlestickBitcoinBtcUsdWeeklyNov2021ToDec2024Doc {
+export class CandlestickCandlestickBitcoinBtcUsdWeeklyNov2021ToDec2024Doc {
     readonly data = btcCycle;
     readonly bearStart = BEAR_START;
     readonly bearEnd = BEAR_END;

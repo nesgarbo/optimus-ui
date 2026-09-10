@@ -14,17 +14,21 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 <i>1</i> means no fading. Combining brightness with explicit dimming produces a stronger focus effect without changing colors.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="revenue" name="Revenue" />
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="profit" name="Profit" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-legend position="bottom" />
-                <p-chart-hover [brightness]="1.3" [dimOpacity]="0.3" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="revenue" name="Revenue" />
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="profit" name="Profit" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-legend position="bottom" />
+                    <p-chart-hover [brightness]="1.3" [dimOpacity]="0.3" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

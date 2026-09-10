@@ -12,15 +12,19 @@ import { ChartsModule, type TooltipRow, type TooltipValueContext } from '@openng
             <p>Add <i>ChartTooltip</i> to show data details on hover. Shared tooltips are useful when grouped bars compare values at the same category.</p>
             <p>For full configuration see <a href="/charts/configuration/tooltip">Tooltip</a>.</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="data" categoryXField="area" valueYField="activations" color="#5daeea" [borderRadius]="4" />
-                <p-chart-x-axis />
-                <p-chart-y-axis label="Accounts activated" />
-                <p-chart-tooltip [valueFormatter]="tooltipRows" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="area" valueYField="activations" color="#5daeea" [borderRadius]="4" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis label="Accounts activated" />
+                    <p-chart-tooltip [valueFormatter]="tooltipRows" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

@@ -16,25 +16,29 @@ type HoverClickContext = Parameters<NonNullable<HoverProps['onClick']>>[0];
                 set, a click has no effect on the data element; series visibility is toggled through the legend, not by clicking the chart.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="bookings" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-hover [onClick]="handleClick" />
-            </p-chart-svg>
-            @if (clicked(); as c) {
-                <div style="margin-top: 12px; padding: 12px 16px; border-radius: 6px; border: 1px solid rgba(128, 128, 128, 0.2); font-size: 13px; display: flex; gap: 12px; align-items: center">
-                    <span [style.background]="c.color" style="width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0"></span>
-                    <span
-                        ><strong>{{ c.label }}</strong> — {{ c.value.toLocaleString() }}</span
-                    >
-                </div>
-            } @else {
-                <div style="margin-top: 12px; padding: 12px 16px; border-radius: 6px; border: 1px solid rgba(128, 128, 128, 0.2); font-size: 13px; opacity: 0.5">Click a bar to see its data</div>
-            }
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="bookings" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-hover [onClick]="handleClick" />
+                </p-chart-svg>
+                @if (clicked(); as c) {
+                    <div style="margin-top: 12px; padding: 12px 16px; border-radius: 6px; border: 1px solid rgba(128, 128, 128, 0.2); font-size: 13px; display: flex; gap: 12px; align-items: center">
+                        <span [style.background]="c.color" style="width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0"></span>
+                        <span
+                            ><strong>{{ c.label }}</strong> — {{ c.value.toLocaleString() }}</span
+                        >
+                    </div>
+                } @else {
+                    <div style="margin-top: 12px; padding: 12px 16px; border-radius: 6px; border: 1px solid rgba(128, 128, 128, 0.2); font-size: 13px; opacity: 0.5">Click a bar to see its data</div>
+                }
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

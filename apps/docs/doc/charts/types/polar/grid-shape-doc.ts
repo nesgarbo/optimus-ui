@@ -13,16 +13,20 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 Set <i>gridShape="polygon"</i> on <i>ChartYAxis</i> to render angular polygon grid lines instead of the default concentric circles. Polygon grids give a spider-web appearance, useful when the angular structure of the data warrants it.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <div style="display: flex; justify-content: center">
-                <p-chart-svg [width]="460" [height]="460">
-                    <p-chart-polar [data]="data" categoryXField="direction" valueYField="speed" />
-                    <p-chart-x-axis gridShape="polygon" />
-                    <p-chart-y-axis gridShape="polygon" />
-                </p-chart-svg>
+        @defer (on viewport) {
+            <div class="card">
+                <div style="display: flex; justify-content: center">
+                    <p-chart-svg [width]="460" [height]="460">
+                        <p-chart-polar [data]="data" categoryXField="direction" valueYField="speed" />
+                        <p-chart-x-axis gridShape="polygon" />
+                        <p-chart-y-axis gridShape="polygon" />
+                    </p-chart-svg>
+                </div>
             </div>
-        </div>
-        <app-code></app-code>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

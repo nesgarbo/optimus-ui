@@ -14,19 +14,23 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 category axis.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460">
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="arr" name="Expansion ARR" color="#5daeea" yAxisId="arr" />
-                <p-chart-line [data]="data" categoryXField="month" valueYField="margin" name="Margin (%)" color="#10a981" yAxisId="margin" [showMarkers]="true" />
-                <p-chart-reference-line [y]="50" label="ARR Target" stroke="#ffad5a" [lineDash]="[6, 4]" yAxisId="arr" />
-                <p-chart-reference-line [y]="20" label="Margin Floor" stroke="#ff7a66" [lineDash]="[6, 4]" yAxisId="margin" />
-                <p-chart-x-axis />
-                <p-chart-y-axis id="arr" label="Expansion ARR ($K)" position="left" />
-                <p-chart-y-axis id="margin" label="Margin (%)" position="right" />
-                <p-chart-legend position="bottom" />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460">
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="arr" name="Expansion ARR" color="#5daeea" yAxisId="arr" />
+                    <p-chart-line [data]="data" categoryXField="month" valueYField="margin" name="Margin (%)" color="#10a981" yAxisId="margin" [showMarkers]="true" />
+                    <p-chart-reference-line [y]="50" label="ARR Target" stroke="#ffad5a" [lineDash]="[6, 4]" yAxisId="arr" />
+                    <p-chart-reference-line [y]="20" label="Margin Floor" stroke="#ff7a66" [lineDash]="[6, 4]" yAxisId="margin" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis id="arr" label="Expansion ARR ($K)" position="left" />
+                    <p-chart-y-axis id="margin" label="Margin (%)" position="right" />
+                    <p-chart-legend position="bottom" />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

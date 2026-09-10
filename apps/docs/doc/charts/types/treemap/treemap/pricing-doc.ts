@@ -14,4 +14,4 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TreemapPricingDoc {}
+export class TreemapTreemapPricingDoc {}

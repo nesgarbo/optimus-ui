@@ -37,14 +37,18 @@ const watermark = (opts: { text?: string } = {}) =>
         <app-docsectiontext>
             <p>A minimal overlay plugin: paints a diagonal label across the plot area. It reads only the chart area and draws, with no data access.</p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="460" [plugins]="plugins">
-                <p-chart-bar [data]="data" categoryXField="month" valueYField="bookings" color="#5daeea" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="460" [plugins]="plugins">
+                    <p-chart-bar [data]="data" categoryXField="month" valueYField="bookings" color="#5daeea" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

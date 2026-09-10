@@ -15,17 +15,21 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 across all series.
             </p>
         </app-docsectiontext>
-        <div class="card">
-            <p-chart-svg [height]="400">
-                <p-chart-line [data]="data" categoryXField="month" valueYField="revenue" name="Revenue" curve="smooth" [showMarkers]="true" />
-                <p-chart-line [data]="data" categoryXField="month" valueYField="expenses" name="Expenses" curve="smooth" [showMarkers]="true" />
-                <p-chart-x-axis />
-                <p-chart-y-axis />
-                <p-chart-legend />
-                <p-chart-tooltip />
-            </p-chart-svg>
-        </div>
-        <app-code></app-code>
+        @defer (on viewport) {
+            <div class="card">
+                <p-chart-svg [height]="400">
+                    <p-chart-line [data]="data" categoryXField="month" valueYField="revenue" name="Revenue" curve="smooth" [showMarkers]="true" />
+                    <p-chart-line [data]="data" categoryXField="month" valueYField="expenses" name="Expenses" curve="smooth" [showMarkers]="true" />
+                    <p-chart-x-axis />
+                    <p-chart-y-axis />
+                    <p-chart-legend />
+                    <p-chart-tooltip />
+                </p-chart-svg>
+            </div>
+            <app-code></app-code>
+        } @placeholder {
+            <div class="card" style="min-height: 26rem"></div>
+        }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
