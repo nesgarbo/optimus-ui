@@ -15,7 +15,7 @@ const SEASONS = [
 ];
 
 @Component({
-    selector: 'types-pie-donut-nightingale-us-tornado-climatology-doc',
+    selector: 'types-pie-donut-pie-nightingale-us-tornado-climatology-doc',
     standalone: true,
     imports: [AppDocSectionText, AppCode, ChartsModule],
     template: `

@@ -5,7 +5,7 @@
  * screen reader, found by a test and printed at any resolution. Canvas is the trade you make when
  * the mark count or the update rate stops that being affordable.
  */
-import { isPlatformServer } from '@angular/common';
+import { NgTemplateOutlet, isPlatformServer } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, viewChild, type ElementRef } from '@angular/core';
 import { PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { Bind } from '@openng/optimus-ui/bind';
@@ -33,6 +33,7 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 @Component({
     selector: 'p-chart-svg',
     standalone: true,
+    imports: [NgTemplateOutlet],
     exportAs: 'pChartSvg',
     template: `
         <div
@@ -50,6 +51,13 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
                 <defs #defs></defs>
                 <g #plot [class]="cx('plot')"></g>
                 <g #overlay [class]="cx('pluginOverlay')"></g>
+            </svg>
+            <svg [class]="cx('stamps')" data-slot="chart-stamps" [attr.width]="$width()" [attr.height]="$height()" [attr.viewBox]="$viewBox()" focusable="false" aria-hidden="true">
+                @for (stamp of $stamps(); track stamp.key) {
+                    <svg:g [attr.data-slot]="'chart-stamp-' + stamp.slot" [attr.transform]="stampTransform(stamp)">
+                        <ng-container [ngTemplateOutlet]="stamp.template" [ngTemplateOutletContext]="{ $implicit: stamp.context, ctx: stamp.context }" />
+                    </svg:g>
+                }
             </svg>
             <div [class]="cx('overlays')">
                 <ng-content />
@@ -181,6 +189,8 @@ export class ChartSvg extends ChartRootBase {
 
         const drawContext = buildDrawContext(this.context, this.chartId, this.measureText, this.seriesColor);
         const scene = buildScene(this.context, this.chartState.resolvedSeries(), drawContext);
+
+        this.$stamps.set(scene.stamps);
         const doc = plot.ownerDocument;
         const fragment = doc.createDocumentFragment();
 

@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { AppDoc } from '@/components/doc/app.doc';
-import { NestedImport2Doc } from '@/doc/charts/types/pie-donut/nested/import-2-doc';
-import { NestedGlobalEvSalesByMarketAndPowertrain2016To2023Doc } from '@/doc/charts/types/pie-donut/nested/global-ev-sales-by-market-and-powertrain-2016-to-2023-doc';
-import { NestedWorldGdpByRegionAndIncomeGroup2023Doc } from '@/doc/charts/types/pie-donut/nested/world-gdp-by-region-and-income-group-2023-doc';
+import { NestedImport2Doc } from '@/doc/charts/types/pie-donut/pie/nested/import-2-doc';
+import { NestedGlobalEvSalesByMarketAndPowertrain2016To2023Doc } from '@/doc/charts/types/pie-donut/pie/nested/global-ev-sales-by-market-and-powertrain-2016-to-2023-doc';
+import { NestedWorldGdpByRegionAndIncomeGroup2023Doc } from '@/doc/charts/types/pie-donut/pie/nested/world-gdp-by-region-and-income-group-2023-doc';
 
 @Component({
     template: `<app-doc
@@ -15,7 +15,7 @@ import { NestedWorldGdpByRegionAndIncomeGroup2023Doc } from '@/doc/charts/types/
     standalone: true,
     imports: [AppDoc]
 })
-export class ChartsTypesPieDonutNestedDemo {
+export class ChartsTypesPieDonutPieNestedDemo {
     docs = [
         {
             id: 'import-2',

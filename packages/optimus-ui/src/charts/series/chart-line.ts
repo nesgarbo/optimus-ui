@@ -5,9 +5,10 @@
  * paints it, which is what lets the same element work under `ChartSvg` and `ChartCanvas` without
  * knowing which one it is inside.
  */
-import { ChangeDetectionStrategy, Component, DestroyRef, ViewEncapsulation, booleanAttribute, computed, inject, input, numberAttribute } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ViewEncapsulation, booleanAttribute, computed, contentChild, inject, input, numberAttribute } from '@angular/core';
 import type { NamedAnimationSpec, BorderJoinStyle, ConnectNullsMode, CurveType, DashAccessor, FieldAccessor, FillValue, LineCapStyle, LineSeriesProps, PointRenderContext, SegmentStyleValue } from '@openng/optimus-ui/types/charts';
 import { CHART_CONTEXT, CHART_ITEM_HOST, CHART_RANGE, CHART_STACK, nextDatasetId } from '../charts-registry';
+import { ChartMarkerDef } from '../features/chart-defs';
 import { createItemRegistry } from './chart-items';
 
 /**
@@ -19,7 +20,7 @@ import { createItemRegistry } from './chart-items';
 @Component({
     selector: 'p-chart-line',
     standalone: true,
-    template: '',
+    template: '<ng-content />',
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
     host: { style: 'display: none' },
@@ -27,6 +28,9 @@ import { createItemRegistry } from './chart-items';
 })
 export class ChartLine<T = unknown> {
     private readonly context = inject(CHART_CONTEXT, { optional: true });
+
+    /** A projected template that replaces each marker. SVG only. */
+    readonly markerDef = contentChild(ChartMarkerDef);
 
     private readonly stack = inject(CHART_STACK, { optional: true });
 
@@ -372,6 +376,7 @@ export class ChartLine<T = unknown> {
         if (!this.context) return;
 
         const remove = this.context.registerSeries({
+            templates: computed(() => ({ marker: this.markerDef()?.template ?? null })),
             id: this.datasetId,
             type: 'line',
             props: this.props as never,

@@ -7,7 +7,7 @@
  * destroy. This file is the contract that makes that work, and it is deliberately free of any
  * rendering concern so a series can be tested without a root and vice versa.
  */
-import { InjectionToken, type Signal } from '@angular/core';
+import { InjectionToken, type Signal, type TemplateRef } from '@angular/core';
 import type { AnyFeatureProps, AnySeriesProps, AxisScale, BoxArea, ChartExportOptions, ChartText, ChartTheme, FeatureType, HoverState, RendererType, ResponsiveTier, SeriesType } from '@openng/optimus-ui/types/charts';
 import type { AxisDomain } from './charts-state';
 
@@ -61,7 +61,18 @@ export interface SeriesRegistration<P extends AnySeriesProps = AnySeriesProps> {
      * Whether the series pairs with a sibling to form a range band.
      */
     rangeId?: string;
+    /**
+     * The in-plot templates this series projected, keyed by the surface they replace.
+     *
+     * Carried on the registration because only the root can place them: a slice template has to be
+     * stamped at the slice's own centre, and the series does not know where that is -- the scene
+     * does.
+     */
+    templates?: Signal<Partial<Record<SceneSlot, TemplateRef<unknown> | null>>>;
 }
+
+/** An in-plot surface a template can replace. */
+export type SceneSlot = 'slice' | 'marker' | 'heatmapCell' | 'treemapCell' | 'centerContent';
 
 /** One registered feature. */
 export interface FeatureRegistration<P extends AnyFeatureProps = AnyFeatureProps> {

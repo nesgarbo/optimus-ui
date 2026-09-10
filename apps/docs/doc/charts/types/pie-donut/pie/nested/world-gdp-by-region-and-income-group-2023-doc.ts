@@ -39,7 +39,7 @@ const REGION_SHORT: Record<string, string> = {
 const INCOME_SHORT: Record<string, string> = { 'High income': 'HI', 'Upper middle income': 'UM', 'Lower middle income': 'LM', 'Low income': 'LI' };
 
 @Component({
-    selector: 'types-pie-donut-nested-world-gdp-by-region-and-income-group-2023-doc',
+    selector: 'types-pie-donut-pie-nested-world-gdp-by-region-and-income-group-2023-doc',
     standalone: true,
     imports: [AppDocSectionText, AppCode, ChartsModule],
     template: `

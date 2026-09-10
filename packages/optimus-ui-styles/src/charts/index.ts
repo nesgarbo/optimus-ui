@@ -145,6 +145,20 @@ export const style = /*css*/ `
         pointer-events: auto;
     }
 
+    /*
+     * The projected in-plot templates.
+     *
+     * Real SVG over the plot rather than inside it, so a template works the same under both
+     * renderers -- Canvas has no element tree to stamp into. It takes no pointer, because the mark
+     * it is drawn over is the thing being hovered.
+     */
+    .p-chart-stamps {
+        position: absolute;
+        inset: 0;
+        overflow: visible;
+        pointer-events: none;
+    }
+
     .p-chart-legend {
         color: var(--p-chart-legend-color, dt('charts.legend.color'));
     }

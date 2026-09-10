@@ -27,7 +27,7 @@ const YOY: Record<string, { label: string; color: string } | null> = {
 };
 
 @Component({
-    selector: 'types-pie-donut-nested-global-ev-sales-by-market-and-powertrain-2016-to-2023-doc',
+    selector: 'types-pie-donut-pie-nested-global-ev-sales-by-market-and-powertrain-2016-to-2023-doc',
     standalone: true,
     imports: [AppDocSectionText, AppCode, ChartsModule],
     template: `

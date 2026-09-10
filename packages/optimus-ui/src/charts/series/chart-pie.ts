@@ -239,6 +239,7 @@ export class ChartPie<T = unknown> {
         if (!this.context) return;
 
         const remove = this.context.registerSeries({
+            templates: computed(() => ({ slice: this.sliceDef()?.template ?? null, centerContent: this.centerContentDef()?.template ?? null })),
             // 'donut' is not a separate type: the hole is a parameter, so the registration stays
             // 'pie' and the geometry reads innerRadius.
             id: this.datasetId,

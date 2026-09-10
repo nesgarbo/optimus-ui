@@ -14,6 +14,7 @@ import type {
     ChartDataLabelsProps,
     ChartHoverProps,
     ChartReferenceBandProps,
+    CenterContentContext,
     ChartRangeProps,
     ChartReferenceLineProps,
     ChartTooltipProps,
@@ -28,28 +29,69 @@ import type {
     SvgNode,
     TreemapSeriesProps
 } from '@openng/optimus-ui/types/charts';
+import type { TemplateRef } from '@angular/core';
 import { isGradient, isLinearGradient } from '../core/color';
-import type { ChartContext } from '../charts-registry';
+import type { ChartContext, SceneSlot } from '../charts-registry';
 import type { ResolvedSeries } from '../charts-state';
 import { isCartesian, isRadial } from '../charts-state';
 import { axisOfPosition, defaultPosition, paintAxis, paintGrid, resolveAxis, type AxisRender } from './axis';
 import { paintAxisGroups } from './axis-groups';
+import { formatNumberTick } from '../core/format';
+import { polarToCartesian } from '../core/geometry';
+import { responsiveTier } from '../core/layout';
+import { responsiveContext } from '../core/responsive';
 import { bandSlotFor, groupedBars, paintBarSeries, shouldGroup } from './series-bar';
-import { paintLineSeries } from './series-line';
-import { paintPieSeries, pieFrame, type PieFrame } from './series-pie';
+import { paintLineSeries, projectLine } from './series-line';
+import { paintPieSeries, pieFrame, projectSlices, sliceRenderContext, type PieFrame } from './series-pie';
 import { paintPolarSeries, paintRadarSeries, paintRadialGrid, radialFrame, resolveRadialAxis } from './series-radial';
-import { paintScatterSeries } from './series-scatter';
+import { paintScatterSeries, projectScatter } from './series-scatter';
 import { paintCandlestickSeries } from './series-candlestick';
-import { paintHeatmapSeries, resolveHeatmapScale } from './series-heatmap';
-import { paintTreemapSeries } from './series-treemap';
+import { heatmapCellContext, paintHeatmapSeries, projectHeatmap, resolveHeatmapScale } from './series-heatmap';
+import { paintTreemapSeries, projectTreemap, treemapCellContext } from './series-treemap';
 import { paintDataLabels } from './data-labels';
 import { paintRangeBand } from './range-band';
 import { collectLabels, type LabelSource } from './label-targets';
 import { paintReferenceBand, paintReferenceLine } from './references';
 import { createScene, plotClip, plotClipRef, type DrawContext, type SceneLayer } from './scene';
 
+/**
+ * One projected template, placed where the mark it replaces sits.
+ *
+ * The scene collects these rather than the series, because a slice template has to be stamped at
+ * the slice's own centre and only the scene knows where that is. The root renders them into an
+ * overlay `<svg>` that covers the chart, so the coordinates are the same absolute pixels the
+ * painters used.
+ */
+export interface SceneStamp {
+    /**
+     * Stable key, so a re-render reuses the same view.
+     */
+    key: string;
+    /**
+     * Which surface this replaces.
+     */
+    slot: SceneSlot;
+    /**
+     * The projected template.
+     */
+    template: TemplateRef<unknown>;
+    /**
+     * The context the template reads as `ctx`.
+     */
+    context: unknown;
+    /**
+     * Where the stamp's origin sits, in chart pixels.
+     */
+    x: number;
+    y: number;
+}
+
 /** What a built scene carries back to the root. */
 export interface BuiltScene {
+    /**
+     * The projected templates and where to put them.
+     */
+    stamps: SceneStamp[];
     /**
      * The layers, in draw order.
      */
@@ -112,8 +154,10 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
     const labelsFeature = context.feature<ChartDataLabelsProps>('dataLabels')();
     const labelSources: LabelSource[] = [];
 
+    const stamps: SceneStamp[] = [];
+
     if (drawContext.area.width <= 0 || drawContext.area.height <= 0) {
-        return { layers: [], defs, axisRenders };
+        return { layers: [], defs, axisRenders, stamps };
     }
 
     /* --- Axes and grid ------------------------------------------------------------------------ */
@@ -237,6 +281,8 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
 
                 if (labelsFeature) labelSources.push({ kind: 'line', series: entry });
 
+                collectLineStamps(drawContext, entry, entry.registration.props() as LineSeriesProps, stamps);
+
                 break;
             case 'bar': {
                 const props = entry.registration.props() as BarSeriesProps;
@@ -260,6 +306,8 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
 
                 if (labelsFeature) labelSources.push({ kind: 'scatter', series: entry });
 
+                collectScatterStamps(drawContext, entry, entry.registration.props() as ScatterSeriesProps, stamps);
+
                 break;
             case 'candlestick':
                 scene.add('marks', ...paintCandlestickSeries(drawContext, entry, entry.registration.props() as CandlestickSeriesProps));
@@ -270,9 +318,13 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
             case 'heatmap': {
                 const props = entry.registration.props() as HeatmapSeriesProps;
 
-                scene.add('marks', ...paintHeatmapSeries(drawContext, entry, props, resolveHeatmapScale(entry, props)));
+                const heatScale = resolveHeatmapScale(entry, props);
+
+                scene.add('marks', ...paintHeatmapSeries(drawContext, entry, props, heatScale));
 
                 if (labelsFeature) labelSources.push({ kind: 'heatmap', series: entry });
+
+                collectHeatmapStamps(drawContext, entry, props, heatScale, stamps);
 
                 break;
             }
@@ -280,6 +332,8 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
                 scene.add('marks', ...paintTreemapSeries(drawContext, entry, entry.registration.props() as TreemapSeriesProps));
 
                 if (labelsFeature) labelSources.push({ kind: 'treemap', series: entry });
+
+                collectTreemapStamps(drawContext, entry, entry.registration.props() as TreemapSeriesProps, stamps);
 
                 break;
             case 'radar':
@@ -295,6 +349,8 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
                 scene.add('marks', ...paintPieSeries(drawContext, entry, props, ringFrame));
 
                 if (labelsFeature) labelSources.push({ kind: 'pie', series: entry, frame: ringFrame });
+
+                collectSliceStamps(drawContext, entry, props, ringFrame, stamps);
 
                 break;
             }
@@ -327,7 +383,7 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
         scene.add('crosshair', ...paintCrosshair(drawContext, tooltip.crosshair));
     }
 
-    return { layers: scene.toLayers(), defs, axisRenders };
+    return { layers: scene.toLayers(), defs, axisRenders, stamps };
 }
 
 /**
@@ -437,4 +493,172 @@ export function clipRefFor(drawContext: DrawContext): string {
 /** Whether any registered series can be placed against cartesian axes. */
 export function hasCartesianSeries(series: readonly ResolvedSeries[]): boolean {
     return series.some((entry) => isCartesian(entry.type));
+}
+
+/* --- Template stamps ---------------------------------------------------------------------------
+ *
+ * Each collector projects its family the same way the painter did and, where the series projected a
+ * template for that surface, records where to stamp it. Nothing is computed twice for a chart with
+ * no templates: the collector returns immediately when the slot is empty.
+ * --------------------------------------------------------------------------------------------- */
+
+/** The template a series projected for one slot, or `null`. */
+function templateFor(series: ResolvedSeries, slot: SceneSlot): TemplateRef<unknown> | null {
+    return series.registration.templates?.()[slot] ?? null;
+}
+
+/** Slice templates, stamped at each slice's own centre, plus the centre content. */
+function collectSliceStamps(ctx: DrawContext, series: ResolvedSeries, props: PieSeriesProps, frame: PieFrame, out: SceneStamp[]): void {
+    const sliceTemplate = templateFor(series, 'slice');
+    const centreTemplate = templateFor(series, 'centerContent');
+
+    if (!sliceTemplate && !centreTemplate) return;
+
+    const slices = projectSlices(ctx, series, props, frame);
+    const data = (props.data as unknown[] | undefined) ?? [];
+
+    if (sliceTemplate) {
+        for (const slice of slices) {
+            // The middle of the ring's thickness, not the outer edge: a label stamped at the rim
+            // would hang half outside the slice it belongs to.
+            const radius = (slice.innerRadius + slice.outerRadius) / 2 + slice.offset;
+            const mid = (slice.startAngle + slice.endAngle) / 2;
+            const at = polarToCartesian(frame.center.x, frame.center.y, radius, mid);
+            const color = ctx.seriesColor(slice.dataIndex);
+
+            out.push({
+                key: `${series.id}:slice:${slice.dataIndex}`,
+                slot: 'slice',
+                template: sliceTemplate,
+                context: sliceRenderContext(ctx, series, slice, frame, color, data),
+                x: at.x,
+                y: at.y
+            });
+        }
+    }
+
+    if (!centreTemplate) return;
+
+    const total = slices.reduce((sum, slice) => sum + slice.value, 0);
+    const hovered = slices.find((slice) => ctx.hover?.datasetId === series.id && ctx.hover.index === slice.dataIndex);
+
+    out.push({
+        key: `${series.id}:centerContent`,
+        slot: 'centerContent',
+        template: centreTemplate,
+        context: {
+            total,
+            formattedTotal: formatNumberTick(total, ctx.locale),
+            hovered: hovered ? { label: hovered.label, value: hovered.value, percentage: hovered.percentage, index: hovered.dataIndex, color: ctx.seriesColor(hovered.dataIndex) } : undefined,
+            center: frame.center,
+            innerRadius: slices[0]?.innerRadius ?? 0,
+            responsive: responsiveContext(responsiveTier(ctx.area.width))
+        } satisfies CenterContentContext,
+        // The centre content is placed by its own context rather than by a transform, so it can be
+        // laid out against the whole circle instead of around one point.
+        x: 0,
+        y: 0
+    });
+}
+
+/** Heatmap cell templates, stamped at each cell's centre. */
+function collectHeatmapStamps(ctx: DrawContext, series: ResolvedSeries, props: HeatmapSeriesProps, scale: ReturnType<typeof resolveHeatmapScale>, out: SceneStamp[]): void {
+    const template = templateFor(series, 'heatmapCell');
+
+    if (!template) return;
+
+    const data = (props.data as unknown[] | undefined) ?? [];
+
+    for (const cell of projectHeatmap(ctx, series, props, scale)) {
+        out.push({
+            key: `${series.id}:cell:${cell.dataIndex}`,
+            slot: 'heatmapCell',
+            template,
+            context: heatmapCellContext(cell, data),
+            x: cell.x + cell.width / 2,
+            y: cell.y + cell.height / 2
+        });
+    }
+}
+
+/** Treemap cell templates, stamped at each cell's top left, which is where its own label sits. */
+function collectTreemapStamps(ctx: DrawContext, series: ResolvedSeries, props: TreemapSeriesProps, out: SceneStamp[]): void {
+    const template = templateFor(series, 'treemapCell');
+
+    if (!template) return;
+
+    for (const cell of projectTreemap(ctx, series, props)) {
+        if (cell.width <= 0 || cell.height <= 0) continue;
+
+        out.push({
+            key: `${series.id}:treemap:${cell.node.dataIndex}:${cell.depth}`,
+            slot: 'treemapCell',
+            template,
+            context: treemapCellContext(cell, null),
+            x: cell.x,
+            y: cell.y
+        });
+    }
+}
+
+/** Scatter marker templates, stamped at each point. */
+function collectScatterStamps(ctx: DrawContext, series: ResolvedSeries, props: ScatterSeriesProps, out: SceneStamp[]): void {
+    const template = templateFor(series, 'marker');
+
+    if (!template) return;
+
+    const data = (props.data as unknown[] | undefined) ?? [];
+
+    for (const point of projectScatter(ctx, series, props)) {
+        out.push({
+            key: `${series.id}:marker:${point.dataIndex}`,
+            slot: 'marker',
+            template,
+            context: {
+                data: data[point.dataIndex],
+                index: point.dataIndex,
+                value: point.yValue,
+                label: series.points.find((entry) => entry.dataIndex === point.dataIndex)?.category ?? String(point.dataIndex),
+                color: ctx.seriesColor(series.seriesIndex),
+                x: point.x,
+                y: point.y,
+                radius: point.radius,
+                isHovered: ctx.hover?.datasetId === series.id && ctx.hover.index === point.dataIndex
+            },
+            x: point.x,
+            y: point.y
+        });
+    }
+}
+
+/** Line marker templates, stamped at each vertex. */
+function collectLineStamps(ctx: DrawContext, series: ResolvedSeries, props: LineSeriesProps, out: SceneStamp[]): void {
+    const template = templateFor(series, 'marker');
+
+    if (!template) return;
+
+    const data = (props.data as unknown[] | undefined) ?? [];
+
+    for (const point of projectLine(ctx, series, props).points) {
+        if (point.value == null || !Number.isFinite(point.x) || !Number.isFinite(point.y)) continue;
+
+        out.push({
+            key: `${series.id}:marker:${point.dataIndex}`,
+            slot: 'marker',
+            template,
+            context: {
+                data: data[point.dataIndex],
+                index: point.dataIndex,
+                value: point.value,
+                label: point.category,
+                color: ctx.seriesColor(series.seriesIndex),
+                x: point.x,
+                y: point.y,
+                radius: props.markerSize ?? 4,
+                isHovered: ctx.hover?.datasetId === series.id && ctx.hover.index === point.dataIndex
+            },
+            x: point.x,
+            y: point.y
+        });
+    }
 }

@@ -278,6 +278,7 @@ export class ChartScatter<T = unknown> {
         if (!this.context) return;
 
         const remove = this.context.registerSeries({
+            templates: computed(() => ({ marker: this.markerDef()?.template ?? null })),
             id: this.datasetId,
             type: 'scatter',
             props: this.props as never,

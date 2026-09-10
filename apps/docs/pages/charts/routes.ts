@@ -52,8 +52,8 @@ import { ChartsTypesPieDonutDemo } from './types/pie-donut';
 import { ChartsTypesPieDonutDonutDemo } from './types/pie-donut/donut';
 import { ChartsTypesPieDonutGaugeDemo } from './types/pie-donut/gauge';
 import { ChartsTypesPieDonutPieDemo } from './types/pie-donut/pie';
-import { ChartsTypesPieDonutNestedDemo } from './types/pie-donut/nested';
-import { ChartsTypesPieDonutNightingaleDemo } from './types/pie-donut/nightingale';
+import { ChartsTypesPieDonutPieNestedDemo } from './types/pie-donut/pie/nested';
+import { ChartsTypesPieDonutPieNightingaleDemo } from './types/pie-donut/pie/nightingale';
 import { ChartsTypesPieDonutPlaygroundDemo } from './types/pie-donut/playground';
 import { ChartsTypesPolarDemo } from './types/polar';
 import { ChartsTypesPolarPlaygroundDemo } from './types/polar/playground';
@@ -128,8 +128,8 @@ export default [
     { path: 'types/pie-donut/donut', component: ChartsTypesPieDonutDonutDemo },
     { path: 'types/pie-donut/gauge', component: ChartsTypesPieDonutGaugeDemo },
     { path: 'types/pie-donut/pie', component: ChartsTypesPieDonutPieDemo },
-    { path: 'types/pie-donut/nested', component: ChartsTypesPieDonutNestedDemo },
-    { path: 'types/pie-donut/nightingale', component: ChartsTypesPieDonutNightingaleDemo },
+    { path: 'types/pie-donut/pie/nested', component: ChartsTypesPieDonutPieNestedDemo },
+    { path: 'types/pie-donut/pie/nightingale', component: ChartsTypesPieDonutPieNightingaleDemo },
     { path: 'types/pie-donut/playground', component: ChartsTypesPieDonutPlaygroundDemo },
     { path: 'types/polar', component: ChartsTypesPolarDemo },
     { path: 'types/polar/playground', component: ChartsTypesPolarPlaygroundDemo },

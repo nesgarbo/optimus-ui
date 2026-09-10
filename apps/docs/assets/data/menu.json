@@ -520,11 +520,11 @@
                                                 },
                                                 {
                                                     "name": "Nested Pie Examples",
-                                                    "routerLink": "/charts/types/pie-donut/nested"
+                                                    "routerLink": "/charts/types/pie-donut/pie/nested"
                                                 },
                                                 {
                                                     "name": "Nightingale Examples",
-                                                    "routerLink": "/charts/types/pie-donut/nightingale"
+                                                    "routerLink": "/charts/types/pie-donut/pie/nightingale"
                                                 },
                                                 {
                                                     "name": "Pie & Donut Playground",

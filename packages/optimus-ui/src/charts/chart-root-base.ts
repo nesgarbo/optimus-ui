@@ -34,6 +34,7 @@ import { resolveSize } from './core/layout';
 import { seriesColorAt } from './core/palette';
 import { CHART_CONTEXT, CHART_GROUP, type ChartContext, type ChartGroupMember, nextDatasetId } from './charts-registry';
 import { createChartState, type ChartStateHandle } from './charts-state';
+import type { SceneStamp } from './render/build-scene';
 import { installPlugins, type PluginHost } from './charts-plugins';
 
 /** The size a chart falls back to before its container has ever been measured. */
@@ -351,6 +352,22 @@ export abstract class ChartRootBase extends BaseComponent<ChartsPassThrough> imp
             y: hover.y
         });
     });
+
+    /**
+     * The projected in-plot templates the last paint produced.
+     *
+     * A signal rather than imperative DOM, because these are Angular views: a slice template can
+     * hold bindings, pipes and control flow, and stamping it by hand would give up all three. The
+     * scene decides *where* each one goes; Angular still decides what it renders.
+     */
+    protected readonly $stamps = signal<readonly SceneStamp[]>([]);
+
+    /** The transform that puts one stamp where its mark is. */
+    protected stampTransform(stamp: SceneStamp): string | null {
+        // Centre content is laid out against the whole circle from its own context, so it is not
+        // translated: moving it would put its coordinates in two places at once.
+        return stamp.slot === 'centerContent' ? null : `translate(${stamp.x}, ${stamp.y})`;
+    }
 
     /** The context every part injects. */
     get context(): ChartContext {

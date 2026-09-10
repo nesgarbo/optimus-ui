@@ -331,6 +331,7 @@ export class ChartTreemap<T = unknown> implements DrilldownContext {
         if (!this.context) return;
 
         const remove = this.context.registerSeries({
+            templates: computed(() => ({ treemapCell: this.cellDef()?.template ?? null })),
             id: this.datasetId,
             type: 'treemap',
             props: this.props as never,

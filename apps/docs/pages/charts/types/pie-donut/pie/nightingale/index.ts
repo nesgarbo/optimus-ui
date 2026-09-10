@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { AppDoc } from '@/components/doc/app.doc';
-import { NightingaleImport2Doc } from '@/doc/charts/types/pie-donut/nightingale/import-2-doc';
-import { NightingaleUsTornadoClimatologyDoc } from '@/doc/charts/types/pie-donut/nightingale/us-tornado-climatology-doc';
-import { NightingaleNoaaMonthlyPrecipitation2024Doc } from '@/doc/charts/types/pie-donut/nightingale/noaa-monthly-precipitation-2024-doc';
+import { NightingaleImport2Doc } from '@/doc/charts/types/pie-donut/pie/nightingale/import-2-doc';
+import { NightingaleUsTornadoClimatologyDoc } from '@/doc/charts/types/pie-donut/pie/nightingale/us-tornado-climatology-doc';
+import { NightingaleNoaaMonthlyPrecipitation2024Doc } from '@/doc/charts/types/pie-donut/pie/nightingale/noaa-monthly-precipitation-2024-doc';
 
 @Component({
     template: `<app-doc
@@ -15,7 +15,7 @@ import { NightingaleNoaaMonthlyPrecipitation2024Doc } from '@/doc/charts/types/p
     standalone: true,
     imports: [AppDoc]
 })
-export class ChartsTypesPieDonutNightingaleDemo {
+export class ChartsTypesPieDonutPieNightingaleDemo {
     docs = [
         {
             id: 'import-2',

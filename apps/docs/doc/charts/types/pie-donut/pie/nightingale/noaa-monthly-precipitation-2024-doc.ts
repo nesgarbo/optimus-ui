@@ -17,7 +17,7 @@ const SEASON_ARCS = [
 ];
 
 @Component({
-    selector: 'types-pie-donut-nightingale-noaa-monthly-precipitation-2024-doc',
+    selector: 'types-pie-donut-pie-nightingale-noaa-monthly-precipitation-2024-doc',
     standalone: true,
     imports: [AppDocSectionText, AppCode, ChartsModule],
     template: `

@@ -9,6 +9,7 @@ const classes = {
     plot: 'p-chart-plot',
     pluginOverlay: 'p-chart-plugin-overlay',
     overlays: 'p-chart-overlays',
+    stamps: 'p-chart-stamps',
     screenReader: 'p-chart-sr-only'
 };
 
@@ -46,6 +47,7 @@ export enum ChartsClasses {
     pluginOverlay = 'p-chart-plugin-overlay',
     /** Class name of the HTML overlay layer */
     overlays = 'p-chart-overlays',
+    stamps = 'p-chart-stamps',
     /** Class name of the visually hidden screen reader region */
     screenReader = 'p-chart-sr-only',
     /** Class name of an axis group */

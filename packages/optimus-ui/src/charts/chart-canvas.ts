@@ -9,7 +9,7 @@
  * It paints the same scene the SVG root materializes, so the geometry is identical by construction
  * rather than by careful duplication.
  */
-import { isPlatformServer } from '@angular/common';
+import { NgTemplateOutlet, isPlatformServer } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, effect, inject, viewChild, type ElementRef } from '@angular/core';
 import { PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { Bind } from '@openng/optimus-ui/bind';
@@ -35,6 +35,7 @@ import { ChartsStyle } from './style/chartsstyle';
 @Component({
     selector: 'p-chart-canvas',
     standalone: true,
+    imports: [NgTemplateOutlet],
     exportAs: 'pChartCanvas',
     template: `
         <div
@@ -49,6 +50,13 @@ import { ChartsStyle } from './style/chartsstyle';
             tabindex="0"
         >
             <canvas #surface [class]="cx('surface')" [attr.data-renderer]="rendererType" [style.width.px]="$width()" [style.height.px]="$height()"></canvas>
+            <svg [class]="cx('stamps')" data-slot="chart-stamps" [attr.width]="$width()" [attr.height]="$height()" [attr.viewBox]="'0 0 ' + $width() + ' ' + $height()" focusable="false" aria-hidden="true">
+                @for (stamp of $stamps(); track stamp.key) {
+                    <svg:g [attr.data-slot]="'chart-stamp-' + stamp.slot" [attr.transform]="stampTransform(stamp)">
+                        <ng-container [ngTemplateOutlet]="stamp.template" [ngTemplateOutletContext]="{ $implicit: stamp.context, ctx: stamp.context }" />
+                    </svg:g>
+                }
+            </svg>
             <div [class]="cx('overlays')">
                 <ng-content />
             </div>
@@ -168,6 +176,10 @@ export class ChartCanvas extends ChartRootBase {
         const height = this.$height();
         const drawContext = buildDrawContext(this.context, this.chartId, this.measureText, this.seriesColor);
         const scene = buildScene(this.context, this.chartState.resolvedSeries(), drawContext);
+
+        // Stamped as real SVG over the canvas, which is the only way a projected template can
+        // carry bindings under a renderer that has no element tree of its own.
+        this.$stamps.set(scene.stamps);
 
         ctx.clearRect(0, 0, width, height);
 

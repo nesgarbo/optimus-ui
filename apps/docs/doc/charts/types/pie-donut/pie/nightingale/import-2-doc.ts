@@ -3,15 +3,15 @@ import { AppCode } from '@/components/doc/app.code';
 import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
 
 @Component({
-    selector: 'types-pie-donut-nested-import-2-doc',
+    selector: 'types-pie-donut-pie-nightingale-import-2-doc',
     standalone: true,
     imports: [AppDocSectionText, AppCode],
     template: `
         <app-docsectiontext>
-            <p>Use nested pies only when the rings describe a real hierarchy. If the rings are unrelated series, use grouped or stacked charts instead.</p>
+            <p>Use a Nightingale chart when cyclical categories need radial magnitude. Make the angle categories obvious, because radius and angle encode separate ideas.</p>
         </app-docsectiontext>
         <app-code></app-code>
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NestedImport2Doc {}
+export class NightingaleImport2Doc {}

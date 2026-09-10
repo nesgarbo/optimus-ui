@@ -229,6 +229,7 @@ export class ChartHeatmap<T = unknown> {
         if (!this.context) return;
 
         const remove = this.context.registerSeries({
+            templates: computed(() => ({ heatmapCell: this.cellDef()?.template ?? null })),
             id: this.datasetId,
             type: 'heatmap',
             props: this.props as never,

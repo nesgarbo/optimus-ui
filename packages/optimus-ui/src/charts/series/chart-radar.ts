@@ -275,6 +275,7 @@ export class ChartRadar<T = unknown> {
         if (!this.context) return;
 
         const remove = this.context.registerSeries({
+            templates: computed(() => ({ marker: this.markerDef()?.template ?? null })),
             id: this.datasetId,
             type: 'radar',
             props: this.props as never,
