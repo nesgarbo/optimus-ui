@@ -20,7 +20,12 @@ import {
     ChartTooltipDef,
     ChartTreemapCellDef
 } from './features/chart-defs';
+import { ChartAnnotation } from './features/chart-annotation';
+import { ChartColorLegend } from './features/chart-color-legend';
+import { ChartDataLabels } from './features/chart-data-labels';
 import { ChartLegend } from './features/chart-legend';
+import { ChartReferenceBand, ChartReferenceLine } from './features/chart-reference';
+import { ChartCaption, ChartTitle } from './features/chart-title';
 import { ChartTooltip } from './features/chart-tooltip';
 import { ChartHover } from './features/chart-hover';
 import { ChartBar } from './series/chart-bar';
@@ -64,7 +69,14 @@ const PARTS = [
     ChartYAxis,
     ChartHover,
     ChartLegend,
+    ChartColorLegend,
     ChartTooltip,
+    ChartTitle,
+    ChartCaption,
+    ChartDataLabels,
+    ChartReferenceLine,
+    ChartReferenceBand,
+    ChartAnnotation,
     ChartLegendItemDef,
     ChartTooltipDef,
     ChartColorLegendDef,

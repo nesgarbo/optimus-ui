@@ -11,7 +11,10 @@ import type {
     BarSeriesProps,
     BaseAxisProps,
     CandlestickSeriesProps,
+    ChartDataLabelsProps,
     ChartHoverProps,
+    ChartReferenceBandProps,
+    ChartReferenceLineProps,
     ChartTooltipProps,
     ColorValue,
     CrosshairConfig,
@@ -37,6 +40,9 @@ import { paintScatterSeries } from './series-scatter';
 import { paintCandlestickSeries } from './series-candlestick';
 import { paintHeatmapSeries, resolveHeatmapScale } from './series-heatmap';
 import { paintTreemapSeries } from './series-treemap';
+import { paintDataLabels } from './data-labels';
+import { collectLabels, type LabelSource } from './label-targets';
+import { paintReferenceBand, paintReferenceLine } from './references';
 import { createScene, plotClip, plotClipRef, type DrawContext, type SceneLayer } from './scene';
 
 /** What a built scene carries back to the root. */
@@ -95,6 +101,13 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
     const scene = createScene();
     const defs: SvgNode[] = [plotClip(drawContext)];
     const axisRenders = new Map<string, AxisRender>();
+    /*
+     * What each series was drawn with, kept so the data labels can be placed against the same
+     * geometry rather than a second guess at it. Collected only when a ChartDataLabels is present,
+     * so a chart without labels pays nothing for them.
+     */
+    const labelsFeature = context.feature<ChartDataLabelsProps>('dataLabels')();
+    const labelSources: LabelSource[] = [];
 
     if (drawContext.area.width <= 0 || drawContext.area.height <= 0) {
         return { layers: [], defs, axisRenders };
@@ -127,6 +140,28 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
         scene.add('axes', ...paintAxis(drawContext, render, props, position, registration.id));
     }
 
+    /* --- References --------------------------------------------------------------------------- */
+
+    /*
+     * Several of each can coexist, so they are read off the whole feature list rather than looked
+     * up by name. The placement decides the layer: a band is context the data sits over, a line is
+     * a threshold the data is read against, and the defaults differ accordingly.
+     */
+    for (const registration of context.features()) {
+        if (registration.type.startsWith('referenceBand')) {
+            const props = registration.props() as ChartReferenceBandProps;
+
+            scene.add(props.placement === 'afterData' ? 'bandsAbove' : 'bandsBelow', ...paintReferenceBand(drawContext, props));
+            continue;
+        }
+
+        if (!registration.type.startsWith('referenceLine')) continue;
+
+        const props = registration.props() as ChartReferenceLineProps;
+
+        scene.add(props.placement === 'beforeData' ? 'bandsBelow' : 'references', ...paintReferenceLine(drawContext, props));
+    }
+
     /* --- Marks -------------------------------------------------------------------------------- */
 
     const grouped = shouldGroup(series);
@@ -152,12 +187,18 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
         for (const entry of spoked) {
             if (entry.type === 'radar') {
                 scene.add('marks', ...paintRadarSeries(drawContext, entry, entry.registration.props() as RadarSeriesProps, radialAxis, spokeFrame));
+
+                if (labelsFeature) labelSources.push({ kind: 'radar', series: entry, axis: radialAxis, frame: spokeFrame });
+
                 continue;
             }
 
             const position = polarMembers.indexOf(entry);
+            const sectorIndex = position < 0 ? 0 : position;
 
-            scene.add('marks', ...paintPolarSeries(drawContext, entry, entry.registration.props() as PolarSeriesProps, radialAxis, spokeFrame, polarMembers.length || 1, position < 0 ? 0 : position));
+            scene.add('marks', ...paintPolarSeries(drawContext, entry, entry.registration.props() as PolarSeriesProps, radialAxis, spokeFrame, polarMembers.length || 1, sectorIndex));
+
+            if (labelsFeature) labelSources.push({ kind: 'polar', series: entry, axis: radialAxis, frame: spokeFrame, sectorCount: polarMembers.length || 1, sectorIndex });
         }
     }
 
@@ -167,6 +208,9 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
         switch (entry.type) {
             case 'line':
                 scene.add('marks', ...paintLineSeries(drawContext, entry, entry.registration.props() as LineSeriesProps));
+
+                if (labelsFeature) labelSources.push({ kind: 'line', series: entry });
+
                 break;
             case 'bar': {
                 const props = entry.registration.props() as BarSeriesProps;
@@ -177,22 +221,40 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
                 const slot = bandSlotFor(bandwidth, groupMembers.length || 1, position < 0 ? 0 : position, props, grouped && position >= 0);
 
                 scene.add('marks', ...paintBarSeries(drawContext, entry, props, slot, horizontal));
+
+                // A stacked segment has a neighbour immediately past its end, so its label goes
+                // inside rather than beside it -- which is why the stack id has to reach the
+                // collector.
+                if (labelsFeature) labelSources.push({ kind: 'bar', series: entry, slot, horizontal, stacked: entry.registration.stackId != null });
+
                 break;
             }
             case 'scatter':
                 scene.add('marks', ...paintScatterSeries(drawContext, entry, entry.registration.props() as ScatterSeriesProps));
+
+                if (labelsFeature) labelSources.push({ kind: 'scatter', series: entry });
+
                 break;
             case 'candlestick':
                 scene.add('marks', ...paintCandlestickSeries(drawContext, entry, entry.registration.props() as CandlestickSeriesProps));
+
+                if (labelsFeature) labelSources.push({ kind: 'candlestick', series: entry });
+
                 break;
             case 'heatmap': {
                 const props = entry.registration.props() as HeatmapSeriesProps;
 
                 scene.add('marks', ...paintHeatmapSeries(drawContext, entry, props, resolveHeatmapScale(entry, props)));
+
+                if (labelsFeature) labelSources.push({ kind: 'heatmap', series: entry });
+
                 break;
             }
             case 'treemap':
                 scene.add('marks', ...paintTreemapSeries(drawContext, entry, entry.registration.props() as TreemapSeriesProps));
+
+                if (labelsFeature) labelSources.push({ kind: 'treemap', series: entry });
+
                 break;
             case 'radar':
             case 'polar':
@@ -202,8 +264,12 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
             case 'donut':
             case 'pie3d': {
                 const props = entry.registration.props() as PieSeriesProps;
+                const ringFrame = ringFrameFor(frame, entry, rings, props);
 
-                scene.add('marks', ...paintPieSeries(drawContext, entry, props, ringFrameFor(frame, entry, rings, props)));
+                scene.add('marks', ...paintPieSeries(drawContext, entry, props, ringFrame));
+
+                if (labelsFeature) labelSources.push({ kind: 'pie', series: entry, frame: ringFrame });
+
                 break;
             }
             default:
@@ -215,6 +281,16 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
         const gradient = gradientDefFor(entry);
 
         if (gradient) defs.push(gradient);
+    }
+
+    /* --- Data labels ------------------------------------------------------------------------- */
+
+    // One pass over every label in the chart, because collision resolution cannot work on a
+    // per-series view of them.
+    if (labelsFeature) {
+        const props = labelsFeature.props();
+
+        scene.add('dataLabels', ...paintDataLabels(drawContext, props, collectLabels(drawContext, props, labelSources)));
     }
 
     /* --- Crosshair ---------------------------------------------------------------------------- */

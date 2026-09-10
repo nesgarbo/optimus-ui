@@ -16,6 +16,7 @@ import { seriesColorAt, seriesColorVariable, seriesTokenVariable } from './core/
 import { createSvgElement } from './core/svg-node';
 import { ChartRootBase } from './chart-root-base';
 import { CHART_CONTEXT } from './charts-registry';
+import { ChartTextStack } from './features/chart-title';
 import { createOverlayRegistry, svgOverlaySurface } from './charts-plugins';
 import { buildDrawContext, buildScene, clipRefFor, isClipped } from './render/build-scene';
 import { hitTest } from './render/hit-test';
@@ -57,7 +58,7 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
-    providers: [ChartsStyle, { provide: PARENT_INSTANCE, useExisting: ChartSvg }, { provide: CHART_CONTEXT, useFactory: () => inject(ChartSvg).context }],
+    providers: [ChartsStyle, ChartTextStack, { provide: PARENT_INSTANCE, useExisting: ChartSvg }, { provide: CHART_CONTEXT, useFactory: () => inject(ChartSvg).context }],
     host: {
         '[class]': 'cx("root")',
         'data-slot': 'chart-root',

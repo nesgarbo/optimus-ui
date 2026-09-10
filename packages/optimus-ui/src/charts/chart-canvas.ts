@@ -20,6 +20,7 @@ import { seriesColorAt } from './core/palette';
 import { paintSvgNode } from './core/svg-node';
 import { ChartRootBase } from './chart-root-base';
 import { CHART_CONTEXT } from './charts-registry';
+import { ChartTextStack } from './features/chart-title';
 import { canvasOverlaySurface, createOverlayRegistry } from './charts-plugins';
 import { buildDrawContext, buildScene, isClipped } from './render/build-scene';
 import { hitTest } from './render/hit-test';
@@ -55,7 +56,7 @@ import { ChartsStyle } from './style/chartsstyle';
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
-    providers: [ChartsStyle, { provide: PARENT_INSTANCE, useExisting: ChartCanvas }, { provide: CHART_CONTEXT, useFactory: () => inject(ChartCanvas).context }],
+    providers: [ChartsStyle, ChartTextStack, { provide: PARENT_INSTANCE, useExisting: ChartCanvas }, { provide: CHART_CONTEXT, useFactory: () => inject(ChartCanvas).context }],
     host: {
         '[class]': 'cx("root")',
         'data-slot': 'chart-root',

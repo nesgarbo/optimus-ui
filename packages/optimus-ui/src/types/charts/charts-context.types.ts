@@ -7,7 +7,27 @@
  * @module charts
  *
  */
-import type { AxisPosition, BoxArea, CanvasPainter, ColorValue, GradientColor, ScaleFunction, TickValue } from './charts.types';
+import type { AxisPosition, BoxArea, CanvasPainter, ColorValue, GradientColor, ResponsiveTier, ScaleFunction, TickValue } from './charts.types';
+
+/**
+ * The responsive tier a render context is being called at, and the picker that goes with it.
+ *
+ * A custom surface has to scale with the chart the same way the chart's own text does, and it has
+ * no other way to know how small the container currently is. `pick` falls back down the tiers, so
+ * `{ xs: 9, md: 13 }` gives `9` at `sm` rather than nothing at all -- an omitted tier means "keep
+ * what the smaller one said", which is what makes a two-entry map usable.
+ * @group Interface
+ */
+export interface ResponsiveContext {
+    /**
+     * Tier the container currently falls into.
+     */
+    tier: ResponsiveTier;
+    /**
+     * Picks the value for the current tier, falling back to the nearest smaller one that was given.
+     */
+    pick: <T>(values: Partial<Record<ResponsiveTier, T>>) => T;
+}
 
 /**
  * Draws an image from a URL at a position relative to the current origin, handling loading and
@@ -255,6 +275,10 @@ export interface AnnotationContext extends CanvasRenderCapabilities {
      * The currently hovered data point, or `null` when nothing is hovered.
      */
     hoveredItem: { datasetId: string; index: number } | null;
+    /**
+     * The tier the chart is at, and the picker for tier-scaled values.
+     */
+    responsive: ResponsiveContext;
 }
 
 /**
@@ -638,6 +662,10 @@ export interface CenterContentContext extends CanvasRenderCapabilities {
      * Center point in pixels.
      */
     center: { x: number; y: number };
+    /**
+     * The tier the chart is at, and the picker for tier-scaled values.
+     */
+    responsive: ResponsiveContext;
     /**
      * Inner radius of the ring in pixels, which bounds the available space.
      */
