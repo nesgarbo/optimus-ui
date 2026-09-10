@@ -154,16 +154,40 @@ export function relativeLuminance(value: string): number | null {
 }
 
 /**
- * Picks the label color that reads against a given fill. This is what `color: auto-contrast` on the
- * data labels resolves to. An unparseable fill falls back to the dark option, which is the safer
- * default over the light backgrounds a chart usually sits on.
+ * The contrast ratio between two colours, as WCAG defines it.
+ *
+ * Between 1 (identical) and 21 (black on white). It is what decides a label's colour, because a
+ * luminance threshold does not: a mid-tone fill sits near the threshold, and which side it lands on
+ * has nothing to do with which text is actually easier to read on it.
+ */
+export function contrastRatio(a: string, b: string): number | null {
+    const first = relativeLuminance(a);
+    const second = relativeLuminance(b);
+
+    if (first == null || second == null) return null;
+
+    const lighter = Math.max(first, second);
+    const darker = Math.min(first, second);
+
+    return (lighter + 0.05) / (darker + 0.05);
+}
+
+/**
+ * Picks the label colour that reads against a given fill, which is what `auto-contrast` resolves to.
+ *
+ * Chosen by measuring both candidates rather than by thresholding the fill's luminance. The
+ * threshold was wrong in the middle of the range, and that is exactly where a chart palette lives:
+ * on a mid blue like `#5daeea`, white gives a ratio of about 2.2 and dark slate about 4.7, and a
+ * luminance test still picked white. An unparseable fill falls back to the dark option, which suits
+ * the light background a chart usually sits on.
  */
 export function contrastingTextColor(background: string, dark = '#0f172a', light = '#ffffff'): string {
-    const luminance = relativeLuminance(background);
+    const onDark = contrastRatio(background, dark);
+    const onLight = contrastRatio(background, light);
 
-    if (luminance == null) return dark;
+    if (onDark == null || onLight == null) return dark;
 
-    return luminance > 0.45 ? dark : light;
+    return onDark >= onLight ? dark : light;
 }
 
 /**

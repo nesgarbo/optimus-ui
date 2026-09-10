@@ -73,7 +73,7 @@ export const style = /*css*/ `
     .p-chart-color-13 { color: var(--p-chart-color-13, dt('charts.palette.color13')); }
 
     .p-chart-axis-line,
-    .p-chart-axis-tick {
+    .p-chart-tick {
         stroke: var(--p-chart-axis, dt('charts.axis.color'));
     }
 
@@ -84,6 +84,11 @@ export const style = /*css*/ `
 
     .p-chart-tick-label {
         fill: var(--p-chart-tick-label-color, dt('charts.tick.label.color'));
+    }
+
+    /* Annotation content inherits the annotation colour, so a plain <svg:text> needs no fill. */
+    .p-chart-annotations {
+        fill: var(--p-chart-annotation-color, dt('charts.annotation.color'));
     }
 
     .p-chart-axis-title {

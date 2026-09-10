@@ -108,17 +108,26 @@ export function paintTreemapSeries(ctx: DrawContext, series: ResolvedSeries, pro
 
         const labelColor = (resolveColorAccessor(props.labelColor, context) as string | undefined) ?? contrastingTextColor(fill);
 
+        /*
+         * A parent's label is a header and a leaf's is a caption for the whole cell.
+         *
+         * So the two are placed differently: a header sits in the strip reserved for it at the top
+         * left, above the children it names, while a leaf's name is centred in the area it stands
+         * for. Putting a leaf's label at the top left too made every cell look like a header for
+         * something that was not there.
+         */
         nodes.push({
             tag: 'text',
             attrs: {
                 class: 'p-chart-treemap-label',
                 'data-slot': 'chart-treemap-label',
-                x: cell.x + 6,
-                y: hasChildren ? cell.y + (props.groupLabelHeight ?? 18) / 2 + 1 : cell.y + 12,
+                x: hasChildren ? cell.x + 6 : cell.x + cell.width / 2,
+                y: hasChildren ? cell.y + (props.groupLabelHeight ?? 18) / 2 + 1 : cell.y + cell.height / 2,
                 fill: labelColor,
                 'font-size': Math.max(ctx.fontSize - 1, 9),
                 'font-family': ctx.fontFamily,
-                'font-weight': hasChildren ? 600 : 'normal',
+                'font-weight': 600,
+                'text-anchor': hasChildren ? 'start' : 'middle',
                 'dominant-baseline': 'central'
             },
             children: [cell.node.label]

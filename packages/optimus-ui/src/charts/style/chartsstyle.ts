@@ -55,7 +55,7 @@ export enum ChartsClasses {
     /** Class name of an axis line */
     axisLine = 'p-chart-axis-line',
     /** Class name of an axis tick mark */
-    axisTick = 'p-chart-axis-tick',
+    axisTick = 'p-chart-tick',
     /** Class name of an axis tick label */
     tickLabel = 'p-chart-tick-label',
     /** Class name of an axis title */

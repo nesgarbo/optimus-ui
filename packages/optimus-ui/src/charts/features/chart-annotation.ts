@@ -30,7 +30,9 @@ import { ChartAnnotationDef } from './chart-defs';
     template: `
         @if (template()) {
             <svg class="p-chart-annotation" data-slot="chart-annotation" [attr.width]="width()" [attr.height]="height()" [attr.viewBox]="viewBox()" focusable="false" aria-hidden="true">
-                <ng-container [ngTemplateOutlet]="template()!" [ngTemplateOutletContext]="{ $implicit: annotationContext(), ctx: annotationContext() }" />
+                <svg:g class="p-chart-annotations" data-slot="chart-annotations">
+                    <ng-container [ngTemplateOutlet]="template()!" [ngTemplateOutletContext]="{ $implicit: annotationContext(), ctx: annotationContext() }" />
+                </svg:g>
             </svg>
         }
     `,

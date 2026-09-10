@@ -156,13 +156,17 @@ export function angleInSweep(angle: number, startAngle: number, endAngle: number
  * A full circle is drawn as two half arcs, because a single arc whose start and end coincide is
  * degenerate and renders as nothing at all — which is how a one-slice pie disappears.
  */
-export function arcPath(cx: number, cy: number, innerRadius: number, outerRadius: number, startAngle: number, endAngle: number, cornerRadius = 0): string {
+export function arcPath(cx: number, cy: number, innerRadius: number, outerRadius: number, startAngle: number, endAngle: number, cornerRadius = 0, padWidth = 0): string {
     const sweep = endAngle - startAngle;
 
     if (Math.abs(sweep) < 1e-6) return '';
 
     if (Math.abs(sweep) >= 359.999) {
         return fullRingPath(cx, cy, innerRadius, outerRadius);
+    }
+
+    if (padWidth > 0) {
+        return paddedArcPath(cx, cy, innerRadius, outerRadius, startAngle, endAngle, cornerRadius, padWidth);
     }
 
     const outerStart = polarToCartesian(cx, cy, outerRadius, startAngle);
@@ -199,6 +203,68 @@ export function fullRingPath(cx: number, cy: number, innerRadius: number, outerR
     const inner = `M ${cx - innerRadius} ${cy} A ${innerRadius} ${innerRadius} 0 1 1 ${cx + innerRadius} ${cy} A ${innerRadius} ${innerRadius} 0 1 1 ${cx - innerRadius} ${cy} Z`;
 
     return `${outer} ${inner}`;
+}
+
+/**
+ * An arc whose gap to its neighbours is a constant width in pixels.
+ *
+ * The obvious way to separate two slices is to trim an angle off each, and that is wrong on
+ * anything but a thin ring: the width of an angular gap is `angle × radius`, so it closes to
+ * nothing at the centre and fans out at the rim. On a rose, where each petal reaches a different
+ * radius, the effect is a pinwheel -- the long petals stand far apart while the short ones touch.
+ *
+ * A constant-width gap is instead a perpendicular offset of the two radial edges. Offsetting an
+ * edge by `w/2` moves its intersection with the circle of radius `r` by `asin(w / 2r)`, which is
+ * large near the centre and small at the rim -- the opposite of a fixed angle, and the reason the
+ * gap comes out the same width all the way along. The two offset edges meet at
+ * `(w/2) / sin(sweep/2)`, so a wedge no longer reaches the centre: its apex is truncated, which is
+ * what leaves the rose a small clear middle instead of a knot of converging points.
+ */
+function paddedArcPath(cx: number, cy: number, innerRadius: number, outerRadius: number, startAngle: number, endAngle: number, cornerRadius: number, padWidth: number): string {
+    const sweep = endAngle - startAngle;
+    const direction = sweep > 0 ? 1 : -1;
+    const half = Math.abs(sweep) / 2;
+    const pad = padWidth / 2;
+    // Where the two offset edges cross. Inside this radius the slice has no width at all.
+    const apex = Math.sin(toRadians(half)) > 1e-6 ? pad / Math.sin(toRadians(half)) : 0;
+    const inner = Math.max(innerRadius, apex);
+
+    // Padded away to nothing: a slice thinner than its own gap has nothing left to draw, and
+    // drawing it anyway would produce an inside-out path.
+    if (outerRadius <= inner + 0.25) return '';
+
+    /** The angular inset at one radius, which is what keeps the gap a constant width. */
+    const insetAt = (radius: number) => (radius <= pad ? half : toDegrees(Math.asin(Math.min(pad / radius, 1))));
+
+    const outerInset = Math.min(insetAt(outerRadius), half - 1e-4);
+    const innerInset = Math.min(insetAt(inner), half - 1e-4);
+    const a0 = startAngle + direction * outerInset;
+    const a1 = endAngle - direction * outerInset;
+    const i0 = startAngle + direction * innerInset;
+    const i1 = endAngle - direction * innerInset;
+    const largeArc = Math.abs(a1 - a0) > 180 ? 1 : 0;
+    const flag = sweep > 0 ? 1 : 0;
+
+    if (cornerRadius > 0) {
+        return roundedArcPath(cx, cy, inner, outerRadius, a0, a1, cornerRadius);
+    }
+
+    const outerStart = polarToCartesian(cx, cy, outerRadius, a0);
+    const outerEnd = polarToCartesian(cx, cy, outerRadius, a1);
+    const innerEnd = polarToCartesian(cx, cy, inner, i1);
+    const innerStart = polarToCartesian(cx, cy, inner, i0);
+
+    // At the apex the two inner points coincide, so the inner arc collapses into a single vertex.
+    if (Math.abs(i1 - i0) < 1e-4 || inner <= 1e-4) {
+        return `M ${innerStart.x} ${innerStart.y} L ${outerStart.x} ${outerStart.y} A ${outerRadius} ${outerRadius} 0 ${largeArc} ${flag} ${outerEnd.x} ${outerEnd.y} Z`;
+    }
+
+    return (
+        `M ${outerStart.x} ${outerStart.y} ` +
+        `A ${outerRadius} ${outerRadius} 0 ${largeArc} ${flag} ${outerEnd.x} ${outerEnd.y} ` +
+        `L ${innerEnd.x} ${innerEnd.y} ` +
+        `A ${inner} ${inner} 0 ${largeArc} ${flag === 1 ? 0 : 1} ${innerStart.x} ${innerStart.y} Z`
+    );
 }
 
 /**

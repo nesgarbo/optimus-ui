@@ -31,6 +31,14 @@ export interface SliceGeometry {
      * Radial offset, which is what pulls a slice out of an exploded pie.
      */
     offset: number;
+    /**
+     * Width of the gap to the neighbouring slices, in pixels.
+     *
+     * A width rather than an angle: the painter insets each end by a different amount at each
+     * radius to keep the gap constant, which an angle cannot express. The angles above are the
+     * slice's real band, so a label centres on the slice and hit-testing covers the gap.
+     */
+    padWidth: number;
 }
 
 /** Where a pie is drawn and how big it is. */
@@ -103,20 +111,18 @@ export function projectSlices(ctx: DrawContext, series: ResolvedSeries, props: P
     const innerRadius = outerRadius * innerRatio;
 
     /*
-     * The spacing between slices is taken out of each slice's own sweep, expressed as the angle that
-     * gap subtends at that slice's mid-radius -- so the visual gap is a constant number of pixels
-     * rather than a constant angle.
+     * The gap between slices stays as a width in pixels rather than being converted to an angle
+     * here.
      *
-     * The distinction only shows up on a nightingale, where every slice has a different radius: one
-     * angle for all of them meant a short petal gave up a far larger share of its arc than a long
-     * one, and the rose came out as a pinwheel of wedge-shaped holes converging on the centre.
+     * Trimming an angle off each end is the obvious move and it is wrong: an angular gap is
+     * `angle × radius` wide, so it closes at the centre and fans out at the rim. The painter offsets
+     * the two radial edges perpendicularly instead, which is a constant width the whole way along --
+     * and which only it can do, since the inset depends on the radius being drawn.
+     *
+     * Keeping the angles unpadded here has a second benefit: a label is centred on the slice's real
+     * band and hit-testing covers the gap, so there is no dead strip between two slices.
      */
-    const gapAngleAt = (radius: number) => {
-        const mid = (radius + innerRadius) / 2 || radius;
-
-        return spacing > 0 && mid > 0 ? Math.min((spacing / (2 * Math.PI * mid)) * 360, sweep / ordered.length / 2) : 0;
-    };
-    const gapAngle = gapAngleAt(outerRadius);
+    const padWidth = spacing > 0 ? spacing : 0;
 
     // The radius values are resolved up front because each one is scaled against the largest of
     // *them*. Scaling against the angle values instead was a real bug: on a rose chart the angles
@@ -142,14 +148,14 @@ export function projectSlices(ctx: DrawContext, series: ResolvedSeries, props: P
         // A nightingale scales each slice's radius by its own value, which is what encodes the
         // magnitude in the radius as well as in the angle.
         const sliceOuter = sliceRadius != null ? scaleSliceRadius(sliceRadius, maxRadiusValue, outerRadius, innerRadius) : outerRadius;
-        const sliceGap = sliceRadius != null ? gapAngleAt(sliceOuter) : gapAngle;
 
         slices.push({
             label: entry.label,
             value: entry.value,
             percentage: fraction * 100,
-            startAngle: cursor + sliceGap / 2,
-            endAngle: cursor + span - sliceGap / 2,
+            startAngle: cursor,
+            endAngle: cursor + span,
+            padWidth,
             innerRadius,
             outerRadius: sliceOuter,
             dataIndex: entry.dataIndex,
@@ -218,7 +224,7 @@ export function paintPieSeries(ctx: DrawContext, series: ResolvedSeries, props: 
                 'data-index': slice.dataIndex,
                 'data-category': slice.label,
                 'data-state': hovered ? 'hovered' : null,
-                d: arcPath(frame.center.x, frame.center.y, slice.innerRadius, slice.outerRadius, slice.startAngle, slice.endAngle, typeof radius === 'number' ? radius : 0),
+                d: arcPath(frame.center.x, frame.center.y, slice.innerRadius, slice.outerRadius, slice.startAngle, slice.endAngle, typeof radius === 'number' ? radius : 0, slice.padWidth),
                 fill,
                 'fill-opacity': opacity,
                 stroke: stroke ?? null,

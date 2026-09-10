@@ -190,8 +190,15 @@ export function paintBarSeries(ctx: DrawContext, series: ResolvedSeries, props: 
                 d: custom ?? shapeFor(geometry, radius, props, bar.isNegative, horizontal),
                 fill,
                 'fill-opacity': opacity,
-                stroke: stroke ?? null,
-                'stroke-width': (resolveScalarAccessor(props.borderStrokeWidth, context) as number | undefined) ?? null,
+                /*
+                 * A bar with no border still names a stroke, at zero width.
+                 *
+                 * That is what makes `stroke-width` alone enough to give the bars a border in their
+                 * own colour from a stylesheet -- with `stroke: none` there is nothing for a width
+                 * to draw, so the override would silently do nothing.
+                 */
+                stroke: stroke ?? (typeof fill === 'string' ? fill : null),
+                'stroke-width': (resolveScalarAccessor(props.borderStrokeWidth, context) as number | undefined) ?? (stroke ? null : 0),
                 'stroke-linejoin': props.borderJoinStyle ?? null,
                 'stroke-dasharray': dashAttr(resolveDashAccessor(props.borderDash, context)),
                 'stroke-dashoffset': (resolveScalarAccessor(props.borderDashOffset, context) as number | undefined) ?? null,

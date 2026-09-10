@@ -24,9 +24,9 @@ export const defaultLightTheme: Required<Pick<ChartTheme, 'series'>> & ChartThem
     axes: ['#64748b', '#64748b'],
     grid: '#e2e8f0',
     gridMinor: '#f1f5f9',
-    tickLabel: '#475569',
+    tickLabel: '#64748b',
     dataLabel: '#334155',
-    annotation: '#475569',
+    annotation: '#334155',
     titleColor: '#0f172a',
     captionColor: '#64748b',
     bandFill: '#0f172a',
@@ -50,9 +50,9 @@ export const defaultDarkTheme: Required<Pick<ChartTheme, 'series'>> & ChartTheme
     axes: ['#94a3b8', '#94a3b8'],
     grid: '#243447',
     gridMinor: '#172235',
-    tickLabel: '#cbd5e1',
+    tickLabel: '#94a3b8',
     dataLabel: '#e2e8f0',
-    annotation: '#cbd5e1',
+    annotation: '#e2e8f0',
     titleColor: '#f8fafc',
     captionColor: '#94a3b8',
     bandFill: '#f8fafc',
@@ -99,9 +99,16 @@ export function seriesTokenVariable(index: number, paletteSize: number = LIGHT_S
     return `--p-charts-palette-color${((index % paletteSize) + paletteSize) % paletteSize}`;
 }
 
-/** The stable class an SVG mark carries so a stylesheet can reach it by series index. */
+/**
+ * The stable classes an SVG mark carries so a stylesheet can reach it.
+ *
+ * Two of them, and they answer different questions. `p-chart-color-N` says which palette slot the
+ * mark took, which is what a theme override targets; `p-chart-series-N` says which series it is,
+ * which is what an application targeting *its own* second series needs -- and those differ the
+ * moment the palette wraps or a series is hidden.
+ */
 export function seriesColorClass(index: number, paletteSize: number = LIGHT_SERIES_PALETTE.length): string {
-    return `p-chart-color-${((index % paletteSize) + paletteSize) % paletteSize}`;
+    return `p-chart-color-${((index % paletteSize) + paletteSize) % paletteSize} p-chart-series-${index}`;
 }
 
 /** Merges a partial theme over the built-in defaults for the active color scheme. */

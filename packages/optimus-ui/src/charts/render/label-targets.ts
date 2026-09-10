@@ -253,8 +253,16 @@ function sliceLabels(ctx: DrawContext, props: ChartDataLabelsProps, series: Reso
         const mid = (slice.startAngle + slice.endAngle) / 2;
         const context = labelContext(data[slice.dataIndex], slice.dataIndex, series.seriesIndex, series.id, slice.value, slice.label);
         const style = labelStyle(ctx, props, context);
+        /*
+         * The line leaves the slice's own rim but elbows on a ring common to every label.
+         *
+         * Elbowing at each slice's own radius put a short petal's label right next to the centre
+         * while a long petal's sat at the edge -- on a rose, where the radii differ by design, the
+         * labels ended up scattered at a dozen different distances instead of reading as one ring
+         * around the chart.
+         */
         const start = polarToCartesian(frame.center.x, frame.center.y, slice.outerRadius + slice.offset + distance / 2, mid);
-        const elbow = polarToCartesian(frame.center.x, frame.center.y, slice.outerRadius + slice.offset + distance + textGap, mid);
+        const elbow = polarToCartesian(frame.center.x, frame.center.y, frame.radius + distance + textGap, mid);
         const side: 'left' | 'right' = Math.cos((mid * Math.PI) / 180) < 0 ? 'left' : 'right';
         const direction = side === 'left' ? -1 : 1;
         const end = lineStyle === 'straight' ? elbow : { x: elbow.x + direction * horizontalOffset, y: elbow.y };
@@ -456,11 +464,11 @@ function treemapLabels(ctx: DrawContext, props: ChartDataLabelsProps, series: Re
         labels.push({
             datasetId: series.id,
             dataIndex,
-            // The cell's name is already drawn by the treemap painter at the top left, so the value
-            // line sits directly under it rather than repeating it.
-            x: cell.x + 6,
-            y: cell.y + 12 + style.fontSize,
-            anchor: 'start',
+            // The cell's name is already drawn by the treemap painter, centred, so the value line
+            // sits directly under it rather than repeating it.
+            x: cell.x + cell.width / 2,
+            y: cell.y + cell.height / 2 + style.fontSize + 2,
+            anchor: 'middle',
             baseline: 'middle',
             text: labelText(props, cell.node.value, percentage, cell.node.label, cell.node.datum, ctx.locale),
             fontSize: style.fontSize,

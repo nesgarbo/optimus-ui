@@ -63,8 +63,19 @@ const AUTO_TICK_BOUNDS = { min: 2, max: 12 };
  * do is invent ticks that were never generated.
  */
 export function autoTickCount(scale: AxisScale): number {
-    const length = Math.abs(scale.range[1] - scale.range[0]);
+    return tickCountForLength(Math.abs(scale.range[1] - scale.range[0]));
+}
 
+/**
+ * The same rule, from a raw pixel length.
+ *
+ * The domain has to be niced before any scale exists -- that is what breaks the circularity between
+ * an axis' reservation and the plot it is measured against -- so it needs this without a scale to
+ * ask. Sharing the rule is the point: nicing the domain to one density and drawing the ticks at
+ * another rounded the domain out further than the ticks needed, so a series running 28 to 81 got an
+ * axis of 20 to 90 with ticks every 5.
+ */
+export function tickCountForLength(length: number): number {
     if (!Number.isFinite(length) || length <= 0) return AUTO_TICK_BOUNDS.min;
 
     return Math.min(Math.max(Math.round(length / PIXELS_PER_TICK), AUTO_TICK_BOUNDS.min), AUTO_TICK_BOUNDS.max);
@@ -204,7 +215,7 @@ function reserveFor(ctx: DrawContext, props: BaseAxisProps, position: AxisPositi
     const style = props.tickStyle && typeof props.tickStyle === 'object' ? props.tickStyle : {};
     const tickLength = props.showTicks === false ? 0 : (style.tickLength ?? 6);
     const padding = style.padding ?? 8;
-    const titleHeight = props.label ? lineHeightOf(fontSize + 1) + 4 : 0;
+    const titleHeight = props.label ? lineHeightOf(fontSize + 2) + 4 : 0;
 
     if (props.showLabels === false) return tickLength + titleHeight;
 
@@ -259,7 +270,7 @@ export function paintAxis(ctx: DrawContext, render: AxisRender, props: BaseAxisP
             nodes.push({
                 tag: 'line',
                 attrs: {
-                    class: 'p-chart-axis-tick',
+                    class: 'p-chart-tick',
                     'data-slot': 'chart-axis-tick',
                     x1: horizontal ? tick.position : edge,
                     y1: horizontal ? edge : tick.position,
@@ -298,7 +309,10 @@ export function paintAxis(ctx: DrawContext, render: AxisRender, props: BaseAxisP
     }
 
     if (props.label) {
-        nodes.push(paintAxisTitle(ctx, props.label, position, labelColor, fontSize, render));
+        // The title reads the axis colour, not the tick label's: it names the axis rather than
+        // annotating a tick, which is why the reference gives the two the same alias as the axis
+        // line and its ticks.
+        nodes.push(paintAxisTitle(ctx, props.label, position, props.color ?? ctx.theme.axes?.[axisOfPosition(position) === 'x' ? 0 : 1] ?? labelColor, fontSize, render));
     }
 
     return [slotGroup('chart-axis', { class: `p-chart-axis p-chart-axis-${axis}`, 'data-axis': axis, 'data-axis-id': axisId, 'data-position': position }, nodes)];
@@ -324,8 +338,8 @@ function paintAxisTitle(ctx: DrawContext, label: string, position: AxisPosition,
             fill: color,
             // The title names what the axis measures, so it carries more weight than the tick
             // labels that read against it -- otherwise the two rows compete at the same voice.
-            'font-size': fontSize + 1,
-            'font-weight': 600,
+            'font-size': fontSize + 2,
+            'font-weight': 700,
             'font-family': ctx.fontFamily,
             'text-anchor': 'middle',
             'dominant-baseline': 'central',

@@ -87,14 +87,14 @@ export const palette: ChartsTokenSections.Palette = {};
  */
 export const colorScheme: ChartsTokenSections.ColorScheme = {
     light: {
-        axis: { color: '{surface.500}', titleColor: '{surface.600}' },
-        tick: { labelColor: '{surface.600}' },
+        axis: { color: '{surface.500}', titleColor: '{surface.500}' },
+        tick: { labelColor: '{surface.500}' },
         grid: { color: '{surface.200}', minorColor: '{surface.100}' },
         band: { fill: '{surface.900}' },
         title: { color: '{surface.900}' },
         caption: { color: '{surface.500}' },
         dataLabel: { color: '{surface.700}' },
-        annotation: { color: '{surface.600}' },
+        annotation: { color: '{surface.700}' },
         crosshair: { color: '{surface.400}' },
         legend: { color: '{surface.700}' },
         tooltip: {
@@ -135,14 +135,14 @@ export const colorScheme: ChartsTokenSections.ColorScheme = {
         }
     },
     dark: {
-        axis: { color: '{surface.400}', titleColor: '{surface.300}' },
-        tick: { labelColor: '{surface.300}' },
+        axis: { color: '{surface.400}', titleColor: '{surface.400}' },
+        tick: { labelColor: '{surface.400}' },
         grid: { color: '{surface.700}', minorColor: '{surface.800}' },
         band: { fill: '{surface.0}' },
         title: { color: '{surface.0}' },
         caption: { color: '{surface.400}' },
         dataLabel: { color: '{surface.200}' },
-        annotation: { color: '{surface.300}' },
+        annotation: { color: '{surface.200}' },
         crosshair: { color: '{surface.500}' },
         legend: { color: '{surface.200}' },
         tooltip: {

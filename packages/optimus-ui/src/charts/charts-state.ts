@@ -16,6 +16,7 @@ import { registeredLocales, resolveChartText } from './core/text';
 import { bandScale, linearScale, logScale, timeScale, toNumber, unionCategories } from './core/scale';
 import { sortCategories, stackedDomain, stackSeries, waterfallDomain, waterfallSteps, type StackInput } from './core/stack';
 import { niceDomain } from './core/ticks';
+import { tickCountForLength } from './render/axis';
 import { type AxisRegistration, type ChartContext, type FeatureRegistration, type LayoutReservation, type SeriesRegistration, scaleKey } from './charts-registry';
 
 /**
@@ -662,7 +663,17 @@ export function createChartState(options: ChartStateOptions) {
         // A fixed bound is honoured exactly; only an automatic domain is rounded out to a tick, so
         // asking for max: 100 does not silently become 120.
         if (fixedMin == null && fixedMax == null && type === 'linear') {
-            const tickCount = numberProp(props['tickCount']) ?? 6;
+            /*
+             * The tick density comes from the axis' own length, the same way the tick generator
+             * gets it.
+             *
+             * The length used here is the chart's, not the plot's: the plot is not known yet, since
+             * this domain is what the axis measures its reservation against. It over-estimates by
+             * the reservations, which moves the count by at most a tick or two and never reopens
+             * the circularity.
+             */
+            const length = axis === 'y' ? options.height() : options.width();
+            const tickCount = numberProp(props['tickCount']) ?? tickCountForLength(length);
 
             return niceDomain(min, max, tickCount);
         }
