@@ -168,6 +168,21 @@ export function projectSlices(ctx: DrawContext, series: ResolvedSeries, props: P
     return slices;
 }
 
+/**
+ * The colour one slice is painted.
+ *
+ * Exported because the data labels need the same answer: a leader line takes its slice's colour, and
+ * deriving it a second time from the palette alone ignored an explicit `color` array -- so the line
+ * pointing at an amber slice came out green.
+ */
+export function sliceColor(ctx: DrawContext, series: ResolvedSeries, slice: SliceGeometry, props: PieSeriesProps, data: readonly unknown[]): string {
+    const context: ItemContext<unknown> = itemContext(data[slice.dataIndex], slice.dataIndex, series.seriesIndex, series.id, slice.value, slice.label);
+    // A pie's slices are the categories, so the palette varies per slice rather than per series.
+    const fallback = ctx.seriesColor(slice.dataIndex);
+
+    return (resolveColorAccessor(props.color, context, fallback) as string) ?? fallback;
+}
+
 /** Sorts the slices before they are laid out. */
 function sortBySlice<T extends { label: string; value: number }>(entries: T[], order: NonNullable<PieSeriesProps['sort']>): T[] {
     const byLabel = new Map(entries.map((entry) => [entry.label, entry]));
@@ -205,7 +220,7 @@ export function paintPieSeries(ctx: DrawContext, series: ResolvedSeries, props: 
         // slices are the categories, so the palette has to vary per slice.
         const fallback = ctx.seriesColor(slice.dataIndex);
         const hoverFill = hovered ? (resolveColorAccessor(props.hoverColor, context) as string | undefined) : undefined;
-        const fill = hoverFill ?? (resolveColorAccessor(props.color, context, fallback) as string) ?? fallback;
+        const fill = hoverFill ?? sliceColor(ctx, series, slice, props, data);
         const stroke = hovered
             ? ((resolveColorAccessor(props.hoverBorderColor, context) as string | undefined) ?? (resolveColorAccessor(props.borderColor, context) as string | undefined))
             : (resolveColorAccessor(props.borderColor, context) as string | undefined);

@@ -22,7 +22,7 @@ import { projectBars, type BandSlot } from './series-bar';
 import { projectCandles } from './series-candlestick';
 import { projectHeatmap, resolveHeatmapScale } from './series-heatmap';
 import { projectLine } from './series-line';
-import { projectSlices, type PieFrame } from './series-pie';
+import { projectSlices, sliceColor, type PieFrame } from './series-pie';
 import { radiusFor, type RadialAxis } from './series-radial';
 import { projectScatter } from './series-scatter';
 import { projectTreemap } from './series-treemap';
@@ -285,7 +285,10 @@ function sliceLabels(ctx: DrawContext, props: ChartDataLabelsProps, series: Reso
                 lineStyle === 'none'
                     ? undefined
                     : {
-                          color: typeof connectorColor === 'string' ? connectorColor : ctx.seriesColor(slice.dataIndex),
+                          // The slice's own colour, resolved the way the painter resolves it: a
+                          // leader line has to match the slice it points at, and the palette slot
+                          // is not that colour whenever the series was given one.
+                          color: typeof connectorColor === 'string' ? connectorColor : sliceColor(ctx, series, slice, seriesProps, data),
                           width: (props.connectorWidth as number | undefined) ?? 1
                       },
             center: frame.center,
