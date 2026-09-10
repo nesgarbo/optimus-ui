@@ -276,7 +276,9 @@ export abstract class ChartRootBase extends BaseComponent<ChartsPassThrough> imp
 
         const rootSize = this.rootFontSize();
 
-        return rootSize == null ? base : base * (rootSize / 16);
+        // Rounded to whole pixels: a fractional font size renders blurry, and the derived sizes --
+        // axis titles, data labels -- inherit the fraction and compound it.
+        return rootSize == null ? base : Math.round(base * (rootSize / 16));
     });
 
     readonly $fontFamily = computed(() => this.fontFamily() ?? 'system-ui, sans-serif');

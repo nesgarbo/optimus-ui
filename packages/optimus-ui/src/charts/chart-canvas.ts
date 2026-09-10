@@ -20,6 +20,7 @@ import { seriesColorAt } from './core/palette';
 import { paintSvgNode } from './core/svg-node';
 import { ChartRootBase } from './chart-root-base';
 import { CHART_CONTEXT } from './charts-registry';
+import { ChartA11yView } from './features/chart-a11y-view';
 import { ChartTextStack } from './features/chart-title';
 import { canvasOverlaySurface, createOverlayRegistry } from './charts-plugins';
 import { buildDrawContext, buildScene, isClipped } from './render/build-scene';
@@ -35,7 +36,7 @@ import { ChartsStyle } from './style/chartsstyle';
 @Component({
     selector: 'p-chart-canvas',
     standalone: true,
-    imports: [NgTemplateOutlet],
+    imports: [ChartA11yView, NgTemplateOutlet],
     exportAs: 'pChartCanvas',
     template: `
         <div
@@ -60,6 +61,7 @@ import { ChartsStyle } from './style/chartsstyle';
             <div [class]="cx('overlays')">
                 <ng-content />
             </div>
+            <p-chart-a11y-view />
         </div>
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,

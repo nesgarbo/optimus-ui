@@ -24,6 +24,7 @@ export * from './core/treemap';
 export * from './core/stack';
 export * from './core/svg-node';
 export * from './core/ticks';
+export * from './features/chart-a11y-view';
 export * from './features/chart-accessibility';
 export * from './features/chart-annotation';
 export * from './features/chart-axis-group';

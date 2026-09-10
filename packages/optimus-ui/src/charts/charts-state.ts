@@ -846,7 +846,10 @@ export function createChartState(options: ChartStateOptions) {
 
         const categories = unionCategories(series.map((entry) => entry.categories));
         const escape = (cell: string) => (/[",\n]/.test(cell) ? `"${cell.replace(/"/g, '""')}"` : cell);
-        const header = ['Category', ...series.map((entry) => String((entry.registration.props() as Record<string, unknown>)['name'] ?? entry.id))];
+        // An unnamed series is numbered rather than exposing its generated id: `line-2` is an
+        // internal handle, and it is the one thing in this table a reader cannot interpret.
+        const label = chartText();
+        const header = [label.category, ...series.map((entry, index) => String((entry.registration.props() as Record<string, unknown>)['name'] ?? `${label.series} ${index + 1}`))];
         const rows = categories.map((category) => [category, ...series.map((entry) => String(entry.points.find((point) => point.category === category)?.value ?? ''))]);
 
         return [header, ...rows].map((row) => row.map(escape).join(',')).join('\n');

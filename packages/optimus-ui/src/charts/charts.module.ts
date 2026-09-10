@@ -20,6 +20,7 @@ import {
     ChartTooltipDef,
     ChartTreemapCellDef
 } from './features/chart-defs';
+import { ChartA11yView } from './features/chart-a11y-view';
 import { ChartAccessibility } from './features/chart-accessibility';
 import { ChartAnnotation } from './features/chart-annotation';
 import { ChartAxisCategory, ChartAxisGroup } from './features/chart-axis-group';
@@ -90,6 +91,7 @@ const PARTS = [
     ChartNavigator,
     ChartExportMenu,
     ChartAccessibility,
+    ChartA11yView,
     ChartResponsive,
     ChartDecimation,
     ChartBreadcrumb,

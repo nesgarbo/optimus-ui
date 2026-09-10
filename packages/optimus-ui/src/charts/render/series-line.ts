@@ -252,8 +252,15 @@ export function paintMarkers(ctx: DrawContext, series: ResolvedSeries, props: Li
                 'data-state': hovered ? 'hovered' : null,
                 d,
                 fill: typeof fill === 'string' ? fill : fallbackColor,
-                stroke: typeof stroke === 'string' ? stroke : null,
-                'stroke-width': strokeWidth ?? null,
+                /*
+                 * A marker with no border still names a stroke, at zero width.
+                 *
+                 * That is what makes `stroke-width` alone enough to ring the markers in their own
+                 * colour from a stylesheet: with `stroke: none` there is nothing for a width to
+                 * draw, so the override would silently do nothing.
+                 */
+                stroke: typeof stroke === 'string' ? stroke : typeof fill === 'string' ? fill : fallbackColor,
+                'stroke-width': strokeWidth ?? (typeof stroke === 'string' ? null : 0),
                 'stroke-linejoin': props.pointBorderJoinStyle ?? null,
                 'stroke-dasharray': dashAttr(resolveDashAccessor(props.pointBorderDash, context)),
                 opacity: markOpacity(ctx, series.id, point.dataIndex),

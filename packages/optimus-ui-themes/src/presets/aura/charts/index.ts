@@ -1,7 +1,14 @@
 import type { ChartsDesignTokens, ChartsTokenSections } from '@openng/optimus-ui-themes/types/charts';
 
 export const root: ChartsTokenSections.Root = {
-    color: '{content.color}',
+    /*
+     * The chart's own strongest text tone, not the page's body colour.
+     *
+     * This is what `currentColor` resolves to inside a chart, so it decides the fallback for every
+     * mark and label that does not name a colour. Inheriting `{content.color}` made that depend on
+     * whatever surrounded the chart -- the same chart read differently on two pages.
+     */
+    color: '{surface.900}',
     background: 'transparent'
 };
 
@@ -87,6 +94,7 @@ export const palette: ChartsTokenSections.Palette = {};
  */
 export const colorScheme: ChartsTokenSections.ColorScheme = {
     light: {
+        root: { color: '{surface.900}' },
         axis: { color: '{surface.500}', titleColor: '{surface.500}' },
         tick: { labelColor: '{surface.500}' },
         grid: { color: '{surface.200}', minorColor: '{surface.100}' },
@@ -135,6 +143,7 @@ export const colorScheme: ChartsTokenSections.ColorScheme = {
         }
     },
     dark: {
+        root: { color: '{surface.0}' },
         axis: { color: '{surface.400}', titleColor: '{surface.400}' },
         tick: { labelColor: '{surface.400}' },
         grid: { color: '{surface.700}', minorColor: '{surface.800}' },

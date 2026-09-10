@@ -8,7 +8,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const DOCS_DIR = path.resolve(__dirname, '../doc');
-const OUTPUT_PATH = path.resolve(__dirname, '../public/demos.json');
+// Outside `public/`: the full catalogue is a build input, not something to ship.
+const OUTPUT_PATH = path.resolve(__dirname, '../.demos/demos.json');
+const ROOT_DIR = path.resolve(__dirname, '..');
 
 // Directories to skip (not component demos)
 const SKIP_DIRS = ['apidoc', 'theming', 'icons', 'installation', 'configuration', 'customicons', 'playground', 'uikit', 'templates', 'primeflex', 'csslayer', 'migration', 'llms'];
@@ -1468,13 +1470,43 @@ async function main() {
         fs.mkdirSync(outputDir, { recursive: true });
     }
 
-    // Write JSON file
-    fs.writeFileSync(OUTPUT_PATH, JSON.stringify(output, null, 2));
+    /*
+     * Written twice, for two different readers.
+     *
+     * The whole catalogue goes outside `public/` because only the build scripts read it -- shipping
+     * it would put every component's source on the wire for anyone opening any page, which was two
+     * and a half megabytes before a single chart had been drawn.
+     *
+     * What the browser gets is one file per component, minified, fetched when a page asks for that
+     * component's code. No information is lost: the same entries, split by the prefix their keys
+     * already carry.
+     */
+    fs.writeFileSync(OUTPUT_PATH, JSON.stringify(output));
+
+    const byComponent = new Map();
+
+    for (const [key, demo] of Object.entries(output.demos)) {
+        const component = demo.component ?? key.split('-')[0];
+
+        if (!byComponent.has(component)) byComponent.set(component, {});
+
+        byComponent.get(component)[key] = demo;
+    }
+
+    const splitDir = path.join(ROOT_DIR, 'public', 'demos');
+
+    fs.rmSync(splitDir, { recursive: true, force: true });
+    fs.mkdirSync(splitDir, { recursive: true });
+
+    for (const [component, demos] of byComponent) {
+        fs.writeFileSync(path.join(splitDir, `${component}.json`), JSON.stringify({ version: output.version, generatedAt: output.generatedAt, totalDemos: Object.keys(demos).length, demos }));
+    }
 
     console.log(`\nBuild complete!`);
     console.log(`  Processed: ${processedCount} demos`);
     console.log(`  Errors: ${errorCount}`);
-    console.log(`  Output: ${OUTPUT_PATH}`);
+    console.log(`  Catalogue: ${OUTPUT_PATH}`);
+    console.log(`  Per component: ${byComponent.size} files in ${splitDir}`);
 }
 
 main().catch(console.error);

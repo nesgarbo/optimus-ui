@@ -16,6 +16,7 @@ import { seriesColorAt, seriesColorVariable, seriesTokenVariable } from './core/
 import { createSvgElement } from './core/svg-node';
 import { ChartRootBase } from './chart-root-base';
 import { CHART_CONTEXT } from './charts-registry';
+import { ChartA11yView } from './features/chart-a11y-view';
 import { ChartTextStack } from './features/chart-title';
 import { createOverlayRegistry, svgOverlaySurface } from './charts-plugins';
 import { buildDrawContext, buildScene, clipRefFor, isClipped } from './render/build-scene';
@@ -33,7 +34,7 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 @Component({
     selector: 'p-chart-svg',
     standalone: true,
-    imports: [NgTemplateOutlet],
+    imports: [ChartA11yView, NgTemplateOutlet],
     exportAs: 'pChartSvg',
     template: `
         <div
@@ -62,6 +63,7 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
             <div [class]="cx('overlays')">
                 <ng-content />
             </div>
+            <p-chart-a11y-view />
         </div>
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,
