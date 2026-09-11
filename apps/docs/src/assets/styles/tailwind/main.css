@@ -7,6 +7,18 @@
 @import 'tailwindcss';
 @import '@openng/optimus-ui-tailwindcss';
 
+/*
+ * The two typefaces, served from our own origin.
+ *
+ * They used to come from rsms.me and fonts.googleapis.com: three third-party origins to
+ * resolve and connect to before any text could be painted, one of them a personal site
+ * with no availability promise. The packages ship the same files, split by unicode range
+ * with `font-display: swap`, and the build fingerprints them, so a reader downloads the
+ * latin subset once and keeps it.
+ */
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/jetbrains-mono';
+
 /* The theme switch toggles .p-dark on <html>, so that is what `dark:` has to mean. */
 @custom-variant dark (&:where(.p-dark, .p-dark *));
 
@@ -16,8 +28,8 @@
 
 @theme {
     --font-sans:
-        'Inter var', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+        'Inter Variable', 'Inter var', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
 
     --breakpoint-sm: 576px;
     --breakpoint-md: 768px;
