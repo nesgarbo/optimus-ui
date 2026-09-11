@@ -27,12 +27,16 @@ import { OverlayBadgeModule } from '@openng/optimus-ui/overlaybadge';
             <div class="min-w-0 max-w-full overflow-x-auto [&_.p-togglebutton-label]:whitespace-nowrap!">
                 <p-selectbutton [(ngModel)]="value" [options]="options" aria-labelledby="basic" />
             </div>
-            <div class="flex min-w-0 flex-1 gap-2.5 items-center">
+            <div class="flex min-w-0 flex-1 gap-2.5 items-center justify-end">
+                <!--
+                    The field keeps its own default width unless it is told otherwise, which
+                    on a phone was wider than the room it had: it slid under the bell.
+                -->
                 <p-iconfield iconPosition="left" class="min-w-0 flex-1 sm:flex-none">
                     <p-inputicon class="pi pi-search"></p-inputicon>
-                    <input type="text" pInputText [(ngModel)]="search" placeholder="Search" />
+                    <input type="text" pInputText [(ngModel)]="search" placeholder="Search" class="w-full" />
                 </p-iconfield>
-                <p-button severity="secondary" outlined>
+                <p-button severity="secondary" outlined styleClass="shrink-0">
                     <p-overlayBadge severity="danger" badgeSize="small" styleClass="!min-w-0 !w-2.5 !h-2.5">
                         <i class="pi pi-bell"></i>
                     </p-overlayBadge>
