@@ -7,7 +7,14 @@ import { AppDoc } from '@/components/doc/app.doc';
     selector: 'rtl-demo',
     standalone: true,
     imports: [AppDoc],
-    template: `<app-doc docTitle="RTL Support - Optimus UI" header="RTL Support" description="Right-to-left direction support of Optimus UI." [docs]="docs" docType="page"></app-doc>`
+    template: `<app-doc
+        docTitle="RTL Support - Optimus UI"
+        header="RTL Support"
+        metaDescription="Right-to-left support in Optimus UI: set the direction once, see what each component does in RTL, and the logical CSS properties that make it work."
+        description="Right-to-left direction support of Optimus UI."
+        [docs]="docs"
+        docType="page"
+    ></app-doc>`
 })
 export class RTLDemoComponent {
     docs = [

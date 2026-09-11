@@ -29,7 +29,14 @@ import { UsePresetDoc } from '@/doc/theming/styled/usepreset-doc';
 import { Component } from '@angular/core';
 
 @Component({
-    template: `<app-doc docTitle="Styled Mode - Optimus UI" header="Styled Mode" description="Choose from a variety of pre-styled themes or develop your own." [docs]="docs" docType="page"></app-doc>`,
+    template: `<app-doc
+        docTitle="Styled Mode - Optimus UI"
+        header="Styled Mode"
+        metaDescription="Styled mode in Optimus UI: start from Aura, Material, Lara or Nora and shape it with design tokens, one component at a time or across the application."
+        description="Choose from a variety of pre-styled themes or develop your own."
+        [docs]="docs"
+        docType="page"
+    ></app-doc>`,
     imports: [AppDoc],
     standalone: true
 })

@@ -133,7 +133,7 @@ export class ComponentsIndexDemo implements OnInit {
         this.title.setTitle('Components - Optimus UI');
         this.meta.updateTag({
             name: 'description',
-            content: `Discover ${DATA.total}+ MIT licensed Angular UI components in Optimus UI.`
+            content: `Every Optimus UI component in one place: ${DATA.total}+ MIT licensed Angular components, each with a live preview and a link to its own documentation page.`
         });
     }
 }

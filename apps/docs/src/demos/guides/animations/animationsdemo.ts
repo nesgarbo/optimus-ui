@@ -13,6 +13,7 @@ import { AppDoc } from '@/components/doc/app.doc';
     imports: [AppDoc],
     template: `<app-doc
         docTitle="Animations - Optimus UI"
+        metaDescription="Optimus UI components animate with native CSS. Every built-in animation is listed here, with how to change the defaults per component or for the whole app."
         header="Animations"
         description="Various Optimus UI Components utilize native CSS animations to provide an enhanced user experience. The default animations are based on the best practices recommended by the usability experts. In case you need to customize the default animations, this documentation covers the entire set of built-in animations."
         [docs]="docs"

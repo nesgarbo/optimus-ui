@@ -16,6 +16,7 @@ import { AppDoc } from '@/components/doc/app.doc';
         <app-doc
             docTitle="Icons - Optimus UI"
             header="Icons"
+            metaDescription="OpenNG Icons is the icon library Optimus UI ships with: over 250 open source icons, searchable here, and optional, since any icon works through templating."
             description="OpenNG Icons is the default icon library of Optimus UI with over 250 open source icons. OpenNG Icons library is optional as Optimus UI components can use any icon with templating."
             [docs]="docs"
             docType="page"
