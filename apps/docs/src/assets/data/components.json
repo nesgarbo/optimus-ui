@@ -1,0 +1,975 @@
+{
+    "total": 97,
+    "groups": [
+        {
+            "name": "Form",
+            "items": [
+                {
+                    "name": "AutoComplete",
+                    "routerLink": "/autocomplete",
+                    "description": "AutoComplete is an input component that provides real-time suggestions when being typed.",
+                    "preview": {
+                        "slug": "autocomplete",
+                        "folder": "autocomplete",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "CascadeSelect",
+                    "routerLink": "/cascadeselect",
+                    "description": "CascadeSelect displays a nested structure of options.",
+                    "preview": {
+                        "slug": "cascadeselect",
+                        "folder": "cascadeselect",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Checkbox",
+                    "routerLink": "/checkbox",
+                    "description": "Checkbox is an extension to standard checkbox element with theming.",
+                    "preview": {
+                        "slug": "checkbox",
+                        "folder": "checkbox",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "ColorPicker",
+                    "routerLink": "/colorpicker",
+                    "description": "ColorPicker is an input component to select a color.",
+                    "preview": {
+                        "slug": "colorpicker",
+                        "folder": "colorpicker",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "DatePicker",
+                    "routerLink": "/datepicker",
+                    "description": "DatePicker is an input component to select a date.",
+                    "preview": {
+                        "slug": "datepicker",
+                        "folder": "datepicker",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Editor",
+                    "routerLink": "/editor",
+                    "description": "Editor is rich text editor component based on Quill.",
+                    "preview": {
+                        "slug": "editor",
+                        "folder": "editor",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "FloatLabel",
+                    "routerLink": "/floatlabel",
+                    "description": "FloatLabel appears on top of the input field when focused.",
+                    "preview": {
+                        "slug": "floatlabel",
+                        "folder": "floatlabel",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "IconField",
+                    "routerLink": "/iconfield",
+                    "description": "IconField wraps an input and an icon.",
+                    "preview": {
+                        "slug": "iconfield",
+                        "folder": "iconfield",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "IftaLabel",
+                    "routerLink": "/iftalabel",
+                    "description": "IftaLabel is used to create infield top aligned labels.",
+                    "preview": {
+                        "slug": "iftalabel",
+                        "folder": "iftalabel",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "InputGroup",
+                    "routerLink": "/inputgroup",
+                    "description": "Text, icon, buttons and other content can be grouped next to an input.",
+                    "preview": {
+                        "slug": "inputgroup",
+                        "folder": "inputgroup",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "InputMask",
+                    "routerLink": "/inputmask",
+                    "description": "InputMask component is used to enter input in a certain format such as numeric, date, currency and phone.",
+                    "preview": {
+                        "slug": "inputmask",
+                        "folder": "inputmask",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "InputNumber",
+                    "routerLink": "/inputnumber",
+                    "description": "InputNumber is an input component to provide numerical input.",
+                    "preview": null
+                },
+                {
+                    "name": "InputOtp",
+                    "routerLink": "/inputotp",
+                    "description": "Input Otp is used to enter one time passwords.",
+                    "preview": {
+                        "slug": "inputotp",
+                        "folder": "inputotp",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "InputText",
+                    "routerLink": "/inputtext",
+                    "description": "InputText is an extension to standard input element with theming and keyfiltering.",
+                    "preview": {
+                        "slug": "inputtext",
+                        "folder": "inputtext",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "KeyFilter",
+                    "routerLink": "/keyfilter",
+                    "description": "KeyFilter is a directive to restrict individual key strokes. In order to restrict the whole input, use InputNumber or InputMask instead.",
+                    "preview": null
+                },
+                {
+                    "name": "Knob",
+                    "routerLink": "/knob",
+                    "description": "Knob is a form component to define number inputs with a dial.",
+                    "preview": {
+                        "slug": "knob",
+                        "folder": "knob",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Listbox",
+                    "routerLink": "/listbox",
+                    "description": "Listbox is used to select one or more values from a list of items.",
+                    "preview": {
+                        "slug": "listbox",
+                        "folder": "listbox",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "MultiSelect",
+                    "routerLink": "/multiselect",
+                    "description": "MultiSelect is used to select multiple items from a collection.",
+                    "preview": {
+                        "slug": "multiselect",
+                        "folder": "multiselect",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Password",
+                    "routerLink": "/password",
+                    "description": "Password displays strength indicator for password fields.",
+                    "preview": {
+                        "slug": "password",
+                        "folder": "password",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "RadioButton",
+                    "routerLink": "/radiobutton",
+                    "description": "RadioButton is an extension to standard radio button element with theming.",
+                    "preview": null
+                },
+                {
+                    "name": "Rating",
+                    "routerLink": "/rating",
+                    "description": "Rating component is a star based selection input.",
+                    "preview": {
+                        "slug": "rating",
+                        "folder": "rating",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Select",
+                    "routerLink": "/select",
+                    "description": "Select is used to choose an item from a collection of options.",
+                    "preview": {
+                        "slug": "select",
+                        "folder": "select",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "SelectButton",
+                    "routerLink": "/selectbutton",
+                    "description": "SelectButton is used to choose single or multiple items from a list using buttons.",
+                    "preview": {
+                        "slug": "selectbutton",
+                        "folder": "selectbutton",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Slider",
+                    "routerLink": "/slider",
+                    "description": "Slider is a component to provide input with a drag handle.",
+                    "preview": {
+                        "slug": "slider",
+                        "folder": "slider",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Textarea",
+                    "routerLink": "/textarea",
+                    "description": "Textarea adds styling and autoResize functionality to standard textarea element.",
+                    "preview": {
+                        "slug": "textarea",
+                        "folder": "textarea",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "ToggleButton",
+                    "routerLink": "/togglebutton",
+                    "description": "ToggleButton is used to select a boolean value using a button.",
+                    "preview": {
+                        "slug": "togglebutton",
+                        "folder": "togglebutton",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "ToggleSwitch",
+                    "routerLink": "/toggleswitch",
+                    "description": "ToggleSwitch is used to select a boolean value.",
+                    "preview": {
+                        "slug": "toggleswitch",
+                        "folder": "toggleswitch",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "TreeSelect",
+                    "routerLink": "/treeselect",
+                    "description": "TreeSelect is a form component to choose from hierarchical data.",
+                    "preview": {
+                        "slug": "treeselect",
+                        "folder": "treeselect",
+                        "symbol": "BasicDoc"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Button",
+            "items": [
+                {
+                    "name": "Button",
+                    "routerLink": "/button",
+                    "description": "Button is an extension to standard button element with icons and theming.",
+                    "preview": {
+                        "slug": "button",
+                        "folder": "button",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "SpeedDial",
+                    "routerLink": "/speeddial",
+                    "description": "SpeedDial is a floating button with a popup menu.",
+                    "preview": null
+                },
+                {
+                    "name": "SplitButton",
+                    "routerLink": "/splitbutton",
+                    "description": "SplitButton groups a set of commands in an overlay with a default action item.",
+                    "preview": {
+                        "slug": "splitbutton",
+                        "folder": "splitbutton",
+                        "symbol": "BasicDoc"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Data",
+            "items": [
+                {
+                    "name": "DataView",
+                    "routerLink": "/dataview",
+                    "description": "DataView displays data in grid grid-cols-12 gap-4 or list layout with pagination and sorting features.",
+                    "preview": {
+                        "slug": "dataview",
+                        "folder": "dataview",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "OrderList",
+                    "routerLink": "/orderlist",
+                    "description": "OrderList is used to sort a collection.",
+                    "preview": {
+                        "slug": "orderlist",
+                        "folder": "orderlist",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "OrgChart",
+                    "routerLink": "/organizationchart",
+                    "description": "OrganizationChart visualizes hierarchical organization data.",
+                    "preview": {
+                        "slug": "organizationchart",
+                        "folder": "organizationchart",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Paginator",
+                    "routerLink": "/paginator",
+                    "description": "Paginator displays data in paged format and provides navigation between pages.",
+                    "preview": {
+                        "slug": "paginator",
+                        "folder": "paginator",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "PickList",
+                    "routerLink": "/picklist",
+                    "description": "PickList is used to reorder items between different lists.",
+                    "preview": {
+                        "slug": "picklist",
+                        "folder": "picklist",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Table",
+                    "routerLink": "/table",
+                    "description": "Table displays data in tabular format.",
+                    "preview": {
+                        "slug": "table",
+                        "folder": "table",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Timeline",
+                    "routerLink": "/timeline",
+                    "description": "Timeline visualizes a series of chained events.",
+                    "preview": {
+                        "slug": "timeline",
+                        "folder": "timeline",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Tree",
+                    "routerLink": "/tree",
+                    "description": "Tree is used to display hierarchical data.",
+                    "preview": {
+                        "slug": "tree",
+                        "folder": "tree",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "TreeTable",
+                    "routerLink": "/treetable",
+                    "description": "TreeTable is used to display hierarchical data in tabular format.",
+                    "preview": {
+                        "slug": "treetable",
+                        "folder": "treetable",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "VirtualScroller",
+                    "routerLink": "/virtualscroller",
+                    "description": "",
+                    "preview": null
+                }
+            ]
+        },
+        {
+            "name": "Panel",
+            "items": [
+                {
+                    "name": "Accordion",
+                    "routerLink": "/accordion",
+                    "description": "Accordion groups a collection of contents in tabs.",
+                    "preview": {
+                        "slug": "accordion",
+                        "folder": "accordion",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Card",
+                    "routerLink": "/card",
+                    "description": "Card is a flexible container component.",
+                    "preview": {
+                        "slug": "card",
+                        "folder": "card",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Divider",
+                    "routerLink": "/divider",
+                    "description": "Divider is used to separate contents.",
+                    "preview": {
+                        "slug": "divider",
+                        "folder": "divider",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Fieldset",
+                    "routerLink": "/fieldset",
+                    "description": "Fieldset is a grouping component with a content toggle feature.",
+                    "preview": {
+                        "slug": "fieldset",
+                        "folder": "fieldset",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Panel",
+                    "routerLink": "/panel",
+                    "description": "Panel is a container component with an optional content toggle feature.",
+                    "preview": {
+                        "slug": "panel",
+                        "folder": "panel",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "ScrollPanel",
+                    "routerLink": "/scrollpanel",
+                    "description": "ScrollPanel is a cross browser, lightweight and skinnable alternative to native browser scrollbar.",
+                    "preview": {
+                        "slug": "scrollpanel",
+                        "folder": "scrollpanel",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Splitter",
+                    "routerLink": "/splitter",
+                    "description": "Splitter is utilized to separate and resize panels.",
+                    "preview": null
+                },
+                {
+                    "name": "Stepper",
+                    "routerLink": "/stepper",
+                    "description": "The Stepper component displays a wizard-like workflow by guiding users through the multi-step progression.",
+                    "preview": {
+                        "slug": "stepper",
+                        "folder": "stepper",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Tabs",
+                    "routerLink": "/tabs",
+                    "description": "Tabs is a container component to group content with tabs.",
+                    "preview": {
+                        "slug": "tabs",
+                        "folder": "tabs",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Toolbar",
+                    "routerLink": "/toolbar",
+                    "description": "Toolbar is a grouping component for buttons and other content.",
+                    "preview": {
+                        "slug": "toolbar",
+                        "folder": "toolbar",
+                        "symbol": "BasicDoc"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Overlay",
+            "items": [
+                {
+                    "name": "ConfirmDialog",
+                    "routerLink": "/confirmdialog",
+                    "description": "ConfirmDialog is backed by a service utilizing Observables to display confirmation windows easily that can be shared by multiple actions on the same component.",
+                    "preview": {
+                        "slug": "confirmdialog",
+                        "folder": "confirmdialog",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "ConfirmPopup",
+                    "routerLink": "/confirmpopup",
+                    "description": "ConfirmPopup displays a confirmation overlay displayed relatively to its target.",
+                    "preview": {
+                        "slug": "confirmpopup",
+                        "folder": "confirmpopup",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Dialog",
+                    "routerLink": "/dialog",
+                    "description": "Dialog is a container to display content in an overlay window.",
+                    "preview": {
+                        "slug": "dialog",
+                        "folder": "dialog",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Drawer",
+                    "routerLink": "/drawer",
+                    "description": "Drawer is a container component displayed as an overlay.",
+                    "preview": {
+                        "slug": "drawer",
+                        "folder": "drawer",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "DynamicDialog",
+                    "routerLink": "/dynamicdialog",
+                    "description": "Dialogs can be created dynamically with any component as the content using a DialogService.",
+                    "preview": null
+                },
+                {
+                    "name": "Popover",
+                    "routerLink": "/popover",
+                    "description": "Popover is a container component that can overlay other components on page.",
+                    "preview": {
+                        "slug": "popover",
+                        "folder": "popover",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Tooltip",
+                    "routerLink": "/tooltip",
+                    "description": "Tooltip directive provides advisory information for a component. Tooltip is integrated within various Optimus UI components.",
+                    "preview": null
+                }
+            ]
+        },
+        {
+            "name": "File",
+            "items": [
+                {
+                    "name": "Upload",
+                    "routerLink": "/fileupload",
+                    "description": "FileUpload is an advanced uploader with dragdrop support, multi file uploads, auto uploading, progress tracking and validations.",
+                    "preview": {
+                        "slug": "fileupload",
+                        "folder": "fileupload",
+                        "symbol": "BasicDoc"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Menu",
+            "items": [
+                {
+                    "name": "Breadcrumb",
+                    "routerLink": "/breadcrumb",
+                    "description": "Breadcrumb provides contextual information about page hierarchy.",
+                    "preview": {
+                        "slug": "breadcrumb",
+                        "folder": "breadcrumb",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "ContextMenu",
+                    "routerLink": "/contextmenu",
+                    "description": "ContextMenu displays an overlay menu on right click of its target.",
+                    "preview": {
+                        "slug": "contextmenu",
+                        "folder": "contextmenu",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Dock",
+                    "routerLink": "/dock",
+                    "description": "Dock is a navigation component consisting of menuitems.",
+                    "preview": {
+                        "slug": "dock",
+                        "folder": "dock",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Menu",
+                    "routerLink": "/menu",
+                    "description": "Menu is a navigation / command component that supports dynamic and static positioning.",
+                    "preview": {
+                        "slug": "menu",
+                        "folder": "menu",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Menubar",
+                    "routerLink": "/menubar",
+                    "description": "Menubar is a horizontal menu component.",
+                    "preview": {
+                        "slug": "menubar",
+                        "folder": "menubar",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "MegaMenu",
+                    "routerLink": "/megamenu",
+                    "description": "MegaMenu is navigation component that displays submenus together.",
+                    "preview": {
+                        "slug": "megamenu",
+                        "folder": "megamenu",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "PanelMenu",
+                    "routerLink": "/panelmenu",
+                    "description": "PanelMenu is a hybrid of Accordion and Tree components.",
+                    "preview": {
+                        "slug": "panelmenu",
+                        "folder": "panelmenu",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "TieredMenu",
+                    "routerLink": "/tieredmenu",
+                    "description": "TieredMenu displays submenus in nested overlays.",
+                    "preview": {
+                        "slug": "tieredmenu",
+                        "folder": "tieredmenu",
+                        "symbol": "BasicDoc"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Chart",
+            "items": [
+                {
+                    "name": "Chart.js",
+                    "routerLink": "/chart",
+                    "description": "Chart components are based on Charts.js 3.3.2+, an open source HTML5 based charting library.",
+                    "preview": {
+                        "slug": "chart",
+                        "folder": "chart",
+                        "symbol": "BasicDoc"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Messages",
+            "items": [
+                {
+                    "name": "Message",
+                    "routerLink": "/message",
+                    "description": "Message component is used to display inline messages.",
+                    "preview": {
+                        "slug": "message",
+                        "folder": "message",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Toast",
+                    "routerLink": "/toast",
+                    "description": "Toast is used to display messages in an overlay.",
+                    "preview": {
+                        "slug": "toast",
+                        "folder": "toast",
+                        "symbol": "BasicDoc"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Media",
+            "items": [
+                {
+                    "name": "Carousel",
+                    "routerLink": "/carousel",
+                    "description": "Carousel is a content slider featuring various customization options.",
+                    "preview": {
+                        "slug": "carousel",
+                        "folder": "carousel",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Galleria",
+                    "routerLink": "/galleria",
+                    "description": "Galleria is an advanced content gallery component.",
+                    "preview": {
+                        "slug": "galleria",
+                        "folder": "galleria",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Image",
+                    "routerLink": "/image",
+                    "description": "Displays an image with preview and tranformation options.",
+                    "preview": {
+                        "slug": "image",
+                        "folder": "Image",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "ImageCompare",
+                    "routerLink": "/imagecompare",
+                    "description": "Compare two images side by side with a slider.",
+                    "preview": {
+                        "slug": "imagecompare",
+                        "folder": "imagecompare",
+                        "symbol": "BasicDoc"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Misc",
+            "items": [
+                {
+                    "name": "AnimateOnScroll",
+                    "routerLink": "/animateonscroll",
+                    "description": "AnimateOnScroll is used to apply animations to elements when entering or leaving the viewport during scrolling.",
+                    "preview": {
+                        "slug": "animateonscroll",
+                        "folder": "animateonscroll",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "AutoFocus",
+                    "routerLink": "/autofocus",
+                    "description": "AutoFocus manages focus on focusable element on load.",
+                    "preview": {
+                        "slug": "autofocus",
+                        "folder": "autofocus",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Avatar",
+                    "routerLink": "/avatar",
+                    "description": "Avatar represents people using icons, labels and images.",
+                    "preview": null
+                },
+                {
+                    "name": "Badge",
+                    "routerLink": "/badge",
+                    "description": "Badge is a small status indicator for another element.",
+                    "preview": {
+                        "slug": "badge",
+                        "folder": "badge",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Bind",
+                    "routerLink": "/bind",
+                    "description": "The Bind directive dynamically applies DOM element attributes using properties defined in an object.",
+                    "preview": null
+                },
+                {
+                    "name": "BlockUI",
+                    "routerLink": "/blockui",
+                    "description": "BlockUI can either block other components or the whole page.",
+                    "preview": {
+                        "slug": "blockui",
+                        "folder": "blockui",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Chip",
+                    "routerLink": "/chip",
+                    "description": "Chip represents entities using icons, labels and images.",
+                    "preview": {
+                        "slug": "chip",
+                        "folder": "chip",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "ClassNames",
+                    "routerLink": "/classnames",
+                    "description": "ClassNames provides extended class binding functionality that is not possible with the native Angular directives.",
+                    "preview": null
+                },
+                {
+                    "name": "DragDrop",
+                    "routerLink": "/dragdrop",
+                    "description": "pDraggable and pDroppable directives apply drag-drop behaviors to any element.",
+                    "preview": {
+                        "slug": "dragdrop",
+                        "folder": "dragdrop",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Fluid",
+                    "routerLink": "/fluid",
+                    "description": "Fluid is a layout component to make descendant components span full width of their container.",
+                    "preview": {
+                        "slug": "fluid",
+                        "folder": "fluid",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "FocusTrap",
+                    "routerLink": "/focustrap",
+                    "description": "Focus Trap keeps focus within a certain DOM element while tabbing.",
+                    "preview": {
+                        "slug": "focustrap",
+                        "folder": "focustrap",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Inplace",
+                    "routerLink": "/inplace",
+                    "description": "Inplace provides an easy to do editing and display at the same time where clicking the output displays the actual content.",
+                    "preview": {
+                        "slug": "inplace",
+                        "folder": "inplace",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "MeterGroup",
+                    "routerLink": "/metergroup",
+                    "description": "MeterGroup displays scalar measurements within a known range.",
+                    "preview": {
+                        "slug": "metergroup",
+                        "folder": "metergroup",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "ProgressBar",
+                    "routerLink": "/progressbar",
+                    "description": "ProgressBar is a process status indicator.",
+                    "preview": {
+                        "slug": "progressbar",
+                        "folder": "progressbar",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "ProgressSpinner",
+                    "routerLink": "/progressspinner",
+                    "description": "ProgressSpinner is a process status indicator.",
+                    "preview": {
+                        "slug": "progressspinner",
+                        "folder": "progressspinner",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Ripple",
+                    "routerLink": "/ripple",
+                    "description": "Ripple directive adds ripple effect to the host element.",
+                    "preview": null
+                },
+                {
+                    "name": "ScrollTop",
+                    "routerLink": "/scrolltop",
+                    "description": "ScrollTop gets displayed after a certain scroll position and used to navigates to the top of the page quickly.",
+                    "preview": {
+                        "slug": "scrolltop",
+                        "folder": "scrolltop",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Skeleton",
+                    "routerLink": "/skeleton",
+                    "description": "Skeleton is a placeholder to display instead of the actual content.",
+                    "preview": null
+                },
+                {
+                    "name": "StyleClass",
+                    "routerLink": "/styleclass",
+                    "description": "StyleClass manages css classes declaratively to during enter/leave animations or just to toggle classes on an element.",
+                    "preview": null
+                },
+                {
+                    "name": "Tag",
+                    "routerLink": "/tag",
+                    "description": "Tag component is used to categorize content.",
+                    "preview": {
+                        "slug": "tag",
+                        "folder": "tag",
+                        "symbol": "BasicDoc"
+                    }
+                },
+                {
+                    "name": "Terminal",
+                    "routerLink": "/terminal",
+                    "description": "",
+                    "preview": {
+                        "slug": "terminal",
+                        "folder": "terminal",
+                        "symbol": "BasicDoc"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Utilities",
+            "items": [
+                {
+                    "name": "FilterService",
+                    "routerLink": "/filterservice",
+                    "description": "FilterService is a helper utility to filter collections against constraints.",
+                    "preview": null
+                },
+                {
+                    "name": "Overlay API",
+                    "routerLink": "/overlay",
+                    "description": "This API allows overlay components to be controlled from the Optimus UI. In this way, all overlay components in the application can have the same behavior.",
+                    "preview": {
+                        "slug": "overlay",
+                        "folder": "overlay",
+                        "symbol": "OverlayBasicDemo"
+                    }
+                }
+            ]
+        }
+    ]
+}

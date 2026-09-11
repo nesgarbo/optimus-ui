@@ -1,0 +1,33 @@
+{
+    "generatedAt": "2026-09-11T07:06:52.922Z",
+    "counts": {
+        "AutoComplete": 32,
+        "Button": 1,
+        "Card": 1,
+        "Checkbox": 8,
+        "ConfirmDialog": 9,
+        "DatePicker": 60,
+        "Dialog": 19,
+        "DynamicDialog": 23,
+        "IconField": 1,
+        "Image": 1,
+        "InputMask": 8,
+        "InputNumber": 29,
+        "InputOtp": 1,
+        "Listbox": 14,
+        "MegaMenu": 1,
+        "Menu": 1,
+        "MultiSelect": 47,
+        "OrderList": 1,
+        "Paginator": 6,
+        "Password": 1,
+        "ScrollPanel": 1,
+        "Select": 26,
+        "Stepper": 1,
+        "Table": 128,
+        "ToggleButton": 1,
+        "Tooltip": 1,
+        "TreeTable": 3,
+        "Upload": 1
+    }
+}
