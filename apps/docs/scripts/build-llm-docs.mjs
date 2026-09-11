@@ -12,6 +12,18 @@ const API_DOC_PATH = path.resolve(__dirname, '../src/doc/apidoc/index.json');
 const DEMOS_JSON_PATH = path.resolve(__dirname, '../public/demos.json');
 const OUTPUT_DIR = path.resolve(__dirname, '../public/llms');
 
+/*
+ * `llms.txt` is looked for at the root of a site, which is where the convention puts it
+ * and where the assistant's fallback panel links. The files are written once under
+ * public/llms and copied up, so both addresses answer with the same content.
+ */
+const ROOT_DIR = path.resolve(__dirname, '../public');
+
+function copyToRoot(name) {
+    fs.copyFileSync(path.join(OUTPUT_DIR, name), path.join(ROOT_DIR, name));
+    console.log(`✓ Copied ${name} to the site root`);
+}
+
 // Global demos data loaded from demos.json
 let demosData = null;
 
@@ -1028,6 +1040,7 @@ function generateMarkdownOutput(components, apiDocs, guidePages = []) {
 
     const outputPath = path.join(OUTPUT_DIR, 'llms-full.txt');
     fs.writeFileSync(outputPath, markdown, 'utf-8');
+    copyToRoot('llms-full.txt');
     console.log(`✓ Generated Markdown output: ${outputPath}`);
 
     return markdown;
@@ -1064,6 +1077,7 @@ function generateLlmsTxt(components, pages = []) {
     const outputPath = path.join(OUTPUT_DIR, 'llms.txt');
     fs.writeFileSync(outputPath, content, 'utf-8');
     console.log(`✓ Generated llms.txt: ${outputPath}`);
+    copyToRoot('llms.txt');
 }
 
 /**

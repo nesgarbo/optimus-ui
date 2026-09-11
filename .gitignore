@@ -75,6 +75,8 @@ reports
 apps/docs/src/doc/apidoc
 apps/docs/public/sitemap.xml
 apps/docs/public/llms
+apps/docs/public/llms.txt
+apps/docs/public/llms-full.txt
 apps/docs/public/demos.json
 
 # analog/nitro build output (dist and .vercel are covered above)
