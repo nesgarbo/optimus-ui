@@ -25,9 +25,7 @@
         "url": "https://github.com/openng-org/optimus-ui.git"
     },
     "dependencies": {
-        "@openng/optimus-ui-tailwindcss": "workspace:*",
-        "@tailwindcss/vite": "^4.3.3",
-        "tailwindcss": "^4.3.3"
+        "@openng/optimus-ui-tailwindcss": "workspace:*"
     },
     "devDependencies": {
         "@analogjs/platform": "^2.7.2",
@@ -41,6 +39,7 @@
         "@openng/optimus-ui": "workspace:*",
         "@openng/optimus-ui-themes": "workspace:*",
         "@stackblitz/sdk": "1.11.1",
+        "@tailwindcss/vite": "^4.3.3",
         "@types/node": "^26.2.0",
         "beasties": "^0.5.4",
         "chart.js": "4.5.1",
@@ -54,6 +53,7 @@
         "rxjs": "~7.8.2",
         "sass": "^1.104.0",
         "shiki": "^4.4.3",
+        "tailwindcss": "^4.3.3",
         "tslib": "^2.8.1",
         "typedoc": "0.28.20",
         "vite": "^8.3.0",
