@@ -2,21 +2,26 @@ import { HttpClient } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
 import { Injectable, inject, signal, computed, PLATFORM_ID } from '@angular/core';
 import { Demo, DemosJson } from '@/domain/democode';
+import { DEMOS_JSON } from '@/service/demos-token';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class DemoCodeService {
     private http = inject(HttpClient);
     private platformId = inject(PLATFORM_ID);
-    private demosJson = signal<DemosJson | null>(null);
+    /** Present while prerendering, where the file is read from disk instead. */
+    private demosJson = signal<DemosJson | null>(inject(DEMOS_JSON));
     private loadPromise: Promise<void> | null = null;
 
     /**
-     * Load demos.json file. This is called once at app startup.
-     * Returns a promise that resolves when loading is complete.
+     * Load demos.json. An application initializer awaits this, so the first render already
+     * has every snippet: the code blocks used to arrive a few hundred milliseconds later,
+     * which doubled the height of a component page under the reader's cursor and left the
+     * prerendered HTML - what a crawler and every language model read - with the examples
+     * missing entirely.
      */
     async loadDemos(): Promise<void> {
-        // Skip loading during SSR - will load on client hydration
+        // The prerender was handed the file; nothing to fetch.
         if (!isPlatformBrowser(this.platformId)) {
             return;
         }
