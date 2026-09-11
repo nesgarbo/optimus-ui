@@ -1,6 +1,9 @@
 // Accordion
 export * as AccordionStyle from '@openng/optimus-ui-styles/accordion';
 
+// AIAssistView
+export * as AIAssistViewStyle from '@openng/optimus-ui-styles/aiassistview';
+
 // AutoComplete
 export * as AutoCompleteStyle from '@openng/optimus-ui-styles/autocomplete';
 

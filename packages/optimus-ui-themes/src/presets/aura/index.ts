@@ -2,6 +2,7 @@ import type { Preset } from '@openng/optimus-ui-themes/types';
 import type { AuraBaseDesignTokens } from './base/index.d';
 
 import accordion from '@openng/optimus-ui-themes/aura/accordion';
+import aiassistview from '@openng/optimus-ui-themes/aura/aiassistview';
 import autocomplete from '@openng/optimus-ui-themes/aura/autocomplete';
 import avatar from '@openng/optimus-ui-themes/aura/avatar';
 import badge from '@openng/optimus-ui-themes/aura/badge';
@@ -96,6 +97,7 @@ export default {
     ...base,
     components: {
         accordion,
+        aiassistview,
         autocomplete,
         avatar,
         badge,
