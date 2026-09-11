@@ -27,7 +27,7 @@ import { TableModule } from '@openng/optimus-ui/table';
                     <td>{{ product.code }}</td>
                     <td>{{ product.name }}</td>
                     <td>
-                        <img src="https://optimus.openng.org/demo/product/{{ product.image }}" [alt]="product.image" class="w-16" />
+                        <img src="https://optimus.openng.org/demo/product/{{ product.image }}" [alt]="product.image" class="w-16" width="300" height="200" />
                     </td>
                     <td>{{ product.category }}</td>
                     <td>

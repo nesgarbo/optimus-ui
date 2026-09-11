@@ -16,7 +16,7 @@ import { GalleriaModule } from '@openng/optimus-ui/galleria';
         <div class="card flex justify-center">
             <div *ngIf="images() && images().length > 0" class="grid grid-cols-12 gap-4" style="max-width: 800px;">
                 <div *ngFor="let image of images(); let index = index" class="col-span-4" key="index">
-                    <img [src]="image.thumbnailImageSrc" [alt]="image.alt" style="cursor: pointer" (click)="imageClick(index)" />
+                    <img [src]="image.thumbnailImageSrc" width="80" height="60" [alt]="image.alt" style="cursor: pointer" (click)="imageClick(index)" />
                 </div>
             </div>
             <p-galleria
@@ -32,7 +32,7 @@ import { GalleriaModule } from '@openng/optimus-ui/galleria';
                 [showThumbnails]="false"
             >
                 <ng-template #item let-item>
-                    <img [src]="item.itemImageSrc" [alt]="item.alt" style="width: 100%; display: block;" />
+                    <img [src]="item.itemImageSrc" width="800" height="600" [alt]="item.alt" style="width: 100%; display: block;" />
                 </ng-template>
             </p-galleria>
         </div>

@@ -16,7 +16,7 @@ import { GalleriaModule } from '@openng/optimus-ui/galleria';
         <div class="card">
             <p-galleria [(value)]="images" [showIndicators]="true" [showThumbnails]="false" [containerStyle]="{ 'max-width': '640px' }">
                 <ng-template #item let-item>
-                    <img [src]="item.itemImageSrc" [alt]="item.alt" style="width: 100%; display: block;" />
+                    <img [src]="item.itemImageSrc" width="800" height="600" [alt]="item.alt" style="width: 100%; display: block;" />
                 </ng-template>
             </p-galleria>
         </div>

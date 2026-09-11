@@ -24,11 +24,11 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
             </div>
             <p-galleria [value]="images()" [thumbnailsPosition]="position" [responsiveOptions]="responsiveOptions" [containerStyle]="{ 'max-width': '640px' }" [numVisible]="5">
                 <ng-template #item let-item>
-                    <img [src]="item.itemImageSrc" [alt]="item.alt" style="width: 100%; display: block" />
+                    <img [src]="item.itemImageSrc" width="800" height="600" [alt]="item.alt" style="width: 100%; display: block" />
                 </ng-template>
                 <ng-template #thumbnail let-item>
                     <div class="grid gap-4 justify-center">
-                        <img [src]="item.thumbnailImageSrc" [alt]="item.alt" style="width: 100%; display: block" />
+                        <img [src]="item.thumbnailImageSrc" width="80" height="60" [alt]="item.alt" style="width: 100%; display: block" />
                     </div>
                 </ng-template>
             </p-galleria>

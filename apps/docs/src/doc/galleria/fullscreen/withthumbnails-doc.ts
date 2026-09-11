@@ -18,10 +18,10 @@ import { GalleriaModule } from '@openng/optimus-ui/galleria';
             <p-button icon="pi pi-external-link" label="Show" (click)="displayBasic = true" />
             <p-galleria [(value)]="images" [(visible)]="displayBasic" [responsiveOptions]="responsiveOptions" [containerStyle]="{ 'max-width': '50%' }" [numVisible]="9" [circular]="true" [fullScreen]="true" [showItemNavigators]="true">
                 <ng-template #item let-item>
-                    <img [src]="item.itemImageSrc" [alt]="item.alt" style="width: 100%; display: block;" />
+                    <img [src]="item.itemImageSrc" width="800" height="600" [alt]="item.alt" style="width: 100%; display: block;" />
                 </ng-template>
                 <ng-template #thumbnail let-item>
-                    <img [src]="item.thumbnailImageSrc" [alt]="item.alt" style="display: block;" />
+                    <img [src]="item.thumbnailImageSrc" width="80" height="60" [alt]="item.alt" style="display: block;" />
                 </ng-template>
             </p-galleria>
         </div>

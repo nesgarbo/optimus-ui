@@ -9,7 +9,7 @@ import { ContextMenuModule } from '@openng/optimus-ui/contextmenu';
     imports: [CommonModule, AppDocPtViewer, ContextMenuModule],
     template: `
         <app-docptviewer [docs]="docs">
-            <img #image src="https://optimus.openng.org/demo/nature/nature2.jpg" alt="Logo" aria-haspopup="true" class="w-full md:w-80 rounded shadow-lg" (contextmenu)="cm.show($event)" />
+            <img #image src="https://optimus.openng.org/demo/nature/nature2.jpg" alt="Logo" aria-haspopup="true" class="w-full md:w-80 rounded shadow-lg" (contextmenu)="cm.show($event)" width="500" height="313" />
             <p-contextMenu #cm [target]="image" [model]="items" />
         </app-docptviewer>
     `

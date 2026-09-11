@@ -11,10 +11,10 @@ import { ImageCompareModule } from '@openng/optimus-ui/imagecompare';
         <app-docptviewer [docs]="docs">
             <p-imagecompare>
                 <ng-template #left>
-                    <img src="https://optimus.openng.org/demo/compare/island1.jpg" alt="An island shore in daylight" />
+                    <img src="https://optimus.openng.org/demo/compare/island1.jpg" alt="An island shore in daylight" width="728" height="410" />
                 </ng-template>
                 <ng-template #right>
-                    <img src="https://optimus.openng.org/demo/compare/island2.jpg" alt="The same island shore at dusk" />
+                    <img src="https://optimus.openng.org/demo/compare/island2.jpg" alt="The same island shore at dusk" width="728" height="410" />
                 </ng-template>
             </p-imagecompare>
         </app-docptviewer>

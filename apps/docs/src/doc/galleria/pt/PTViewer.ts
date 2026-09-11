@@ -12,10 +12,10 @@ import { GalleriaModule } from '@openng/optimus-ui/galleria';
         <app-docptviewer [docs]="docs">
             <p-galleria [(value)]="images" [responsiveOptions]="responsiveOptions" [containerStyle]="{ 'max-width': '640px' }" [numVisible]="5">
                 <ng-template #item let-item>
-                    <img [src]="item.itemImageSrc" [alt]="item.alt" style="width:100%" />
+                    <img [src]="item.itemImageSrc" width="800" height="600" [alt]="item.alt" style="width:100%" />
                 </ng-template>
                 <ng-template #thumbnail let-item>
-                    <img [src]="item.thumbnailImageSrc" [alt]="item.alt" />
+                    <img [src]="item.thumbnailImageSrc" width="80" height="60" [alt]="item.alt" />
                 </ng-template>
             </p-galleria>
         </app-docptviewer>

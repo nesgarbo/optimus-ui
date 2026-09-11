@@ -30,11 +30,11 @@ import { Galleria, GalleriaModule } from '@openng/optimus-ui/galleria';
                 [pt]="galleriaPT"
             >
                 <ng-template #item let-item>
-                    <img [src]="item.itemImageSrc" [alt]="item.alt" [ngStyle]="{ width: !fullscreen ? '100%' : '', display: !fullscreen ? 'block' : '' }" />
+                    <img [src]="item.itemImageSrc" width="800" height="600" [alt]="item.alt" [ngStyle]="{ width: !fullscreen ? '100%' : '', display: !fullscreen ? 'block' : '' }" />
                 </ng-template>
                 <ng-template #thumbnail let-item>
                     <div class="grid gap-4 justify-center">
-                        <img [src]="item.thumbnailImageSrc" [alt]="item.alt" style="display: block" />
+                        <img [src]="item.thumbnailImageSrc" width="80" height="60" [alt]="item.alt" style="display: block" />
                     </div>
                 </ng-template>
                 <ng-template #footer let-item>

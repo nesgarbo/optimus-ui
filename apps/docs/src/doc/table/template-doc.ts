@@ -44,7 +44,7 @@ interface Column {
                         <tr>
                             <td>{{ product.name }}</td>
                             <td>
-                                <img [src]="'https://optimus.openng.org/demo/product/' + product.image" [alt]="product.name" class="w-24 rounded" />
+                                <img [src]="'https://optimus.openng.org/demo/product/' + product.image" [alt]="product.name" class="w-24 rounded" width="300" height="200" />
                             </td>
                             <td>{{ product.price | currency: 'USD' }}</td>
                             <td>{{ product.category }}</td>
