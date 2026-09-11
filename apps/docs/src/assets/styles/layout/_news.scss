@@ -51,6 +51,21 @@
         text-decoration: underline;
     }
 
+    /* Only shown where there is room; the sentence and its link come first. */
+    .layout-news-note {
+        display: none;
+        margin-left: 0.75rem;
+        padding-left: 0.75rem;
+        border-left: 1px solid rgba(255, 255, 255, 0.35);
+        line-height: 1.5;
+        white-space: nowrap;
+        color: var(--primary-contrast-color);
+
+        @media screen and (min-width: 1200px) {
+            display: block;
+        }
+    }
+
     .layout-news-close {
         color:var(--primary-contrast-color);
         line-height: 1.5;
@@ -89,4 +104,9 @@
     .doc-table tbody td > i {
         scroll-margin-top: 8.5rem;
     }
+}
+
+/* On the home page the announcement scrolls away with the page instead of being pinned. */
+.landing .layout-news {
+    position: relative;
 }

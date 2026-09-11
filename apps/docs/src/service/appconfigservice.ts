@@ -1,24 +1,30 @@
 import { AppState } from '@/domain/appstate';
-import { DOCUMENT } from '@angular/common';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { computed, effect, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
+
+/** Read by the pre-paint script in index.html, so the two have to agree on the key. */
+const THEME_STORAGE_KEY = 'optimus-ui-theme';
+
 @Injectable({
     providedIn: 'root'
 })
 export class AppConfigService {
+    document = inject(DOCUMENT);
+
+    platformId = inject(PLATFORM_ID);
+
     appState = signal<AppState>({
         preset: 'Aura',
         primary: 'noir',
         surface: null,
-        darkTheme: false,
+        // The pre-paint script has already decided this and put the class on <html>;
+        // start from that so the first render matches what is on screen.
+        darkTheme: isPlatformBrowser(this.platformId) && this.document.documentElement.classList.contains('p-dark'),
         menuActive: false,
         RTL: false
     });
 
     newsActive = signal(false);
-
-    document = inject(DOCUMENT);
-
-    platformId = inject(PLATFORM_ID);
 
     transitionComplete = signal<boolean>(false);
 
@@ -31,10 +37,13 @@ export class AppConfigService {
     constructor() {
         effect(() => {
             const isDarkMode = this.darkMode();
-            const currentPrimaryPalette = this.primaryPalette();
-            const currentSurfacePalette = this.surfacePalette();
+
+            // Read so the effect re-runs when either palette changes.
+            this.primaryPalette();
+            this.surfacePalette();
 
             this.toggleDarkMode(isDarkMode);
+            this.persistTheme(isDarkMode);
             this.onTransitionEnd();
         });
     }
@@ -44,6 +53,18 @@ export class AppConfigService {
             this.document.documentElement.classList.add('p-dark');
         } else {
             this.document.documentElement.classList.remove('p-dark');
+        }
+    }
+
+    private persistTheme(darkMode: boolean): void {
+        if (!isPlatformBrowser(this.platformId)) {
+            return;
+        }
+
+        try {
+            localStorage.setItem(THEME_STORAGE_KEY, darkMode ? 'dark' : 'light');
+        } catch (error) {
+            /* storage unavailable — the choice just will not survive a reload */
         }
     }
 

@@ -31,63 +31,61 @@ export interface PrimaryColor {
     selector: 'app-configurator',
     standalone: true,
     template: `
-        <div class="config-panel-content">
-            <div class="config-panel-colors">
-                <span class="config-panel-label">Primary</span>
-                <div>
+        <div class="flex flex-col gap-4">
+            <div>
+                <span class="mb-1.5 block text-sm font-semibold text-(--text-secondary-color)">Primary</span>
+                <div class="flex flex-wrap gap-2">
                     @for (primaryColor of primaryColors(); track primaryColor.name) {
                         <button
                             type="button"
+                            class="size-5 cursor-pointer rounded-full outline-2 outline-offset-2 outline-transparent data-active:outline-primary-500/75"
                             [title]="primaryColor.name"
-                            (click)="updateColors($event, 'primary', primaryColor)"
-                            [ngClass]="{ 'active-color': primaryColor.name === selectedPrimaryColor() }"
+                            [attr.data-active]="primaryColor.name === selectedPrimaryColor() ? '' : null"
                             [style]="{
-                                'background-color': primaryColor.name === 'noir' ? 'var(--text-color)' : primaryColor?.palette['500']
+                                'background-color': primaryColor.name === 'noir' ? noirColor() : primaryColor?.palette['500']
                             }"
+                            (click)="updateColors($event, 'primary', primaryColor)"
                         ></button>
                     }
                 </div>
             </div>
 
-            <div class="config-panel-colors">
-                <span class="config-panel-label">Surface</span>
-                <div>
+            <div>
+                <span class="mb-1.5 block text-sm font-semibold text-(--text-secondary-color)">Surface</span>
+                <div class="flex flex-wrap gap-2">
                     @for (surface of surfaces; track surface.name) {
                         <button
                             type="button"
+                            class="size-5 cursor-pointer rounded-full outline-2 outline-offset-2 outline-transparent data-active:outline-primary-500/75"
                             [title]="surface.name"
-                            (click)="updateColors($event, 'surface', surface)"
-                            [ngClass]="{ 'active-color': selectedSurfaceColor() ? selectedSurfaceColor() === surface.name : configService.appState().darkTheme ? surface.name === 'zinc' : surface.name === 'slate' }"
+                            [attr.data-active]="(selectedSurfaceColor() ? selectedSurfaceColor() === surface.name : configService.appState().darkTheme ? surface.name === 'zinc' : surface.name === 'slate') ? '' : null"
                             [style]="{
-                                'background-color': surface.name === 'noir' ? 'var(--text-color)' : surface?.palette['500']
+                                'background-color': surface.name === 'noir' ? noirColor() : surface?.palette['500']
                             }"
+                            (click)="updateColors($event, 'surface', surface)"
                         ></button>
                     }
                 </div>
             </div>
 
-            <div class="config-panel-settings">
-                <span class="config-panel-label">Presets</span>
-                <p-selectbutton [options]="presets" [ngModel]="selectedPreset()" (ngModelChange)="onPresetChange($event)" [allowEmpty]="false" size="small" />
+            <div class="config-theme">
+                <span class="mb-1.5 block text-sm font-semibold text-(--text-secondary-color)">Theme</span>
+                <p-selectbutton [options]="presets" [ngModel]="selectedPreset()" (ngModelChange)="onPresetChange($event)" [allowEmpty]="false" size="small" styleClass="w-full" />
             </div>
-            <div class="flex">
-                <div class="flex-1">
-                    <div class="config-panel-settings">
-                        <span class="config-panel-label">Ripple</span>
-                        <p-toggleswitch [(ngModel)]="ripple" />
-                    </div>
-                </div>
-                <div class="flex-1">
-                    <div class="config-panel-settings items-end">
-                        <span class="config-panel-label">RTL</span>
-                        <p-toggleswitch [ngModel]="isRTL" (ngModelChange)="onRTLChange($event)" />
-                    </div>
-                </div>
+
+            <div class="flex items-center justify-between gap-4">
+                <span class="text-sm font-semibold text-(--text-secondary-color)">Ripple</span>
+                <p-toggleswitch [(ngModel)]="ripple" />
+            </div>
+
+            <div class="flex items-center justify-between gap-4">
+                <span class="text-sm font-semibold text-(--text-secondary-color)">RTL</span>
+                <p-toggleswitch [ngModel]="isRTL" (ngModelChange)="onRTLChange($event)" />
             </div>
         </div>
     `,
     host: {
-        class: 'config-panel hidden'
+        class: 'hidden absolute top-[calc(100%+4px)] sm:end-0 max-sm:start-4 max-sm:end-4 w-[min(17rem,calc(100vw-2rem))] p-3 bg-(--overlay-background) rounded-md border border-(--border-color) origin-top shadow-md z-[1120]'
     },
     imports: [CommonModule, FormsModule, ButtonModule, RadioButtonModule, SelectButton, ToggleSwitchModule]
 })
@@ -112,10 +110,16 @@ export class AppConfiguratorComponent {
 
     presets = Object.keys(presets);
 
+    /** The ends of the surface scale: white on dark, near-black on light. */
+    noirColor = computed(() => (this.configService.appState().darkTheme ? 'var(--p-surface-0)' : 'var(--p-surface-950)'));
+
+    /** Direction is a document-level switch, so it animates with a view transition. */
     onRTLChange(value: boolean) {
         this.configService.appState.update((state) => ({ ...state, RTL: value }));
+
         if (!(document as any).startViewTransition) {
             this.toggleRTL(value);
+
             return;
         }
 
@@ -271,9 +275,7 @@ export class AppConfiguratorComponent {
         }
     ];
 
-    selectedPrimaryColor = computed(() => {
-        return this.configService.appState().primary;
-    });
+    selectedPrimaryColor = computed(() => this.configService.appState().primary);
 
     selectedSurfaceColor = computed(() => this.configService.appState().surface);
 
@@ -464,6 +466,7 @@ export class AppConfiguratorComponent {
         } else if (type === 'surface') {
             this.configService.appState.update((state) => ({ ...state, surface: color.name }));
         }
+
         this.applyTheme(type, color);
         event.stopPropagation();
     }
@@ -480,6 +483,7 @@ export class AppConfiguratorComponent {
         this.configService.appState.update((state) => ({ ...state, preset: event }));
         const preset = presets[event];
         const surfacePalette = this.surfaces.find((s) => s.name === this.selectedSurfaceColor())?.palette;
+
         if (this.configService.appState().preset === 'Material') {
             document.body.classList.add('material');
             this.config.ripple.set(true);
@@ -487,6 +491,7 @@ export class AppConfiguratorComponent {
             document.body.classList.remove('material');
             this.config.ripple.set(false);
         }
+
         $t().preset(preset).preset(this.getPresetExt()).surfacePalette(surfacePalette).use({ useDefaultOptions: true });
     }
 }

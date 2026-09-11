@@ -9,3 +9,6 @@ export const LINKEDIN_URL = 'https://www.linkedin.com/company/openng';
 // Sparked — the MIT licensed Angular admin template built with Optimus UI.
 export const SPARKED_DEMO_URL = 'https://sparked.openng.org';
 export const SPARKED_REPO_URL = 'https://github.com/openng-org/sparked';
+
+// OpenNG, the community that maintains Optimus UI.
+export const OPENNG_URL = 'https://openng.org';

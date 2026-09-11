@@ -1,26 +1,102 @@
 .layout-footer {
-    padding: 2rem 4rem;
-    margin-top: 4rem;
+    /* Same frame as the content above it, so both lines end where the rail does. */
+    max-width: 100rem;
+    margin: 5rem auto 0 auto;
+    padding: 1.5rem;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     flex-wrap: wrap;
-    font-weight: 500;
-    color: var(--text-color);
+    gap: 0.75rem 2rem;
     border-top: 1px solid var(--border-color);
+    color: var(--text-secondary-color);
+    font-size: 0.875rem;
+}
+
+.layout-footer a {
+    color: var(--text-secondary-color);
+    transition: color var(--dur-fast) var(--ease-out);
+
+    &:hover {
+        color: var(--heading-color);
+    }
+}
+
+.layout-footer-stamp {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+
+    img {
+        height: 20px;
+        width: 20px;
+    }
+
+    .layout-footer-version {
+        font-family: var(--font-mono);
+        font-size: 0.6875rem;
+        border: 1px solid var(--border-color);
+        border-radius: 999px;
+        padding: 0.0625rem 0.5rem;
+    }
+}
+
+.layout-footer-links {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.25rem;
 
     a {
-        color: var(--primary-text-color);
-        font-weight: 700;
-        transition: outline-color .2s, border-color .2s;
-        outline-color: transparent;
-        border-radius: 6px;
-
-        @include focus-visible();
+        color: var(--text-secondary-color);
+        transition: color var(--dur-fast) var(--ease-out);
 
         &:hover {
-            text-decoration: underline;
+            color: var(--heading-color);
         }
-
     }
+}
+
+/*
+ * The home page footer. It carries the mark and the four places the project lives; the
+ * link columns live in the rail and in the documentation footer instead.
+ */
+.landing-footer {
+    .landing-footer-container {
+        max-width: 92rem;
+        margin: 0 auto;
+        /* Matches the gutters of the sections above it, so the rule ends where they do. */
+        padding-inline: 1.5rem;
+    }
+
+    .section-divider {
+        border: 0 none;
+        border-top: 1px solid var(--border-color);
+        margin: 0;
+    }
+}
+
+/* A bordered target: used on its own for text, with `linkbox-icon` for a single glyph. */
+.linkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    color: var(--text-secondary-color);
+    transition:
+        border-color var(--dur-fast) var(--ease-out),
+        color var(--dur-fast) var(--ease-out);
+
+    &:hover {
+        border-color: var(--hover-border-color);
+        color: var(--heading-color);
+    }
+}
+
+.linkbox-icon {
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
 }

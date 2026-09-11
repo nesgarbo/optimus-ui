@@ -1,31 +1,115 @@
+/*
+ * Navigation rail, in two levels.
+ *
+ * The three areas of the site are a switcher at the top, always visible; below it is
+ * the tree of the area you are in. The page you are on is a filled row — state is
+ * carried by fill and contrast, never by hue.
+ */
 .layout-sidebar {
     position: sticky;
     inset-inline-start: 0;
-    top: 6rem;
-    height: calc(100vh - 9rem);
+    top: var(--topbar-height);
+    height: calc(100vh - var(--topbar-height));
     user-select: none;
-    transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+    transition: transform var(--dur) var(--ease-out);
     display: flex;
     flex-direction: column;
     padding: 0;
-    flex: 0 0 250px;
-    margin-inline-end: 4rem;
-    overflow: auto;
+    flex: 0 0 var(--sidebar-width);
+    overflow: hidden;
+    overscroll-behavior: contain;
 
-    .logo {
+    aside,
+    nav {
         display: flex;
-        justify-content: center;
-    }
-
-    .drawer-quickaction {
-        display: none;
+        flex-direction: column;
+        min-height: 0;
+        flex: 1 1 auto;
     }
 
     nav {
-        padding-block: 0;
-        padding-inline: 1rem 0;
+        padding: 1.25rem 1rem 1rem 1.5rem;
         margin: 0;
-        flex-grow: 1;
+    }
+
+    /* The switcher: which area of the site you are reading. */
+    .layout-menu-categories {
+        list-style: none;
+        margin: 0 0 0.75rem 0;
+        padding: 0 0 0.75rem 0;
+        border-bottom: 1px solid var(--border-color);
+        flex: 0 0 auto;
+
+        > li > a {
+            display: flex;
+            width: 100%;
+            align-items: center;
+            gap: 0.625rem;
+            padding: 0.5rem 0.625rem;
+            color: var(--heading-color);
+            font-size: 0.9375rem;
+            font-weight: 500;
+            border: 1px solid transparent;
+            border-radius: var(--radius);
+            transition:
+                background-color var(--dur-fast) var(--ease-out),
+                border-color var(--dur-fast) var(--ease-out);
+
+            .menu-icon {
+                width: 1.625rem;
+                height: 1.625rem;
+                border-radius: var(--radius-sm);
+                border: 1px solid var(--border-color);
+                background-color: var(--panel-background);
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+
+                i {
+                    font-size: 0.75rem;
+                    color: var(--text-secondary-color);
+                }
+            }
+
+            &:hover {
+                background-color: var(--hover-background);
+            }
+
+            /* The area you are in stays outlined, so the tree below has an owner. */
+            &.active {
+                background-color: var(--hover-background);
+                border-color: var(--border-color);
+
+                .menu-icon i {
+                    color: var(--heading-color);
+                }
+            }
+        }
+    }
+
+    /*
+     * Version switcher, pinned under the tree. Its own chrome is stripped through the
+     * component's `pt` API: the library's styles are injected unlayered, so a rule here
+     * would lose to them.
+     */
+    .layout-menu-version {
+        flex: 0 0 auto;
+        margin-top: 0.5rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--border-color);
+    }
+
+    /* The tree of the active area; the only part that scrolls. */
+    .layout-menu-scrollpanel {
+        flex: 1 1 auto;
+        min-height: 0;
+        width: 100%;
+    }
+
+    .layout-menu-scroll {
+        padding-inline-end: 0.5rem;
+        padding-bottom: 2rem;
     }
 
     .layout-menu {
@@ -33,221 +117,50 @@
         margin: 0;
         padding: 0;
 
-        >li {
-            margin-bottom: .25rem;
+        > li > div > ol {
+            margin: 0.25rem 0 1rem 0;
+            padding: 0;
+            list-style: none;
 
-            >button,
-            >a {
+            li a {
                 display: flex;
-                width: 100%;
                 align-items: center;
-                padding-block: .5rem;
-                padding-inline: 1px;
-                color: var(--text-color);
-                font-weight: 600;
-                transition: outline-color 0.2s;
-                outline-color: transparent;
-                position: relative;
-                background: transparent;
-                font-size: 1rem;
-                border: 0 none;
-                margin: 0;
-                text-align: start;
-                cursor: pointer;
-                user-select: none;
-                --p-focus-ring-offset: -1px;
-                @include focus-visible();
-
-                .menu-icon {
-                    width: 2rem;
-                    height: 2rem;
-                    border-radius: 6px;
-                    margin-inline-end: .5rem;
-                    border: 1px solid var(--border-color);
-                    display: inline-flex;
-                    align-items: center;
-                    justify-content: center;
-                    transition: all .2s;
-                    position: relative;
-                    background-color: transparent;
-
-                    i {
-                        color: var(--text-color);
-                        transition: all .2s;
-                    }
-                }
-
-                .menu-toggle {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                    margin-inline-start: auto;
-
-                    .p-tag {
-                        position: static;
-                        transform: none;
-                    }
-                }
-
-                .menu-toggle-icon {
-                    color: var(--text-secondary-color);
-                }
+                font-size: 0.875rem;
+                font-weight: 400;
+                padding: 0.3125rem 0.625rem;
+                border-radius: var(--radius-sm);
+                color: var(--text-secondary-color);
+                transition:
+                    background-color var(--dur-fast) var(--ease-out),
+                    color var(--dur-fast) var(--ease-out);
 
                 &:hover {
-                    .menu-icon {
-                        background-color: var(--card-background);
-
-                        i {
-                            color: var(--primary-text-color);
-                        }
-                    }
-
-                    .menu-toggle-icon {
-                        color: var(--text-color);
-                    }
+                    color: var(--heading-color);
+                    background-color: var(--hover-background);
                 }
 
                 &.router-link-active {
-                    color: var(--primary-text-color);
-
-                    >.menu-icon {
-                        i {
-                            color: var(--primary-text-color);
-                        }
-                    }
-                }
-            }
-
-            >div {
-                overflow: hidden;
-
-                ol {
-                    margin-block: 0;
-                    margin-inline: 0 1rem;
-                    padding: .25rem 0;
-                    list-style: none;
-
-                    li {
-                        a {
-                            border-inline-start: 1px solid var(--border-color);
-                            transition: all .2s;
-                            font-weight: 450;
-                            display: flex;
-                            align-items: center;
-                            padding: .5rem;
-                            padding-inline-start: 1rem;
-                            color: var(--text-secondary-color);
-                            transition: outline-color 0.2s, border-color .2s;
-                            outline-color: transparent;
-                            position: relative;
-                            --p-focus-ring-offset: -1px;
-                            @include focus-visible();
-
-                            &:hover {
-                                border-inline-start-color: var(--hover-border-color);
-                            }
-
-                            &.router-link-active {
-                                color: var(--primary-text-color);
-                                border-inline-start-color: var(--primary-text-color);
-                            }
-                        }
-
-                        ol {
-                            margin: 0;
-                            padding: 0;
-                        }
-
-                        &:has(.menu-child-category) {
-                            margin-top: 1rem;
-                        }
-
-                        &:has(.menu-child-category):first-child {
-                            margin-top: 0rem;
-                        }
-                    }
+                    color: var(--heading-color);
+                    font-weight: 500;
+                    background-color: var(--raised-background);
                 }
             }
         }
 
-        .p-tag {
-            position: absolute;
-            inset-inline-end: 0;
-            top: 50%;
-            transform: translateY(-50%);
-
-            .p-tag-label {
-                line-height: 1;
-                font-size: 0.75rem;
-            }
-        }
-
+        /* Caption for a group of pages. */
         .menu-child-category {
             display: flex;
-            padding: .5rem;
-            padding-inline-start: 0;
-            font-size: .875rem;
+            padding: 0.375rem 0.625rem 0.25rem;
+            font-size: 0.6875rem;
             font-weight: 600;
-            letter-spacing: 1px;
-            color: var(--text-secondary-color);
-            margin-bottom: .25rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted-color);
         }
 
-        .drawer-quickaction-divider {
-            margin-top: .75rem;
-            padding-top: .75rem;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .drawer-version-row {
-            display: flex;
-            align-items: center;
-            padding-block: .5rem;
-            padding-inline: 1px;
-
-            .menu-icon {
-                width: 2rem;
-                height: 2rem;
-                border-radius: 6px;
-                margin-inline-end: .5rem;
-                border: 1px solid var(--border-color);
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                flex-shrink: 0;
-                background-color: transparent;
-
-                i {
-                    color: var(--text-color);
-                }
-            }
-
-            .p-select {
-                flex: 1 1 auto;
-                border: 0 none;
-                background: transparent;
-                box-shadow: none;
-                padding: 0;
-
-                .p-select-label {
-                    padding: 0;
-                    font-weight: 600;
-                    font-size: 1rem;
-                    color: var(--text-color);
-                }
-
-                .p-select-dropdown {
-                    width: auto;
-                    color: var(--text-secondary-color);
-                }
-            }
+        .p-tag .p-tag-label {
+            line-height: 1;
+            font-size: 0.6875rem;
         }
     }
-}
-
-// The landing page has no persistent docs sidebar — its app-menu instance
-// only exists to back the mobile hamburger drawer, so keep it out of the
-// desktop layout entirely (shown again below 1199px in _responsive.scss).
-.landing-menu {
-    display: none;
 }

@@ -13,16 +13,21 @@ import { AppTopBarComponent } from './topbar/app.topbar.component';
     selector: 'app-main',
     template: `
         <div class="layout-wrapper" [ngClass]="containerClass()">
+            <a class="skip-link" href="#content">Skip to content</a>
             <!-- <app-news /> -->
             <app-topbar />
             @if (isMenuActive()) {
                 <div class="layout-mask" (click)="hideMenu()" animate.enter="px-modal-enter" animate.leave="px-modal-leave"></div>
             }
             <div class="layout-content">
+                <button type="button" class="layout-menu-trigger xl:hidden" (click)="showMenu()" aria-label="Open the navigation">
+                    <i class="pi pi-bars" aria-hidden="true"></i>
+                    <span>Menu</span>
+                </button>
                 <app-menu />
-                <div class="layout-content-slot">
+                <main id="content" class="layout-content-slot">
                     <router-outlet></router-outlet>
-                </div>
+                </main>
             </div>
             <app-footer />
         </div>
@@ -39,11 +44,14 @@ export class AppMainComponent {
 
     isMenuActive = computed(() => this.configService.appState().menuActive);
 
-    containerClass = computed(() => {
-        return {
-            'layout-news-active': this.isNewsActive()
-        };
-    });
+    containerClass = computed(() => ({
+        'layout-news-active': this.isNewsActive()
+    }));
+
+    showMenu() {
+        this.configService.showMenu();
+        DomHandler.blockBodyScroll('blocked-scroll');
+    }
 
     hideMenu() {
         this.configService.hideMenu();

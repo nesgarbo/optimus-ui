@@ -1,2 +1,7 @@
 {
+    "id": "mit-community-fork",
+    "content": "Optimus UI is the MIT licensed community fork of PrimeNG, which moved to closed source under a commercial license.",
+    "linkText": "Read their announcement",
+    "linkHref": "https://primeui.dev/nextchapter",
+    "note": "Optimus UI supports Angular v21+"
 }

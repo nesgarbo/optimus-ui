@@ -1,8 +1,94 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/*
+ * Layer order for the whole app. The site's own stylesheet lives in `docs`, which sits
+ * below `utilities` so a Tailwind utility in a template always wins over a layout rule.
+ */
+@layer theme, base, components, docs, utilities;
+
+@import 'tailwindcss';
+@import '@openng/optimus-ui-tailwindcss';
+
+/* The theme switch toggles .p-dark on <html>, so that is what `dark:` has to mean. */
+@custom-variant dark (&:where(.p-dark, .p-dark *));
+
+/* Utilities are written in Angular template strings, so point the scanner at the app. */
+@source '../../../**/*.{ts,html}';
+@source '../../../../index.html';
+
+@theme {
+    --font-sans:
+        'Inter var', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+
+    --breakpoint-sm: 576px;
+    --breakpoint-md: 768px;
+    --breakpoint-lg: 992px;
+    --breakpoint-xl: 1200px;
+    --breakpoint-2xl: 1920px;
+}
 
 @layer components {
+    /*
+     * The stack marquee. The track holds the list twice, so translating it by half its
+     * width lands exactly back where it started and the loop has no seam.
+     */
+    .marquee-track {
+        animation: marquee-scroll 32s linear infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .marquee-track {
+            animation: none;
+        }
+    }
+
+    @keyframes marquee-scroll {
+        from {
+            transform: translateX(0);
+        }
+        to {
+            transform: translateX(-50%);
+        }
+    }
+
+    /*
+     * Alternating section ground for the home page. Mixed from the surface scale so it
+     * tracks the active preset instead of hard-coding a grey.
+     */
+    .section-alt {
+        background-color: color-mix(in srgb, var(--p-surface-50) 75%, var(--p-surface-0) 25%);
+    }
+
+    .p-dark .section-alt {
+        background-color: color-mix(in srgb, var(--p-surface-950) 75%, var(--p-surface-900) 25%);
+    }
+
+    /*
+     * On the home page the announcement sits above the bar and scrolls away with the
+     * page, so the bar sticks instead of being pinned over the top of the document.
+     */
+    /*
+     * On the home page the announcement is part of the document instead of being pinned
+     * over it, so it scrolls away and the bar sticks underneath.
+     */
+    .landing .layout-news {
+        position: relative;
+    }
+
+    .landing .layout-topbar {
+        position: sticky;
+        width: 100%;
+        top: 0;
+    }
+
+    /*
+     * The theming demo shows a real p-dialog in place rather than as an overlay. Position
+     * and size are set through the component's own style bindings (see themingsection);
+     * this only keeps the z-index it raises itself to from escaping the stage.
+     */
+    .theming-stage .p-dialog-mask {
+        z-index: 0 !important;
+    }
+
     .btn-design {
         @apply px-3 py-2 bg-zinc-950 disabled:hover:bg-zinc-950 hover:bg-zinc-800 text-white dark:bg-white dark:hover:bg-gray-100 dark:disabled:hover:bg-white dark:text-black rounded-md font-medium cursor-pointer disabled:cursor-auto transition-colors duration-200 focus:outline focus:outline-offset-2 focus:outline-zinc-950 dark:focus:outline-white disabled:opacity-60;
     }
@@ -12,6 +98,6 @@
     }
 
     .icon-btn {
-        @apply h-8 w-8 rounded-full inline-flex justify-center items-center hover:bg-surface-100 dark:hover:bg-surface-800 text-zinc-500 dark:text-zinc-400 transition-colors duration-200;
+        @apply h-7 w-7 rounded-full inline-flex justify-center items-center hover:bg-surface-100 dark:hover:bg-surface-800 text-zinc-500 dark:text-zinc-400 transition-colors duration-200;
     }
 }

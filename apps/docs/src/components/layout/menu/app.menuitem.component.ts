@@ -15,6 +15,7 @@ import { MenuItem } from './app.menu.component';
             <span>{{ item.name }}</span>
             <span class="menu-toggle">
                 <p-tag *ngIf="item.badge" [value]="item.badge" />
+                <span class="menu-count">{{ leafCount(item) }}</span>
                 <i class="menu-toggle-icon pi pi-angle-down"></i>
             </span>
         </button>
@@ -25,7 +26,14 @@ import { MenuItem } from './app.menu.component';
             <span>{{ item.name }}</span>
             <p-tag *ngIf="item.badge" [value]="item.badge" />
         </a>
-        <a *ngIf="item.routerLink" [routerLink]="item.routerLink" routerLinkActive="router-link-active" [routerLinkActiveOptions]="{ paths: 'exact', queryParams: 'ignored', matrixParams: 'ignored', fragment: 'ignored' }">
+        <a
+            *ngIf="item.routerLink"
+            [routerLink]="item.routerLink"
+            routerLinkActive="router-link-active"
+            #active="routerLinkActive"
+            [attr.aria-current]="active.isActive ? 'page' : null"
+            [routerLinkActiveOptions]="{ paths: 'exact', queryParams: 'ignored', matrixParams: 'ignored', fragment: 'ignored' }"
+        >
             <div *ngIf="item.icon && root" class="menu-icon">
                 <i [ngClass]="item.icon"></i>
             </div>
@@ -49,8 +57,16 @@ export class AppMenuItemComponent {
 
     constructor(private router: Router) {}
 
+    /** How many pages a group holds — shown next to the group name so the rail says how big each area is. */
+    leafCount(menuitem: MenuItem): number {
+        const count = (items: MenuItem[] = []): number => items.reduce((total, item) => total + (item.children ? count(item.children) : 1), 0);
+
+        return count(menuitem.children);
+    }
+
     isActiveRootMenuItem(menuitem: MenuItem): boolean {
         const url = this.router.url.split('#')[0];
+
         return menuitem.children && !menuitem.children.some((item) => item.routerLink === `${url}` || (item.children && item.children.some((it) => it.routerLink === `${url}`)));
     }
 }

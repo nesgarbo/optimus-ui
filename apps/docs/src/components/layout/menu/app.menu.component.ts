@@ -1,165 +1,178 @@
 import { default as MenuData } from '@/assets/data/menu.json';
 import { default as Versions } from '@/assets/data/versions.json';
-import { AppConfiguratorComponent } from '@/components/layout/configurator/app.configurator.component';
 import { AppConfigService } from '@/service/appconfigservice';
-import { DISCORD_URL, GITHUB_DISCUSSIONS_URL, GITHUB_REPO_URL } from '@/utils/constants';
-import { CommonModule } from '@angular/common';
-import { afterNextRender, Component, computed, ElementRef, OnDestroy } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { afterNextRender, ChangeDetectionStrategy, Component, computed, ElementRef, inject, OnDestroy, PLATFORM_ID, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
-import { AutoComplete } from '@openng/optimus-ui/autocomplete';
 import { DomHandler } from '@openng/optimus-ui/dom';
+import { ScrollPanelModule } from '@openng/optimus-ui/scrollpanel';
 import { SelectModule } from '@openng/optimus-ui/select';
-import { StyleClass } from '@openng/optimus-ui/styleclass';
 import { Subscription } from 'rxjs';
 import { AppMenuItemComponent } from './app.menuitem.component';
 
 export interface MenuItem {
+    /** Set on the three roots only: which area of the site the subtree belongs to. */
+    section?: string;
     name?: string;
     icon?: string;
+    badge?: string;
     children?: MenuItem[];
     routerLink?: string;
     href?: string;
 }
 
+/**
+ * Navigation rail, in two levels.
+ *
+ * The three areas of the site sit at the top and are always visible; below them is the
+ * tree of the area you are in, and only that one — a component page does not carry the
+ * thirty guide entries it has nothing to do with.
+ */
 @Component({
     selector: 'app-menu',
-    template: ` <aside>
-        <nav>
-            <ol class="layout-menu">
-                <li *ngFor="let item of menu; let i = index" app-menuitem [item]="item" [root]="true"></li>
+    template: `
+        <aside>
+            <nav>
+                <ul class="layout-menu-categories">
+                    @for (section of sections; track section.section) {
+                        <li>
+                            <a [routerLink]="section.routerLink" [class.active]="activeSection() === section.section" [attr.aria-current]="activeSection() === section.section ? 'true' : null">
+                                <span class="menu-icon">
+                                    <i [class]="section.icon"></i>
+                                </span>
+                                <span>{{ section.name }}</span>
+                            </a>
+                        </li>
+                    }
+                </ul>
 
-                <li class="drawer-quickaction drawer-quickaction-divider">
-                    <a [href]="githubRepoUrl" target="_blank" rel="noopener noreferrer">
-                        <div class="menu-icon">
-                            <i class="pi pi-github"></i>
-                        </div>
-                        <span>GitHub</span>
-                    </a>
-                </li>
-                <li class="drawer-quickaction">
-                    <a [href]="discordUrl" target="_blank" rel="noopener noreferrer" aria-label="Optimus UI Discord" title="Optimus UI Discord">
-                        <div class="menu-icon">
-                            <i class="pi pi-discord"></i>
-                        </div>
-                        <span>Discord</span>
-                    </a>
-                </li>
-                <li class="drawer-quickaction">
-                    <a [href]="githubDiscussionsUrl" target="_blank" rel="noopener noreferrer">
-                        <div class="menu-icon">
-                            <i class="pi pi-comments"></i>
-                        </div>
-                        <span>Discussions</span>
-                    </a>
-                </li>
-                <li class="drawer-quickaction">
-                    <button type="button" (click)="toggleDarkMode()">
-                        <div class="menu-icon">
-                            <i class="pi" [ngClass]="{ 'pi-moon': isDarkMode(), 'pi-sun': !isDarkMode() }"></i>
-                        </div>
-                        <span>{{ isDarkMode() ? 'Light Mode' : 'Dark Mode' }}</span>
-                    </button>
-                </li>
-                <li class="drawer-quickaction relative">
-                    <button type="button" enterActiveClass="px-overlay-enter-active" enterFromClass="hidden" leaveActiveClass="px-overlay-leave-active" leaveToClass="hidden" pStyleClass="@next" [hideOnOutsideClick]="true">
-                        <div class="menu-icon">
-                            <i class="pi pi-palette"></i>
-                        </div>
-                        <span>Customize Theme</span>
-                    </button>
-                    <app-configurator />
-                </li>
-                <li class="drawer-quickaction drawer-version-row">
-                    <div class="menu-icon">
-                        <i class="pi pi-tag"></i>
+                <p-scrollpanel styleClass="layout-menu-scrollpanel">
+                    <div class="layout-menu-scroll">
+                        <ol class="layout-menu">
+                            @for (group of activeGroups(); track group.name) {
+                                <li app-menuitem [item]="group" [root]="false"></li>
+                            }
+                        </ol>
                     </div>
+                </p-scrollpanel>
+
+                <!--
+                    Reading an older version of the documentation is a rare thing to want, so
+                    the switcher sits under the tree as a quiet line rather than in the bar.
+                -->
+                <div class="layout-menu-version">
                     <p-select
-                        [(ngModel)]="selectedVersion"
                         [options]="versions"
+                        [(ngModel)]="selectedVersion"
                         [group]="true"
+                        appendTo="body"
+                        size="small"
+                        ariaLabel="Documentation version"
                         (onChange)="onVersionChange($event)"
                         [pt]="{
-                            optionGroup: {
-                                class: 'version-group'
-                            }
+                            root: { class: 'w-full border-0! bg-transparent! shadow-none!' },
+                            label: { class: 'px-2.5! py-0! font-mono text-xs text-muted-color' },
+                            dropdown: { class: 'w-auto! text-muted-color' },
+                            optionGroup: { class: 'version-group' }
                         }"
-                    >
-                    </p-select>
-                </li>
-            </ol>
-        </nav>
-    </aside>`,
+                    />
+                </div>
+            </nav>
+        </aside>
+    `,
     host: {
         class: 'layout-sidebar',
         '[class.active]': 'isActive()'
     },
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, SelectModule, StyleClass, AppConfiguratorComponent, AppMenuItemComponent]
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [CommonModule, FormsModule, RouterModule, ScrollPanelModule, SelectModule, AppMenuItemComponent]
 })
 export class AppMenuComponent implements OnDestroy {
-    menu!: MenuItem[];
+    readonly sections: MenuItem[] = (MenuData as { data: MenuItem[] }).data;
 
-    readonly githubRepoUrl = GITHUB_REPO_URL;
-    readonly githubDiscussionsUrl = GITHUB_DISCUSSIONS_URL;
-    readonly discordUrl = DISCORD_URL;
-
-    versions: any[] = Versions;
-    selectedVersion = this.versions[0].items[0].value;
+    private readonly configService = inject(AppConfigService);
+    private readonly el = inject(ElementRef);
+    private readonly router = inject(Router);
+    private readonly platformId = inject(PLATFORM_ID);
 
     private routerSubscription: Subscription;
 
+    /** The path drives which area is open, so a deep link lands with the right tree. */
+    private url = signal(this.router.url.split('#')[0]);
+
+    activeSection = computed(() => {
+        const url = this.url();
+        const match = this.sections.find((section) => contains(section, url));
+
+        return (match ?? this.sections[0]).section;
+    });
+
+    activeGroups = computed(() => this.sections.find((section) => section.section === this.activeSection())?.children ?? []);
+
     isActive = computed(() => this.configService.appState().menuActive);
 
-    isDarkMode = computed(() => this.configService.appState().darkTheme);
+    readonly versions: { label: string; value: string; items: { label: string; value: string }[] }[] = Versions;
 
-    constructor(
-        private configService: AppConfigService,
-        private el: ElementRef,
-        private router: Router
-    ) {
-        this.menu = MenuData.data;
+    /** The first entry is this site; picking any other one leaves for that host. */
+    selectedVersion = this.versions[0].items[0].value;
 
-        afterNextRender(() => {
-            setTimeout(() => {
-                this.scrollToActiveItem();
-            }, 1);
+    constructor() {
+        this.routerSubscription = this.router.events.subscribe((event) => {
+            if (!(event instanceof NavigationEnd)) {
+                return;
+            }
 
-            this.routerSubscription = this.router.events.subscribe((event) => {
-                if (event instanceof NavigationEnd && this.isActive()) {
-                    this.configService.hideMenu();
-                    DomHandler.unblockBodyScroll('blocked-scroll');
-                }
-            });
+            this.url.set(event.urlAfterRedirects.split('#')[0]);
+
+            // Navigating from the drawer closes it; on a wide screen the rail is always open.
+            if (this.isActive()) {
+                this.configService.hideMenu();
+                DomHandler.unblockBodyScroll('blocked-scroll');
+            }
         });
+
+        afterNextRender(() => setTimeout(() => this.scrollToActiveItem(), 1));
     }
 
-    toggleDarkMode() {
-        this.configService.appState.update((state) => ({ ...state, darkTheme: !state.darkTheme }));
-    }
-
-    onVersionChange(event: any) {
-        if (event?.value && event.value.startsWith('http')) {
+    onVersionChange(event: { value?: string }) {
+        if (event?.value?.startsWith('http') && event.value !== this.versions[0].items[0].value) {
             window.location.href = event.value;
         }
     }
 
     scrollToActiveItem() {
-        let activeItem = DomHandler.findSingle(this.el.nativeElement, '.router-link-active');
-        if (activeItem && !this.isInViewport(activeItem)) {
-            activeItem.scrollIntoView({ block: 'center' });
+        // Prerendering runs render hooks against a DOM shim that has no geometry, so
+        // there is nothing to measure and nothing to scroll.
+        if (!isPlatformBrowser(this.platformId)) {
+            return;
         }
-    }
 
-    isInViewport(element) {
-        const rect = element.getBoundingClientRect();
-        return rect.top >= 0 && rect.left >= 0 && rect.bottom <= (window.innerHeight || (document.documentElement.clientHeight && rect.right <= (window.innerWidth || document.documentElement.clientWidth)));
+        const activeItem = DomHandler.findSingle(this.el.nativeElement, '.layout-menu .router-link-active');
+        const viewport = DomHandler.findSingle(this.el.nativeElement, '.p-scrollpanel-content');
+
+        if (!activeItem || !viewport) {
+            return;
+        }
+
+        // Centre it by moving the rail's own viewport. `scrollIntoView` would walk up to
+        // the document and scroll the page past its heading.
+        const offset = activeItem.getBoundingClientRect().top - viewport.getBoundingClientRect().top;
+
+        viewport.scrollTop += offset - viewport.clientHeight / 2 + activeItem.clientHeight / 2;
     }
 
     ngOnDestroy() {
-        if (this.routerSubscription) {
-            this.routerSubscription.unsubscribe();
-            this.routerSubscription = null;
-        }
+        this.routerSubscription?.unsubscribe();
     }
+}
+
+/** Whether a route lives anywhere under this item. */
+function contains(item: MenuItem, url: string): boolean {
+    if (item.routerLink === url) {
+        return true;
+    }
+
+    return (item.children ?? []).some((child) => contains(child, url));
 }

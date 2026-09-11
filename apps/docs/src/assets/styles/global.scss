@@ -1,6 +1,8 @@
-@import './tailwind/main.css';
 @import '@openng/icons/openng-icons.css';
 @import 'quill/dist/quill.snow.css';
 @import './flags.css';
-@import '@docsearch/css/dist/style.css';
-@import './layout/layout.scss';
+
+/* Ordered below Tailwind's utilities — see the layer statement in tailwind/main.css. */
+@layer docs {
+    @import './layout/layout.scss';
+}

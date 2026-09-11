@@ -3,9 +3,9 @@
         <div class="layout-news-content">
             <span class="layout-news-text">{{ announcement?.content }}</span>
             <a *ngIf="announcement?.linkHref" class="layout-news-link" [href]="announcement?.linkHref" target="_blank" rel="noopener noreferrer">{{ announcement.linkText }}</a>
-            <a *ngIf="announcement?.routerLink" class="layout-news-link" [routerLink]="announcement?.routerLink">{{ announcement.linkText }}</a>
+            <span *ngIf="announcement?.note" class="layout-news-note">{{ announcement.note }}</span>
         </div>
-        <a tabindex="0" class="layout-news-close" (click)="hideNews()">
+        <a tabindex="0" class="layout-news-close" (click)="hideNews()" aria-label="Dismiss">
             <span class="pi pi-times"></span>
         </a>
     </div>

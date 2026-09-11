@@ -1,69 +1,126 @@
 {
     "data": [
         {
-            "name": "Getting Started",
-            "icon": "pi pi-home",
+            "section": "guides",
+            "name": "Guides",
+            "icon": "pi pi-book",
+            "routerLink": "/installation",
             "children": [
                 {
-                    "name": "Philosophy",
-                    "routerLink": "/philosophy"
+                    "name": "Getting Started",
+                    "children": [
+                        {
+                            "name": "Philosophy",
+                            "routerLink": "/philosophy"
+                        },
+                        {
+                            "name": "Installation",
+                            "routerLink": "/installation"
+                        },
+                        {
+                            "name": "Configuration",
+                            "routerLink": "/configuration"
+                        },
+                        {
+                            "name": "Playground",
+                            "routerLink": "/playground"
+                        }
+                    ]
                 },
                 {
-                    "name": "Installation",
-                    "routerLink": "/installation"
+                    "name": "Theming",
+                    "children": [
+                        {
+                            "name": "Styled Mode",
+                            "routerLink": "/theming/styled"
+                        },
+                        {
+                            "name": "Unstyled Mode",
+                            "routerLink": "/theming/unstyled"
+                        },
+                        {
+                            "name": "Tailwind CSS",
+                            "icon": "pi pi-heart",
+                            "routerLink": "/tailwind"
+                        }
+                    ]
                 },
                 {
-                    "name": "Configuration",
-                    "routerLink": "/configuration"
+                    "name": "AI Tools",
+                    "children": [
+                        {
+                            "name": "LLMs.txt",
+                            "routerLink": "/llms"
+                        }
+                    ]
                 },
                 {
-                    "name": "Playground",
-                    "routerLink": "/playground"
+                    "name": "Icons",
+                    "children": [
+                        {
+                            "name": "OpenNG Icons",
+                            "routerLink": "/icons"
+                        },
+                        {
+                            "name": "Custom Icons",
+                            "routerLink": "/customicons"
+                        }
+                    ]
+                },
+                {
+                    "name": "Misc",
+                    "children": [
+                        {
+                            "name": "Accessibility",
+                            "routerLink": "/guides/accessibility"
+                        },
+                        {
+                            "name": "Animations",
+                            "routerLink": "/guides/animations"
+                        },
+                        {
+                            "name": "PrimeFlex",
+                            "routerLink": "/guides/primeflex"
+                        },
+                        {
+                            "name": "RTL",
+                            "routerLink": "/guides/rtl"
+                        },
+                        {
+                            "name": "Pass Through",
+                            "routerLink": "/passthrough"
+                        }
+                    ]
+                },
+                {
+                    "name": "Releases",
+                    "children": [
+                        {
+                            "name": "Changelog",
+                            "routerLink": "/changelog"
+                        }
+                    ]
+                },
+                {
+                    "name": "Migration",
+                    "children": [
+                        {
+                            "name": "From PrimeNG",
+                            "href": "https://v1.optimus.openng.org/migration/primeng"
+                        },
+                        {
+                            "name": "Update Optimus UI",
+                            "routerLink": "/migration/update"
+                        }
+                    ]
                 }
             ]
         },
         {
-            "name": "Templates",
-            "icon": "pi pi-clone",
-            "children": [
-                {
-                    "name": "Sparked",
-                    "routerLink": "/templates"
-                }
-            ]
-        },
-        {
-            "name": "Theming",
-            "icon": "pi pi-palette",
-            "children": [
-                {
-                    "name": "Styled Mode",
-                    "routerLink": "/theming/styled"
-                },
-                {
-                    "name": "Unstyled Mode",
-                    "routerLink": "/theming/unstyled"
-                },
-                {
-                    "name": "Tailwind CSS",
-                    "icon": "pi pi-heart",
-                    "routerLink": "/tailwind"
-                }
-            ]
-        },
-        {
-            "name": "AI Tools",
-            "icon": "pi pi-sparkles",
-            "children": [
-                {
-                    "name": "LLMs.txt",
-                    "routerLink": "/llms"
-                }
-            ]
-        },
-        {
+            "section": "components",
             "name": "Components",
-            "icon": "pi pi-compass",
+            "icon": "pi pi-th-large",
+            "routerLink": "/autocomplete",
             "children": [
                 {
                     "name": "Form",
@@ -516,98 +573,62 @@
             ]
         },
         {
-            "name": "Pass Through",
-            "icon": "pi pi-directions",
-            "routerLink": "/passthrough"
-        },
-        {
-            "name": "Guides",
-            "icon": "pi pi-book",
+            "section": "resources",
+            "name": "Resources",
+            "icon": "pi pi-compass",
+            "routerLink": "/templates",
             "children": [
                 {
-                    "name": "Accessibility",
-                    "routerLink": "/guides/accessibility"
+                    "name": "Templates",
+                    "children": [
+                        {
+                            "name": "Sparked",
+                            "routerLink": "/templates"
+                        }
+                    ]
                 },
                 {
-                    "name": "Animations",
-                    "routerLink": "/guides/animations"
+                    "name": "Community",
+                    "children": [
+                        {
+                            "name": "Discord",
+                            "href": "https://discord.gg/auSfMzVVPr"
+                        },
+                        {
+                            "name": "GitHub Discussions",
+                            "href": "https://github.com/openng-org/optimus-ui/discussions"
+                        },
+                        {
+                            "name": "FAQ",
+                            "routerLink": "/faq"
+                        }
+                    ]
                 },
                 {
-                    "name": "PrimeFlex",
-                    "routerLink": "/guides/primeflex"
-                },
-                {
-                    "name": "RTL",
-                    "routerLink": "/guides/rtl"
-                }
-            ]
-        },
-        {
-            "name": "Icons",
-            "icon": "pi pi-eye",
-            "children": [
-                {
-                    "name": "OpenNG Icons",
-                    "routerLink": "/icons"
-                },
-                {
-                    "name": "Custom Icons",
-                    "routerLink": "/customicons"
-                }
-            ]
-        },
-        {
-            "name": "Migration",
-            "icon": "pi pi-arrow-up",
-            "children": [
-                {
-                    "name": "From PrimeNG",
-                    "href": "https://v1.optimus.openng.org/migration/primeng"
-                },
-                {
-                    "name": "Update Optimus UI",
-                    "routerLink": "/migration/update"
-                }
-            ]
-        },
-        {
-            "name": "Support",
-            "icon": "pi pi-question",
-            "children": [
-                {
-                    "name": "FAQ",
-                    "routerLink": "/faq"
-                },
-                {
-                    "name": "Discord",
-                    "href": "https://discord.gg/auSfMzVVPr"
-                },
-                {
-                    "name": "GitHub Discussions",
-                    "href": "https://github.com/openng-org/optimus-ui/discussions"
-                }
-            ]
-        },
-        {
-            "name": "Discover",
-            "icon": "pi pi-search",
-            "children": [
-                {
-                    "name": "Roadmap",
-                    "routerLink": "/roadmap"
-                },
-                {
-                    "name": "Source Code",
-                    "href": "https://github.com/openng-org/optimus-ui"
-                },
-                {
-                    "name": "Changelog",
-                    "href": "https://github.com/openng-org/optimus-ui/releases"
-                },
-                {
-                    "name": "Contribution",
-                    "routerLink": "/contribution",
-                    "icon": "pi pi-users"
+                    "name": "Project",
+                    "children": [
+                        {
+                            "name": "Roadmap",
+                            "routerLink": "/roadmap"
+                        },
+                        {
+                            "name": "Source Code",
+                            "href": "https://github.com/openng-org/optimus-ui"
+                        },
+                        {
+                            "name": "Changelog",
+                            "routerLink": "/changelog"
+                        },
+                        {
+                            "name": "Contribution",
+                            "routerLink": "/contribution",
+                            "icon": "pi pi-users"
+                        },
+                        {
+                            "name": "MIT License",
+                            "href": "https://github.com/openng-org/optimus-ui/blob/main/LICENSE.md"
+                        }
+                    ]
                 }
             ]
         }

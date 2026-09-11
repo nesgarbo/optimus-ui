@@ -36,6 +36,7 @@ export class AppNewsComponent {
                 this.configService.newsActive.set(true);
                 this.announcement = News;
             }
+
             this.cd.markForCheck();
         });
     }

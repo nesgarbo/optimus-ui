@@ -24,12 +24,14 @@
     }
 }
 
+/* Inline code chip: a quiet fill, mono, slightly smaller than the running text. */
 @mixin mark() {
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     padding: 2px 6px;
-    font-size: 1rem;
-    font-weight: 500;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-weight: 400;
     font-style: normal;
     background: var(--mark-background);
-    color: var(--mark-text);
+    color: var(--mark-text-color);
 }

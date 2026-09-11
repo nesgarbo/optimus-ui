@@ -18,7 +18,7 @@
         position: absolute;
         bottom: 0;
         width: 100%;
-        border-bottom: 1px solid var(--border-color);
+        border-bottom: var(--seam-width) solid var(--seam);
         content: '';
     }
 
@@ -30,19 +30,20 @@
             background-color: transparent;
             border: 0 none;
             display: block;
-            padding-block: 0 1rem;
-            padding-inline: 2rem;
+            padding-block: 0 0.75rem;
+            padding-inline: 1.25rem;
             text-align: center;
-            color: var(--text-color);
-            font-size: 1rem;
-            letter-spacing: 1px;
+            color: var(--text-secondary-color);
+            font-family: var(--font-mono);
+            font-size: 0.6875rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
             cursor: pointer;
             margin: 0;
             transition: outline-color 0.2s, border-color 0.2s;
             outline-color: transparent;
-            border-bottom: 1px solid transparent;
-            border-start-end-radius: 6px;
-            border-start-start-radius: 6px;
+            border-bottom: 2px solid transparent;
             white-space: nowrap;
             --p-focus-ring-offset: -1px;
             text-decoration: none;
@@ -60,8 +61,8 @@
 
         &.doc-tabmenu-active {
             button, a {
-                border-bottom-color: var(--primary-text-color);
-                color: var(--primary-text-color);
+                border-bottom-color: var(--enamel);
+                color: var(--enamel);
             }
         }
     }
@@ -84,11 +85,26 @@
 }
 
 .doc-intro {
-    margin-bottom: 1.5rem;
+    margin-bottom: 2.5rem;
+
+    .doc-intro-heading {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+
+        h1 {
+            margin: 0;
+        }
+    }
 
     p {
-        font-size: 1.25rem;
-        margin: 0;
+        font-size: 1rem;
+        color: var(--text-secondary-color);
+        margin: 0.625rem 0 0 0;
+        /* Long enough that a one-line description stays on one line in a wide window. */
+        max-width: 100ch;
 
         a {
             @include doc-link();
@@ -103,7 +119,7 @@
 .doc-section-label {
     display: flex;
     align-items: center;
-    scroll-margin-top: 6.5rem;
+    scroll-margin-top: calc(var(--topbar-height) + 1.5rem);
 
     >a {
         color: var(--primary-text-color);
@@ -136,8 +152,9 @@
 }
 
 .doc-section-description {
+    /* --text-base, the size the reference sets its documentation prose at. */
     >p {
-        font-size: 1.125rem;
+        font-size: 1rem;
 
         i {
             @include mark();
@@ -149,7 +166,7 @@
     }
 
     li {
-        font-size: 1.125rem;
+        font-size: 1rem;
 
         i {
             @include mark();
@@ -173,90 +190,180 @@
 
 .doc-section-nav-container {
     position: sticky;
-    top: 6rem;
+    top: calc(var(--topbar-height) + 2.5rem);
     right: 0;
-    width: 14rem;
+    width: 11.5rem;
     margin: 0;
+    margin-inline-start: 3.5rem;
+    padding-inline-end: 1.5rem;
+    gap: 0.25rem;
     padding-block: 0.25rem;
-    padding-inline: 0;
-    margin-inline-start: 4rem;
     display: flex;
     flex-direction: column;
     align-self: flex-start;
-    max-height: calc(100vh - 14rem);
+    max-height: calc(100vh - var(--topbar-height) - 6rem);
 }
 
+.doc-section-nav-title:not(:first-child) {
+    margin-top: 1.5rem;
+}
+
+.doc-section-nav-title {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted-color);
+    padding-inline-start: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+/*
+ * One bar slides between entries. Only the two custom properties change, so the
+ * browser animates a transform-like update rather than relayouting the list.
+ */
+.doc-section-nav-indicator {
+    position: absolute;
+    inset-inline-start: 0;
+    top: var(--indicator-top, 0);
+    height: var(--indicator-height, 0);
+    transition:
+        top var(--dur) var(--ease-out),
+        height var(--dur) var(--ease-out);
+}
 
 .doc-section-nav {
     list-style: none;
-    overflow-y: scroll;
+    overflow-y: auto;
     overflow-x: hidden;
+    margin: 0;
+    padding: 0;
 
+    .navbar-item > .navbar-item-content {
+        display: flex;
 
-    >.navbar-item {
-        .navbar-item-content {
-            border-inline-start: 1px solid var(--border-color);
-            padding-inline-start: .25rem;
-            transition: all .2s;
+        button {
+            font-size: 0.8125rem;
+            text-align: start;
+            background: transparent;
+            margin: 0;
+            border: 0 none;
+            padding-block: 0.25rem;
+            padding-inline: 1rem;
+            color: var(--text-secondary-color);
+            white-space: nowrap;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+            user-select: none;
+            transition: color var(--dur-fast) var(--ease-out);
+        }
 
-            &:hover {
-                border-inline-start-color: var(--hover-border-color);
-            }
+        &:hover button {
+            color: var(--heading-color);
         }
     }
 
-    .navbar-item {
-        >.navbar-item-content {
-            display: flex;
+    .navbar-item-child > .navbar-item-content button {
+        padding-inline-start: 2rem;
+    }
 
-            button {
-                font-size: 1rem;
-                text-align: start;
-                background: transparent;
-                margin: 0;
-                border: 0 none;
-                padding-block: 0.25rem;
-                padding-inline: 1rem;
-                color: var(--text-secondary-color);
-                white-space: nowrap;
-                min-width: 0;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                transition: outline-color 0.2s, border-color .2s;
-                outline-color: transparent;
-                cursor: pointer;
-                user-select: none;
-                --p-focus-ring-offset: -1px;
-                @include focus-visible();
-            }
+    .active-navbar-item > .navbar-item-content button {
+        color: var(--heading-color);
+    }
+}
 
-            &:hover {
-                button {
-                    color: var(--text-color);
-                }
-            }
+/*
+ * Below xl the index becomes an island: it reports reading position at a glance and
+ * opens into the full list on tap.
+ */
+.doc-nav-island {
+    position: fixed;
+    z-index: 1095;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(calc(100vw - 2rem), 26rem);
+    border: 1px solid var(--border-color);
+    border-radius: 1.375rem;
+    background-color: color-mix(in srgb, var(--panel-background) 75%, transparent);
+    backdrop-filter: blur(24px);
+    box-shadow: 0 12px 32px -16px rgb(0 0 0 / 0.5);
+    overflow: hidden;
+}
+
+.doc-nav-island-trigger {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    width: 100%;
+    padding: 0.5rem 0.875rem;
+    background: transparent;
+    border: 0 none;
+    color: var(--heading-color);
+    cursor: pointer;
+    text-align: start;
+}
+
+.doc-nav-island-ring {
+    flex-shrink: 0;
+    transform: rotate(-90deg);
+}
+
+.doc-nav-island-ring-track {
+    stroke: var(--border-color);
+}
+
+.doc-nav-island-ring-progress {
+    stroke: var(--p-primary-color);
+    transition: stroke-dashoffset var(--dur) var(--ease-out);
+}
+
+.doc-nav-island-label {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.doc-nav-island-count {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--muted-color);
+}
+
+.doc-nav-island-list {
+    list-style: none;
+    margin: 0;
+    padding: 0.25rem 0.5rem 0.75rem;
+    max-height: min(60dvh, 24rem);
+    overflow-y: auto;
+    border-bottom: 1px solid var(--border-color);
+
+    button {
+        display: block;
+        width: 100%;
+        padding: 0.375rem 0.625rem;
+        border: 0 none;
+        border-radius: var(--radius-sm);
+        background: transparent;
+        color: var(--text-secondary-color);
+        font-size: 0.875rem;
+        text-align: start;
+        cursor: pointer;
+
+        &.is-child {
+            padding-inline-start: 1.5rem;
         }
 
-        &.active-navbar-item {
-            >.navbar-item-content {
-                border-color: var(--primary-text-color);
-
-                button {
-                    color: var(--primary-text-color);
-                }
-            }
-        }
-
-        ul {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-
-            .navbar-item {
-                .navbar-item-content {
-                    padding-inline-start: 1rem;
-                }
-            }
+        &.is-active {
+            color: var(--heading-color);
+            background-color: var(--raised-background);
         }
     }
 }
@@ -274,11 +381,6 @@
         margin-bottom: 1rem;
     }
 
-    &:hover {
-        .doc-section-code-buttons {
-            display: flex;
-        }
-    }
 }
 
 .doc-section-code-buttons {
@@ -288,17 +390,17 @@
     z-index: 1;
     top: .75rem;
     right: .75rem;
-    gap: .5rem;
-    display: none;
-    background: rgba(255, 255, 255, .05);
-    border-radius: 10px;
+    gap: .25rem;
+    display: flex;
+    background: rgba(255, 255, 255, .06);
+    border-radius: var(--plate-radius);
     padding: 2px;
     backdrop-filter: blur(6px);
-    border: 1px solid rgba(255, 255, 255, .1);
+    border: 1px solid rgba(255, 255, 255, .12);
 
     button {
         outline: 0 none;
-        border-radius: 8px;
+        border-radius: 2px;
         outline-offset: 0;
         background-color: transparent;
         transition: background-color .2s, box-shadow .2s;
@@ -312,7 +414,7 @@
         }
 
         &.code-active {
-            color: #bbf7d0;
+            color: #8fd6b4;
         }
     }
 }
@@ -353,7 +455,7 @@
             border-bottom: 1px solid var(--border-color);
             white-space: pre-line;
             line-height: 1.5;
-            scroll-margin-top: 6.5rem;
+            scroll-margin-top: calc(var(--topbar-height) + 1.5rem);
 
             &:first-child {
                 color: var(--primary-text-color);
@@ -382,7 +484,7 @@
             i:not(.pi) {
                 font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, Liberation Mono, monospace;
                 position: relative;
-                scroll-margin-top: 6.5rem;
+                scroll-margin-top: calc(var(--topbar-height) + 1.5rem);
                 background-color: var(--mark-background);
                 color: var(--mark-text);
                 border-radius: 6px;
@@ -513,7 +615,7 @@
         border-bottom: 1px solid var(--border-color);
         white-space: pre-line;
         line-height: 1.5;
-        scroll-margin-top: 6.5rem;
+        scroll-margin-top: calc(var(--topbar-height) + 1.5rem);
 
         &:first-child {
             color: var(--primary-text-color);
@@ -521,4 +623,157 @@
             font-weight: 600;
         }
     }
+}
+
+/*
+ * "Examples" opens the demos below it and has no content of its own, so it reads as a
+ * rule across the column rather than as another section heading.
+ */
+.doc-section-label.doc-section-divider {
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/*
+ * Release notes come from GitHub as markdown, so they arrive as plain HTML rather than
+ * as documentation components. This gives them the same measure as the prose around them.
+ */
+.release-notes {
+    color: var(--text-secondary-color);
+
+    h1,
+    h2,
+    h3,
+    h4 {
+        margin: 1.5rem 0 0.5rem;
+        color: var(--heading-color);
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    p,
+    ul,
+    ol {
+        margin: 0.5rem 0;
+        line-height: 1.7;
+    }
+
+    ul,
+    ol {
+        padding-inline-start: 1.25rem;
+        list-style: disc;
+    }
+
+    ol {
+        list-style: decimal;
+    }
+
+    a {
+        color: var(--heading-color);
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+
+    code {
+        font-family: var(--font-mono);
+        font-size: 0.8125rem;
+        background-color: var(--code-surface);
+        border-radius: var(--radius-sm);
+        padding: 0.0625rem 0.25rem;
+    }
+
+    pre {
+        overflow-x: auto;
+        padding: 0.875rem 1rem;
+        background-color: var(--code-surface);
+        border-radius: var(--radius);
+
+        code {
+            background: none;
+            padding: 0;
+        }
+    }
+}
+
+/*
+ * A card preview on /components renders the component's own demo, which normally comes
+ * with the prose and the code block that belong on a documentation page. In a thumbnail
+ * only the component itself is wanted.
+ */
+.component-preview {
+    app-docsectiontext,
+    app-code,
+    .doc-section-description,
+    .doc-section-label {
+        display: none !important;
+    }
+
+    .card {
+        border: 0 none;
+        padding: 0;
+        background: none;
+    }
+}
+
+/* The panels of the page, listed above its sections. */
+.doc-section-resources {
+    margin-bottom: 0.25rem;
+    /* Never scrolls or shrinks: only the section index below it gives way. */
+    flex: 0 0 auto;
+    overflow: visible;
+
+    .navbar-item.active-navbar-item > .navbar-item-content button {
+        color: var(--heading-color);
+        font-weight: 500;
+    }
+}
+
+/* The open-issue count next to "Known Issues". */
+.doc-section-resources-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.125rem;
+    margin-inline-start: 0.375rem;
+    padding-inline: 0.25rem;
+    border-radius: 999px;
+    background-color: var(--raised-background);
+    color: var(--text-secondary-color);
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    line-height: 1.125rem;
+}
+
+.doc-copy-markdown-inline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem;
+    padding-inline: 1rem;
+
+    button {
+        background: transparent;
+        border: 0 none;
+        padding: 0.25rem 0;
+        font-size: 0.8125rem;
+        /* The rail is narrow: the label stays on one line and the "…" keeps its place. */
+        white-space: nowrap;
+        color: var(--text-secondary-color);
+        cursor: pointer;
+        transition: color var(--dur-fast) var(--ease-out);
+
+        &:hover {
+            color: var(--heading-color);
+        }
+    }
+
+    .doc-copy-markdown-more {
+        font-size: 0.75rem;
+    }
+}
+
+/* In the island the panels read as a group above the sections. */
+.doc-nav-island-list button.is-resource {
+    font-weight: 500;
+    color: var(--heading-color);
 }

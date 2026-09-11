@@ -1,182 +1,105 @@
-import Versions from '@/assets/data/versions.json';
+import { AppAskAiComponent } from '@/components/layout/askai/app.askai.component';
 import { AppConfiguratorComponent } from '@/components/layout/configurator/app.configurator.component';
+import { AppDesignerComponent, AppDesignerService } from '@/components/layout/designer/app.designer.component';
+import { AppSearchComponent, AppSearchService } from '@/components/layout/search/app.search.component';
 import { AppConfigService } from '@/service/appconfigservice';
-import { DISCORD_URL, GITHUB_DISCUSSIONS_URL, GITHUB_REPO_URL } from '@/utils/constants';
-import { CommonModule, DOCUMENT, NgOptimizedImage } from '@angular/common';
-import { afterNextRender, booleanAttribute, Component, computed, ElementRef, Inject, Input, OnDestroy, Renderer2 } from '@angular/core';
+import { GITHUB_REPO_URL } from '@/utils/constants';
+import { CommonModule } from '@angular/common';
+import { booleanAttribute, ChangeDetectionStrategy, Component, computed, inject, Input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import docsearch from '@docsearch/js';
-import { DomHandler } from '@openng/optimus-ui/dom';
 import { StyleClass } from '@openng/optimus-ui/styleclass';
-import { SelectModule } from '@openng/optimus-ui/select';
 
+/**
+ * One 3.5rem row: the mark at the start, the controls at the end. Search, theme, the
+ * theme configurator, the designer and the repository — nothing else. Navigation lives
+ * in the rail, the version in the hero badge, and the rest of the links in the footer.
+ */
 @Component({
     selector: 'app-topbar',
     standalone: true,
-    imports: [CommonModule, FormsModule, StyleClass, RouterModule, AppConfiguratorComponent, SelectModule, NgOptimizedImage],
-    template: `<div class="layout-topbar">
-        <div class="layout-topbar-inner">
-            <div class="layout-topbar-logo-container">
-                <a [routerLink]="['/']" class="layout-topbar-logo" aria-label="Optimus UI Logo">
-                    <img ngSrc="logo.svg" height="40" width="200" class="dark:invert" />
+    imports: [CommonModule, FormsModule, StyleClass, RouterModule, AppConfiguratorComponent, AppSearchComponent, AppAskAiComponent, AppDesignerComponent],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    template: `
+        <div class="layout-topbar">
+            <div class="layout-topbar-inner flex h-14 items-center justify-between">
+                <a [routerLink]="['/']" class="flex items-center transition-opacity hover:opacity-70" aria-label="Optimus UI home">
+                    <img src="logo.svg" width="140" height="28" style="height: 28px" class="w-auto dark:invert" alt="Optimus UI" />
                 </a>
-                <a [routerLink]="['/']" class="layout-topbar-icon" aria-label="Optimus UI Logo">
-                    <img ngSrc="logo-icon.svg" height="32" width="32" class="dark:invert" />
-                </a>
+
+                <ul class="topbar-items">
+                    <li>
+                        <button type="button" class="topbar-item" aria-label="Search the documentation" title="Search (⌘K)" (click)="searchService.open()">
+                            <i class="pi pi-search"></i>
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" class="topbar-item" [attr.aria-label]="isDarkMode() ? 'Switch to light theme' : 'Switch to dark theme'" (click)="toggleDarkMode()">
+                            <i class="pi" [ngClass]="{ 'pi-moon': isDarkMode(), 'pi-sun': !isDarkMode() }"></i>
+                        </button>
+                    </li>
+                    @if (showConfigurator) {
+                        <li class="max-sm:static!">
+                            <button
+                                type="button"
+                                class="topbar-item"
+                                aria-label="Customize theme"
+                                enterActiveClass="px-overlay-enter-active"
+                                enterFromClass="hidden"
+                                leaveActiveClass="px-overlay-leave-active"
+                                leaveToClass="hidden"
+                                pStyleClass="@next"
+                                [hideOnOutsideClick]="true"
+                            >
+                                <i class="pi pi-palette"></i>
+                            </button>
+                            <app-configurator />
+                        </li>
+                    }
+                    <li>
+                        <button type="button" class="topbar-item" aria-label="Theme designer" (click)="designerService.open()">
+                            <i class="pi pi-pencil"></i>
+                        </button>
+                    </li>
+                    <li class="max-md:hidden">
+                        <a [href]="githubRepoUrl" target="_blank" rel="noopener noreferrer" class="topbar-cta">
+                            <span>Star on GitHub</span>
+                        </a>
+                    </li>
+                </ul>
             </div>
 
-            <ul class="topbar-items">
-                <li>
-                    <div id="docsearch"></div>
-                </li>
-                <li>
-                    <button type="button" class="topbar-item ask-ai-button" id="ask-ai" aria-label="Ask AI">
-                        <i class="pi pi-sparkles"></i>
-                        <span class="ask-ai-label">Ask AI</span>
-                    </button>
-                </li>
-                <li class="topbar-desktop-item">
-                    <a [href]="githubRepoUrl" target="_blank" rel="noopener noreferrer" class="topbar-item">
-                        <i class="pi pi-github text-surface-700 dark:text-surface-100"></i>
-                    </a>
-                </li>
-                <li class="topbar-desktop-item">
-                    <a [href]="discordUrl" target="_blank" rel="noopener noreferrer" class="topbar-item" aria-label="Optimus UI Discord" title="Optimus UI Discord">
-                        <i class="pi pi-discord text-surface-700 dark:text-surface-100"></i>
-                    </a>
-                </li>
-                <li class="topbar-desktop-item">
-                    <a [href]="githubDiscussionsUrl" target="_blank" rel="noopener noreferrer" class="topbar-item">
-                        <i class="pi pi-comments text-surface-700 dark:text-surface-100"></i>
-                    </a>
-                </li>
-                <li class="topbar-desktop-item">
-                    <button type="button" class="topbar-item" (click)="toggleDarkMode()">
-                        <i class="pi" [ngClass]="{ 'pi-moon': isDarkMode(), 'pi-sun': !isDarkMode() }"></i>
-                    </button>
-                </li>
-                <li *ngIf="showConfigurator" class="relative topbar-desktop-item">
-                    <button
-                        type="button"
-                        class="topbar-item config-item"
-                        enterActiveClass="px-overlay-enter-active"
-                        enterFromClass="hidden"
-                        leaveActiveClass="px-overlay-leave-active"
-                        leaveToClass="hidden"
-                        pStyleClass="@next"
-                        [hideOnOutsideClick]="true"
-                    >
-                        <i class="pi pi-palette"></i>
-                    </button>
-                    <app-configurator />
-                </li>
-                <li class="topbar-desktop-item">
-                    <p-select
-                        [(ngModel)]="selectedVersion"
-                        [options]="versions"
-                        [group]="true"
-                        (onChange)="onVersionChange($event)"
-                        [pt]="{
-                            optionGroup: {
-                                class: 'version-group'
-                            }
-                        }"
-                    >
-                    </p-select>
-                </li>
-                <li *ngIf="showMenuButton" class="menu-button">
-                    <button type="button" class="topbar-item menu-button" (click)="toggleMenu()" aria-label="Menu">
-                        <i class="pi pi-bars"></i>
-                    </button>
-                </li>
-            </ul>
+            <div class="topbar-cta-mobile md:hidden">
+                <a [href]="githubRepoUrl" target="_blank" rel="noopener noreferrer" class="topbar-cta">
+                    <span>Star on GitHub</span>
+                </a>
+            </div>
         </div>
-    </div>`
-})
-export class AppTopBarComponent implements OnDestroy {
-    readonly githubRepoUrl = GITHUB_REPO_URL;
-    readonly githubDiscussionsUrl = GITHUB_DISCUSSIONS_URL;
-    readonly discordUrl = DISCORD_URL;
 
+        <!--
+            Outside the bar on purpose: it is backdrop-filtered, which makes it the
+            containing block for anything fixed inside it — the assistant launcher has to
+            be positioned against the viewport.
+        -->
+        <app-search />
+        <app-ask-ai />
+        <app-designer />
+    `
+})
+export class AppTopBarComponent {
     @Input({ transform: booleanAttribute }) showConfigurator = true;
 
-    @Input({ transform: booleanAttribute }) showMenuButton = true;
+    readonly githubRepoUrl = GITHUB_REPO_URL;
 
-    versions: any[] = Versions;
-    selectedVersion = this.versions[0].items[0].value;
+    readonly searchService = inject(AppSearchService);
 
-    scrollListener: VoidFunction | null;
+    readonly designerService = inject(AppDesignerService);
 
-    private window: Window;
-
-    constructor(
-        @Inject(DOCUMENT) private document: Document,
-        private el: ElementRef,
-        private renderer: Renderer2,
-        private configService: AppConfigService
-    ) {
-        this.window = this.document.defaultView as Window;
-
-        afterNextRender(() => {
-            this.bindScrollListener();
-            this.initDocSearch();
-        });
-    }
+    private readonly configService = inject(AppConfigService);
 
     isDarkMode = computed(() => this.configService.appState().darkTheme);
 
-    isMenuActive = computed(() => this.configService.appState().menuActive);
-
-    toggleMenu() {
-        if (this.isMenuActive()) {
-            this.configService.hideMenu();
-            DomHandler.unblockBodyScroll('blocked-scroll');
-        } else {
-            this.configService.showMenu();
-            DomHandler.blockBodyScroll('blocked-scroll');
-        }
-    }
-
     toggleDarkMode() {
         this.configService.appState.update((state) => ({ ...state, darkTheme: !state.darkTheme }));
-    }
-
-    initDocSearch() {
-        docsearch({
-            appId: 'X3M9GFEM8Z',
-            apiKey: 'ce715b53658d2e2190d8751fad64e8e9',
-            indexName: 'Optimus UI Documentation',
-            container: '#docsearch'
-        });
-    }
-
-    bindScrollListener() {
-        if (!this.scrollListener) {
-            this.scrollListener = this.renderer.listen(this.window, 'scroll', () => {
-                if (this.window.scrollY > 0) {
-                    this.el.nativeElement.children[0].classList.add('layout-topbar-sticky');
-                } else {
-                    this.el.nativeElement.children[0].classList.remove('layout-topbar-sticky');
-                }
-            });
-        }
-    }
-
-    unbindScrollListener() {
-        if (this.scrollListener) {
-            this.scrollListener();
-            this.scrollListener = null;
-        }
-    }
-
-    ngOnDestroy() {
-        this.unbindScrollListener();
-    }
-
-    onVersionChange(event: any) {
-        if (event?.value && event.value.startsWith('http')) {
-            window.location.href = event.value;
-        }
     }
 }

@@ -1,64 +1,5 @@
-@media screen and (min-width: 1920px) {
-    .layout-content {
-        max-width: 1728px;
-        margin: 0 auto;
-    }
-
-    .layout-topbar-inner,
-    .layout-footer {
-        max-width: 1728px;
-        margin: 0 auto;
-    }
-}
-
 @media screen and (max-width: 1199px) {
-    .layout-topbar-inner {
-        padding-left: 2rem;
-        padding-right: 2rem;
-
-        .menu-button {
-            display: block;
-        }
-
-        .layout-topbar-logo-container {
-            width: auto;
-            margin-right: 0;
-        }
-
-        .DocSearch-Button {
-            width: 2rem;
-            height: 2rem;
-            overflow: hidden;
-            padding: 0;
-            justify-content: center;
-            align-items: center;
-
-            .DocSearch-Search-Icon {
-                width: 1rem;
-                height: 1rem;
-            }
-
-            .DocSearch-Button-Placeholder,
-            .DocSearch-Button-Keys {
-                display: none;
-            }
-        }
-
-        .topbar-items {
-            .ask-ai-button {
-                width: 2rem;
-            }
-
-            .ask-ai-label {
-                display: none;
-            }
-
-            .topbar-desktop-item {
-                display: none;
-            }
-        }
-    }
-
+    /* The rail becomes a drawer. */
     .layout-sidebar {
         top: 0;
         inset-inline-start: 0;
@@ -74,26 +15,12 @@
             transform: translateX(100%);
         }
 
-        .drawer-quickaction {
-            display: block;
-        }
-
         nav {
-            padding: 1rem 1rem;
+            padding: 1rem;
         }
 
         &.active {
             transform: translateX(0);
-        }
-    }
-
-    .landing-menu {
-        display: flex;
-    }
-
-    .layout-news-active {
-        .layout-sidebar {
-            top: 0;
         }
     }
 
@@ -105,14 +32,6 @@
         top: 0;
         left: 0;
         background-color: var(--p-mask-background);
-    }
-
-    .doc-section-nav-container {
-        display: none;
-    }
-
-    .doc-section-nav {
-        display: none;
     }
 
     .video-container {
@@ -130,14 +49,14 @@
         }
     }
 
+    /* No rail below this width, so the reading column owns the frame's own gutters. */
     .layout-content {
-        padding-left: 2rem;
-        padding-right: 2rem;
-    }
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
 
-    .layout-footer {
-        padding-left: 2rem;
-        padding-right: 2rem;
+        .layout-content-slot {
+            padding-inline-start: 0;
+        }
     }
 
     .blocked-scroll {
@@ -146,11 +65,18 @@
     }
 }
 
-@media (max-width: 768px) {
-    .DocSearch-Container {
-        position: fixed !important;
+@media screen and (max-width: 767px) {
+    /*
+     * The bar carries a second row for the repository link and Ask AI below `md`, so
+     * everything anchored to the bar has to allow for it.
+     */
+    :root {
+        --topbar-height: 6.25rem;
     }
-      .doc-ptviewerwrapper {
+}
+
+@media (max-width: 768px) {
+    .doc-ptviewerwrapper {
         flex-direction: column;
 
         .doc-ptviewer {
@@ -166,19 +92,6 @@
 }
 
 @media screen and (max-width: 575px) {
-    .layout-topbar-inner {
-        padding-left: 1rem;
-        padding-right: 1rem;
-
-        .layout-topbar-logo {
-            display: none;
-        }
-
-        .layout-topbar-icon {
-            display: inline-flex;
-        }
-    }
-
     .layout-content {
         padding-left: 1rem;
         padding-right: 1rem;
@@ -189,24 +102,12 @@
         padding-right: 1rem;
     }
 
-    .doc-tabmenu {
-        li {
-            flex: 1 1 0;
+    .doc-tabmenu li {
+        flex: 1 1 0;
 
-            button {
-                width: 100%;
-                min-width: auto;
-            }
-        }
-    }
-
-    .layout-news {
-        padding-left: 1rem;
-        padding-right: 1rem;
-        font-size: 12px;
-
-        > i {
-            display: none;
+        button {
+            width: 100%;
+            min-width: auto;
         }
     }
 }

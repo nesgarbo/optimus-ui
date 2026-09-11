@@ -1,18 +1,28 @@
 .layout-content {
-    padding: 6rem 4rem 0 4rem;
     display: flex;
+    align-items: flex-start;
+    /*
+     * The frame is fluid up to 100rem and centred beyond it: the rail and the navigation
+     * are fixed widths, the reading column takes what is left, and on a screen wider than
+     * the cap the extra width becomes margin rather than a longer line of text.
+     */
+    max-width: 100rem;
+    margin: 0 auto;
+    padding: var(--topbar-height) 0 0 0;
 
     .layout-content-slot {
         flex: 1 1 auto;
         width: 1%;
-        padding-top: .5rem;
+        min-width: 0;
+        padding-top: 2.5rem;
+        padding-inline-start: 4rem;
     }
 }
 
 .card {
     background: var(--card-background);
     border: var(--card-border);
-    padding: 2rem;
-    border-radius: 10px;
+    padding: 1.75rem;
+    border-radius: var(--radius);
     margin-bottom: 1rem;
 }
