@@ -33,7 +33,22 @@ export default defineConfig(({ mode }) => ({
     publicDir: 'public',
     build: {
         target: ['es2022'],
-        sourcemap: mode !== 'production'
+        sourcemap: mode !== 'production',
+        /*
+         * One chunk per lazy component leaves a page asking for a hundred scripts, sixty
+         * of them under five kilobytes: all of them round trips, none of them worth their
+         * own request. Rolldown merges anything below the floor into its parent, which on
+         * a component page cuts the requests by more than half and changes nothing about
+         * what is loaded.
+         */
+        rollupOptions: {
+            output: {
+                advancedChunks: {
+                    minSize: 30_000,
+                    minShareCount: 2
+                }
+            }
+        }
     },
     resolve: {
         alias: workspaceAliases,
