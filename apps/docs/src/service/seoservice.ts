@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, PendingTasks } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
@@ -24,10 +24,20 @@ export class SeoService {
 
     private readonly title = inject(Title);
 
+    private readonly pendingTasks = inject(PendingTasks);
+
     init() {
         this.router.events.pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd)).subscribe((event) => {
-            // Let the routed component set its title/description first.
-            queueMicrotask(() => this.update(event.urlAfterRedirects));
+            /*
+             * The routed component sets the title and description in its own lifecycle, so
+             * this has to run after it. Registering it as a pending task is what makes
+             * prerendering wait: a bare microtask ran first and every prerendered page ended
+             * up with the site's default Open Graph title.
+             */
+            this.pendingTasks.run(async () => {
+                await new Promise<void>((resolve) => setTimeout(resolve));
+                this.update(event.urlAfterRedirects);
+            });
         });
     }
 
@@ -38,12 +48,14 @@ export class SeoService {
         this.meta.updateTag({ property: 'og:url', content: canonical });
 
         const title = this.title.getTitle();
+
         if (title) {
             this.meta.updateTag({ property: 'og:title', content: title });
             this.meta.updateTag({ name: 'twitter:title', content: title });
         }
 
         const description = this.meta.getTag('name="description"')?.content;
+
         if (description) {
             this.meta.updateTag({ property: 'og:description', content: description });
             this.meta.updateTag({ name: 'twitter:description', content: description });
