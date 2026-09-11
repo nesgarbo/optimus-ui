@@ -1,6 +1,17 @@
 {
-    "total": 97,
+    "total": 98,
     "groups": [
+        {
+            "name": "Overview",
+            "items": [
+                {
+                    "name": "All Components",
+                    "routerLink": "/components",
+                    "description": "",
+                    "preview": null
+                }
+            ]
+        },
         {
             "name": "Form",
             "items": [

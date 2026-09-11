@@ -120,8 +120,17 @@
             "section": "components",
             "name": "Components",
             "icon": "pi pi-th-large",
-            "routerLink": "/autocomplete",
+            "routerLink": "/components",
             "children": [
+                {
+                    "name": "Overview",
+                    "children": [
+                        {
+                            "name": "All Components",
+                            "routerLink": "/components"
+                        }
+                    ]
+                },
                 {
                     "name": "Form",
                     "children": [
