@@ -74,11 +74,7 @@ interface SampleTab {
                         <button
                             type="button"
                             class="flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition-colors"
-                            [class]="
-                                active() === tab.key
-                                    ? 'border-surface-900 bg-surface-900 text-surface-0 dark:border-surface-0 dark:bg-surface-0 dark:text-surface-900'
-                                    : 'border-surface text-surface-600 hover:bg-surface-100 dark:text-surface-400 dark:hover:bg-surface-800'
-                            "
+                            [class]="active() === tab.key ? 'border-primary bg-primary text-primary-contrast' : 'border-surface text-surface-600 hover:bg-surface-100 dark:text-surface-400 dark:hover:bg-surface-800'"
                             [attr.aria-pressed]="active() === tab.key"
                             (click)="active.set(tab.key)"
                         >
