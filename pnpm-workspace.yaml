@@ -37,6 +37,7 @@ catalogs:
     "@angular-eslint/eslint-plugin-template": ^22.1.0
     "@angular-eslint/schematics": ^22.1.0
     "@angular-eslint/template-parser": ^22.1.0
+    angular-eslint: ^22.1.0
     "ng-packagr": ^22.1.1
     "typescript": ^6.0.0
 
@@ -54,3 +55,5 @@ minimumReleaseAgeExclude:
   - '@angular/platform-browser@22.1.4'
   - '@angular/platform-server@22.1.4'
   - '@angular/router@22.1.4'
+  - vite@8.3.0
+  - eslint-plugin-jsdoc@64.3.9
