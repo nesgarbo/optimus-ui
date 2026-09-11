@@ -6,9 +6,9 @@ import ComponentTokens from '@openng/optimus-ui-themes/tokens';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const DOCS_DIR = path.resolve(__dirname, '../doc');
-const PAGES_DIR = path.resolve(__dirname, '../pages');
-const API_DOC_PATH = path.resolve(__dirname, '../doc/apidoc/index.json');
+const DOCS_DIR = path.resolve(__dirname, '../src/doc');
+const PAGES_DIR = path.resolve(__dirname, '../src/demos');
+const API_DOC_PATH = path.resolve(__dirname, '../src/doc/apidoc/index.json');
 const DEMOS_JSON_PATH = path.resolve(__dirname, '../public/demos.json');
 const OUTPUT_DIR = path.resolve(__dirname, '../public/llms');
 
@@ -62,7 +62,7 @@ const COMPONENT_NAME_MAP = {
 };
 
 // Components whose documentation directory name differs from their public route.
-// Keep in sync with router/app.routes.ts.
+// Keep in sync with the file routes under src/app/pages.
 const COMPONENT_ROUTE_MAP = {
     scroller: 'virtualscroller',
     Image: 'image'

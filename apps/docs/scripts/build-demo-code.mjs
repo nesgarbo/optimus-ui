@@ -7,7 +7,7 @@ import { glob } from 'glob';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const DOCS_DIR = path.resolve(__dirname, '../doc');
+const DOCS_DIR = path.resolve(__dirname, '../src/doc');
 const OUTPUT_PATH = path.resolve(__dirname, '../public/demos.json');
 
 // Directories to skip (not component demos)

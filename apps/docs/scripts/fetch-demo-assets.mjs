@@ -49,7 +49,7 @@ function collectConcatenated() {
     const found = new Set();
 
     for (const { service, prefix } of CONCATENATED_ASSETS) {
-        const file = path.join(ROOT, 'service', service);
+        const file = path.join(ROOT, 'src', 'service', service);
         if (!fs.existsSync(file)) continue;
 
         const content = fs.readFileSync(file, 'utf-8');

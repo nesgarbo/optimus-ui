@@ -6,10 +6,10 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const outputPath = path.resolve(__dirname, '../../../apps/docs/doc/apidoc/');
+const outputPath = path.resolve(__dirname, '../../../apps/docs/src/doc/apidoc/');
 const outputFile = path.resolve(outputPath, 'index.json');
 
-// On a clean checkout apps/docs/doc/apidoc/index.json doesn't exist yet (it's
+// On a clean checkout apps/docs/src/doc/apidoc/index.json doesn't exist yet (it's
 // gitignored, generated output). TypeDoc bootstraps its own TS program from
 // the docs app's tsconfig, which type-checks components that `import APIDoc
 // from '@/doc/apidoc/index.json'` — so the file needs to exist, with *some*

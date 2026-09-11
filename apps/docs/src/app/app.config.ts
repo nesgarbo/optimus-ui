@@ -1,32 +1,25 @@
-import { routes } from '@/router/app.routes';
-import { DemoCodeService } from '@/service/democodeservice';
+import { HighlightService } from '@/service/highlightservice';
 import Noir from '@/themes/app-theme';
-import { provideHttpClient, withFetch } from '@angular/common/http';
-import { APP_INITIALIZER, ApplicationConfig, provideZonelessChangeDetection } from '@angular/core';
-import { provideRouter, withInMemoryScrolling } from '@angular/router';
+import { provideFileRouter, requestContextInterceptor } from '@analogjs/router';
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
+import { ApplicationConfig, provideAppInitializer, provideZonelessChangeDetection, inject } from '@angular/core';
+import { withInMemoryScrolling } from '@angular/router';
 import { ConfirmationService, MessageService } from '@openng/optimus-ui/api';
 import { provideOptimus } from '@openng/optimus-ui/config';
-
-function initializeDemoCode(demoCodeService: DemoCodeService) {
-    return () => demoCodeService.loadDemos();
-}
 
 export const appConfig: ApplicationConfig = {
     providers: [
         provideZonelessChangeDetection(),
-        provideRouter(routes, withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' })), // withEnabledBlockingInitialNavigation()
-        provideHttpClient(withFetch()),
+        provideFileRouter(withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' })),
+        provideHttpClient(withFetch(), withInterceptors([requestContextInterceptor])),
         provideOptimus({
             theme: Noir,
             ripple: false
         }),
         MessageService,
         ConfirmationService,
-        {
-            provide: APP_INITIALIZER,
-            useFactory: initializeDemoCode,
-            deps: [DemoCodeService],
-            multi: true
-        }
+        // Creating the highlighter up front makes every later highlight call synchronous,
+        // including the ones that run while prerendering.
+        provideAppInitializer(() => inject(HighlightService).load())
     ]
 };

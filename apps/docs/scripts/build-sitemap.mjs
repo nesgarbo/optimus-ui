@@ -1,16 +1,14 @@
 /**
- * Generates public/sitemap.xml from the prerender manifest, so the sitemap
- * cannot list routes that do not exist.
- *
- * Run scripts/build-routes.mjs first — build:docs wires them in order.
+ * Generates public/sitemap.xml from the file-based routes under src/app/pages,
+ * so the sitemap cannot list a route the site does not serve.
  */
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { docsRoutes } from './prerender-routes.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
-const ROUTES = path.join(ROOT, 'router/routes.txt');
 const OUTPUT = path.join(ROOT, 'public/sitemap.xml');
 
 const SITE_URL = 'https://optimus.openng.org';
@@ -23,11 +21,7 @@ function priorityOf(route) {
     return '0.7';
 }
 
-const routes = fs
-    .readFileSync(ROUTES, 'utf-8')
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean);
+const routes = docsRoutes().sort();
 
 const urls = routes.map((route) => `    <url>\n        <loc>${SITE_URL}${route === '/' ? '/' : route}</loc>\n        <priority>${priorityOf(route)}</priority>\n    </url>`).join('\n');
 

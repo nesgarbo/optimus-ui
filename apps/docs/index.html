@@ -4,12 +4,35 @@
         <meta charset="utf-8" />
         <title>Optimus UI - Angular UI Component Library</title>
         <base href="/" />
-        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, viewport-fit=cover" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="description" content="Optimus UI is a community-maintained, MIT licensed suite of 80+ accessible Angular UI components." />
-        <meta name="theme-color" content="#000000" />
-        <link rel="icon" type="image/x-icon" href="logo-icon.svg" />
+        <meta name="color-scheme" content="light dark" />
+        <link rel="icon" type="image/svg+xml" href="/logo-icon.svg" />
+
+        <!--
+            Theme is decided before the first paint: a stored choice wins, otherwise the
+            operating system preference. Angular reads the class back when it boots, so
+            the page never renders light and then flips to dark.
+        -->
+        <script>
+            (function () {
+                try {
+                    var stored = localStorage.getItem('optimus-ui-theme');
+                    var dark = stored ? stored === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    if (dark) {
+                        document.documentElement.classList.add('p-dark');
+                    }
+                } catch (error) {
+                    /* private mode or storage disabled — fall back to light */
+                }
+            })();
+        </script>
+
+        <link rel="preconnect" href="https://rsms.me" crossorigin />
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400|Roboto:500|Roboto:600|Roboto:700'" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" />
 
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Optimus UI" />
@@ -24,23 +47,85 @@
         <meta name="twitter:image" content="https://optimus.openng.org/open-graph-logo.png" />
 
         <link rel="canonical" href="https://optimus.openng.org/" />
+
+        <!--
+            Structured data for the site itself. Per-page titles, descriptions, canonical
+            links and Open Graph tags are written by SeoService as the route changes.
+        -->
+        <script type="application/ld+json">
+            {
+                "@context": "https://schema.org",
+                "@graph": [
+                    {
+                        "@type": "WebSite",
+                        "@id": "https://optimus.openng.org/#website",
+                        "url": "https://optimus.openng.org/",
+                        "name": "Optimus UI",
+                        "description": "A community-maintained, MIT licensed suite of accessible Angular UI components.",
+                        "inLanguage": "en",
+                        "publisher": { "@id": "https://optimus.openng.org/#openng" }
+                    },
+                    {
+                        "@type": "Organization",
+                        "@id": "https://optimus.openng.org/#openng",
+                        "name": "OpenNG",
+                        "url": "https://openng.org",
+                        "logo": "https://optimus.openng.org/logo-icon.svg"
+                    },
+                    {
+                        "@type": "SoftwareSourceCode",
+                        "name": "Optimus UI",
+                        "description": "80+ accessible, customizable Angular UI components under the MIT license.",
+                        "codeRepository": "https://github.com/openng-org/optimus-ui",
+                        "programmingLanguage": "TypeScript",
+                        "runtimePlatform": "Angular",
+                        "license": "https://opensource.org/licenses/MIT",
+                        "author": { "@id": "https://optimus.openng.org/#openng" }
+                    }
+                ]
+            }
+        </script>
     </head>
 
     <body>
         <app-root></app-root>
+        <script type="module" src="/src/main.ts"></script>
+        <!--
+            The documentation assistant. Its colours, type and radius are the ones the
+            site uses, and `data-color-scheme-selector` points at the class our theme
+            toggle writes on <html>, so the panel follows the site into dark mode instead
+            of staying light behind it.
+        -->
+        <script
+            async
+            src="https://widget.kapa.ai/kapa-widget.bundle.js"
+            data-website-id="c63701c9-bd7c-4893-8d8e-52dcb8851e0f"
+            data-project-name="Optimus UI"
+            data-project-logo="/logo-icon.svg"
+            data-view-mode="sidebar"
+            data-launcher-button-hidden="true"
+            data-modal-override-open-selector="#ask-ai"
+            data-modal-z-index="1200"
+            data-modal-title="Optimus UI AI"
+            data-ask-ai-input-placeholder="Type your question here..."
+            data-color-scheme="light"
+            data-color-scheme-selector=".p-dark"
+            data-project-color="#09090b"
+            data-project-color-dark="#fafafa"
+            data-surface-color="#ffffff"
+            data-surface-color-dark="#09090b"
+            data-surface-elevated-color="#fafafa"
+            data-surface-elevated-color-dark="#18181b"
+            data-surface-hover-color="#f4f4f5"
+            data-surface-hover-color-dark="#27272a"
+            data-text-color="#18181b"
+            data-text-color-dark="#fafafa"
+            data-text-muted-color="#71717a"
+            data-text-muted-color-dark="#a1a1aa"
+            data-border-color="#e4e4e7"
+            data-border-color-dark="#27272a"
+            data-font-family="'Inter var', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+            data-modal-content-border-radius="10px"
+        ></script>
     </body>
-    <script
-        async
-        src="https://widget.kapa.ai/kapa-widget.bundle.js"
-        data-website-id="c63701c9-bd7c-4893-8d8e-52dcb8851e0f"
-        data-project-name="angular"
-        data-project-color="#000000"
-        data-view-mode="sidebar"
-        data-launcher-button-hidden="true"
-        data-modal-override-open-selector="#ask-ai"
-        data-project-logo="https://raw.githubusercontent.com/openng-org/icons/refs/heads/main/raw-svg/sparkles.svg"
-        data-modal-z-index="1200"
-        data-modal-title="Optimus UI AI"
-        data-ask-ai-input-placeholder="Type your question here..."
-    ></script>
 </html>

@@ -4,7 +4,10 @@
         "outDir": "./out-tsc/app",
         // TS 6 defaults rootDir to the tsconfig dir; widen it so paths-mapped optimus-ui sources are allowed
         "rootDir": "../..",
-        "types": ["node"],
+        "target": "es2022",
+        "module": "preserve",
+        "moduleResolution": "bundler",
+        "types": ["node", "vite/client"],
         "strict": false,
         "paths": {
             "@openng/optimus-ui/*": ["../../packages/optimus-ui/src/*/public_api"],
@@ -20,12 +23,11 @@
             // extension-less on purpose: resolves the tracked tokens.ts source before the generated tokens/ dir
             "@openng/optimus-ui-themes/tokens": ["../../packages/optimus-ui-themes/tokens"],
             "@openng/optimus-ui-themes/*": ["../../packages/optimus-ui-themes/src/presets/*/index", "../../packages/optimus-ui-themes/src/presets/*"],
-            "@/*": ["./*"]
+            "@/*": ["./src/*"]
         }
     },
-    "include": ["../../packages/optimus-ui/src/**/*.d.ts"],
+    "include": ["src/**/*.ts", "vite.config.ts", "../../packages/optimus-ui/src/**/*.d.ts"],
     "exclude": ["node_modules", "**/node_modules", "**/dist", "**/*.spec.ts", "**/*.test.ts"],
-    "files": ["app/main.ts", "server/main.server.ts", "server/server.ts", "app/polyfills.ts"],
     "angularCompilerOptions": {
         "enableI18nLegacyMessageIdFormat": false,
         "strictInjectionParameters": false,
