@@ -9,22 +9,25 @@ interface VersionCompatibilityEntry {
     selector: 'app-version-compatibility',
     standalone: true,
     template: `
-        <table class="doc-table">
-            <thead>
-                <tr>
-                    <th>Optimus UI</th>
-                    <th>Angular</th>
-                </tr>
-            </thead>
-            <tbody>
-                @for (entry of entries; track entry.optimusUi) {
+        <!-- The table has a 960px floor, so on a phone it has to be the scroller. -->
+        <div class="doc-tablewrapper">
+            <table class="doc-table">
+                <thead>
                     <tr>
-                        <td>{{ entry.optimusUi }}</td>
-                        <td>{{ entry.angular }}</td>
+                        <th>Optimus UI</th>
+                        <th>Angular</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @for (entry of entries; track entry.optimusUi) {
+                        <tr>
+                            <td>{{ entry.optimusUi }}</td>
+                            <td>{{ entry.angular }}</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     `
 })
 export class AppVersionCompatibility {

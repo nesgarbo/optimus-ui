@@ -279,13 +279,30 @@
  * Below xl the index becomes an island: it reports reading position at a glance and
  * opens into the full list on tap.
  */
+/*
+ * The bottom line of the viewport below xl carries three things - the rail's opener at the
+ * start, the section index between them, the assistant at the end - so they share where
+ * that line is and how much room the buttons at either end take. They are siblings in
+ * three different components, which is why the numbers live on the root.
+ */
+:root {
+    --island-block-end: 1rem;
+    --island-height: 2.5rem;
+    --island-gutter: 7rem;
+}
+
 .doc-nav-island {
     position: fixed;
     z-index: 1095;
-    bottom: 1rem;
+    bottom: var(--island-block-end);
+    transition:
+        inset-inline-start var(--dur) var(--ease-out),
+        inset-inline-end var(--dur) var(--ease-out),
+        bottom var(--dur) var(--ease-out);
     left: 50%;
     transform: translateX(-50%);
     width: min(calc(100vw - 2rem), 26rem);
+    min-width: 0;
     border: 1px solid var(--border-color);
     border-radius: 1.375rem;
     background-color: color-mix(in srgb, var(--panel-background) 75%, transparent);

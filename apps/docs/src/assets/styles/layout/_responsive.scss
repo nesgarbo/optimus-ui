@@ -63,6 +63,32 @@
         overflow: hidden;
         padding-right: var(--p-scrollbar-width);
     }
+
+    /*
+     * The index shares the bottom line with the rail's opener and the assistant, so it
+     * gives up the middle of the viewport and takes only what is left between them. It
+     * used to be centred and 26rem wide, which on a phone covered both of them: the only
+     * way to open the navigation was underneath it.
+     */
+    .doc-nav-island {
+        left: auto;
+        transform: none;
+        inset-inline: var(--island-gutter) var(--island-gutter);
+        width: auto;
+    }
+
+    /*
+     * Open, it stops sharing the line: it takes the full width and lifts clear of the two
+     * buttons, so the list is read against the page rather than in the gap between them.
+     */
+    .doc-nav-island-open {
+        inset-inline: 1rem 1rem;
+        bottom: calc(var(--island-block-end) + var(--island-height) + 0.5rem);
+    }
+
+    .doc-nav-island-label {
+        min-width: 0;
+    }
 }
 
 @media screen and (max-width: 767px) {

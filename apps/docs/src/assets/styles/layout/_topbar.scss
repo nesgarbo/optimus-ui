@@ -115,8 +115,9 @@
 /* Ask AI sits in the bottom corner of the viewport, clear of the reading column. */
 .ask-ai-fab {
     position: fixed;
-    inset-inline-end: 1.5rem;
-    bottom: 1.5rem;
+    inset-inline-end: 1rem;
+    /* The bottom line it shares with the section index and the rail's opener. */
+    bottom: var(--island-block-end);
     z-index: 1090;
     display: inline-flex;
     align-items: center;
@@ -137,6 +138,7 @@
     }
 }
 
+
 /* Below `sm` the call to action cannot fit on the row, so it gets one of its own. */
 .topbar-cta-mobile {
     display: flex;
@@ -154,7 +156,8 @@
 .layout-menu-trigger {
     position: fixed;
     inset-inline-start: 1rem;
-    bottom: 1.5rem;
+    /* Same line as the section index and the assistant. */
+    bottom: var(--island-block-end);
     z-index: 1080;
     display: inline-flex;
     align-items: center;
@@ -174,6 +177,7 @@
         border-color: var(--hover-border-color);
     }
 }
+
 
 /* Theme picker inside the configurator: four equal segments across the panel. */
 .config-theme .p-selectbutton {
