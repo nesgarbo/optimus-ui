@@ -41,46 +41,47 @@ import { TooltipModule } from '@openng/optimus-ui/tooltip';
         PopoverModule
     ],
     template: `
-        <div class="flex items-start gap-2 justify-between">
+        <div class="flex flex-wrap items-start gap-3 justify-between">
             <div>
                 <div class="text-2xl leading-8 text-color font-medium">Customers</div>
                 <div class="mt-1 leading-6 text-muted-color">The analysis list here shows all users</div>
             </div>
             <p-button icon="pi pi-circle-fill text-green-500" label="950 Active User" outlined severity="secondary" />
         </div>
-        <div class="mt-10 mb-4 flex items-center justify-between">
-            <p-iconfield iconPosition="left">
+        <div class="mt-6 mb-4 flex items-center gap-3 justify-between sm:mt-10">
+            <p-iconfield iconPosition="left" class="min-w-0 flex-1 sm:flex-none">
                 <p-inputicon class="pi pi-search"> </p-inputicon>
-                <input pInputText type="text" [(ngModel)]="search" placeholder="Search" />
+                <input pInputText type="text" [(ngModel)]="search" placeholder="Search" class="w-full sm:w-auto" />
             </p-iconfield>
-            <div class="flex items-center gap-3">
+            <!-- The pager is four controls wide: on a phone it would take a line of its own. -->
+            <div class="flex items-center gap-2 sm:gap-3">
                 <p-button icon="pi pi-filter" outlined severity="secondary" />
-                <p-divider layout="vertical" class="m-0 p-0" />
-                <p-button icon="pi pi-refresh" outlined severity="secondary" />
-                <p-button label="1 of 15" outlined severity="secondary" />
-                <p-button icon="pi pi-chevron-left" outlined severity="secondary" />
-                <p-button icon="pi pi-chevron-right" outlined severity="secondary" />
+                <p-divider layout="vertical" class="m-0 p-0 hidden! sm:flex!" />
+                <p-button icon="pi pi-refresh" outlined severity="secondary" styleClass="hidden! sm:inline-flex!" />
+                <p-button label="1 of 15" styleClass="whitespace-nowrap hidden! sm:inline-flex!" outlined severity="secondary" />
+                <p-button icon="pi pi-chevron-left" outlined severity="secondary" styleClass="hidden! sm:inline-flex!" />
+                <p-button icon="pi pi-chevron-right" outlined severity="secondary" styleClass="hidden! sm:inline-flex!" />
             </div>
         </div>
         <div class="flex-1 last:[&>td]:border-0 rounded-lg border border-surface w-full overflow-auto">
             <p-table [value]="tableData" [(selection)]="selectedRows" dataKey="id" [rows]="10" [dt]="tableTokens">
                 <ng-template #header>
                     <tr>
-                        <th style="width: 1rem">
+                        <th style="width: 1rem" class="hidden sm:table-cell">
                             <p-tableHeaderCheckbox />
                         </th>
                         <th>Name</th>
                         <th>Title</th>
-                        <th>Company Name</th>
-                        <th>Email Address</th>
-                        <th>Lead Source</th>
+                        <th class="hidden sm:table-cell">Company Name</th>
+                        <th class="hidden sm:table-cell">Email Address</th>
+                        <th class="hidden sm:table-cell">Lead Source</th>
                         <th>Status</th>
                         <th>More</th>
                     </tr>
                 </ng-template>
                 <ng-template #body let-data>
                     <tr>
-                        <td style="width: 1rem">
+                        <td style="width: 1rem" class="hidden sm:table-cell">
                             <p-tableCheckbox [value]="data" />
                         </td>
                         <td>
@@ -96,13 +97,13 @@ import { TooltipModule } from '@openng/optimus-ui/tooltip';
                                     />
                                 </p-overlayBadge>
 
-                                <div class="ml-4 leading-6 text-color font-medium">{{ data.name }}</div>
+                                <div class="ml-4 leading-6 text-color font-medium whitespace-nowrap">{{ data.name }}</div>
                             </div>
                         </td>
-                        <td>
-                            <div class="leading-6 text-muted-color">{{ data.title }}</div>
+                        <td class="max-w-28 sm:max-w-none">
+                            <div class="truncate leading-6 text-muted-color">{{ data.title }}</div>
                         </td>
-                        <td>
+                        <td class="hidden sm:table-cell">
                             <div class="flex items-center gap-2">
                                 <div class="flex items-center justify-center" [innerHTML]="companyLogos[data.company.logo]"></div>
 
@@ -111,10 +112,10 @@ import { TooltipModule } from '@openng/optimus-ui/tooltip';
                                 </div>
                             </div>
                         </td>
-                        <td field="email" header="Email Address">
+                        <td field="email" header="Email Address" class="hidden sm:table-cell">
                             <div class="leading-6 text-muted-color truncate">{{ data.email }}</div>
                         </td>
-                        <td field="lead" header="Lead Source">
+                        <td field="lead" header="Lead Source" class="hidden sm:table-cell">
                             <div class="leading-6 text-muted-color">{{ data.lead }}</div>
                         </td>
                         <td>
@@ -139,7 +140,7 @@ import { TooltipModule } from '@openng/optimus-ui/tooltip';
         </div>
     `,
     host: {
-        class: 'h-full flex-1 flex flex-col overflow-hidden border border-surface rounded-2xl p-6'
+        class: 'h-full flex-1 min-w-0 flex flex-col overflow-hidden border border-surface rounded-2xl p-4 sm:p-6'
     },
     changeDetection: ChangeDetectionStrategy.OnPush
 })

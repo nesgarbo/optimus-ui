@@ -20,7 +20,7 @@ import { Tag } from '@openng/optimus-ui/tag';
     standalone: true,
     imports: [CommonModule, RouterModule, FormsModule, DividerModule, AvatarModule, IconField, InputIcon, ButtonModule, TableModule, InputTextModule, MenuModule, Tag, ProgressBar, Checkbox, OverlayBadgeModule],
     template: `
-        <div class="w-64 h-full overflow-hidden border border-surface rounded-2xl flex flex-col">
+        <div class="hidden w-64 h-full overflow-hidden border border-surface rounded-2xl lg:flex flex-col">
             <div class="flex items-center justify-between gap-2 p-4 border-b border-surface">
                 <div class="text-xl font-medium leading-7 text-color">Mails</div>
                 <p-button icon="pi pi-plus" styleClass="w-8 h-8" />
@@ -59,10 +59,10 @@ import { Tag } from '@openng/optimus-ui/tag';
             </div>
         </div>
         <div class="flex-1 h-full overflow-hidden flex border border-surface rounded-2xl">
-            <p-table [value]="tableData" [(selection)]="selectedRows" dataKey="id" class="w-full" [dt]="tableTokens" [scrollable]="true" scrollHeight="flex">
+            <p-table [value]="tableData" [(selection)]="selectedRows" dataKey="id" class="w-full" [dt]="tableTokens" [scrollable]="true" scrollHeight="flex" [tableStyle]="{ 'table-layout': 'fixed', width: '100%' }">
                 <ng-template #caption>
                     <div class="flex xl:items-center justify-between gap-2 flex-col xl:flex-row">
-                        <div class="flex items-center gap-2">
+                        <div class="hidden items-center gap-2 sm:flex">
                             <p-checkbox [binary]="true" class="mr-1" />
                             <p-button icon="pi pi-envelope" outlined severity="secondary" />
                             <p-button icon="pi pi-exclamation-circle" outlined severity="secondary" />
@@ -70,33 +70,34 @@ import { Tag } from '@openng/optimus-ui/tag';
                             <p-button icon="pi pi-inbox" label="Archive" outlined severity="secondary" />
                             <p-button icon="pi pi-trash" label="Trash" outlined severity="secondary" />
                         </div>
+                        <!-- On a phone the toolbar is the search and the filter; the pager needs room it does not have. -->
                         <div class="flex items-center gap-2">
-                            <p-iconfield iconPosition="left" class="w-6/12 xl:max-w-36">
+                            <p-iconfield iconPosition="left" class="min-w-32 flex-1 xl:max-w-36">
                                 <p-inputicon class="pi pi-search"></p-inputicon>
                                 <input type="text" pInputText [(ngModel)]="search" placeholder="Search" class="w-full" />
                             </p-iconfield>
                             <p-button icon="pi pi-filter" outlined severity="secondary" />
-                            <p-divider layout="vertical" styleClass="m-0" />
-                            <p-button icon="pi pi-refresh" outlined severity="secondary" />
-                            <p-button label="1 of 15" class="!whitespace-nowrap" outlined severity="secondary" />
-                            <p-button icon="pi pi-chevron-left" outlined severity="secondary" />
-                            <p-button icon="pi pi-chevron-right" outlined severity="secondary" />
+                            <p-divider layout="vertical" styleClass="m-0 hidden! sm:flex!" />
+                            <p-button icon="pi pi-refresh" outlined severity="secondary" styleClass="hidden! sm:inline-flex!" />
+                            <p-button label="1 of 15" styleClass="whitespace-nowrap hidden! sm:inline-flex!" outlined severity="secondary" />
+                            <p-button icon="pi pi-chevron-left" outlined severity="secondary" styleClass="hidden! sm:inline-flex!" />
+                            <p-button icon="pi pi-chevron-right" outlined severity="secondary" styleClass="hidden! sm:inline-flex!" />
                         </div>
                     </div>
                 </ng-template>
                 <ng-template #body let-data>
                     <tr>
-                        <td style="width: 1rem">
+                        <td style="width: 1rem" class="hidden sm:table-cell">
                             <p-tableCheckbox [value]="data" />
                         </td>
 
-                        <td style="width: 1rem; padding: 0.5rem">
+                        <td style="width: 1rem; padding: 0.5rem" class="hidden sm:table-cell">
                             <div (click)="$event.stopPropagation(); data.bookmarked = !data.bookmarked">
                                 <i [ngClass]="data.bookmarked ? 'pi pi-bookmark-fill' : 'pi pi-bookmark'"></i>
                             </div>
                         </td>
-                        <td>
-                            <div class="flex items-center">
+                        <td class="w-[55%] sm:w-auto">
+                            <div class="flex min-w-0 items-center">
                                 <p-overlayBadge severity="danger" styleClass="w-fit">
                                     <p-avatar
                                         [image]="data.image"
@@ -108,22 +109,22 @@ import { Tag } from '@openng/optimus-ui/tag';
                                     />
                                 </p-overlayBadge>
 
-                                <div class="ml-4 leading-6 text-color font-medium">{{ data.name }}</div>
+                                <div class="ml-2 min-w-0 truncate leading-6 text-color font-medium sm:ml-4">{{ data.name }}</div>
                             </div>
                         </td>
 
-                        <td style="min-width: 14rem; max-width: 20rem">
+                        <td class="min-w-0 sm:min-w-56 sm:max-w-80">
                             <div class="truncate">
                                 <span class="text-color leading-6 mr-2">{{ data.title }}</span>
                                 <span class="text-muted-color leading-5 text-sm">{{ data.message }}</span>
                             </div>
                         </td>
 
-                        <td style="width: 4rem">
+                        <td style="width: 4rem" class="hidden sm:table-cell">
                             <p-tag *ngIf="data.type" severity="secondary" [value]="data.type" class="font-medium"></p-tag>
                         </td>
 
-                        <td style="width: 4rem">
+                        <td style="width: 4rem" class="hidden sm:table-cell">
                             <div class="text-right text-sm leading-5 text-muted-color">{{ data.time }}</div>
                         </td>
                     </tr>
@@ -132,7 +133,7 @@ import { Tag } from '@openng/optimus-ui/tag';
         </div>
     `,
     host: {
-        class: 'flex gap-4 h-full flex-1 w-full overflow-auto'
+        class: 'flex gap-4 h-full flex-1 min-w-0 w-full overflow-auto'
     },
     changeDetection: ChangeDetectionStrategy.OnPush
 })

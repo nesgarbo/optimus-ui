@@ -20,7 +20,7 @@ import { ToggleSwitchModule } from '@openng/optimus-ui/toggleswitch';
     standalone: true,
     imports: [CommonModule, RouterModule, ChartModule, ToggleSwitchModule, SelectButton, BadgeModule, FormsModule, AvatarModule, IconField, InputIcon, ButtonModule, InputTextModule, MenuModule, Textarea],
     template: `
-        <div class="w-4/12 xl:w-3/12 min-w-40 overflow-auto flex flex-col gap-6">
+        <div class="hidden w-4/12 xl:w-3/12 min-w-40 overflow-auto lg:flex flex-col gap-6">
             <div class="flex flex-col gap-6 pt-3 pb-2 -mb-2 px-5 sticky top-0 bg-surface-0 dark:bg-surface-950 z-10">
                 <div class="flex items-center justify-between gap-6 text-color">
                     <div class="text-2xl font-medium lead">Chats</div>
@@ -73,7 +73,7 @@ import { ToggleSwitchModule } from '@openng/optimus-ui/toggleswitch';
                 </div>
             </div>
         </div>
-        <div class="w-8/12 xl:w-6/12 border-x border-surface flex flex-col">
+        <div class="w-full lg:w-8/12 xl:w-6/12 lg:border-x border-surface flex flex-col">
             <div class="flex items-center p-4 gap-7 border-b border-surface">
                 <div class="flex items-center">
                     <p-avatar image="logo-icon.svg" styleClass="mr-2 av" size="large" shape="circle" />
@@ -90,7 +90,7 @@ import { ToggleSwitchModule } from '@openng/optimus-ui/toggleswitch';
                 </div>
             </div>
             <div #transcript class="flex-1 overflow-y-auto flex flex-col gap-8 py-8 px-6">
-                <div *ngFor="let message of chatMessages" class="flex items-start min-w-64 w-fit max-w-[60%]" [ngClass]="{ 'ml-auto mr-0 flex-row-reverse': message.type === 'sent' }">
+                <div *ngFor="let message of chatMessages" class="flex items-start min-w-0 lg:min-w-64 w-fit max-w-[85%] lg:max-w-[60%]" [ngClass]="{ 'ml-auto mr-0 flex-row-reverse': message.type === 'sent' }">
                     <div
                         class="flex items-center gap-2 sticky top-0 transition-all"
                         [ngClass]="{
@@ -133,11 +133,11 @@ import { ToggleSwitchModule } from '@openng/optimus-ui/toggleswitch';
                     </div>
                 </div>
             </div>
-            <div class="p-4 border-t border-surface flex items-end justify-between gap-2">
-                <div class="flex items-end gap-1 flex-1">
-                    <p-button icon="pi pi-face-smile" text />
+            <div class="p-3 sm:p-4 border-t border-surface flex items-end justify-between gap-2">
+                <div class="flex min-w-0 items-end gap-1 flex-1">
+                    <p-button icon="pi pi-face-smile" text styleClass="hidden! sm:inline-flex!" />
                     <p-button icon="pi pi-paperclip" text />
-                    <textarea pTextarea class="ml-1 flex-1 border-0 shadow-none max-h-32 min-h-9 bg-emphasis overflow-auto" autoResize rows="1" placeholder="Write your message..."></textarea>
+                    <textarea pTextarea class="ml-1 min-w-0 flex-1 border-0 shadow-none max-h-32 min-h-9 bg-emphasis overflow-auto" autoResize rows="1" placeholder="Write your message..."></textarea>
                 </div>
                 <p-button icon="pi pi-send" />
             </div>
@@ -213,7 +213,7 @@ import { ToggleSwitchModule } from '@openng/optimus-ui/toggleswitch';
         </div>
     `,
     host: {
-        class: 'flex-1 h-full overflow-y-auto overflow-x-clip overflow-hidden flex border border-surface rounded-2xl'
+        class: 'flex-1 min-w-0 h-full overflow-y-auto overflow-x-clip overflow-hidden flex border border-surface rounded-2xl'
     },
     changeDetection: ChangeDetectionStrategy.OnPush
 })

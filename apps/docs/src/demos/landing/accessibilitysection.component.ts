@@ -40,17 +40,22 @@ interface Topic {
                         }
                     </ul>
 
-                    <!-- Keyboard, drawn in CSS. The active topic highlights the keys it uses. -->
-                    <div class="min-w-0 overflow-x-auto rounded-xl border border-surface bg-surface-0 p-4 sm:p-6 dark:bg-surface-900" aria-hidden="true">
-                        <div class="flex w-max min-w-full flex-col gap-1.5">
+                    <!--
+                        Keyboard, drawn in CSS. The active topic highlights the keys it uses.
+                        Every key is a multiple of one unit, and the unit shrinks with the
+                        viewport: at fixed sizes the widest row was wider than a phone, and
+                        the keyboard turned into something to scroll sideways.
+                    -->
+                    <div class="min-w-0 overflow-x-auto rounded-xl border border-surface bg-surface-0 p-3 [--kbd-unit:0.74rem] sm:p-6 sm:[--kbd-unit:1rem] dark:bg-surface-900" aria-hidden="true">
+                        <div class="flex min-w-full flex-col gap-1 sm:gap-1.5">
                             @for (row of rows; track $index) {
-                                <div class="flex justify-center gap-1.5">
+                                <div class="flex justify-center gap-1 sm:gap-1.5">
                                     @for (key of row; track key.label) {
                                         <span
-                                            class="inline-flex h-8 shrink-0 items-center justify-center rounded-md border text-[10px] transition-colors"
+                                            class="inline-flex h-7 shrink-0 items-center justify-center rounded-md border text-[10px] transition-colors sm:h-8"
                                             [style.flex-grow]="key.grow"
                                             [class]="highlighted(key.label) ? 'border-primary bg-primary text-primary-contrast' : 'border-surface-200 bg-surface-50 text-surface-500 dark:border-surface-700 dark:bg-surface-800 dark:text-surface-400'"
-                                            [style.min-width.rem]="key.width"
+                                            [style.min-width]="unit(key.width)"
                                         >
                                             {{ key.label }}
                                         </span>
@@ -99,6 +104,11 @@ export class AccessibilitySectionComponent {
     ];
 
     activeTopic = () => this.topics.find((topic) => topic.key === this.active()) ?? this.topics[0];
+
+    /** A key's width, in units of whatever the viewport makes a unit. */
+    unit(width: number) {
+        return `calc(var(--kbd-unit) * ${width})`;
+    }
 
     highlighted(label: string) {
         return this.activeTopic().keys.includes(label);

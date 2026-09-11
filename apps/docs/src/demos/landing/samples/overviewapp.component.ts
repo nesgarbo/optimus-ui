@@ -39,7 +39,7 @@ interface Order {
             <div class="flex flex-wrap items-end justify-between gap-3">
                 <div>
                     <p class="text-xs text-muted-color">Overview</p>
-                    <h3 class="mt-1 text-lg font-semibold text-surface-900 dark:text-surface-0">Treasury</h3>
+                    <div class="mt-1 text-lg font-semibold text-surface-900 dark:text-surface-0">Treasury</div>
                 </div>
                 <p-tag value="Live" severity="success" />
             </div>
@@ -62,7 +62,7 @@ interface Order {
             <div class="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
                 <!-- Orders -->
                 <div class="min-w-0 overflow-x-auto rounded-lg border border-surface">
-                    <p-table [value]="orders" [paginator]="true" [rows]="4" [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" styleClass="text-sm" [tableStyle]="{ 'min-width': '28rem' }">
+                    <p-table [value]="orders" [paginator]="true" [rows]="4" [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" styleClass="text-sm" [tableStyle]="{ 'min-width': '20rem' }">
                         <ng-template #header>
                             <tr>
                                 <th>Account</th>

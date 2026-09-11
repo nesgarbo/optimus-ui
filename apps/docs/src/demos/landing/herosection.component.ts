@@ -112,11 +112,12 @@ interface SampleTab {
                         <div class="flex h-[32rem] overflow-auto p-4 sm:p-6 lg:h-[38rem]">
                             <!--
                                 The samples are application layouts: side rails, three-column
-                                grids, wide tables. Below a laptop they keep their proportions
-                                and the window pans instead, which reads as a desktop app on a
-                                phone rather than a broken one.
+                                grids, wide tables. From a laptop up they hold their desktop
+                                proportions and the window pans; below that the floor is
+                                lifted and each sample reflows into the width it is given,
+                                because a phone showed a third of an app and no way to tell.
                             -->
-                            <div class="flex min-w-[52rem] flex-1">
+                            <div class="flex min-w-0 flex-1 lg:min-w-[52rem]">
                                 <ng-container [ngTemplateOutlet]="sample" />
                             </div>
                         </div>

@@ -19,9 +19,16 @@ import { OverlayBadgeModule } from '@openng/optimus-ui/overlaybadge';
     imports: [CommonModule, RouterModule, SelectButton, FormsModule, AvatarModule, TooltipModule, IconField, InputIcon, ButtonModule, InputTextModule, ProgressBar, Carousel, OverlayBadgeModule],
     template: `
         <div class="flex flex-wrap gap-4 items-center justify-between">
-            <p-selectbutton [(ngModel)]="value" [options]="options" aria-labelledby="basic" />
-            <div class="flex gap-2.5 items-center">
-                <p-iconfield iconPosition="left">
+            <!--
+                Four tabs are wider than a phone: the strip scrolls rather than spilling,
+                and each label stays on one line so what scrolls looks like a strip of tabs
+                rather than a broken grid.
+            -->
+            <div class="min-w-0 max-w-full overflow-x-auto [&_.p-togglebutton-label]:whitespace-nowrap!">
+                <p-selectbutton [(ngModel)]="value" [options]="options" aria-labelledby="basic" />
+            </div>
+            <div class="flex min-w-0 flex-1 gap-2.5 items-center">
+                <p-iconfield iconPosition="left" class="min-w-0 flex-1 sm:flex-none">
                     <p-inputicon class="pi pi-search"></p-inputicon>
                     <input type="text" pInputText [(ngModel)]="search" placeholder="Search" />
                 </p-iconfield>
@@ -30,7 +37,7 @@ import { OverlayBadgeModule } from '@openng/optimus-ui/overlaybadge';
                         <i class="pi pi-bell"></i>
                     </p-overlayBadge>
                 </p-button>
-                <p-avatar image="/demo/landing/apps/avatar11.jpg" shape="circle" class="w-9 h-9 cursor-pointer" />
+                <p-avatar image="/demo/landing/apps/avatar11.jpg" shape="circle" class="w-9 h-9 shrink-0 cursor-pointer" />
             </div>
         </div>
         <div class="">
@@ -108,7 +115,7 @@ import { OverlayBadgeModule } from '@openng/optimus-ui/overlaybadge';
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
-        class: 'flex-1 flex flex-col gap-6 p-6 h-full overflow-y-auto overflow-x-clip overflow-hidden border border-surface rounded-2xl'
+        class: 'flex-1 min-w-0 flex flex-col gap-6 p-4 sm:p-6 h-full overflow-y-auto overflow-x-clip overflow-hidden border border-surface rounded-2xl'
     }
 })
 export class MoviesApp implements OnInit {

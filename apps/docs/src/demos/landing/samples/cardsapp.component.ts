@@ -56,8 +56,8 @@ import { TooltipModule } from '@openng/optimus-ui/tooltip';
     template: `
         <div class="text-color text-2xl font-medium leading-8">Cards</div>
         <div class="mt-1 text-muted-color leading-6">You can make cards using Aura like below 👇</div>
-        <div class="mt-6 flex flex-wrap items-start gap-6">
-            <div class="flex-1 flex flex-col gap-6">
+        <div class="mt-6 flex flex-wrap items-start gap-4 sm:gap-6">
+            <div class="w-full min-w-0 flex flex-col gap-6 lg:w-auto lg:flex-1">
                 <div class="border border-surface rounded-3xl p-6 flex flex-col gap-6">
                     <div class="flex items-center gap-3">
                         <p-overlayBadge severity="danger" styleClass="w-fit">
@@ -198,7 +198,7 @@ import { TooltipModule } from '@openng/optimus-ui/tooltip';
                     </div>
                 </div>
             </div>
-            <div class="flex-1 flex flex-col gap-6">
+            <div class="w-full min-w-0 flex flex-col gap-6 lg:w-auto lg:flex-1">
                 <div class="border border-surface rounded-3xl p-6 flex flex-col gap-6">
                     <div class="flex items-center gap-2 text-color">
                         <i class="pi pi-cloud-upload text-xl"></i>
@@ -229,7 +229,7 @@ import { TooltipModule } from '@openng/optimus-ui/tooltip';
 
                             <ng-template #content let-chooseCallback="chooseCallback" let-clearCallback="clearCallback" let-uploadCallback="uploadCallback" let-removeCallback="removeCallback">
                                 <div *ngIf="files.length > 0" class="px-4 py-0">
-                                    <h5 class="m-0 mb-2">Pending</h5>
+                                    <div class="m-0 mb-2 font-semibold">Pending</div>
                                     <div class="flex flex-wrap gap-2 grow overflow-auto max-h-[210px]">
                                         <div *ngFor="let file of files; let i = index" class="card max-w-[120px] !p-2 m-0 flex flex-col border-1 surface-border items-center gap-2 text-center">
                                             <div>
@@ -246,7 +246,7 @@ import { TooltipModule } from '@openng/optimus-ui/tooltip';
                                 </div>
 
                                 <div *ngIf="uploadedFiles.length > 0" class="px-4 py-0">
-                                    <h5 class="m-0 mb-2">Completed</h5>
+                                    <div class="m-0 mb-2 font-semibold">Completed</div>
                                     <div class="flex flex-wrap gap-2">
                                         <div *ngFor="let file of uploadedFiles" :key="file.name + file.type + file.size" class="card max-w-[120px] !p-2 m-0 flex flex-col border-1 surface-border items-center gap-2 text-center">
                                             <div>
@@ -268,12 +268,12 @@ import { TooltipModule } from '@openng/optimus-ui/tooltip';
                         <label class="text-color font-medium leading-6">Tag (Optional)</label>
                         <p-autocomplete [(ngModel)]="filesTag" styleClass="w-full mt-2" inputId="multiple-ac-2" multiple (completeMethod)="search($event)" [typeahead]="false" />
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex flex-wrap items-center gap-2">
                         <label
                             *ngFor="let permission of permissions"
                             [key]="permission.key"
                             [for]="permission.key"
-                            class="cursor-pointer flex-1 flex items-center gap-1 p-2 rounded-border border border-surface hover:bg-emphasis transition-all select-none"
+                            class="cursor-pointer flex-1 min-w-28 flex items-center gap-1 p-2 rounded-border border border-surface hover:bg-emphasis transition-all select-none"
                         >
                             <i class="text-color" :class="permission.icon"></i>
                             <div class="flex-1 text-sm leading-5 text-color">{{ permission.name }}</div>
@@ -321,28 +321,28 @@ import { TooltipModule } from '@openng/optimus-ui/tooltip';
                         <div class="font-medium leading-6 text-muted-color">Members</div>
                         <div class="mt-4 flex flex-col gap-4">
                             <div class="flex items-center gap-2 justify-between">
-                                <p-avatar image="/demo/landing/apps/avatar8.png" class="w-9 h-9" shape="circle" />
-                                <div class="flex-1">
-                                    <div class="text-sm font-medium text-color leading-5">Brook Simmons</div>
-                                    <div class="text-sm text-muted-color leading-5 line-clamp-4">brook.sim42&#64;example.com</div>
+                                <p-avatar image="/demo/landing/apps/avatar8.png" class="w-9 h-9 shrink-0" shape="circle" />
+                                <div class="min-w-0 flex-1">
+                                    <div class="truncate text-sm font-medium text-color leading-5">Brook Simmons</div>
+                                    <div class="truncate text-sm text-muted-color leading-5">brook.sim42&#64;example.com</div>
                                 </div>
-                                <p-select [(ngModel)]="memberSelectedTypes[0]" [options]="memberTypes" optionLabel="name" placeholder="Select" class="!border-0 !shadow-none" />
+                                <p-select [(ngModel)]="memberSelectedTypes[0]" [options]="memberTypes" optionLabel="name" placeholder="Select" class="!border-0 !shadow-none shrink-0" />
                             </div>
                             <div class="flex items-center gap-2 justify-between">
-                                <p-avatar image="/demo/landing/apps/avatar13.jpg" class="w-9 h-9" shape="circle" />
-                                <div class="flex-1">
-                                    <div class="text-sm font-medium text-color leading-5">Dianne Russell</div>
-                                    <div class="text-sm text-muted-color leading-5 line-clamp-4">di.russ23&#64;example.com</div>
+                                <p-avatar image="/demo/landing/apps/avatar13.jpg" class="w-9 h-9 shrink-0" shape="circle" />
+                                <div class="min-w-0 flex-1">
+                                    <div class="truncate text-sm font-medium text-color leading-5">Dianne Russell</div>
+                                    <div class="truncate text-sm text-muted-color leading-5">di.russ23&#64;example.com</div>
                                 </div>
-                                <p-select [(ngModel)]="memberSelectedTypes[1]" [options]="memberTypes" optionLabel="name" placeholder="Select" class="!border-0 !shadow-none" />
+                                <p-select [(ngModel)]="memberSelectedTypes[1]" [options]="memberTypes" optionLabel="name" placeholder="Select" class="!border-0 !shadow-none shrink-0" />
                             </div>
                             <div class="flex items-center gap-2 justify-between">
-                                <p-avatar image="/demo/landing/apps/avatar12.jpg" class="w-9 h-9" shape="circle" />
-                                <div class="flex-1">
-                                    <div class="text-sm font-medium text-color leading-5">Jacob Jones</div>
-                                    <div class="text-sm text-muted-color leading-5 line-clamp-4">jac.jon87&#64;example.com</div>
+                                <p-avatar image="/demo/landing/apps/avatar12.jpg" class="w-9 h-9 shrink-0" shape="circle" />
+                                <div class="min-w-0 flex-1">
+                                    <div class="truncate text-sm font-medium text-color leading-5">Jacob Jones</div>
+                                    <div class="truncate text-sm text-muted-color leading-5">jac.jon87&#64;example.com</div>
                                 </div>
-                                <p-select [(ngModel)]="memberSelectedTypes[2]" [options]="memberTypes" optionLabel="name" placeholder="Select" class="!border-0 !shadow-none" />
+                                <p-select [(ngModel)]="memberSelectedTypes[2]" [options]="memberTypes" optionLabel="name" placeholder="Select" class="!border-0 !shadow-none shrink-0" />
                             </div>
                         </div>
                     </div>
@@ -355,7 +355,7 @@ import { TooltipModule } from '@openng/optimus-ui/tooltip';
                     </div>
                 </div>
             </div>
-            <div class="flex-1 flex flex-wrap gap-6">
+            <div class="w-full min-w-0 flex flex-wrap gap-6 lg:w-auto lg:flex-1">
                 <div class="flex-1 border border-surface rounded-3xl p-6">
                     <div class="text-color font-medium leading-6 mb-4">User Profiles</div>
                     <p-selectbutton [(ngModel)]="userProfiles" [options]="userProfilesOptions" class="w-full" styleClass="flex-1 w-full" />
@@ -442,7 +442,7 @@ import { TooltipModule } from '@openng/optimus-ui/tooltip';
         </div>
     `,
     host: {
-        class: 'flex-1 h-full overflow-y-auto overflow-x-clip overflow-hidden border border-surface rounded-2xl p-6'
+        class: 'flex-1 min-w-0 h-full overflow-y-auto overflow-x-clip overflow-hidden border border-surface rounded-2xl p-4 sm:p-6'
     },
     providers: [MessageService],
     changeDetection: ChangeDetectionStrategy.OnPush
