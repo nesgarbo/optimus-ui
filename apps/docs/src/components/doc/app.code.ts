@@ -3,7 +3,7 @@ import { resolveDomainTypes, ResolvedRouteFiles, resolveRouteFiles } from '@/dom
 import { DemoCodeService } from '@/service/democodeservice';
 import { HighlightService } from '@/service/highlightservice';
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, ElementRef, inject, input, NgModule, signal } from '@angular/core';
+import { afterNextRender, Component, computed, effect, ElementRef, inject, input, NgModule, OnDestroy, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ButtonModule } from '@openng/optimus-ui/button';
 import { TooltipModule } from '@openng/optimus-ui/tooltip';
@@ -39,7 +39,7 @@ import { useCodeSandbox, useStackBlitz } from './codeeditor';
         }
     `
 })
-export class AppCode {
+export class AppCode implements OnDestroy {
     code = input<Code>();
     service = input<any>();
     selector = input<string>();
@@ -107,7 +107,12 @@ export class AppCode {
 
     private highlightService = inject(HighlightService);
 
-    /** Shiki markup for the currently selected language, both themes baked in. */
+    /**
+     * Shiki markup for the currently selected language, both themes baked in - once the
+     * block is worth colouring. Until then it is the same code in one colour: identical
+     * text in an identical box, so the upgrade moves nothing, and a page keeps its element
+     * count for the examples a reader actually reaches.
+     */
     highlighted = computed(() => {
         const code = this.resolvedCode();
         const lang = this.lang();
@@ -116,14 +121,21 @@ export class AppCode {
             return '';
         }
 
-        return this.highlightService.highlightSafe(code[lang], lang);
+        return this.inReach() ? this.highlightService.highlightSafe(code[lang], lang) : this.highlightService.plain(code[lang]);
     });
+
+    /** False until the block is on screen or nearly so; always true without a browser. */
+    private readonly inReach = signal(false);
+
+    private observer: IntersectionObserver | null = null;
 
     private demoCodeService = inject(DemoCodeService);
     private elementRef = inject(ElementRef);
     private route = inject(ActivatedRoute);
 
     constructor() {
+        afterNextRender(() => this.colourWhenNear());
+
         // The snippets live in a single 1.8 MB file: it is fetched the first time a code
         // block exists on the page rather than during bootstrap, so pages without any —
         // the home page, the components index — never pay for it. The service dedupes.
@@ -183,6 +195,32 @@ export class AppCode {
 
     changeLang(newLang: string) {
         this.lang.set(newLang);
+    }
+
+    ngOnDestroy() {
+        this.observer?.disconnect();
+    }
+
+    /** A screen's worth of margin, so a block is coloured before it is read. */
+    private colourWhenNear() {
+        if (typeof IntersectionObserver === 'undefined') {
+            this.inReach.set(true);
+
+            return;
+        }
+
+        this.observer = new IntersectionObserver(
+            (entries) => {
+                if (entries.some((entry) => entry.isIntersecting)) {
+                    this.inReach.set(true);
+                    this.observer?.disconnect();
+                    this.observer = null;
+                }
+            },
+            { rootMargin: '800px 0px' }
+        );
+
+        this.observer.observe(this.elementRef.nativeElement);
     }
 
     async copyCode() {
