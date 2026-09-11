@@ -1,1059 +1,183 @@
-import { AppConfigService } from '@/service/appconfigservice';
-import { CommonModule, isPlatformBrowser, NgOptimizedImage } from '@angular/common';
-import { ChangeDetectorRef, Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { MenuItem, SelectItem } from '@openng/optimus-ui/api';
-import { AvatarModule } from '@openng/optimus-ui/avatar';
-import { BadgeModule } from '@openng/optimus-ui/badge';
-import { ButtonModule } from '@openng/optimus-ui/button';
-import { ChartModule } from '@openng/optimus-ui/chart';
-import { DividerModule } from '@openng/optimus-ui/divider';
 import { DrawerModule } from '@openng/optimus-ui/drawer';
-import { KnobModule } from '@openng/optimus-ui/knob';
-import { OverlayBadgeModule } from '@openng/optimus-ui/overlaybadge';
-import { SelectButton } from '@openng/optimus-ui/selectbutton';
-import { TagModule } from '@openng/optimus-ui/tag';
-import { ToggleSwitchModule } from '@openng/optimus-ui/toggleswitch';
-import { TooltipModule } from '@openng/optimus-ui/tooltip';
-import { Subscription } from 'rxjs';
+import { RadioButtonModule } from '@openng/optimus-ui/radiobutton';
+import { HeroVersionBadgeComponent } from './heroversionbadge.component';
 import { CardsApp } from './samples/cardsapp.component';
 import { ChatApp } from './samples/chatapp.component';
 import { CustomersApp } from './samples/customersapp.component';
 import { InboxApp } from './samples/inboxapp.component';
 import { MoviesApp } from './samples/moviesapp.component';
 import { OverviewApp } from './samples/overviewapp.component';
+import { CONTAINER } from './sectionshell';
 
+interface SampleTab {
+    key: 'overview' | 'chat' | 'inbox' | 'cards' | 'customers' | 'movies';
+    label: string;
+    icon: string;
+}
+
+/**
+ * The first screen: what this is, where to start, and six application shells running in
+ * the page. The phone alongside the window renders the same component at half scale —
+ * it is the live sample, not a screenshot of one.
+ */
 @Component({
     selector: 'hero-section',
     standalone: true,
-    imports: [
-        CommonModule,
-        RouterModule,
-        ChartModule,
-        SelectButton,
-        TagModule,
-        ToggleSwitchModule,
-        BadgeModule,
-        FormsModule,
-        DividerModule,
-        AvatarModule,
-        TooltipModule,
-        OverviewApp,
-        ChatApp,
-        InboxApp,
-        CardsApp,
-        MoviesApp,
-        CustomersApp,
-        DrawerModule,
-        OverlayBadgeModule,
-        KnobModule,
-        ButtonModule,
-        NgOptimizedImage
-    ],
+    imports: [CommonModule, FormsModule, RouterModule, DrawerModule, RadioButtonModule, HeroVersionBadgeComponent, OverviewApp, ChatApp, InboxApp, CardsApp, CustomersApp, MoviesApp],
+    changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
-        <section class="landing-hero py-20 px-8 lg:px-20">
-            <div class="flex flex-col items-center">
-                <h1 class="text-5xl font-bold text-center xl:text-left leading-tight">The Open Source UI Suite for <span class="font-bold text-primary">Angular</span></h1>
-                <p class="text-center mt-0 mb-8 text-surface-500 dark:text-surface-400 font-medium text-xl leading-relaxed lg:px-56">
-                    80+ accessible, customizable Angular components under the MIT license. A community-maintained continuation of PrimeNG v21, built to stay open.
+        <section class="pt-16 pb-20 sm:pt-24 sm:pb-28" aria-labelledby="hero-heading">
+            <div [class]="container">
+                <div class="flex justify-center">
+                    <hero-version-badge />
+                </div>
+
+                <h1 id="hero-heading" class="mt-10! text-center text-4xl! font-normal! tracking-tighter text-surface-900 sm:mt-16! sm:text-5xl! lg:text-6xl! dark:text-surface-0">
+                    Open Source UI
+                    <span class="relative inline-block">
+                        <span class="absolute -inset-x-1 -inset-y-0.5 border-2 border-primary/10 bg-primary/5 sm:-inset-x-1.5 sm:-inset-y-1" aria-hidden="true"></span>
+                        <span class="absolute -left-1 bottom-[calc(100%+4px)] hidden bg-primary/10 px-1.5 py-0.5 font-mono text-[9px] font-bold tracking-[0.09em] text-primary/70 sm:block sm:text-[10px]" aria-hidden="true">.p-title</span>
+                        <span class="relative">Suite</span>
+                    </span>
+                    for Angular
+                </h1>
+
+                <p class="mx-auto mt-4 max-w-160 text-center text-base text-surface-900/60 sm:text-lg lg:text-xl dark:text-surface-0/50">
+                    80+ accessible, customizable Angular components under the MIT license. The community-maintained continuation of PrimeNG v21, built to stay open.
                 </p>
-                <div class="flex items-center gap-4">
-                    <a [routerLink]="'installation'" class="linkbox linkbox-primary">
-                        <span>Get Started</span>
-                        <i class="pi pi-arrow-right ms-4"></i>
-                    </a>
-                    <a href="https://v1.optimus.openng.org/migration/primeng" target="_blank" rel="noopener noreferrer" class="linkbox">
-                        <span>Migrate from PrimeNG</span>
-                        <i class="pi pi-arrow-right-arrow-left ms-4"></i>
-                    </a>
-                </div>
-                <div class="flex items-center gap-3 mt-6 bg-surface-100 dark:bg-surface-800 border border-black/10 dark:border-white/10 rounded-full py-2 pl-5 pr-2">
-                    <code class="font-mono text-sm text-surface-700 dark:text-surface-300">{{ installCommand }}</code>
-                    <p-button
-                        [icon]="commandCopied ? 'pi pi-check' : 'pi pi-copy'"
-                        (onClick)="copyInstallCommand()"
-                        [pTooltip]="commandCopied ? 'Copied!' : 'Copy to Clipboard'"
-                        tooltipPosition="bottom"
-                        aria-label="Copy install command"
-                        text
-                        rounded
-                        severity="secondary"
-                        styleClass="w-8 h-8"
-                    />
-                </div>
-                <div class="w-full flex lg:hidden items-center justify-center mt-16 mb-4">
-                    <p-selectbutton [(ngModel)]="selectedSampleOption" [options]="sampleOptions" optionLabel="title" styleClass="dark:border dark:border-white/20">
-                        <ng-template let-item pTemplate="item">
-                            <i [class]="item.icon"></i>
-                            <div class="hidden sm:flex flex-1 text-sm font-medium leading-5">{{ item.title }}</div>
-                        </ng-template>
-                    </p-selectbutton>
-                </div>
-                <div class="bg-surface-0 border border-black/10 dark:border-white/20 dark:bg-surface-950 w-full rounded-3xl p-0 flex lg:hidden items-start gap-6 overflow-hidden">
-                    <ng-container *ngFor="let sampleOption of sampleOptions">
-                        <img *ngIf="selectedSampleOption.title === sampleOption.title" [src]="sampleOption.src + (isDarkMode ? '-dark.jpg' : '.jpg')" class="w-full" />
-                    </ng-container>
-                </div>
-                <div class="bg-surface-0 border border-black/10 dark:border-white/20 dark:bg-surface-950 w-full h-[85vh] max-h-[1040px] rounded-3xl p-6 hidden lg:flex lg:mt-20 items-start gap-6 overflow-hidden">
-                    <div
-                        [ngClass]="{
-                            'w-auto': isSlimMenu,
-                            'w-72': !isSlimMenu
-                        }"
-                        class="rounded-2xl p-5 bg-surface-50 dark:bg-surface-900 h-full flex flex-col justify-between"
+
+                <div class="mt-10 flex flex-wrap items-center justify-center gap-3">
+                    <a
+                        [routerLink]="['/installation']"
+                        class="flex h-10 items-center justify-center rounded-full bg-primary px-5 text-base font-medium text-primary-contrast no-underline transition-colors hover:bg-primary-emphasis lg:h-12 lg:px-7 lg:text-lg"
                     >
-                        <div
-                            [ngClass]="{
-                                'w-12 flex flex-col items-center': isSlimMenu,
-                                'w-auto': !isSlimMenu
-                            }"
-                        >
-                            <div class="flex items-center gap-3">
-                                <div class="w-11 h-11 border border-primary rounded-xl flex items-center justify-center">
-                                    <img ngSrc="logo-icon.svg" height="30" width="30" class="dark:invert" />
-                                </div>
-                                <div
-                                    [ngClass]="{
-                                        hidden: isSlimMenu,
-                                        block: !isSlimMenu
-                                    }"
-                                    class="text-surface-950 dark:text-surface-0 font-medium text-3xl"
-                                >
-                                    Optimus
-                                </div>
-                            </div>
-                            <div class="mt-10 flex flex-col gap-2">
-                                <div
-                                    *ngFor="let navItem of sampleAppsSidebarNavs"
-                                    [pTooltip]="isSlimMenu ? navItem.title : null"
-                                    (click)="setSelectedSampleAppsSidebarNav(navItem.title)"
-                                    class="px-4 py-1 flex items-center gap-1 cursor-pointer text-base rounded-lg transition-all select-none"
-                                    [ngClass]="{
-                                        'w-12 justify-center py-4': isSlimMenu,
-                                        'w-full': !isSlimMenu,
-                                        'text-muted-color hover:bg-emphasis bg-transparent': selectedSampleAppsSidebarNav !== navItem.title,
-                                        'text-primary-contrast bg-primary hover:bg-primary-emphasis': selectedSampleAppsSidebarNav === navItem.title
-                                    }"
-                                >
-                                    <i [class]="navItem.icon"></i>
-                                    <span
-                                        [ngClass]="{
-                                            hidden: isSlimMenu,
-                                            'font-medium leading-8': !isSlimMenu
-                                        }"
-                                        >・</span
-                                    >
-                                    <span
-                                        [ngClass]="{
-                                            hidden: isSlimMenu,
-                                            'font-medium leading-none': !isSlimMenu
-                                        }"
-                                        >{{ navItem.title }}</span
-                                    >
-                                </div>
-                            </div>
-                        </div>
-                        <div
-                            [ngClass]="{
-                                'w-12 flex flex-col items-center': isSlimMenu,
-                                'w-auto': !isSlimMenu
-                            }"
-                        >
-                            <div class="mt-10 flex flex-col gap-2">
-                                <div
-                                    *ngIf="false"
-                                    [pTooltip]="isSlimMenu ? 'Expanded Mode' : null"
-                                    class="px-4 py-1 flex items-center gap-1 cursor-pointer text-base rounded-lg transition-all select-none text-muted-color hover:bg-emphasis"
-                                    [ngClass]="{
-                                        'w-12 justify-center py-4': isSlimMenu,
-                                        'w-full': !isSlimMenu
-                                    }"
-                                >
-                                    <a class="cursor-pointer block p-0 m-0 leading-none">
-                                        <a class="cursor-pointer block p-0 m-0 leading-none">
-                                            <i [class]="isSlimMenu ? 'pi pi-window-maximize' : 'pi pi-window-minimize'"></i>
-                                            <span [class]="isSlimMenu ? 'hidden' : 'font-medium leading-8'">・</span>
-                                            <span [class]="isSlimMenu ? 'hidden' : 'font-medium leading-none'"> Slim Mode</span>
-                                        </a>
-                                    </a>
-                                </div>
-                                <div
-                                    *ngFor="let navItem of sampleAppsSidebarNavsMore"
-                                    [pTooltip]="isSlimMenu ? navItem.title : null"
-                                    (click)="dashboardSidebarVisible = true"
-                                    class="px-4 py-1 flex items-center gap-1 cursor-pointer text-base rounded-lg transition-all select-none"
-                                    [ngClass]="{
-                                        'w-12 justify-center py-4': isSlimMenu,
-                                        'w-full': !isSlimMenu,
-                                        'text-muted-color hover:bg-emphasis bg-transparent': selectedSampleAppsSidebarNav !== navItem.title,
-                                        'text-primary-contrast bg-primary hover:bg-primary-emphasis': selectedSampleAppsSidebarNav === navItem.title
-                                    }"
-                                >
-                                    <i [class]="navItem.icon"></i>
-                                    <span [class]="isSlimMenu ? 'hidden' : 'font-medium leading-8'">・</span>
-                                    <span [class]="isSlimMenu ? 'hidden' : 'font-medium leading-none'">{{ navItem.title }}</span>
-                                </div>
-                            </div>
-                            <p-divider />
-                            <div [class]="isSlimMenu ? 'justify-center' : ' gap-3'" class="flex items-center">
-                                <p-avatar image="/demo/landing/apps/main-avatar.png" size="large" shape="circle" class="shrink-0" />
-                                <div>
-                                    <div [class]="isSlimMenu ? 'hidden' : 'text-base font-medium text-color leading-5'">Robin Jonas</div>
-                                    <div [class]="isSlimMenu ? 'hidden' : 'text-sm text-muted-color mt-1'">hi&#64;robin.xyz</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <overview-app *ngIf="selectedSampleAppsSidebarNav === 'Overview'" />
-                    <chat-app *ngIf="selectedSampleAppsSidebarNav === 'Chat'" />
-                    <inbox-app *ngIf="selectedSampleAppsSidebarNav === 'Inbox'" />
-                    <cards-app *ngIf="selectedSampleAppsSidebarNav === 'Cards'" />
-                    <movies-app *ngIf="selectedSampleAppsSidebarNav === 'Movies'" />
-                    <customers-app *ngIf="selectedSampleAppsSidebarNav === 'Customers'" />
+                        Get Started
+                    </a>
+                    <a
+                        [routerLink]="['/components']"
+                        class="flex h-10 items-center justify-center gap-2 rounded-full border border-surface bg-surface-0 px-4 text-base text-surface-600 no-underline shadow-xs transition-colors hover:bg-surface-100 lg:h-12 lg:px-5 lg:text-lg dark:bg-surface-900 dark:text-surface-400 dark:hover:bg-surface-800"
+                    >
+                        <span>View Components</span>
+                        <i class="pi pi-arrow-right text-xs" aria-hidden="true"></i>
+                    </a>
                 </div>
             </div>
-            <p-drawer [(visible)]="dashboardSidebarVisible" position="right" closeIcon="pi pi-sign-out" styleClass="!max-w-2xl !w-full !h-screen rounded-l-2xl">
-                <ng-template #headless>
-                    <div class="flex flex-col h-screen overflow-auto">
-                        <div class="">
-                            <div class="flex align-items-center gap-3 p-6">
-                                <p-avatar image="/demo/landing/apps/avatar11.jpg" size="large" class="rounded-xl overflow-hidden" />
-                                <div class="flex-1">
-                                    <div class="leading-6 text-color font-medium">Brook Simmons</div>
-                                    <div class="mt-1 leading-5 text-muted-color text-sm">Sales Executive</div>
-                                </div>
-                                <p-button (onClick)="dashboardSidebarVisible = false" icon="pi pi-sign-out" text rounded severity="secondary" />
-                            </div>
-                            <p-selectbutton [(ngModel)]="selectedSidebarOption" [options]="sidebarOptions" class="w-full px-6 py-3" styleClass="flex-1 w-full py-2.5">
-                                <ng-template pTemplate="item" let-item>
-                                    <span class="text-sm">{{ item }}</span>
-                                </ng-template>
-                            </p-selectbutton>
-                        </div>
-                        <div *ngIf="selectedSidebarOption === 'Interaction Logs'" class="h-[calc(100%-172px)] flex flex-col gap-4 p-6">
-                            <div class="h-1/3 flex flex-col p-3 rounded-xl bg-emphasis">
-                                <div class="flex items-start justify-between">
-                                    <div class="leading-6 font-medium text-color">Call Logs</div>
-                                    <p-button icon="pi pi-download text-sm" styleClass="w-8 h-8 !border-surface !bg-surface-0 dark:!bg-surface-900 hover:opacity-75 transition-all" severity="secondary" text />
-                                </div>
-                                <div class="overflow-y-auto flex-1 bg-surface-0 dark:bg-surface-900 mt-2 flex flex-col rounded-lg overflow-hidden divide-y divide-surface-200 dark:divide-surface-800">
-                                    <div *ngFor="let data of callLogs" class="flex items-center gap-3 p-2">
-                                        <p-overlayBadge severity="success" styleClass="w-fit">
-                                            <p-avatar [image]="data.image" size="normal" styleClass="rounded-md w-10 h-10 overflow-hidden flex" />
-                                        </p-overlayBadge>
 
-                                        <div class="flex-1">
-                                            <div class="text-sm leading-5 font-medium text-color">{{ data.name }}</div>
-                                            <div class="mt-1 text-sm leading-5 text-muted-color">{{ data.time }}</div>
-                                        </div>
-                                        <p-button icon="pi pi-phone text-sm" text styleClass="bg-primary/10 dark:bg-primary/20 w-8 h-8" />
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="h-1/3 flex flex-col p-3 rounded-xl bg-emphasis">
-                                <div class="flex items-start justify-between">
-                                    <div class="leading-6 font-medium text-color">Email Records</div>
-                                    <p-button icon="pi pi-download text-sm" styleClass="w-8 h-8 !border-surface !bg-surface-0 dark:!bg-surface-900 hover:opacity-75 transition-all" severity="secondary" text />
-                                </div>
-                                <div class="overflow-y-auto flex-1 bg-surface-0 dark:bg-surface-900 mt-2 flex flex-col rounded-lg overflow-hidden divide-y divide-surface-200 dark:divide-surface-800">
-                                    <div *ngFor="let data of emailRecords" class="flex items-center gap-3 p-2">
-                                        <p-overlayBadge severity="danger" styleClass="w-fit">
-                                            <p-avatar [image]="data.image" size="normal" styleClass="rounded-md overflow-hidden w-10 h-10 flex" />
-                                        </p-overlayBadge>
+            <!-- Sample applications, on a wider measure than the copy above them -->
+            <div class="mx-auto w-full max-w-[92rem] px-6">
+                <div class="mt-16 flex flex-wrap items-center justify-center gap-2">
+                    @for (tab of tabs; track tab.key) {
+                        <button
+                            type="button"
+                            class="flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition-colors"
+                            [class]="
+                                active() === tab.key
+                                    ? 'border-surface-900 bg-surface-900 text-surface-0 dark:border-surface-0 dark:bg-surface-0 dark:text-surface-900'
+                                    : 'border-surface text-surface-600 hover:bg-surface-100 dark:text-surface-400 dark:hover:bg-surface-800'
+                            "
+                            [attr.aria-pressed]="active() === tab.key"
+                            (click)="active.set(tab.key)"
+                        >
+                            <i [class]="tab.icon + ' text-[11px]'" aria-hidden="true"></i>
+                            <span>{{ tab.label }}</span>
+                        </button>
+                    }
+                </div>
 
-                                        <div class="w-1/5 text-sm leading-5 font-medium text-color">{{ data.name }}</div>
-                                        <div class="flex-1">
-                                            <div class="text-sm leading-5 font-medium text-color line-clamp-2">
-                                                {{ data.title }}
-                                                <span class="text-muted-color">
-                                                    {{ data.text }}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="w-1/6 text-sm leading-5 text-muted-color text-right">
-                                            {{ data.time }}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="h-1/3 flex flex-col p-3 rounded-xl bg-emphasis">
-                                <div class="flex items-start justify-between">
-                                    <div class="leading-6 font-medium text-color">Meeting Notes</div>
-                                    <p-button icon="pi pi-download text-sm" styleClass="w-8 h-8 !border-surface !bg-surface-0 dark:!bg-surface-900 hover:opacity-75 transition-all leading-none" severity="secondary" text />
-                                </div>
-                                <div class="overflow-y-auto flex-1 bg-surface-0 dark:bg-surface-900 mt-2 p-4 flex flex-col rounded-lg overflow-hidden">
-                                    <div class="flex items-start justify-between gap-1">
-                                        <div class="text-sm text-color font-medium max-w-60">Subject: Meeting Wrap-up & Action Items: Jacob Jones</div>
-                                        <div class="text-sm text-muted-color">February 14, 2024 / 2:00 PM</div>
-                                    </div>
-                                    <div class="text-sm text-muted-color mt-6">
-                                        Here's a quick review of our meeting with Brook Simmons and next steps. Summary:
-                                        <br />
-                                        <br />
-                                        <ul class="list-disc pl-5">
-                                            <li>Reviewed our SaaS solution and its features.</li>
-                                            <li>Arlene McCoy intrigued by user experience potential.</li>
-                                            <li>Voiced concerns on integration with current system.Action Items:</li>
-                                        </ul>
-                                        <br />
-                                        Demo: Schedule product demo with Arlene McCoy. (Assigned to: Jerome Bell)<br /><br />
-                                        Integration Blueprint: Draft and deliver technical blueprint. (Assigned to: Cameron Williamson)<br /><br />
-                                        Follow-up Meeting: Arrange to discuss any queries post-demo. (Assigned to: Dianne Russell)
-                                        <br /><br />
-                                        Please act on these items promptly.
-                                    </div>
-                                </div>
-                            </div>
+                <div class="relative mt-8">
+                    <!-- Desktop frame -->
+                    <div class="overflow-hidden rounded-xl border border-surface bg-surface-0 shadow-sm dark:bg-surface-900">
+                        <div class="flex items-center gap-2 border-b border-surface px-4 py-2.5">
+                            <span class="flex gap-1.5" aria-hidden="true">
+                                <span class="size-2 rounded-full bg-surface-300 dark:bg-surface-700"></span>
+                                <span class="size-2 rounded-full bg-surface-300 dark:bg-surface-700"></span>
+                                <span class="size-2 rounded-full bg-surface-300 dark:bg-surface-700"></span>
+                            </span>
+                            <span class="mx-auto rounded-md bg-surface-100 px-3 py-0.5 font-mono text-[11px] text-muted-color dark:bg-surface-800">{{ activeLabel() }}</span>
+                            <button type="button" class="text-muted-color transition-colors hover:text-surface-900 dark:hover:text-surface-0" aria-label="Sample settings" (click)="settingsVisible.set(true)">
+                                <i class="pi pi-cog text-sm" aria-hidden="true"></i>
+                            </button>
                         </div>
-                        <div *ngIf="selectedSidebarOption === 'Preferences'" class="h-[calc(100%-72px)] flex flex-col gap-4 p-6">
-                            <div *ngFor="let data of preferences" class="h-1/4 flex flex-col p-3 rounded-xl bg-emphasis">
-                                <div class="leading-6 font-medium text-color p-2">{{ data.title }}</div>
-                                <div class="overflow-y-auto flex-1 bg-surface-0 dark:bg-surface-900 mt-2 p-4 flex flex-col gap-3 rounded-lg">
-                                    <div *ngFor="let pref of data.prefs" class="flex items-center gap-2">
-                                        <i class="text-lg text-color" [class]="pref.icon"></i>
-                                        <div class="font-medium text-color flex-1">{{ pref.title }}</div>
-                                        <p-toggleswitch [(ngModel)]="pref.checked" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div *ngIf="selectedSidebarOption === 'Opportunities'" class="grid grid-cols-2 gap-6 p-6">
-                            <div *ngFor="let data of opportunities" class="flex flex-col p-3 rounded-xl bg-emphasis">
-                                <div class="flex items-start justify-between gap-2">
-                                    <div class="font-medium text-color mt-0.5">{{ data.title }}</div>
-                                    <p-tag [value]="data.stage" [severity]="data.severity" />
-                                </div>
-                                <div class="w-full rounded-lg mt-2 p-4 bg-surface-0 dark:bg-surface-900 flex items-baseline gap-2">
-                                    <span class="text-2xl font-semibold text-color">{{ data.value }}</span>
-                                    <span class="text-xs text-muted-color">{{ data.owner }}</span>
-                                </div>
-                                <div class="flex-1 mt-2 p-2 rounded-lg bg-surface-0 dark:bg-surface-900 text-xs text-color">
-                                    {{ data.text }}
-                                </div>
-                            </div>
-                        </div>
-                        <div *ngIf="selectedSidebarOption === 'Statistics'" class="h-[calc(100%-160px)] p-6">
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="w-full h-full flex flex-col p-3 rounded-xl bg-emphasis">
-                                    <div class="flex items-center justify-between gap-2">
-                                        <div class="font-medium text-color p-2">Customer Satisfaction Score</div>
-                                    </div>
-                                    <div class="flex-1 py-4 mt-2 flex items-center justify-center rounded-lg bg-surface-0 dark:bg-surface-900 shadow-sm">
-                                        <p-knob [(ngModel)]="customerSatisfaction" [size]="150" [strokeWidth]="8" valueTemplate="{value}%" styleClass="pointer-events-none" />
-                                    </div>
-                                </div>
-                                <div class="w-full h-full flex flex-col p-3 rounded-xl bg-emphasis">
-                                    <div class="flex items-center justify-between gap-2">
-                                        <div class="font-medium text-color p-2">Estimated Lifetime Value</div>
-                                    </div>
-                                    <div class="flex-1 flex items-center gap-2 justify-center mt-2 p-2 rounded-lg bg-surface-0 dark:bg-surface-900 shadow-sm">
-                                        <div class="font-semibold text-lg leading-none text-color border border-surface py-3.5 px-2 rounded-lg">$</div>
-                                        <div class="font-semibold text-lg leading-none text-color border border-surface py-3.5 px-2 rounded-lg">272</div>
-                                        <div class="font-semibold text-lg leading-none text-color border border-surface py-3.5 px-2 rounded-lg">123</div>
-                                        <div class="font-semibold text-lg leading-none text-color border border-surface py-3.5 px-2 rounded-lg">000</div>
-                                    </div>
-                                </div>
-                                <div class="w-full h-full flex flex-col p-3 rounded-xl bg-emphasis">
-                                    <div class="flex items-center justify-between gap-2">
-                                        <div class="font-medium text-color p-2">Product Usage</div>
-                                    </div>
-                                    <div class="flex-1 mt-2 py-4 rounded-lg bg-surface-0 dark:bg-surface-900 shadow-sm">
-                                        <p-chart type="line" [data]="lineChartData" [options]="lineChartOptions" styleClass="min-h-44 w-full" width="100%" height="11rem" />
-                                    </div>
-                                </div>
-                                <div class="w-full h-full flex flex-col p-3 rounded-xl bg-emphasis">
-                                    <div class="font-medium text-color p-2">Churn Risk</div>
-                                    <div class="flex-1 py-4 mt-2 flex items-center justify-center rounded-lg bg-surface-0 dark:bg-surface-900 shadow-sm">
-                                        <p-knob [(ngModel)]="churnRisk" [size]="150" [strokeWidth]="8" valueTemplate="{value}%" class="pointer-events-none" />
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mt-4 w-full flex flex-col p-3 rounded-xl bg-emphasis">
-                                <div class="font-medium text-color p-2">Total Purchases</div>
-                                <div class="flex-1 py-4 px-2 w-full mt-2 flex items-center justify-center rounded-lg bg-surface-0 dark:bg-surface-900 shadow-sm">
-                                    <p-chart type="bar" [data]="chartData2" [options]="chartOptions2" height="15rem" class="w-full" />
-                                </div>
+
+                        <!--
+                            One height for all six samples, sized so the Overview fits with
+                            the same margin top and bottom; the taller apps scroll inside the
+                            window instead of stretching the page. Padding lives here too, so
+                            every app sits off the frame edge by the same amount.
+                        -->
+                        <div class="flex h-[32rem] overflow-auto p-4 sm:p-6 lg:h-[38rem]">
+                            <!--
+                                The samples are application layouts: side rails, three-column
+                                grids, wide tables. Below a laptop they keep their proportions
+                                and the window pans instead, which reads as a desktop app on a
+                                phone rather than a broken one.
+                            -->
+                            <div class="flex min-w-[52rem] flex-1">
+                                <ng-container [ngTemplateOutlet]="sample" />
                             </div>
                         </div>
                     </div>
-                </ng-template>
+                </div>
+            </div>
+
+            <!-- Settings for the sample above -->
+            <p-drawer [visible]="settingsVisible()" (visibleChange)="settingsVisible.set($event)" position="right" styleClass="max-w-xl w-full!" appendTo="body" header="Sample settings">
+                <p class="text-sm text-muted-color">Every sample is a live composition of Optimus UI components.</p>
+
+                <div class="mt-6 flex flex-col gap-3">
+                    @for (tab of tabs; track tab.key) {
+                        <div class="flex items-center gap-2">
+                            <p-radiobutton [inputId]="'sample-' + tab.key" name="sample" [value]="tab.key" [ngModel]="active()" (ngModelChange)="active.set($event)" />
+                            <label [for]="'sample-' + tab.key" class="text-sm">{{ tab.label }}</label>
+                        </div>
+                    }
+                </div>
             </p-drawer>
         </section>
+
+        <ng-template #sample>
+            @switch (active()) {
+                @case ('overview') {
+                    <overview-app />
+                }
+                @case ('chat') {
+                    <chat-app />
+                }
+                @case ('inbox') {
+                    <inbox-app />
+                }
+                @case ('cards') {
+                    <cards-app />
+                }
+                @case ('customers') {
+                    <customers-app />
+                }
+                @case ('movies') {
+                    <movies-app />
+                }
+            }
+        </ng-template>
     `
 })
-export class HeroSectionComponent implements OnInit, OnDestroy {
-    readonly installCommand = 'ng add @openng/optimus-ui';
-
-    commandCopied: boolean = false;
-
-    selectedSampleOption;
-
-    sampleOptions;
-
-    sampleAppsSidebarNavs;
-
-    sampleAppsSidebarNavsMore;
-
-    selectedSampleAppsSidebarNav;
-
-    isSlimMenu: boolean = true;
-
-    value1: number = 24;
-
-    radioValue: string = 'S';
-
-    dateValue: Date;
-
-    switchValue: boolean = true;
-
-    dashboardSidebarVisible: boolean = false;
-
-    chartData: any;
-
-    chartOptions: any;
-
-    selectButtonValue: SelectItem;
-
-    selectButtonOptions: SelectItem[];
-
-    user: any = null;
-
-    users: any[];
-
-    items: MenuItem[];
-
-    rangeValues = [20, 80];
-
-    subscription!: Subscription;
-
-    selectedSidebarOption: string = 'Statistics';
-
-    sidebarOptions: string[] = ['Interaction Logs', 'Preferences', 'Statistics', 'Opportunities'];
-
-    churnRisk: number = 24;
-
-    lineChartData: any = {};
-
-    lineChartOptions: any = {};
-
-    customerSatisfaction: number = 56;
-
-    chartData2: any = {};
-
-    chartOptions2: any = {};
-
-    preferences: any;
-
-    opportunities: any;
-
-    callLogs: any;
-
-    emailRecords: any;
-
-    get isDarkMode(): boolean {
-        return this.configService.appState().darkTheme;
-    }
-
-    constructor(
-        private configService: AppConfigService,
-        @Inject(PLATFORM_ID) private platformId: any,
-        private cd: ChangeDetectorRef
-    ) {}
-
-    ngOnInit() {
-        this.sampleOptions = [
-            {
-                icon: 'pi pi-home',
-                title: 'Overview',
-                src: '/demo/landing/apps/sampleshots/overview'
-            },
-            {
-                icon: 'pi pi-comment',
-                title: 'Chat',
-                src: '/demo/landing/apps/sampleshots/chat'
-            },
-            {
-                icon: 'pi pi-inbox',
-                title: 'Inbox',
-                src: '/demo/landing/apps/sampleshots/mail'
-            },
-            {
-                icon: 'pi pi-th-large',
-                title: 'Cards',
-                src: '/demo/landing/apps/sampleshots/cards'
-            },
-            {
-                icon: 'pi pi-user',
-                title: 'Customers',
-                src: '/demo/landing/apps/sampleshots/customers'
-            },
-            {
-                icon: 'pi pi-video',
-                title: 'Movies',
-                src: '/demo/landing/apps/sampleshots/movies'
-            }
-        ];
-        this.selectedSampleOption = this.sampleOptions[0];
-
-        this.sampleAppsSidebarNavs = [
-            { icon: 'pi pi-home', title: 'Overview' },
-            { icon: 'pi pi-comment', title: 'Chat' },
-            { icon: 'pi pi-inbox', title: 'Inbox' },
-            { icon: 'pi pi-th-large', title: 'Cards' },
-            { icon: 'pi pi-user', title: 'Customers' },
-            { icon: 'pi pi-video', title: 'Movies' }
-        ];
-        this.sampleAppsSidebarNavsMore = [{ icon: 'pi pi-cog', title: 'Settings' }];
-
-        this.selectedSampleAppsSidebarNav = 'Overview';
-        this.selectButtonValue = { label: 'Styled', value: 1 };
-
-        this.selectButtonOptions = [
-            { label: 'Styled', value: 1 },
-            { label: 'Unstyled', value: 2 }
-        ];
-
-        this.items = [
-            { label: 'Home', icon: 'pi pi-fw pi-home' },
-            { label: 'Calendar', icon: 'pi pi-fw pi-calendar' }
-        ];
-
-        this.users = [
-            { name: 'Amy Elsner', image: 'amyelsner.png' },
-            { name: 'Bernardo Dominic', image: 'bernardodominic.png' },
-            { name: 'Onyama Limba', image: 'onyamalimba.png' }
-        ];
-
-        this.preferences = [
-            {
-                title: 'Email',
-                prefs: [
-                    { icon: 'pi pi-bell', title: 'Notification', checked: true },
-                    { icon: 'pi pi-inbox', title: 'Newsletter', checked: false },
-                    { icon: 'pi pi-sync', title: 'Product Updates', checked: false }
-                ]
-            },
-            {
-                title: 'Telephone',
-                prefs: [
-                    { icon: 'pi pi-mobile', title: 'Phone Call', checked: true },
-                    { icon: 'pi pi-volume-down', title: 'Voicemail', checked: false },
-                    { icon: 'pi pi-comments', title: 'SMS text', checked: false }
-                ]
-            },
-            {
-                title: 'Social Media',
-                prefs: [
-                    { icon: 'pi pi-clock', title: 'Automated Post', checked: true },
-                    { icon: 'pi pi-user', title: 'Direct Message', checked: false }
-                ]
-            },
-            {
-                title: 'Data Privacy',
-                prefs: [
-                    { icon: 'pi pi-box', title: 'Share Data with 3rd Parties', checked: true },
-                    { icon: 'pi pi-file', title: 'Cookies', checked: false }
-                ]
-            }
-        ];
-
-        this.opportunities = [
-            {
-                title: 'Northwind Retail',
-                stage: 'Proposal',
-                severity: 'info',
-                value: '$48,200',
-                owner: 'Amy Elsner',
-                text: 'Migrating three storefronts onto a shared design system. Waiting on security review.'
-            },
-            {
-                title: 'Atlas Manufacturing',
-                stage: 'Negotiation',
-                severity: 'warn',
-                value: '$126,000',
-                owner: 'Onyama Limba',
-                text: 'Multi-year platform contract. Legal has the redlines, close expected next quarter.'
-            },
-            {
-                title: 'Cedar Health',
-                stage: 'Won',
-                severity: 'success',
-                value: '$71,500',
-                owner: 'Ioni Bowcher',
-                text: 'Accessibility audit passed on the first pass. Rollout starts with the patient portal.'
-            },
-            {
-                title: 'Blue Harbor Logistics',
-                stage: 'Discovery',
-                severity: 'secondary',
-                value: '$19,800',
-                owner: 'Asiya Javayant',
-                text: 'Evaluating a replacement for an in-house component library built in 2017.'
-            },
-            {
-                title: 'Meridian Bank',
-                stage: 'Proposal',
-                severity: 'info',
-                value: '$204,000',
-                owner: 'Xuxue Feng',
-                text: 'Regulated environment, needs an on-premise build pipeline and long-term support.'
-            },
-            {
-                title: 'Fairlane Studios',
-                stage: 'Lost',
-                severity: 'danger',
-                value: '$12,400',
-                owner: 'Stephen Shaw',
-                text: 'Went with an internal solution. Worth revisiting when their team grows.'
-            }
-        ];
-
-        this.callLogs = [
-            {
-                image: '/demo/landing/apps/avatar6.png',
-                name: 'Brook Simmons',
-                time: '02.02.2024 | 45 min'
-            },
-            {
-                image: '/demo/landing/apps/avatar12.jpg',
-                name: 'Jacob Jones',
-                time: '02.02.2024 | 45 min'
-            },
-            {
-                image: '/demo/landing/apps/avatar13.jpg',
-                name: 'Annette Black',
-                time: '02.03.2024 | 13 min'
-            },
-            {
-                image: '/demo/landing/apps/avatar9.jpg',
-                name: 'Arlene McCoy',
-                time: '02.03.2024 | 14 min'
-            },
-            {
-                image: '/demo/landing/apps/avatar10.jpg',
-                name: 'Arlene Simmons',
-                time: '02.03.2024 | 14 min'
-            },
-            {
-                image: '/demo/landing/apps/avatar11.jpg',
-                name: 'Michael Brown',
-                time: '02.04.2024 | 20 min'
-            }
-        ];
-
-        this.emailRecords = [
-            {
-                image: '/demo/landing/apps/avatar2.png',
-                name: 'Brook Simmons',
-                time: '3:24 PM',
-                title: 'Unleash Business Potential',
-                text: 'Automate, analyze, and accelerate with our SaaS platform. Unshackle from mundane tasks and focus on scaling your business. Contact us for a demo today!'
-            },
-            {
-                image: '/demo/landing/apps/avatar7.png',
-                name: 'Jacob Jones',
-                time: '12.23.2023',
-                title: 'Optimized Workflow Revolution  ',
-                text: "Experience a workflow revolution with our intuitive SaaS tool. With enhanced features and optimized processes, it's efficiency like never before. Let's get in touch for a brief demo!"
-            },
-            {
-                image: '/demo/landing/apps/avatar8.png',
-                name: 'Annette Black',
-                time: '12.17.2023',
-                title: 'Innovation at Fingertips',
-                text: 'With our SaaS solution, innovation is only a click away. Shape your future with pioneering features and minimalist design. Join us for your solution walk-through today!'
-            },
-            {
-                image: '/demo/landing/apps/avatar11.jpg',
-                name: 'Arlene McCoy',
-                time: '06.17.2023',
-                title: 'Seamless Integration',
-                text: 'Integrate effortlessly with our user-friendly SaaS tools. Streamline your operations and boost productivity. Discover more in our demo session.'
-            },
-            {
-                image: '/demo/landing/apps/avatar13.jpg',
-                name: 'Arlene Simmons',
-                time: '04.17.2023',
-                title: 'Transform Your Business',
-                text: 'Empower your team with our innovative SaaS solutions. Achieve unparalleled efficiency and drive growth. Book a demo to explore the possibilities.'
-            },
-            {
-                image: '/demo/landing/apps/avatar2.png',
-                name: 'Michael Brown',
-                time: '01.05.2024',
-                title: 'Next-Gen Collaboration',
-                text: 'Experience the future of collaboration with our cutting-edge SaaS platform. Enhance teamwork and streamline communication. Contact us for a demo today!'
-            }
-        ];
-
-        if (isPlatformBrowser(this.platformId)) {
-            this.chartData2 = this.setChartData();
-            this.chartOptions2 = this.setChartOptions();
-            this.lineChartData = this.setLineChartData();
-            this.lineChartOptions = this.setLineChartOptions();
-        }
-    }
-
-    setChartData() {
-        const documentStyle = getComputedStyle(document.documentElement);
-        const borderColor = documentStyle.getPropertyValue('--p-content-border-color');
-        const hoverBackgroundColor = documentStyle.getPropertyValue('--p-primary-color');
-
-        return {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-            datasets: [
-                {
-                    type: 'bar',
-                    label: 'Investment Wallet',
-                    backgroundColor: borderColor,
-                    data: [100, 201, 404, 300, 140, 220, 314, 520, 145, 234, 325, 147],
-                    borderRadius: {
-                        topLeft: 4,
-                        topRight: 4
-                    },
-                    borderSkipped: true,
-                    barThickness: 20,
-                    hoverBackgroundColor: hoverBackgroundColor,
-                    hoverTransition: '1s ease all'
-                }
-            ]
-        };
-    }
-
-    setChartOptions() {
-        const documentStyle = getComputedStyle(document.documentElement);
-        const backgroundColor = documentStyle.getPropertyValue('--p-content-background');
-        const textColor = documentStyle.getPropertyValue('--p-text-color');
-        const borderColor = documentStyle.getPropertyValue('--p-content-border-color');
-        const textMutedColor = documentStyle.getPropertyValue('--p-text-muted-color');
-
-        const getOrCreateTooltip = (chart) => {
-            let tooltipEl = chart.canvas.parentNode.querySelector('div.chartjs-tooltip');
-
-            if (!tooltipEl) {
-                tooltipEl = document.createElement('div');
-                tooltipEl.classList.add('chartjs-tooltip');
-                tooltipEl.style.backgroundColor = backgroundColor;
-                tooltipEl.style.boxShadow =
-                    ' 0px 33.12px 9.399px 0px rgba(0, 0, 0, 0.00), 0px 21.036px 8.504px 0px rgba(0, 0, 0, 0.01), 0px 12.084px 7.161px 0px rgba(0, 0, 0, 0.05), 0px 5.371px 5.371px 0px rgba(0, 0, 0, 0.09), 0px 1.343px 2.685px 0px rgba(0, 0, 0, 0.10)';
-                tooltipEl.style.borderRadius = '7px';
-                tooltipEl.style.color = textColor;
-                tooltipEl.style.opacity = 1;
-                tooltipEl.style.padding = '14.5px';
-                tooltipEl.style.pointerEvents = 'none';
-                tooltipEl.style.position = 'absolute';
-                tooltipEl.style.transform = 'translate(-50%, 0)';
-                tooltipEl.style.transition = 'all .2s ease';
-                chart.canvas.parentNode.appendChild(tooltipEl);
-            }
-
-            return tooltipEl;
-        };
-
-        return {
-            maintainAspectRatio: false,
-            aspectRatio: 0.8,
-            plugins: {
-                chartAreaBorder: {
-                    borderColor: 'red',
-                    borderWidth: 2,
-                    borderDash: [5, 5],
-                    borderDashOffset: 2
-                },
-                tooltip: {
-                    enabled: false,
-                    padding: 5,
-                    position: 'nearest',
-                    external: function (context) {
-                        // Tooltip Element
-                        const { chart, tooltip } = context;
-                        const tooltipEl = getOrCreateTooltip(chart);
-
-                        // Hide if no tooltip
-                        if (tooltip.opacity === 0) {
-                            tooltipEl.style.opacity = 0;
-
-                            return;
-                        }
-
-                        if (tooltip.body) {
-                            const bodyLines = tooltip.body.map((b) => {
-                                const strArr = b.lines[0].split(':');
-                                const data = {
-                                    text: strArr[0].trim(),
-                                    value: strArr[1].trim()
-                                };
-
-                                return data;
-                            });
-
-                            // Clear old content
-                            tooltipEl.innerHTML = '';
-                            bodyLines.forEach((body, i) => {
-                                const text = document.createElement('div');
-
-                                text.appendChild(document.createTextNode('$' + body.value + 'K'));
-                                text.style.fontWeight = '500';
-                                text.style.lineHeight = '21px';
-                                text.style.fontSize = '14px';
-                                tooltipEl.appendChild(text);
-                            });
-                        }
-
-                        const { offsetLeft: positionX, offsetTop: positionY } = chart.canvas;
-
-                        // Display, position, and set styles for font
-                        tooltipEl.style.opacity = 1;
-                        tooltipEl.style.left = positionX + tooltip.caretX + 'px';
-                        tooltipEl.style.top = positionY + tooltip.caretY + 'px';
-                        tooltipEl.style.font = tooltip.options.bodyFont.string;
-                        tooltipEl.style.padding = tooltip.options.padding + 'px ' + tooltip.options.padding + 'px';
-                    }
-                },
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                x: {
-                    stacked: true,
-                    ticks: {
-                        color: textMutedColor
-                    },
-                    grid: {
-                        color: 'transparent',
-                        borderColor: 'transparent'
-                    }
-                },
-                y: {
-                    border: {
-                        display: false
-                    },
-                    stacked: true,
-                    ticks: {
-                        color: textMutedColor
-                    },
-                    grid: {
-                        color: borderColor,
-                        borderColor: 'transparent'
-                    }
-                }
-            }
-        };
-    }
-
-    setLineChartData() {
-        const { darkTheme } = this.configService.appState();
-
-        return {
-            labels: ['31', '1', '2', '3', '4', '5', '6', '7', '8'],
-            datasets: [
-                {
-                    label: 'My First Dataset',
-                    data: [60, 64, 57, 52, 58, 70, 75, 70, 60],
-                    fill: true,
-                    borderColor: '#16A34A',
-                    tension: 0.4,
-                    borderWidth: 1.5,
-                    pointBackgroundColor: '#16A34A',
-                    pointBorderColor: darkTheme ? '#09090B' : '#FFF',
-                    pointBorderWidth: 3,
-
-                    hideInLegendAndTooltip: false,
-                    pointStyle: function (context) {
-                        let index = context.dataIndex;
-
-                        if (index == 6) {
-                            return 'circle';
-                        } else {
-                            return 'line';
-                        }
-                    },
-                    pointRadius: function (context) {
-                        let index = context.dataIndex;
-
-                        if (index == 6) {
-                            return 6;
-                        } else {
-                            return 0.1;
-                        }
-                    },
-                    backgroundColor: (context) => {
-                        const bgColor = ['rgba(22,163,74,0.16)', 'rgba(22,163,74,0)'];
-
-                        if (!context.chart.chartArea) {
-                            return;
-                        }
-
-                        const {
-                            ctx,
-                            data,
-                            chartArea: { top, bottom }
-                        } = context.chart;
-                        const gradientBg = ctx.createLinearGradient(0, top, 0, bottom);
-                        const colorTranches = 1 / (bgColor.length - 1);
-
-                        for (let i = 0; i < bgColor.length; i++) {
-                            gradientBg.addColorStop(0 + i * colorTranches, bgColor[i]);
-                        }
-
-                        return gradientBg;
-                    }
-                }
-            ],
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top'
-                    },
-                    title: {
-                        display: true,
-                        text: 'Chart.js Line Chart'
-                    }
-                }
-            }
-        };
-    }
-
-    setLineChartOptions() {
-        const documentStyle = getComputedStyle(document.documentElement);
-        const backgroundColor = documentStyle.getPropertyValue('--p-content-background');
-        const textColor = documentStyle.getPropertyValue('--p-text-color');
-        const borderColor = documentStyle.getPropertyValue('--p-content-border-color');
-        const textMutedColor = documentStyle.getPropertyValue('--p-text-muted-color');
-
-        const getOrCreateTooltip = (chart) => {
-            let tooltipEl = chart.canvas.parentNode.querySelector('div.chartjs-tooltip');
-
-            if (!tooltipEl) {
-                tooltipEl = document.createElement('div');
-                tooltipEl.classList.add('chartjs-tooltip');
-                tooltipEl.style.backgroundColor = backgroundColor;
-                tooltipEl.style.boxShadow =
-                    ' 0px 33.12px 9.399px 0px rgba(0, 0, 0, 0.00), 0px 21.036px 8.504px 0px rgba(0, 0, 0, 0.01), 0px 12.084px 7.161px 0px rgba(0, 0, 0, 0.05), 0px 5.371px 5.371px 0px rgba(0, 0, 0, 0.09), 0px 1.343px 2.685px 0px rgba(0, 0, 0, 0.10)';
-                tooltipEl.style.borderRadius = '7px';
-                tooltipEl.style.color = textColor;
-                tooltipEl.style.opacity = 1;
-                tooltipEl.style.padding = '2px';
-                tooltipEl.style.pointerEvents = 'none';
-                tooltipEl.style.position = 'absolute';
-                tooltipEl.style.transform = 'translate(-50%, 0)';
-                tooltipEl.style.transition = 'all .2s ease';
-                chart.canvas.parentNode.appendChild(tooltipEl);
-            }
-
-            return tooltipEl;
-        };
-
-        return {
-            maintainAspectRatio: false,
-            aspectRatio: 0.8,
-            plugins: {
-                chartAreaBorder: {
-                    borderColor: 'red',
-                    borderWidth: 2,
-                    borderDash: [5, 5],
-                    borderDashOffset: 2
-                },
-                tooltip: {
-                    enabled: false,
-                    padding: 8,
-                    position: 'nearest',
-                    external: function (context) {
-                        // Tooltip Element
-                        const { chart, tooltip } = context;
-                        const tooltipEl = getOrCreateTooltip(chart);
-
-                        // Hide if no tooltip
-                        if (tooltip.opacity === 0) {
-                            tooltipEl.style.opacity = 0;
-
-                            return;
-                        }
-
-                        if (tooltip.body) {
-                            const bodyLines = tooltip.body.map((b) => {
-                                const strArr = b.lines[0].split(':');
-                                const data = {
-                                    text: strArr[0].trim(),
-                                    value: strArr[1].trim()
-                                };
-
-                                return data;
-                            });
-
-                            // Clear old content
-                            tooltipEl.innerHTML = '';
-                            bodyLines.forEach((body, i) => {
-                                const text = document.createElement('div');
-
-                                text.appendChild(document.createTextNode(body.value + '.000'));
-                                text.style.fontWeight = '500';
-                                text.style.lineHeight = '21px';
-                                text.style.fontSize = '14px';
-                                tooltipEl.appendChild(text);
-                            });
-                        }
-
-                        const { offsetLeft: positionX, offsetTop: positionY } = chart.canvas;
-
-                        // Display, position, and set styles for font
-                        tooltipEl.style.opacity = 1;
-                        tooltipEl.style.left = positionX + tooltip.caretX + 'px';
-                        tooltipEl.style.top = positionY + tooltip.caretY - 40 + 'px';
-                        tooltipEl.style.font = tooltip.options.bodyFont.string;
-                        tooltipEl.style.padding = tooltip.options.padding + 'px ' + tooltip.options.padding + 'px';
-                    }
-                },
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                x: {
-                    stacked: true,
-                    ticks: {
-                        color: textMutedColor
-                    },
-                    grid: {
-                        color: 'transparent',
-                        borderColor: 'transparent'
-                    }
-                },
-                y: {
-                    display: false,
-                    grace: 14
-                }
-            }
-        };
-    }
-
-    setSelectedSampleAppsSidebarNav(title) {
-        this.selectedSampleAppsSidebarNav = title;
-    }
-
-    copyInstallCommand(): void {
-        if (!isPlatformBrowser(this.platformId) || !navigator?.clipboard?.writeText) {
-            return;
-        }
-
-        navigator.clipboard
-            .writeText(this.installCommand)
-            .then(() => {
-                this.commandCopied = true;
-                setTimeout(() => (this.commandCopied = false), 2000);
-            })
-            .catch(() => {
-                // Clipboard may be blocked (permissions/insecure context). Ignore to avoid unhandled rejections.
-            });
-    }
-
-    ngOnDestroy(): void {
-        if (this.subscription) {
-            this.subscription.unsubscribe();
-            this.subscription = null;
-        }
-    }
+export class HeroSectionComponent {
+    readonly container = CONTAINER;
+
+    tabs: SampleTab[] = [
+        { key: 'overview', label: 'Overview', icon: 'pi pi-chart-bar' },
+        { key: 'chat', label: 'Chat', icon: 'pi pi-comments' },
+        { key: 'inbox', label: 'Inbox', icon: 'pi pi-inbox' },
+        { key: 'cards', label: 'Cards', icon: 'pi pi-credit-card' },
+        { key: 'customers', label: 'Customers', icon: 'pi pi-users' },
+        { key: 'movies', label: 'Movies', icon: 'pi pi-video' }
+    ];
+
+    active = signal<SampleTab['key']>('overview');
+
+    settingsVisible = signal(false);
+
+    activeLabel = () => this.tabs.find((tab) => tab.key === this.active())?.label ?? '';
 }

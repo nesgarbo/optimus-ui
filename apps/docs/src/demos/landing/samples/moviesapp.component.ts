@@ -1,9 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { SelectButton } from '@openng/optimus-ui/selectbutton';
-import { Slider } from '@openng/optimus-ui/slider';
 import { AvatarModule } from '@openng/optimus-ui/avatar';
 import { TooltipModule } from '@openng/optimus-ui/tooltip';
 import { IconField } from '@openng/optimus-ui/iconfield';
@@ -112,7 +111,7 @@ import { OverlayBadgeModule } from '@openng/optimus-ui/overlaybadge';
         class: 'flex-1 flex flex-col gap-6 p-6 h-full overflow-y-auto overflow-x-clip overflow-hidden border border-surface rounded-2xl'
     }
 })
-export class MoviesApp {
+export class MoviesApp implements OnInit {
     search: string | undefined;
 
     page: number = 0;

@@ -1,563 +1,176 @@
-import { AppConfigService } from '@/service/appconfigservice';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, inject, PLATFORM_ID } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
-import { MenuItem } from '@openng/optimus-ui/api';
-import { AvatarModule } from '@openng/optimus-ui/avatar';
-import { ButtonModule } from '@openng/optimus-ui/button';
+import { CommonModule } from '@angular/common';
+import { afterNextRender, ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { ChartModule } from '@openng/optimus-ui/chart';
-import { DatePickerModule } from '@openng/optimus-ui/datepicker';
-import { IconFieldModule } from '@openng/optimus-ui/iconfield';
-import { InputIconModule } from '@openng/optimus-ui/inputicon';
-import { InputTextModule } from '@openng/optimus-ui/inputtext';
-import { MenuModule } from '@openng/optimus-ui/menu';
 import { MeterGroupModule } from '@openng/optimus-ui/metergroup';
-import { OverlayBadgeModule } from '@openng/optimus-ui/overlaybadge';
-import { SelectButtonModule } from '@openng/optimus-ui/selectbutton';
 import { TableModule } from '@openng/optimus-ui/table';
 import { TagModule } from '@openng/optimus-ui/tag';
-import { TooltipModule } from '@openng/optimus-ui/tooltip';
 
+interface Kpi {
+    label: string;
+    value: string;
+    delta: number;
+    hint: string;
+}
+
+interface Order {
+    id: string;
+    account: string;
+    instrument: string;
+    status: 'Filled' | 'Working' | 'Rejected';
+    amount: string;
+}
+
+/**
+ * The dashboard shown on the home page. Everything here is a live Optimus UI component
+ * rendered in the browser — table, paginator, chart and meter group — so what a visitor
+ * scrolls past is the library running, not a picture of it.
+ */
 @Component({
     selector: 'overview-app',
     standalone: true,
-    imports: [
-        CommonModule,
-        RouterModule,
-        ChartModule,
-        SelectButtonModule,
-        FormsModule,
-        AvatarModule,
-        TooltipModule,
-        IconFieldModule,
-        InputIconModule,
-        ButtonModule,
-        TableModule,
-        MeterGroupModule,
-        InputTextModule,
-        MenuModule,
-        TagModule,
-        MeterGroupModule,
-        OverlayBadgeModule,
-        DatePickerModule
-    ],
+    imports: [CommonModule, TableModule, TagModule, ChartModule, MeterGroupModule],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    // The frame is a flex row, so the sample has to claim the space like the others do.
+    host: {
+        class: 'flex-1 min-w-0'
+    },
     template: `
-        <div class="flex-1 h-full overflow-y-auto pb-0.5">
-            <div class="flex flex-wrap gap-4 items-start justify-between p-1">
-                <div class="flex-1">
-                    <div class="text-muted-color font-medium leading-normal">Overview</div>
-                    <div class="text-color text-3xl font-semibold leading-normal">Welcome to Optimus UI</div>
+        <div class="flex h-full w-full flex-col gap-4">
+            <div class="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                    <p class="text-xs text-muted-color">Overview</p>
+                    <h3 class="mt-1 text-lg font-semibold text-surface-900 dark:text-surface-0">Treasury</h3>
                 </div>
-                <div class="flex gap-2 whitespace-nowrap flex-nowrap">
-                    <p-iconfield iconPosition="left">
-                        <p-inputicon class="pi pi-search"></p-inputicon>
-                        <input type="text" pInputText placeholder="Search" />
-                    </p-iconfield>
-                    <p-button severity="secondary" outlined>
-                        <p-overlayBadge severity="danger" styleClass="!min-w-0 !w-2.5 !h-2.5">
-                            <i class="pi pi-bell"></i>
-                        </p-overlayBadge>
-                    </p-button>
-                </div>
+                <p-tag value="Live" severity="success" />
             </div>
-            <div class="mt-4 flex flex-wrap gap-6 items-center justify-between p-1">
-                <p-selectbutton [(ngModel)]="selectedTime" [options]="timeOptions" aria-labelledby="basic" [allowEmpty]="false" (onChange)="changeSelect()" />
-                <div class="flex items-center gap-2">
-                    <p-button label="Download" icon="pi pi-download" iconPos="right" />
-                    <p-datepicker [(ngModel)]="dates" appendTo="body" dateFormat="dd.mm.yy" selectionMode="range" showIcon iconDisplay="input" placeholder="06/11/2024 - 06/22/2024" />
-                </div>
+
+            <!-- KPI row -->
+            <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                @for (kpi of kpis; track kpi.label) {
+                    <div class="rounded-lg border border-surface p-3">
+                        <p class="truncate text-xs text-muted-color">{{ kpi.label }}</p>
+                        <p class="mt-1 text-xl font-semibold text-surface-900 tabular-nums dark:text-surface-0">{{ kpi.value }}</p>
+                        <p class="mt-1 flex items-center gap-1 text-xs" [class.text-green-600]="kpi.delta >= 0" [class.text-red-600]="kpi.delta < 0">
+                            <i class="pi text-[10px]" [ngClass]="kpi.delta >= 0 ? 'pi-arrow-up-right' : 'pi-arrow-down-right'" aria-hidden="true"></i>
+                            <span class="tabular-nums">{{ kpi.delta >= 0 ? '+' : '' }}{{ kpi.delta }}%</span>
+                            <span class="text-muted-color">{{ kpi.hint }}</span>
+                        </p>
+                    </div>
+                }
             </div>
-            <div class="flex flex-col gap-6 mt-6">
-                <div class="w-full border border-surface rounded-2xl py-5 px-7 flex flex-col justify-between">
-                    <div class="flex items-center gap-6 mb-6">
-                        <div class="flex-1 text-color font-semibold leading-6">Crypto Analytics</div>
-                        <div class="flex items-center gap-5">
-                            <div *ngFor="let item of chartData?.datasets" class="flex items-center gap-2">
-                                <div class="w-3 h-3 rounded-full" [style.backgroundColor]="item.backgroundColor"></div>
-                                <span class="font-medium text-color leading-6">{{ item.label }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <p-chart type="bar" [data]="chartData" [options]="chartOptions" [height]="'20rem'" />
+
+            <div class="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+                <!-- Orders -->
+                <div class="min-w-0 overflow-x-auto rounded-lg border border-surface">
+                    <p-table [value]="orders" [paginator]="true" [rows]="4" [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" styleClass="text-sm" [tableStyle]="{ 'min-width': '28rem' }">
+                        <ng-template #header>
+                            <tr>
+                                <th>Account</th>
+                                <th>Instrument</th>
+                                <th>Status</th>
+                                <th class="text-end">Amount</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template #body let-row>
+                            <tr>
+                                <td class="font-medium">{{ row.account }}</td>
+                                <td class="text-muted-color">{{ row.instrument }}</td>
+                                <td><p-tag [value]="row.status" [severity]="severityOf(row.status)" /></td>
+                                <td class="text-end tabular-nums">{{ row.amount }}</td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
                 </div>
-                <div class="flex gap-6 xl:flex-row flex-col">
-                    <div class="flex-1 border border-surface rounded-2xl py-5 px-7">
-                        <div class="flex items-center gap-6 mb-4">
-                            <div class="flex-1 text-color font-semibold leading-6">Transactions</div>
-                            <p-button type="button" icon="pi pi-ellipsis-h" severity="secondary" text (click)="menu.toggle($event)" aria-haspopup="true" aria-controls="overlay_menu" />
-                            <p-menu #menu id="overlay_menu" [model]="menuItems" [popup]="true" />
-                        </div>
-                        <p-table
-                            datakey="id"
-                            [value]="sampleAppsTableDatas"
-                            [paginator]="true"
-                            paginatorTemplate="PrevPageLink PageLinks NextPageLink  CurrentPageReport RowsPerPageDropdown"
-                            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
-                            [showCurrentPageReport]="true"
-                            [rows]="5"
-                            [tableStyle]="{ 'min-width': '50rem' }"
-                            [showFirstLastIcon]="false"
-                            [dt]="tableTokens"
-                            paginatorStyleClass="!bg-transparent"
-                        >
-                            <ng-template #header>
-                                <tr>
-                                    <th class="w-1/12">Id</th>
-                                    <th class="w-1/4">Name</th>
-                                    <th class="w-1/6">Coin</th>
-                                    <th class="w-1/6">Date</th>
-                                    <th class="w-1/6">Process</th>
-                                    <th class="w-1/6">Amount</th>
-                                </tr>
-                            </ng-template>
-                            <ng-template #body let-item>
-                                <tr>
-                                    <td class="w-1/12">
-                                        <div class="text-muted-color">{{ item.id }}</div>
-                                    </td>
-                                    <td class="w-1/4">
-                                        <div class="flex items-center">
-                                            <p-avatar [label]="item.name.label" class="mr-2 text-xs font-medium" [style]="{ 'background-color': '#ece9fc', color: '#2a1261' }" shape="circle" />
-                                            <div class="leading-6 text-muted-color flex-1">{{ item.name.text }}</div>
-                                        </div>
-                                    </td>
-                                    <td class="w-1/6">
-                                        <div class="flex items-center">
-                                            <i
-                                                class="pi"
-                                                [ngClass]="{
-                                                    'pi-bitcoin text-yellow-500 !text-3xl': item.coin !== 'btc',
-                                                    'pi-ethereum bg-surface-950 text-surface-0 dark:bg-surface-0 dark:text-surface-950 w-7 h-7 rounded-full !flex items-center justify-center': item.coin !== 'eth'
-                                                }"
-                                            ></i>
-                                        </div>
-                                    </td>
-                                    <td class="w-1/6">
-                                        <div class="text-muted-color">{{ item.date }}</div>
-                                    </td>
-                                    <td class="w-1/6">
-                                        <p-tag [severity]="item.process.type" [value]="item.process.value" styleClass="font-medium"></p-tag>
-                                    </td>
-                                    <td class="w-1/6">
-                                        <div class="text-muted-color text-right">{{ item.amount }}</div>
-                                    </td>
-                                </tr>
-                            </ng-template>
-                        </p-table>
+
+                <div class="flex min-w-0 flex-col gap-4">
+                    <!-- Net flow -->
+                    <div class="rounded-lg border border-surface p-3">
+                        <p class="text-xs text-muted-color">Net flow per day</p>
+                        @if (chartData()) {
+                            <p-chart type="bar" [data]="chartData()" [options]="chartOptions()" height="120px" />
+                        }
                     </div>
-                    <div class="xl:w-96 border border-surface rounded-2xl py-5 px-7 flex flex-col justify-between">
-                        <div>
-                            <div class="flex items-center mb-6">
-                                <div class="flex-1 text-color font-semibold leading-6">My Wallet</div>
-                                <p-button type="button" icon="pi pi-ellipsis-h" severity="secondary" text (click)="menu.toggle($event)" aria-haspopup="true" aria-controls="overlay_menu" />
-                                <p-menu #menu id="overlay_menu" [model]="menuItems" [popup]="true" styleClass="ml-6" />
-                            </div>
-                            <p-metergroup [value]="metersData" labelPosition="end">
-                                <ng-template #label>
-                                    <div class="flex flex-col gap-6 mt-4">
-                                        <ng-container *ngFor="let val of metersData; let index = index">
-                                            <div class="flex items-center gap-2">
-                                                <div class="w-2 h-2 rounded-full" [ngStyle]="{ backgroundColor: val.color }"></div>
-                                                <div class="text-color uppercase font-medium leading-6 flex-1">
-                                                    {{ val.label }}
-                                                    <span class="text-muted-color">({{ val.value }}%)</span>
-                                                </div>
-                                                <div class="leading-6 font-medium text-color">{{ val.text }}</div>
-                                            </div>
-                                        </ng-container>
-                                    </div>
-                                </ng-template>
-                            </p-metergroup>
-                        </div>
-                        <p-button label="Show All" outlined styleClass="w-full" />
+
+                    <!-- Exposure -->
+                    <div class="rounded-lg border border-surface p-3">
+                        <p class="mb-3 text-xs text-muted-color">Exposure by desk</p>
+                        <p-metergroup [value]="exposure" />
                     </div>
                 </div>
             </div>
         </div>
-    `,
-    host: {
-        class: 'flex-1 h-full overflow-y-auto pb-0.5'
-    },
-    changeDetection: ChangeDetectionStrategy.OnPush
+    `
 })
 export class OverviewApp {
-    chartData: any;
+    kpis: Kpi[] = [
+        { label: 'Balance', value: '$4.82M', delta: 3.1, hint: 'vs last month' },
+        { label: 'Net flow', value: '+$318K', delta: 12.4, hint: 'vs last month' },
+        { label: 'Open orders', value: '20', delta: -6.2, hint: 'vs last week' },
+        { label: 'Risk score', value: '34/100', delta: -4.8, hint: 'lower is better' }
+    ];
 
-    chartOptions: any;
+    /** Twenty rows, four to a page — the paginator report is the point of the table. */
+    orders: Order[] = buildOrders();
 
-    dates: Date[] | undefined = [];
+    exposure = [
+        { label: 'Equities', color: '#22c55e', value: 44 },
+        { label: 'Credit', color: '#3b82f6', value: 28 },
+        { label: 'FX', color: '#a855f7', value: 16 }
+    ];
 
-    selectedTime: string = 'Monthly';
+    chartData = signal<any>(null);
 
-    timeOptions: string[] = ['Weekly', 'Monthly', 'Yearly'];
+    chartOptions = signal<any>(null);
 
-    menuItems: MenuItem[] | undefined;
-
-    sampleAppsTableDatas: any;
-
-    metersData: any;
-
-    tableTokens = {
-        header: {
-            background: 'transparent'
-        },
-        headerCell: {
-            background: 'transparent'
-        },
-        row: {
-            background: 'transparent'
-        }
-    };
-
-    platformId = inject(PLATFORM_ID);
-
-    configService = inject(AppConfigService);
-
-    appState = this.configService.appState();
-
-    constructor(private cd: ChangeDetectorRef) {}
-
-    themeEffect = effect(() => {
-        if (this.configService.transitionComplete()) {
-            this.initChart();
-        }
-    });
-
-    ngOnInit() {
-        this.menuItems = [
-            {
-                label: 'Refresh',
-                icon: 'pi pi-refresh'
-            },
-            {
-                label: 'Export',
-                icon: 'pi pi-upload'
-            }
-        ];
-
-        this.sampleAppsTableDatas = [
-            {
-                id: '#1254',
-                name: { text: 'Amy Yelsner', label: 'AY', color: 'blue' },
-                coin: 'btc',
-                date: 'May 5th',
-                process: { type: 'success', value: 'Buy' },
-                amount: '3.005 BTC'
-            },
-            {
-                id: '#2355',
-                name: { text: 'Anna Fali', label: 'AF', color: '#ECFCCB' },
-                coin: 'eth',
-                date: 'Mar 17th',
-                process: { type: 'success', value: 'Buy' },
-                amount: '0.050 ETH'
-            },
-            {
-                id: '#1235',
-                name: { text: 'Stepen Shaw', label: 'SS', color: '#ECFCCB' },
-                coin: 'btc',
-                date: 'May 24th',
-                process: { type: 'danger', value: 'Sell' },
-                amount: '3.050 BTC'
-            },
-            {
-                id: '#2355',
-                name: { text: 'Anna Fali', label: 'AF', color: '#ECFCCB' },
-                coin: 'eth',
-                date: 'Mar 17th',
-                process: { type: 'danger', value: 'Sell' },
-                amount: '0.050 ETH'
-            },
-            {
-                id: '#2355',
-                name: { text: 'Anna Fali', label: 'AF', color: '#ECFCCB' },
-                coin: 'eth',
-                date: 'Mar 17th',
-                process: { type: 'danger', value: 'Sell' },
-                amount: '0.050 ETH'
-            },
-            {
-                id: '#7896',
-                name: { text: 'John Doe', label: 'JD', color: 'green' },
-                coin: 'btc',
-                date: 'Jun 12th',
-                process: { type: 'success', value: 'Buy' },
-                amount: '2.500 BTC'
-            },
-            {
-                id: '#5648',
-                name: { text: 'Jane Smith', label: 'JS', color: '#FFDDC1' },
-                coin: 'eth',
-                date: 'Feb 23rd',
-                process: { type: 'success', value: 'Buy' },
-                amount: '1.200 ETH'
-            },
-            {
-                id: '#3265',
-                name: { text: 'Michael Johnson', label: 'MJ', color: '#FFD700' },
-                coin: 'btc',
-                date: 'Apr 30th',
-                process: { type: 'danger', value: 'Sell' },
-                amount: '4.000 BTC'
-            },
-            {
-                id: '#1423',
-                name: { text: 'Emily Davis', label: 'ED', color: '#FFCCCB' },
-                coin: 'btc',
-                date: 'Jan 15th',
-                process: { type: 'danger', value: 'Sell' },
-                amount: '5.050 LTC'
-            },
-            {
-                id: '#6854',
-                name: { text: 'Robert Brown', label: 'RB', color: '#C0C0C0' },
-                coin: 'eth',
-                date: 'Dec 2nd',
-                process: { type: 'success', value: 'Buy' },
-                amount: '0.300 ETH'
-            }
-        ];
-
-        this.metersData = [
-            { label: 'BTC', color: '#F59E0B', value: 15, text: '27.215' },
-            { label: 'ETH', color: '#717179', value: 5, text: '4.367' },
-            { label: 'GBP', color: '#22C55E', value: 25, text: '£ 147.562,32' },
-            { label: 'EUR', color: '#84CC16', value: 11, text: '€ 137.457,25' },
-            { label: 'USD', color: '#14B8A6', value: 29, text: '$ 133.364,12' },
-            { label: 'XAU', color: '#EAB308', value: 29, text: '200 g' }
-        ];
-
-        this.initChart();
+    constructor() {
+        // Chart.js needs real element metrics, so the data is only built in the browser.
+        afterNextRender(() => this.buildChart());
     }
 
-    initChart() {
-        if (isPlatformBrowser(this.platformId)) {
-            this.chartData = this.setChartData(this.selectedTime);
-            this.chartOptions = this.setChartOptions();
-            this.cd.markForCheck();
-        }
+    severityOf(status: Order['status']) {
+        return status === 'Filled' ? 'success' : status === 'Working' ? 'warn' : 'danger';
     }
 
-    setChartData(timeUnit: string) {
-        const datasets = this.createDatasets(timeUnit);
-        const documentStyle = getComputedStyle(document.documentElement);
-        const primary200 = documentStyle.getPropertyValue('--p-primary-200');
-        const primary300 = documentStyle.getPropertyValue('--p-primary-300');
-        const primary400 = documentStyle.getPropertyValue('--p-primary-400');
-        const primary500 = documentStyle.getPropertyValue('--p-primary-500');
-        const primary600 = documentStyle.getPropertyValue('--p-primary-600');
-        return {
-            labels: datasets.labels,
+    private buildChart() {
+        const styles = getComputedStyle(document.documentElement);
+        const text = styles.getPropertyValue('--p-text-muted-color') || '#71717a';
+        const grid = styles.getPropertyValue('--p-content-border-color') || '#e4e4e7';
+        const bar = styles.getPropertyValue('--p-primary-color') || '#18181b';
+
+        this.chartData.set({
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
             datasets: [
                 {
-                    type: 'bar',
-                    label: 'Personal Wallet',
-                    backgroundColor: primary400,
-                    hoverBackgroundColor: primary600,
-                    data: datasets.data[0],
-                    barThickness: 32
-                },
-                {
-                    type: 'bar',
-                    label: 'Corporate Wallet',
-                    backgroundColor: primary300,
-                    hoverBackgroundColor: primary500,
-                    data: datasets.data[1],
-                    barThickness: 32
-                },
-                {
-                    type: 'bar',
-                    label: 'Investment Wallet',
-                    backgroundColor: primary200,
-                    hoverBackgroundColor: primary400,
-                    data: datasets.data[2],
-                    borderRadius: {
-                        topLeft: 8,
-                        topRight: 8
-                    },
-                    borderSkipped: false,
-                    barThickness: 32
+                    label: 'Net flow',
+                    data: [128, 214, 96, 241, 268, 42, 87],
+                    backgroundColor: bar,
+                    borderRadius: 4,
+                    barThickness: 14
                 }
             ]
-        };
-    }
+        });
 
-    setChartOptions() {
-        const { darkTheme } = this.configService.appState();
-        const documentStyle = getComputedStyle(document.documentElement);
-        const surface100 = documentStyle.getPropertyValue('--p-surface-100');
-        const surface900 = documentStyle.getPropertyValue('--p-surface-900');
-        const surface400 = documentStyle.getPropertyValue('--p-surface-400');
-        const surface500 = documentStyle.getPropertyValue('--p-surface-500');
-
-        return {
+        this.chartOptions.set({
             maintainAspectRatio: false,
-            aspectRatio: 0.8,
-            plugins: {
-                tooltip: {
-                    enabled: false,
-                    position: 'nearest',
-                    external: function (context) {
-                        const { chart, tooltip } = context;
-                        let tooltipEl = chart.canvas.parentNode.querySelector('div.chartjs-tooltip');
-
-                        if (!tooltipEl) {
-                            tooltipEl = document.createElement('div');
-                            tooltipEl.classList.add(
-                                'chartjs-tooltip',
-                                'dark:bg-surface-950',
-                                'bg-surface-0',
-                                'p-3',
-                                'rounded-[8px]',
-                                'overflow-hidden',
-                                'opacity-100',
-                                'absolute',
-                                'transition-all',
-                                'duration-[0.1s]',
-                                'pointer-events-none',
-                                'shadow-[0px_25px_20px_-5px_rgba(0,0,0,0.10),0px_10px_8px_-6px_rgba(0,0,0,0.10)]'
-                            );
-                            chart.canvas.parentNode.appendChild(tooltipEl);
-                        }
-
-                        if (tooltip.opacity === 0) {
-                            tooltipEl.style.opacity = 0;
-
-                            return;
-                        }
-
-                        const datasetPointsX = tooltip.dataPoints.map((dp) => dp.element.x);
-                        const avgX = datasetPointsX.reduce((a, b) => a + b, 0) / datasetPointsX.length;
-                        const avgY = tooltip.dataPoints[0].element.y;
-
-                        if (tooltip.body) {
-                            tooltipEl.innerHTML = '';
-                            const tooltipBody = document.createElement('div');
-
-                            tooltipBody.classList.add('flex', 'flex-col', 'gap-4', 'px-3', 'py-3', 'min-w-[18rem]');
-                            tooltip.dataPoints.reverse().forEach((body, i) => {
-                                const row = document.createElement('div');
-
-                                row.classList.add('flex', 'items-center', 'gap-2', 'w-full');
-                                const point = document.createElement('div');
-
-                                point.classList.add('w-2.5', 'h-2.5', 'rounded-full');
-                                point.style.backgroundColor = body.dataset.backgroundColor;
-                                row.appendChild(point);
-                                const label = document.createElement('span');
-
-                                label.appendChild(document.createTextNode(body.dataset.label));
-                                label.classList.add('text-base', 'font-medium', 'text-color', 'flex-1', 'text-left', 'capitalize');
-                                row.appendChild(label);
-                                const value = document.createElement('span');
-
-                                value.appendChild(document.createTextNode(body.formattedValue));
-                                value.classList.add('text-base', 'font-medium', 'text-color', 'text-right');
-                                row.appendChild(value);
-                                tooltipBody.appendChild(row);
-                            });
-                            tooltipEl.appendChild(tooltipBody);
-                        }
-
-                        const { offsetLeft: positionX, offsetTop: positionY } = chart.canvas;
-
-                        tooltipEl.style.opacity = 1;
-                        tooltipEl.style.font = tooltip.options.bodyFont.string;
-                        tooltipEl.style.padding = 0;
-                        const chartWidth = chart.width;
-                        const tooltipWidth = tooltipEl.offsetWidth;
-                        const chartHeight = chart.height;
-                        const tooltipHeight = tooltipEl.offsetHeight;
-
-                        let tooltipX = positionX + avgX + 24;
-                        let tooltipY = avgY;
-
-                        if (tooltipX + tooltipWidth > chartWidth) {
-                            tooltipX = positionX + avgX - tooltipWidth - 20;
-                        }
-
-                        if (tooltipY < 0) {
-                            tooltipY = 0;
-                        } else if (tooltipY + tooltipHeight > chartHeight) {
-                            tooltipY = chartHeight - tooltipHeight;
-                        }
-
-                        tooltipEl.style.left = tooltipX + 'px';
-                        tooltipEl.style.top = tooltipY + 'px';
-                    }
-                },
-                legend: {
-                    display: false
-                }
-            },
+            plugins: { legend: { display: false } },
             scales: {
-                x: {
-                    stacked: true,
-                    ticks: {
-                        color: darkTheme ? surface500 : surface400
-                    },
-                    grid: {
-                        display: false,
-                        borderColor: 'transparent'
-                    },
-                    border: {
-                        display: false
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    stacked: true,
-                    ticks: {
-                        color: darkTheme ? surface500 : surface400
-                    },
-                    grid: {
-                        display: true,
-                        color: darkTheme ? surface900 : surface100,
-                        borderColor: 'transparent'
-                    },
-                    border: {
-                        display: false
-                    }
-                }
+                x: { ticks: { color: text, font: { size: 10 } }, grid: { display: false }, border: { display: false } },
+                y: { ticks: { color: text, font: { size: 10 } }, grid: { color: grid }, border: { display: false } }
             }
-        };
+        });
     }
+}
 
-    createDatasets(val: string) {
-        let data, labels;
+function buildOrders(): Order[] {
+    const accounts = ['Northwind', 'Beltrame', 'Ardenne', 'Kestrel', 'Halcyon'];
+    const instruments = ['EUR/USD', 'US 10Y', 'Brent', 'S&P 500', 'GBP/CHF'];
+    const statuses: Order['status'][] = ['Filled', 'Working', 'Rejected'];
 
-        if (val === 'Weekly') {
-            labels = ['6 May', '13 May', '20 May', '27 May', '3 June', '10 June', '17 June', '24 June', '1 July', '8 July', '15 July', '22 July'];
-            data = [
-                [9000, 3000, 13000, 3000, 5000, 17000, 11000, 4000, 15000, 4000, 11000, 5000],
-                [1800, 7600, 11100, 6800, 3300, 5800, 3600, 7200, 4300, 8100, 6800, 3700],
-                [3800, 4800, 2100, 6600, 1000, 3800, 6500, 4200, 4300, 7000, 6800, 3700]
-            ];
-        } else if (val === 'Monthly') {
-            labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            data = [
-                [4000, 10000, 15000, 4000, 16000, 8000, 12000, 14000, 17000, 5000, 12000, 6000],
-                [2100, 8400, 2400, 7500, 3700, 6500, 7400, 8000, 4800, 9000, 7600, 4200],
-                [4100, 5200, 2400, 7400, 2300, 4100, 7200, 8000, 4800, 9000, 7600, 4200]
-            ];
-        } else if (val === 'Yearly') {
-            labels = ['2019', '2020', '2021', '2022', '2023', '2024'];
-            data = [
-                [4500, 10500, 15500, 4500, 16500, 8500, 12500, 14500, 17500, 5500, 12500, 6500],
-                [2250, 8700, 2550, 7650, 3850, 6650, 7650, 8250, 4950, 9250, 7850, 4450],
-                [4350, 5450, 2650, 7650, 2550, 4350, 7450, 8250, 4950, 9250, 7850, 4450]
-            ];
-        }
-
-        return {
-            data,
-            labels
-        };
-    }
-
-    changeSelect() {
-        this.chartData = this.setChartData(this.selectedTime);
-        this.chartOptions = this.setChartOptions();
-    }
+    return Array.from({ length: 20 }, (_, index) => ({
+        id: `${index + 1}`,
+        account: `${accounts[index % accounts.length]} ${String(index + 1).padStart(2, '0')}`,
+        instrument: instruments[index % instruments.length],
+        status: statuses[index % 3 === 2 ? (index % 5 === 4 ? 2 : 1) : 0],
+        amount: `$${(18 + index * 7.4).toFixed(1)}K`
+    }));
 }

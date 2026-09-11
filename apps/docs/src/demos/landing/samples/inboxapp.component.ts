@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AvatarModule } from '@openng/optimus-ui/avatar';
@@ -136,7 +136,7 @@ import { Tag } from '@openng/optimus-ui/tag';
     },
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class InboxApp {
+export class InboxApp implements OnInit {
     search: string | undefined;
 
     activeInboxNav: string = 'Inbox';

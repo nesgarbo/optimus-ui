@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, ElementRef, viewChild, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { MenuItem } from '@openng/optimus-ui/api';
@@ -89,7 +89,7 @@ import { ToggleSwitchModule } from '@openng/optimus-ui/toggleswitch';
                     <p-menu #menu id="overlay_menu" [model]="menuItems" [popup]="true" />
                 </div>
             </div>
-            <div class="flex-1 overflow-y-auto flex flex-col gap-8 py-8 px-6">
+            <div #transcript class="flex-1 overflow-y-auto flex flex-col gap-8 py-8 px-6">
                 <div *ngFor="let message of chatMessages" class="flex items-start min-w-64 w-fit max-w-[60%]" [ngClass]="{ 'ml-auto mr-0 flex-row-reverse': message.type === 'sent' }">
                     <div
                         class="flex items-center gap-2 sticky top-0 transition-all"
@@ -217,7 +217,20 @@ import { ToggleSwitchModule } from '@openng/optimus-ui/toggleswitch';
     },
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ChatApp {
+export class ChatApp implements OnInit {
+    /** A conversation opens on the last thing that was said, not the first. */
+    private transcript = viewChild<ElementRef<HTMLElement>>('transcript');
+
+    constructor() {
+        afterNextRender(() => {
+            const el = this.transcript()?.nativeElement;
+
+            if (el) {
+                el.scrollTop = el.scrollHeight;
+            }
+        });
+    }
+
     search: string = '';
 
     download: boolean = false;

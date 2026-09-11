@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { MessageService } from '@openng/optimus-ui/api';
@@ -447,7 +447,7 @@ import { TooltipModule } from '@openng/optimus-ui/tooltip';
     providers: [MessageService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CardsApp {
+export class CardsApp implements OnInit {
     files = [];
 
     uploadedFiles: any[] = [];
@@ -558,6 +558,7 @@ export class CardsApp {
         for (let file of event.files) {
             this.uploadedFiles.push(file);
         }
+
         this.messageService.add({ severity: 'info', summary: 'Success', detail: 'File Uploaded', life: 3000 });
     }
 

@@ -1,17 +1,16 @@
-<div class="landing" [ngClass]="landingClass()">
-    <aside class="landing-announcement">
-        <span class="landing-announcement-text">Optimus UI is a community MIT licensed fork of PrimeNG, now closed source and using a commercial license.</span>
-        <a href="https://primeui.dev/nextchapter" target="_blank" rel="noopener noreferrer" class="landing-announcement-link">Read their announcement</a>
-        <span class="landing-announcement-version">Optimus UI supports Angular v21+</span>
-    </aside>
-    <app-topbar [showConfigurator]="true" [showMenuButton]="true" />
-    @if (isMenuActive()) {
-        <div class="layout-mask" (click)="hideMenu()" animate.enter="px-modal-enter" animate.leave="px-modal-leave"></div>
-    }
-    <app-menu class="landing-menu" />
-    <hero-section />
-    <features-section />
-    <theme-section />
-    <template-section />
+<div class="landing">
+    <a class="skip-link" href="#content">Skip to content</a>
+    <app-news />
+    <app-topbar />
+    <main id="content">
+        <hero-section />
+        <who-uses-section />
+        <code-section />
+        <composable-section />
+        <theming-section />
+        <accessibility-section />
+        <dx-section />
+        <community-section />
+    </main>
     <footer-section />
 </div>

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Inject, PLATFORM_ID } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject, PLATFORM_ID, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
@@ -143,7 +143,7 @@ import { TooltipModule } from '@openng/optimus-ui/tooltip';
     },
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CustomersApp {
+export class CustomersApp implements OnInit {
     search: string = '';
 
     tableData: any = [];
