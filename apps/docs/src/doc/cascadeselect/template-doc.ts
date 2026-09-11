@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CascadeSelectModule } from '@openng/optimus-ui/cascadeselect';
@@ -44,7 +44,7 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
         <app-code></app-code>
     `
 })
-export class TemplateDoc {
+export class TemplateDoc implements OnInit {
     countries: any[] | undefined;
 
     selectedCity: any;

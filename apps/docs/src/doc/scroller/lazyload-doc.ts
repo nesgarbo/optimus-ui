@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ScrollerModule } from '@openng/optimus-ui/scroller';
 import { AppCode } from '@/components/doc/app.code';
 import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
@@ -34,7 +34,7 @@ interface LazyEvent {
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LazyLoadDoc {
+export class LazyLoadDoc implements OnInit {
     items!: string[];
 
     lazyLoading: boolean = true;

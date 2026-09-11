@@ -1,3 +1,4 @@
+import { AccessibilityDoc } from '@/doc/styleclass/accessibility-doc';
 import { AnimationDoc } from '@/doc/styleclass/animation-doc';
 import { HideOnResizeDoc } from '@/doc/styleclass/hideonresize-doc';
 import { ImportDoc } from '@/doc/styleclass/import-doc';
@@ -10,6 +11,7 @@ import { AppDoc } from '@/components/doc/app.doc';
         docTitle="Angular StyleClass Component - Optimus UI"
         header="StyleClass"
         description="StyleClass manages css classes declaratively to during enter/leave animations or just to toggle classes on an element."
+        metaDescription="StyleClass manages css classes declaratively to during enter/leave animations or just to toggle classes on an element. Examples cover toggle class."
         [docs]="docs"
         [apiDocs]="['StyleClass']"
     ></app-doc>`,
@@ -37,6 +39,11 @@ export class StyleClassDemo {
             id: 'hideonresize',
             label: 'Hide On Resize',
             component: HideOnResizeDoc
+        },
+        {
+            id: 'accessibility',
+            label: 'Accessibility',
+            component: AccessibilityDoc
         }
     ];
 }

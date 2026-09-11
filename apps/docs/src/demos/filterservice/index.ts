@@ -10,7 +10,13 @@ import { AppDoc } from '@/components/doc/app.doc';
 @Component({
     standalone: true,
     imports: [AppDoc],
-    template: ` <app-doc docTitle="FilterService - Optimus UI" header="FilterService" description="FilterService is a helper utility to filter collections against constraints." [docs]="docs"></app-doc>`
+    template: ` <app-doc
+        docTitle="FilterService - Optimus UI"
+        header="FilterService"
+        description="FilterService is a helper utility to filter collections against constraints."
+        metaDescription="FilterService is a helper utility to filter collections against constraints. Examples cover built-in constraints, custom constraints and table integration."
+        [docs]="docs"
+    ></app-doc>`
 })
 export class FilterServiceDemo {
     docs = [

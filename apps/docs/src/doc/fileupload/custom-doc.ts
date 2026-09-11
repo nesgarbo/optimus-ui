@@ -31,10 +31,6 @@ export class CustomDoc {
 
         reader.readAsDataURL(blob);
 
-        reader.onloadend = function () {
-            const base64data = reader.result;
-        };
-
         this.messageService.add({ severity: 'info', summary: 'Success', detail: 'File Uploaded with Basic Mode' });
     }
 }

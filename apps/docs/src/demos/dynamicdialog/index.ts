@@ -1,3 +1,4 @@
+import { AccessibilityDoc } from '@/doc/dynamicdialog/accessibility-doc';
 import { AppDoc } from '@/components/doc/app.doc';
 import { CloseDoc } from '@/doc/dynamicdialog/close-doc';
 import { CustomizationDoc } from '@/doc/dynamicdialog/customization-doc';
@@ -17,6 +18,7 @@ import { Component } from '@angular/core';
             docTitle="Angular Dynamic Dialog Component - Optimus UI"
             header="Dynamic Dialog"
             description="Dialogs can be created dynamically with any component as the content using a DialogService."
+            metaDescription="Dialogs can be created dynamically with any component as the content using a DialogService. Examples cover opening a dialog, customization and passing data."
             [docs]="docs"
             [apiDocs]="['DynamicDialog-Ref', 'DynamicDialog-Config', 'DialogService']"
             [ptDocs]="ptComponent"
@@ -63,6 +65,11 @@ export class DynamicDialogDemo {
             id: 'example',
             label: 'Example',
             component: ExampleDoc
+        },
+        {
+            id: 'accessibility',
+            label: 'Accessibility',
+            component: AccessibilityDoc
         }
     ];
 }

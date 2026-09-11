@@ -61,6 +61,7 @@ export class ControlledDoc {
     toggleApplications() {
         if (this.files && this.files.length > 0) {
             const newFiles = [...this.files];
+
             newFiles[0] = { ...newFiles[0], expanded: !newFiles[0].expanded };
             this.files = newFiles;
         }

@@ -66,6 +66,7 @@ export class ReactiveFormsDoc {
 
     atLeastOneSelectedValidator(group: FormGroup): { [key: string]: any } | null {
         const anySelected = Object.values(group.controls).some((control) => control.value === true);
+
         return anySelected ? null : { atLeastOneRequired: true };
     }
 
@@ -75,6 +76,7 @@ export class ReactiveFormsDoc {
 
     isInvalid(controlName: string): boolean {
         const control = this.exampleForm.get(controlName);
+
         return this.formSubmitted && this.exampleForm.hasError('atLeastOneRequired') && control?.value === false;
     }
 

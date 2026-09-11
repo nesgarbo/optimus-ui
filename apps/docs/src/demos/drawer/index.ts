@@ -14,7 +14,16 @@ import { Component } from '@angular/core';
     standalone: true,
     imports: [AppDoc],
     template: `
-        <app-doc docTitle="Angular Drawer Component - Optimus UI" header="Drawer" description="Drawer is a container component displayed as an overlay." [docs]="docs" [apiDocs]="['Drawer']" [ptDocs]="ptComponent" componentName="drawer"></app-doc>
+        <app-doc
+            docTitle="Angular Drawer Component - Optimus UI"
+            header="Drawer"
+            description="Drawer is a container component displayed as an overlay."
+            metaDescription="Drawer is a container component displayed as an overlay. Examples cover basic, position, size, full screen, template and headless."
+            [docs]="docs"
+            [apiDocs]="['Drawer']"
+            [ptDocs]="ptComponent"
+            componentName="drawer"
+        ></app-doc>
     `
 })
 export class DrawerDemo {

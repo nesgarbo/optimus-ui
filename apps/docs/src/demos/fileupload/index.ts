@@ -15,6 +15,7 @@ import { AppDoc } from '@/components/doc/app.doc';
         docTitle="Angular FileUpload Component - Optimus UI"
         header="FileUpload"
         description="FileUpload is an advanced uploader with dragdrop support, multi file uploads, auto uploading, progress tracking and validations."
+        metaDescription="FileUpload is an advanced uploader with dragdrop support, multi file uploads, auto uploading, progress tracking and validations. Examples cover basic."
         [docs]="docs"
         [apiDocs]="['FileUpload']"
         [ptDocs]="ptComponent"

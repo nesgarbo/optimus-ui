@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
 import { AppCode } from '@/components/doc/app.code';
 import { FormsModule } from '@angular/forms';
@@ -23,7 +23,7 @@ interface City {
         <app-code></app-code>
     `
 })
-export class DisabledDoc {
+export class DisabledDoc implements OnInit {
     cities: City[] | undefined;
 
     selectedCity: City | undefined;

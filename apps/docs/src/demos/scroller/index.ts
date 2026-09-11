@@ -18,6 +18,7 @@ import { AppDoc } from '@/components/doc/app.doc';
         docTitle="Angular Virtual Scroller Component - Optimus UI"
         header="Scroller"
         description="VirtualScroller is a performance-approach to handle huge data efficiently."
+        metaDescription="VirtualScroller is a performance-approach to handle huge data efficiently. Examples cover basic, horizontal, grid, delay, loading, lazy and programmatic."
         [docs]="docs"
         [apiDocs]="['Scroller']"
         [ptDocs]="ptComponent"

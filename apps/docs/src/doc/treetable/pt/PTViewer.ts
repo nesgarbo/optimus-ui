@@ -1,7 +1,7 @@
 import { AppDocPtViewer, getPTOptions } from '@/components/doc/app.docptviewer';
 import { NodeService } from '@/service/nodeservice';
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { TreeNode } from '@openng/optimus-ui/api';
 import { TreeTableModule } from '@openng/optimus-ui/treetable';
 
@@ -33,7 +33,7 @@ import { TreeTableModule } from '@openng/optimus-ui/treetable';
         </app-docptviewer>
     `
 })
-export class PTViewer {
+export class PTViewer implements OnInit {
     nodes!: TreeNode[];
 
     docs = [

@@ -13,6 +13,7 @@ import { AppDoc } from '@/components/doc/app.doc';
             docTitle="Angular Fluid Component - Optimus UI"
             header="Fluid"
             description="Fluid is a layout component to make descendant components span full width of their container."
+            metaDescription="Fluid is a layout component to make descendant components span full width of their container. Examples cover basic."
             [docs]="docs"
             [ptDocs]="ptComponent"
             themeDocs="fluid"

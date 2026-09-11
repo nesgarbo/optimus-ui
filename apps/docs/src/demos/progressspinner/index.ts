@@ -11,6 +11,7 @@ import { AppDoc } from '@/components/doc/app.doc';
         docTitle="Angular ProgressSpinner Component - Optimus UI"
         header="ProgressSpinner"
         description="ProgressSpinner is a process status indicator."
+        metaDescription="ProgressSpinner is a process status indicator. Examples cover basic and custom."
         [docs]="docs"
         [ptDocs]="ptComponent"
         [apiDocs]="['ProgressSpinner']"

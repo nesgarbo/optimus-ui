@@ -51,6 +51,7 @@ export class VirtualScrollDoc {
 
     onChange(event) {
         const { value } = event;
+
         if (value) this.selectAll = value.length === this.items.length;
     }
 }

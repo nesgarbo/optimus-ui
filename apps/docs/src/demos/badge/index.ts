@@ -16,6 +16,7 @@ import { Component } from '@angular/core';
         docTitle="Angular Badge Component - Optimus UI"
         header="Badge"
         description="Badge is a small status indicator for another element."
+        metaDescription="Badge is a small status indicator for another element. Examples cover basic, severity, size, overlay and button."
         [docs]="docs"
         [apiDocs]="['Badge', 'BadgeDirective']"
         [ptDocs]="ptComponent"

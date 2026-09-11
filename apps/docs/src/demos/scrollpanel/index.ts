@@ -11,6 +11,7 @@ import { Component } from '@angular/core';
         docTitle="Angular Scroll Panel Component - Optimus UI"
         header="ScrollPanel"
         description="ScrollPanel is a cross browser, lightweight and skinnable alternative to native browser scrollbar."
+        metaDescription="ScrollPanel is a cross browser, lightweight and skinnable alternative to native browser scrollbar. Examples cover basic and custom."
         [docs]="docs"
         [apiDocs]="['ScrollPanel']"
         themeDocs="scrollpanel"

@@ -15,6 +15,7 @@ import { AppDoc } from '@/components/doc/app.doc';
             docTitle="Angular Float Label Component - Optimus UI"
             header="FloatLabel"
             description="FloatLabel appears on top of the input field when focused."
+            metaDescription="FloatLabel appears on top of the input field when focused. Examples cover basic, variants and invalid."
             [docs]="docs"
             [ptDocs]="ptComponent"
             themeDocs="floatlabel"

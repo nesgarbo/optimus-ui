@@ -18,6 +18,7 @@ import { Component } from '@angular/core';
         docTitle="Angular SelectButton Component - Optimus UI"
         header="SelectButton"
         description="SelectButton is used to choose single or multiple items from a list using buttons."
+        metaDescription="SelectButton is used to choose single or multiple items from a list using buttons. Examples cover basic, multiple, template, sizes, fluid and disabled."
         [docs]="docs"
         [apiDocs]="['SelectButton']"
         [ptDocs]="ptComponent"

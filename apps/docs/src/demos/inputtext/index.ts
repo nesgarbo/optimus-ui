@@ -22,6 +22,7 @@ import { AppDoc } from '@/components/doc/app.doc';
         docTitle="Angular InputText Component - Optimus UI"
         header="InputText"
         description="InputText is an extension to standard input element with theming and keyfiltering."
+        metaDescription="InputText is an extension to standard input element with theming and keyfiltering. Examples cover basic, float label, ifta label, sizes, fluid and help text."
         [apiDocs]="['InputText']"
         [docs]="docs"
         [ptDocs]="ptComponent"

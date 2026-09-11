@@ -17,6 +17,7 @@ import { Component } from '@angular/core';
         docTitle="Angular Slider Component - Optimus UI"
         header="Slider"
         description="Slider is a component to provide input with a drag handle."
+        metaDescription="Slider is a component to provide input with a drag handle. Examples cover basic, input, step, range, filter, vertical and forms."
         [docs]="docs"
         [apiDocs]="['Slider']"
         themeDocs="slider"

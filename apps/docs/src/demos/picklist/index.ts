@@ -12,6 +12,7 @@ import { AppDoc } from '@/components/doc/app.doc';
         docTitle="Angular PickList Component - Optimus UI"
         header="PickList"
         description="PickList is used to reorder items between different lists."
+        metaDescription="PickList is used to reorder items between different lists. Examples cover basic, filter and template."
         [docs]="docs"
         [apiDocs]="['PickList']"
         [ptDocs]="ptComponent"

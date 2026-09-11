@@ -12,7 +12,16 @@ import { Component } from '@angular/core';
 import { AppDoc } from '@/components/doc/app.doc';
 
 @Component({
-    template: `<app-doc docTitle="Angular Rating Component - Optimus UI" header="Rating" description="Rating component is a star based selection input." [docs]="docs" [apiDocs]="['Rating']" [ptDocs]="ptComponent" themeDocs="rating"></app-doc>`,
+    template: `<app-doc
+        docTitle="Angular Rating Component - Optimus UI"
+        header="Rating"
+        description="Rating component is a star based selection input."
+        metaDescription="Rating component is a star based selection input. Examples cover basic, number of stars, template, readonly, disabled and forms."
+        [docs]="docs"
+        [apiDocs]="['Rating']"
+        [ptDocs]="ptComponent"
+        themeDocs="rating"
+    ></app-doc>`,
     standalone: true,
     imports: [AppDoc]
 })

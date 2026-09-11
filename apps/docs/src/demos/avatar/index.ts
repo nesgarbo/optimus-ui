@@ -19,6 +19,7 @@ import { AppDoc } from '@/components/doc/app.doc';
         docTitle="Angular Avatar Component - Optimus UI"
         header="Avatar"
         description="Avatar represents people using icons, labels and images."
+        metaDescription="Avatar represents people using icons, labels and images. Examples cover label, icon, image, avatargroup, size, shape, badge and template."
         [docs]="docs"
         [apiDocs]="['Avatar', 'AvatarGroup']"
         [ptDocs]="ptComponent"

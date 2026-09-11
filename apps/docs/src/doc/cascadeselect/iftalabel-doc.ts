@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { CascadeSelectModule } from '@openng/optimus-ui/cascadeselect';
@@ -24,7 +24,7 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
         <app-code></app-code>
     `
 })
-export class IftaLabelDoc {
+export class IftaLabelDoc implements OnInit {
     countries: any[] | undefined;
 
     selectedCity: any;

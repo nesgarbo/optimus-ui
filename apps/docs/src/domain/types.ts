@@ -121,6 +121,7 @@ export function resolveDomainTypes(types: string[]): ExtFile[] {
 
     for (const type of types) {
         const definition = DOMAIN_TYPE_DEFINITIONS[type];
+
         if (definition && !addedPaths.has(definition.path)) {
             addedPaths.add(definition.path);
             extFiles.push({
@@ -318,6 +319,7 @@ export function resolveRouteFiles(names: string[]): ResolvedRouteFiles {
 
     for (const name of names) {
         const definition = ROUTE_FILE_DEFINITIONS[name];
+
         if (definition && !addedPaths.has(definition.path)) {
             addedPaths.add(definition.path);
             routeFiles.push({

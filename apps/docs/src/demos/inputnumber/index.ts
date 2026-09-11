@@ -25,6 +25,7 @@ import { AppDoc } from '@/components/doc/app.doc';
         docTitle="Angular InputNumber Component - Optimus UI"
         header="InputNumber"
         description="InputNumber is an input component to provide numerical input."
+        metaDescription="InputNumber is an input component to provide numerical input. Examples cover numerals, locale, currency, prefix & suffix, buttons, vertical and float label."
         [docs]="docs"
         [apiDocs]="['InputNumber']"
         themeDocs="inputnumber"

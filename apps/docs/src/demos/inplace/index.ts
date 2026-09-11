@@ -15,6 +15,7 @@ import { AppDoc } from '@/components/doc/app.doc';
         docTitle="Angular Inplace Component - Optimus UI"
         header="Inplace"
         description="Inplace provides an easy to do editing and display at the same time where clicking the output displays the actual content."
+        metaDescription="Inplace provides an easy to do editing and display at the same time where clicking the output displays the actual content. Examples cover basic and input."
         [docs]="docs"
         [ptDocs]="ptComponent"
         [apiDocs]="['Inplace']"

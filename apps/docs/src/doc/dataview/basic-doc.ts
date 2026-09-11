@@ -3,7 +3,7 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
 import { Product } from '@/domain/product';
 import { ProductService } from '@/service/productservice';
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { ButtonModule } from '@openng/optimus-ui/button';
 import { DataViewModule } from '@openng/optimus-ui/dataview';
 import { TagModule } from '@openng/optimus-ui/tag';
@@ -60,7 +60,7 @@ import { TagModule } from '@openng/optimus-ui/tag';
         <app-code [extFiles]="['Product']"></app-code>
     `
 })
-export class BasicDoc {
+export class BasicDoc implements OnInit {
     products = signal<any>([]);
 
     productService = inject(ProductService);
@@ -84,6 +84,7 @@ export class BasicDoc {
     ngOnInit() {
         this.productService.getProducts().then((data) => {
             const d = data.slice(0, 5);
+
             this.products.set([...d]);
         });
     }

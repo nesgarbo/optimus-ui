@@ -14,6 +14,7 @@ import { AppDoc } from '@/components/doc/app.doc';
             docTitle="Angular Ifta Label Component - Optimus UI"
             header="IftaLabel"
             description="IftaLabel is used to create infield top aligned labels."
+            metaDescription="IftaLabel is used to create infield top aligned labels. Examples cover basic and invalid."
             [docs]="docs"
             themeDocs="iftalabel"
             [apiDocs]="['IftaLabel']"

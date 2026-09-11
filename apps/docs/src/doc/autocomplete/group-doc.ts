@@ -80,6 +80,7 @@ export class GroupDoc implements OnInit {
 
         for (let optgroup of this.groupedCities as SelectItemGroup[]) {
             let filteredSubOptions = this.filterService.filter(optgroup.items, ['label'], query, 'contains');
+
             if (filteredSubOptions && filteredSubOptions.length) {
                 filteredGroups.push({
                     label: optgroup.label,

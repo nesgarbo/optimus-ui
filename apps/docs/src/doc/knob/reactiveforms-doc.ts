@@ -49,6 +49,7 @@ export class ReactiveFormsDoc {
 
     onSubmit() {
         this.formSubmitted = true;
+
         if (this.exampleForm.valid) {
             this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Form is submitted', life: 3000 });
             this.exampleForm.reset({
@@ -64,6 +65,7 @@ export class ReactiveFormsDoc {
 
     getErrorMessage(controlName: string): string | null {
         const control = this.getControl(controlName);
+
         if (!control || !control.errors) return null;
 
         if (control.errors['min']) {
@@ -77,6 +79,7 @@ export class ReactiveFormsDoc {
 
     isInvalid(controlName: string) {
         const control = this.getControl(controlName);
+
         return control?.invalid && (control.dirty || this.formSubmitted);
     }
 }

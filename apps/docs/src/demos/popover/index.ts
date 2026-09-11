@@ -14,6 +14,7 @@ import { Component } from '@angular/core';
         docTitle="Angular Popover Component - Optimus UI"
         header="Popover"
         description="Popover is a container component that can overlay other components on page."
+        metaDescription="Popover is a container component that can overlay other components on page. Examples cover basic, select data, datatable, template and target."
         [docs]="docs"
         [apiDocs]="['Popover']"
         [ptDocs]="ptComponent"

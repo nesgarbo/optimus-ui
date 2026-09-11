@@ -130,6 +130,7 @@ export class TemplateDoc {
         const k = 1024;
         const dm = 3;
         const sizes = this.config.translation.fileSizeTypes;
+
         if (bytes === 0) {
             return `0 ${sizes[0]}`;
         }

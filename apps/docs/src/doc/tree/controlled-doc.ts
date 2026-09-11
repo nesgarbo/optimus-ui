@@ -37,11 +37,13 @@ export class ControlledDoc implements OnInit {
 
     expandAll() {
         const updatedFiles = this.files().map((node) => this.expandRecursive(node, true));
+
         this.files.set(updatedFiles);
     }
 
     collapseAll() {
         const updatedFiles = this.files().map((node) => this.expandRecursive(node, false));
+
         this.files.set(updatedFiles);
     }
 

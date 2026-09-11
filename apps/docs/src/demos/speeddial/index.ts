@@ -16,6 +16,7 @@ import { Component } from '@angular/core';
         docTitle="Angular Speed Dial Component - Optimus UI"
         header="Speed Dial"
         description="SpeedDial is a floating button with a popup menu."
+        metaDescription="SpeedDial is a floating button with a popup menu. Examples cover linear, circle, semi circle, quarter circle, tooltip, mask and template."
         [docs]="docs"
         [apiDocs]="['SpeedDial']"
         [ptDocs]="ptComponent"

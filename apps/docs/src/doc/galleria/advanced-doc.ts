@@ -138,6 +138,7 @@ export class AdvancedDoc implements OnInit, OnDestroy {
 
     openPreviewFullScreen() {
         let elem = this.galleria?.element.nativeElement.querySelector('.p-galleria');
+
         if (elem.requestFullscreen) {
             elem.requestFullscreen();
         } else if (elem['mozRequestFullScreen']) {

@@ -64,6 +64,7 @@ export class ReactiveFormsDoc {
 
     isInvalid(controlName: string) {
         const control = this.exampleForm.get(controlName);
+
         return control?.invalid && this.formSubmitted;
     }
 

@@ -24,6 +24,7 @@ import { PTComponent } from '@/doc/chart/pt/PTComponent';
             docTitle="Angular Chart Component - Optimus UI"
             header="Charts"
             description="Chart components are based on Charts.js 3.3.2+, an open source HTML5 based charting library."
+            metaDescription="Chart components are based on Charts.js 3.3.2+, an open source HTML5 based charting library. Examples cover chart.js, basic, pie, doughnut and vertical bar."
             [docs]="docs"
             [apiDocs]="['Chart']"
             themeDocs="chart"

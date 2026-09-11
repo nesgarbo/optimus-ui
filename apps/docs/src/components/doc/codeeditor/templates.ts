@@ -1,3 +1,4 @@
+import { version } from '../../../../package.json';
 import { Code, ExtFile, RouteFile } from '@/domain/code';
 import { services } from './services';
 
@@ -10,8 +11,6 @@ export interface Props {
     routeFiles?: RouteFile[];
     selector?: string;
 }
-const version = require('@/package.json').version;
-
 const dependencies = {
     '@angular/cdk': '^22.0.0',
     '@angular/common': '^22.0.0',
@@ -46,18 +45,19 @@ const devDependencies = {
     vitest: '^4.0.8'
 };
 
-const getComponentName = (selector: string) => {
-    return selector
+const getComponentName = (selector: string) =>
+    selector
         .split('-')
         .map((el) => el.charAt(0).toUpperCase() + el.slice(1))
         .join('');
-};
 
 const getExternalFiles = (files: ExtFile[]) => {
     const extFiles = {};
+
     if (files && files.length > 0) {
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
+
             extFiles[file.path] = { content: file.content };
         }
     }

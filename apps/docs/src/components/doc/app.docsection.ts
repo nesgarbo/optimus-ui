@@ -11,8 +11,16 @@ import { AppDocSectionText } from './app.docsectiontext';
     template: `
         <ng-container *ngIf="docs && docs.length">
             <section class="py-6" *ngFor="let doc of docs; trackBy: trackById">
-                <ng-container *ngIf="!doc.component && doc.children">
+                <ng-container *ngIf="doc.components?.length">
                     <app-docsectiontext [title]="doc.label" [id]="doc.id" [level]="2" [description]="doc?.description" />
+
+                    <ng-container *ngFor="let part of doc.components">
+                        <ng-container *ngComponentOutlet="part"></ng-container>
+                    </ng-container>
+                </ng-container>
+
+                <ng-container *ngIf="!doc.component && !doc.components?.length && doc.children">
+                    <app-docsectiontext [title]="doc.label" [id]="doc.id" [level]="2" [description]="doc?.description" [divider]="!!doc.divider" />
 
                     <ng-template ngFor [ngForOf]="doc.children" let-child>
                         <app-docsectiontext [title]="child.label" [id]="child.id" [level]="3" [description]="child?.description" />

@@ -18,6 +18,7 @@ import { AppDoc } from '@/components/doc/app.doc';
             docTitle="Angular ContextMenu Component - Optimus UI"
             header="ContextMenu"
             description="ContextMenu displays an overlay menu on right click of its target."
+            metaDescription="ContextMenu displays an overlay menu on right click of its target. Examples cover basic, document, template, command, router and table."
             [docs]="docs"
             [apiDocs]="['ContextMenu', 'MenuItem']"
             [ptDocs]="ptComponent"

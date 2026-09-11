@@ -8,7 +8,14 @@ import { AppDoc } from '@/components/doc/app.doc';
 @Component({
     standalone: true,
     imports: [AppDoc],
-    template: ` <app-doc docTitle="Custom Icons - Optimus UI" header="Custom Icons" description="Optimus UI components can be used with any icon library using the templating features." [docs]="docs" docType="page"></app-doc>`
+    template: ` <app-doc
+        docTitle="Custom Icons - Optimus UI"
+        header="Custom Icons"
+        description="Optimus UI components can be used with any icon library using the templating features."
+        metaDescription="Optimus UI components can be used with any icon library using the templating features. Examples cover material, font awesome, svg and image."
+        [docs]="docs"
+        docType="page"
+    ></app-doc>`
 })
 export class CustomIconsDemo {
     docs = [

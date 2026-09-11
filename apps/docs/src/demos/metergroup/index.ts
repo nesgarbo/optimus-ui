@@ -18,6 +18,7 @@ import { AppDoc } from '@/components/doc/app.doc';
         docTitle="Angular MeterGroup Component - Optimus UI"
         header="MeterGroup"
         description="MeterGroup displays scalar measurements within a known range."
+        metaDescription="MeterGroup displays scalar measurements within a known range. Examples cover basic, multiple, icon, label, vertical, min max and template."
         [docs]="docs"
         [ptDocs]="ptComponent"
         [apiDocs]="['MeterGroup']"

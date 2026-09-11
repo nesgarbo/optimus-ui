@@ -1,5 +1,5 @@
 import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SelectModule } from '@openng/optimus-ui/select';
 
@@ -24,7 +24,7 @@ interface City {
         </div>
     `
 })
-export class ArchitectureDoc {
+export class ArchitectureDoc implements OnInit {
     cities: City[] | undefined;
 
     selectedCity: City | undefined;

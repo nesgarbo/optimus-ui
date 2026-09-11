@@ -8,7 +8,16 @@ import { Component } from '@angular/core';
 import { AppDoc } from '@/components/doc/app.doc';
 
 @Component({
-    template: `<app-doc docTitle="Angular Image Component - Optimus UI" header="Image" description="Displays an image with preview and tranformation options." [docs]="docs" [apiDocs]="['Image']" [ptDocs]="ptComponent" themeDocs="image"></app-doc> `,
+    template: `<app-doc
+        docTitle="Angular Image Component - Optimus UI"
+        header="Image"
+        description="Displays an image with preview and tranformation options."
+        metaDescription="Displays an image with preview and tranformation options. Examples cover basic, preview and template."
+        [docs]="docs"
+        [apiDocs]="['Image']"
+        [ptDocs]="ptComponent"
+        themeDocs="image"
+    ></app-doc> `,
     standalone: true,
     imports: [AppDoc]
 })

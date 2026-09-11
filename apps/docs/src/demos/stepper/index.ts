@@ -14,6 +14,7 @@ import { Component } from '@angular/core';
         docTitle="Angular Stepper Component - Optimus UI"
         header="Stepper"
         description="The Stepper component displays a wizard-like workflow by guiding users through the multi-step progression."
+        metaDescription="The Stepper component displays a wizard-like workflow by guiding users through the multi-step progression. Examples cover horizontal, vertical and linear."
         [docs]="docs"
         [apiDocs]="['Stepper']"
         themeDocs="stepper"

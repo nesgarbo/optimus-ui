@@ -16,7 +16,16 @@ import { AppDoc } from '@/components/doc/app.doc';
     standalone: true,
     imports: [AppDoc],
     template: `
-        <app-doc docTitle="Angular Otp Input Component - Optimus UI" header="InputOtp" description="Input Otp is used to enter one time passwords." [docs]="docs" [ptDocs]="ptComponent" [apiDocs]="['InputOtp']" themeDocs="inputotp"></app-doc>
+        <app-doc
+            docTitle="Angular Otp Input Component - Optimus UI"
+            header="InputOtp"
+            description="Input Otp is used to enter one time passwords."
+            metaDescription="Input Otp is used to enter one time passwords. Examples cover basic, mask, integer only, sizes, template, forms and sample."
+            [docs]="docs"
+            [ptDocs]="ptComponent"
+            [apiDocs]="['InputOtp']"
+            themeDocs="inputotp"
+        ></app-doc>
     `,
     encapsulation: ViewEncapsulation.None
 })

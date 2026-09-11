@@ -26,6 +26,7 @@ import { AppDoc } from '@/components/doc/app.doc';
         docTitle="Angular TreeSelect Component - Optimus UI"
         header="TreeSelect"
         description="TreeSelect is a form component to choose from hierarchical data."
+        metaDescription="TreeSelect is a form component to choose from hierarchical data. Examples cover basic, multiple, checkbox, virtual scroll, lazy, filter and template."
         [docs]="docs"
         [apiDocs]="['TreeSelect', 'TreeNode']"
         [ptDocs]="ptComponent"

@@ -24,6 +24,7 @@ import { AppDoc } from '@/components/doc/app.doc';
         docTitle="Angular Password Component - Optimus UI"
         header="Password"
         description="Password displays strength indicator for password fields."
+        metaDescription="Password displays strength indicator for password fields. Examples cover basic, meter, locale, toggle mask, template, float label, ifta label and clear icon."
         [docs]="docs"
         [apiDocs]="['Password', 'PasswordDirective']"
         [ptDocs]="ptComponent"

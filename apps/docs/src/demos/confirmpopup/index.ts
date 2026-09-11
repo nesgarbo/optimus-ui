@@ -15,6 +15,7 @@ import { AppDoc } from '@/components/doc/app.doc';
             docTitle="Angular ConfirmPopup Component - Optimus UI"
             header="ConfirmPopup"
             description="ConfirmPopup displays a confirmation overlay displayed relatively to its target."
+            metaDescription="ConfirmPopup displays a confirmation overlay displayed relatively to its target. Examples cover basic, template and headless."
             [docs]="docs"
             [apiDocs]="['ConfirmPopup', 'Confirmation', 'ConfirmationService']"
             [ptDocs]="ptComponent"

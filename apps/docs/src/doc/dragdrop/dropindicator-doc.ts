@@ -2,7 +2,7 @@ import { AppCode } from '@/components/doc/app.code';
 import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
 import { Product } from '@/domain/product';
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { DragDropModule } from '@openng/optimus-ui/dragdrop';
 
 @Component({
@@ -33,7 +33,7 @@ import { DragDropModule } from '@openng/optimus-ui/dragdrop';
         <app-code [extFiles]="['Product']"></app-code>
     `
 })
-export class DropIndicatorDoc {
+export class DropIndicatorDoc implements OnInit {
     availableProducts: Product[] | undefined;
 
     selectedProducts: Product[] | undefined;
@@ -55,6 +55,7 @@ export class DropIndicatorDoc {
     drop() {
         if (this.draggedProduct) {
             let draggedProductIndex = this.findIndex(this.draggedProduct);
+
             this.selectedProducts = [...(this.selectedProducts as Product[]), this.draggedProduct];
             this.availableProducts = this.availableProducts?.filter((val, i) => i != draggedProductIndex);
             this.draggedProduct = null;
@@ -67,12 +68,14 @@ export class DropIndicatorDoc {
 
     findIndex(product: Product) {
         let index = -1;
+
         for (let i = 0; i < (this.availableProducts as Product[]).length; i++) {
             if (product.id === (this.availableProducts as Product[])[i].id) {
                 index = i;
                 break;
             }
         }
+
         return index;
     }
 }

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AutoCompleteModule } from '@openng/optimus-ui/autocomplete';
 import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
@@ -24,7 +24,7 @@ interface AutoCompleteCompleteEvent {
         </div>
         <app-code></app-code>`
 })
-export class VirtualScrollDoc {
+export class VirtualScrollDoc implements OnInit {
     selectedItem: any;
 
     filteredItems: any[] | undefined;
@@ -38,6 +38,7 @@ export class VirtualScrollDoc {
 
         for (let i = 0; i < (this.items as any[]).length; i++) {
             let item = (this.items as any[])[i];
+
             if (item.label.toLowerCase().indexOf(query.toLowerCase()) == 0) {
                 filtered.push(item);
             }
@@ -48,6 +49,7 @@ export class VirtualScrollDoc {
 
     ngOnInit() {
         this.items = [];
+
         for (let i = 0; i < 10000; i++) {
             this.items.push({ label: 'Item ' + i, value: 'Item ' + i });
         }

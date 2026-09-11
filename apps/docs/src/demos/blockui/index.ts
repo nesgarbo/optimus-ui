@@ -13,6 +13,7 @@ import { Component } from '@angular/core';
         docTitle="Angular BlockUI Component - Optimus UI"
         header="BlockUI"
         description="BlockUI can either block other components or the whole page."
+        metaDescription="BlockUI can either block other components or the whole page. Examples cover basic and document."
         [docs]="docs"
         [apiDocs]="['BlockUI']"
         [ptDocs]="ptComponent"

@@ -30,12 +30,14 @@ export class DemoCodeService {
         }
 
         this.loadPromise = this.fetchDemos();
+
         return this.loadPromise;
     }
 
     private async fetchDemos(): Promise<void> {
         try {
             const data = await firstValueFrom(this.http.get<DemosJson>('/demos.json'));
+
             this.demosJson.set(data);
             console.log(`[DemoCodeService] Loaded ${data.totalDemos} demos`);
         } catch (error) {
@@ -55,7 +57,9 @@ export class DemoCodeService {
      */
     getCode(selector: string): Demo | null {
         const demos = this.demosJson();
+
         if (!demos) return null;
+
         return demos.demos[selector] ?? null;
     }
 
@@ -66,6 +70,7 @@ export class DemoCodeService {
      */
     getCodeByComponent(component: string, section: string): Demo | null {
         const selector = `${component}-${section}-demo`;
+
         return this.getCode(selector);
     }
 
@@ -79,6 +84,7 @@ export class DemoCodeService {
      */
     getDemosByComponent(component: string): Demo[] {
         const demos = this.demosJson();
+
         if (!demos) return [];
 
         return Object.values(demos.demos).filter((demo) => demo.component === component);

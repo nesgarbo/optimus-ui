@@ -59,12 +59,15 @@ export class ExampleDoc implements OnDestroy {
 
         this.ref.onClose.subscribe((data: any) => {
             let summary_and_detail;
+
             if (data) {
                 const buttonType = data?.buttonType;
+
                 summary_and_detail = buttonType ? { summary: 'No Product Selected', detail: `Pressed '${buttonType}' button` } : { summary: 'Product Selected', detail: data?.name };
             } else {
                 summary_and_detail = { summary: 'No Product Selected', detail: 'Pressed Close button' };
             }
+
             this.messageService.add({ severity: 'info', ...summary_and_detail, life: 3000 });
         });
 

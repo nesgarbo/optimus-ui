@@ -8,7 +8,15 @@ import { AppDoc } from '@/components/doc/app.doc';
 @Component({
     standalone: true,
     imports: [AppDoc],
-    template: ` <app-doc docTitle="Contribution - Optimus UI" header="Contribution Guide" description="Welcome to the Optimus UI Contribution Guide and thank you for considering contributing." [docs]="docs"></app-doc> `
+    template: `
+        <app-doc
+            docTitle="Contribution - Optimus UI"
+            header="Contribution Guide"
+            description="Welcome to the Optimus UI Contribution Guide and thank you for considering contributing."
+            metaDescription="Welcome to the Optimus UI Contribution Guide and thank you for considering contributing. Examples cover introduction, help needed, pathway and benefits."
+            [docs]="docs"
+        ></app-doc>
+    `
 })
 export class ContributionDemo {
     docs = [

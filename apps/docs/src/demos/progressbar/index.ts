@@ -13,6 +13,7 @@ import { AppDoc } from '@/components/doc/app.doc';
         docTitle="Angular ProgressBar Component - Optimus UI"
         header="ProgressBar"
         description="ProgressBar is a process status indicator."
+        metaDescription="ProgressBar is a process status indicator. Examples cover basic, dynamic, template and indeterminate."
         [docs]="docs"
         [ptDocs]="ptComponent"
         [apiDocs]="['ProgressBar']"

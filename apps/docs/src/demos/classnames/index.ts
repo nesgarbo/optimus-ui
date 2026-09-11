@@ -1,3 +1,4 @@
+import { AccessibilityDoc } from '@/doc/classnames/accessibility-doc';
 import { AppDoc } from '@/components/doc/app.doc';
 import { ExamplesDoc } from '@/doc/classnames/examples-doc';
 import { ImportDoc } from '@/doc/classnames/import-doc';
@@ -25,6 +26,11 @@ export class ClassNamesDemo {
             id: 'examples',
             label: 'Examples',
             component: ExamplesDoc
+        },
+        {
+            id: 'accessibility',
+            label: 'Accessibility',
+            component: AccessibilityDoc
         }
     ];
 }

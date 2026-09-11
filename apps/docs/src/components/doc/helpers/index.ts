@@ -70,6 +70,7 @@ export const getPTOptions = (name: string): PTOption[] => {
                 subCompName = prop.type.slice(0, prop.type.indexOf('<')).replace('PassThroughOptions', '').replace('PassThroughOptionType', '');
                 const subApiDoc = (APIDocs as Record<string, APIDocEntry>)[subCompName.toLowerCase()];
                 const subInterfaceValues = subApiDoc.interfaces?.values || [];
+
                 subOptions = subInterfaceValues.find((v) => v.name === `${subCompName}PassThroughMethodOptions`);
                 const objToReplace = subOptions?.props.find((opt) => opt.name === 'parent');
 

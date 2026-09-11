@@ -65,9 +65,11 @@ export class ContextMenuDoc implements OnInit {
             if (n.key === key) {
                 return updatedNode;
             }
+
             if (n.children) {
                 return { ...n, children: this.updateNodeInTree(n.children, key, updatedNode) };
             }
+
             return n;
         });
     }

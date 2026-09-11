@@ -1,6 +1,6 @@
 import { default as IconData } from '@/assets/data/icons.json';
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
 import { InputTextModule } from '@openng/optimus-ui/inputtext';
 
@@ -28,7 +28,7 @@ import { InputTextModule } from '@openng/optimus-ui/inputtext';
         </div>
     `
 })
-export class ListDoc {
+export class ListDoc implements OnInit {
     icons: any;
 
     filteredIcons: any[];
@@ -38,7 +38,7 @@ export class ListDoc {
     ngOnInit() {
         this.icons = IconData.icons.sort((icon1, icon2) => {
             if (icon1.properties.name < icon2.properties.name) return -1;
-            else if (icon1.properties.name < icon2.properties.name) return 1;
+            else if (icon1.properties.name > icon2.properties.name) return 1;
             else return 0;
         });
         this.filteredIcons = IconData.icons;
@@ -51,8 +51,8 @@ export class ListDoc {
         if (!searchText) {
             this.filteredIcons = this.icons;
         } else {
-            this.filteredIcons = this.icons.filter((icon) => {
-                return (
+            this.filteredIcons = this.icons.filter(
+                (icon) =>
                     icon.icon.tags.some((tag) =>
                         tag
                             .replace(/[^\w\s]/gi, '')
@@ -64,8 +64,7 @@ export class ListDoc {
                         .replace(/\s/g, '')
                         .toLowerCase()
                         .includes(sanitizedInput.toLowerCase())
-                );
-            });
+            );
         }
     }
 }

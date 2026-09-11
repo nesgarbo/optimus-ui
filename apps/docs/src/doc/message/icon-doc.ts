@@ -1,6 +1,6 @@
 import { AppCodeModule } from '@/components/doc/app.code';
 import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { AvatarModule } from '@openng/optimus-ui/avatar';
 import { MessageModule } from '@openng/optimus-ui/message';
 
@@ -24,6 +24,4 @@ import { MessageModule } from '@openng/optimus-ui/message';
         <app-code></app-code>
     `
 })
-export class IconDoc implements OnInit {
-    ngOnInit() {}
-}
+export class IconDoc {}

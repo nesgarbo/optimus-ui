@@ -10,7 +10,14 @@ import { Component } from '@angular/core';
 @Component({
     standalone: true,
     imports: [AppDoc],
-    template: `<app-doc docTitle="Philosophy - Optimus UI" header="Philosophy" description="Why Optimus UI exists, what it commits to, and where it stops." [docs]="docs" docType="page"></app-doc>`
+    template: `<app-doc
+        docTitle="Philosophy - Optimus UI"
+        header="Philosophy"
+        description="Why Optimus UI exists, what it commits to, and where it stops."
+        metaDescription="Why Optimus UI exists, what it commits to, and where it stops. Examples cover why this fork exists, what we commit to and what we do not do."
+        [docs]="docs"
+        docType="page"
+    ></app-doc>`
 })
 export class PhilosophyDemo {
     docs = [

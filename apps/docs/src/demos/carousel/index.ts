@@ -16,6 +16,7 @@ import { Component } from '@angular/core';
             docTitle="Angular Carousel Component - Optimus UI"
             header="Carousel"
             description="Carousel is a content slider featuring various customization options."
+            metaDescription="Carousel is a content slider featuring various customization options. Examples cover basic, circular, responsive and vertical."
             [docs]="docs"
             [apiDocs]="['Carousel']"
             [ptDocs]="ptComponent"

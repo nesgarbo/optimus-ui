@@ -64,6 +64,7 @@ export class ColumnGroupDoc {
 
     calculateLastYearTotal() {
         let total = 0;
+
         for (let sale of this.sales) {
             total += sale.lastYearProfit;
         }
@@ -73,6 +74,7 @@ export class ColumnGroupDoc {
 
     calculateThisYearTotal() {
         let total = 0;
+
         for (let sale of this.sales) {
             total += sale.thisYearProfit;
         }

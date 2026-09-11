@@ -62,6 +62,7 @@ export class LazyDoc implements OnInit {
             setTimeout(() => {
                 const _nodes = this.nodes();
                 let _node = { ...event.node };
+
                 _node.children = [];
 
                 for (let i = 0; i < 3; i++) {
@@ -72,6 +73,7 @@ export class LazyDoc implements OnInit {
                 }
 
                 const key = parseInt(_node.key, 10);
+
                 _nodes[key] = { ..._node, loading: false };
                 this.nodes.set([..._nodes]);
             }, 500);

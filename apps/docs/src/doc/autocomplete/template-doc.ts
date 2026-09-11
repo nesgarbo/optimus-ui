@@ -1,5 +1,5 @@
 import { CountryService } from '@/service/countryservice';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AutoCompleteModule } from '@openng/optimus-ui/autocomplete';
@@ -39,7 +39,7 @@ interface AutoCompleteCompleteEvent {
         </div>
         <app-code></app-code>`
 })
-export class TemplateDoc {
+export class TemplateDoc implements OnInit {
     countries: any[] | undefined;
 
     selectedCountryAdvanced: any[] | undefined;
@@ -60,10 +60,12 @@ export class TemplateDoc {
 
         for (let i = 0; i < (this.countries as any[]).length; i++) {
             let country = (this.countries as any[])[i];
+
             if (country.name.toLowerCase().indexOf(query.toLowerCase()) == 0) {
                 filtered.push(country);
             }
         }
+
         this.filteredCountries = filtered;
     }
 }

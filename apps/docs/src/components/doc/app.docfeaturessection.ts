@@ -1,25 +1,25 @@
-import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from '@angular/core';
+import { Doc } from '@/domain/doc';
+import { ChangeDetectionStrategy, Component, computed, Input, input, ViewEncapsulation } from '@angular/core';
+import { featuresOutline } from './helpers/features-outline';
 import { AppDocSection } from './app.docsection';
 import { AppDocSectionNav } from './app.docsection-nav';
-import { AppDocCopyMarkdown } from './app.doccopymarkdown';
+import { AppDocBreadcrumb } from './app.docbreadcrumb';
 
 @Component({
     selector: 'app-docfeaturessection',
     standalone: true,
-    imports: [AppDocSection, AppDocSectionNav, AppDocCopyMarkdown],
+    imports: [AppDocSection, AppDocSectionNav, AppDocBreadcrumb],
     template: ` <div class="doc-main">
             <div class="doc-intro">
-                <div class="grid grid-cols-[1fr_auto] gap-2 items-start">
-                    <h1 class="m-0">{{ header }}</h1>
-                    @if (componentName || docType === 'page') {
-                        <app-doccopymarkdown [componentName]="componentName" [docType]="docType" class="flex items-center gap-4 relative row-start-3 sm:row-start-1 sm:col-start-2" />
-                    }
-                    <p class="col-span-2">{{ description }}</p>
+                <app-docbreadcrumb />
+                <div class="doc-intro-heading">
+                    <h1>{{ header }}</h1>
                 </div>
+                <p>{{ description }}</p>
             </div>
-            <app-docsection [docs]="docs" />
+            <app-docsection [docs]="outline()" />
         </div>
-        <app-docsection-nav [docs]="docs" />`,
+        <app-docsection-nav [docs]="outline()" />`,
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
     host: {
@@ -31,9 +31,12 @@ export class AppDocFeaturesSection {
 
     @Input() description!: string;
 
-    @Input() docs!: any[];
+    docs = input<Doc[]>([]);
 
     @Input() componentName: string = '';
 
-    @Input() docType: 'component' | 'page' = 'component';
+    docType = input<'component' | 'page'>('component');
+
+    /** Usage, then Examples, then Accessibility — see `featuresOutline`. */
+    outline = computed(() => (this.docType() === 'component' ? featuresOutline(this.docs()) : this.docs()));
 }

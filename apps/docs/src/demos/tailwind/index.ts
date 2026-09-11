@@ -11,7 +11,14 @@ import { DarkModeDoc } from '@/doc/tailwind/darkmode-doc';
 import { AppDoc } from '@/components/doc/app.doc';
 
 @Component({
-    template: `<app-doc docTitle="Tailwind CSS - Optimus UI" header="Tailwind CSS" description="Integration between Optimus UI and Tailwind CSS." [docs]="docs" docType="page"></app-doc>`,
+    template: `<app-doc
+        docTitle="Tailwind CSS - Optimus UI"
+        header="Tailwind CSS"
+        description="Integration between Optimus UI and Tailwind CSS."
+        metaDescription="Integration between Optimus UI and Tailwind CSS. Examples cover overview, plugin, extensions, dark mode, override, samples, color palette, form and headless."
+        [docs]="docs"
+        docType="page"
+    ></app-doc>`,
     standalone: true,
     imports: [AppDoc]
 })

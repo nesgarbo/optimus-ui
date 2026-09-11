@@ -22,6 +22,7 @@ import { Component } from '@angular/core';
         docTitle="Angular Listbox Component - Optimus UI"
         header="Listbox"
         description="Listbox is used to select one or more values from a list of items."
+        metaDescription="Listbox is used to select one or more values from a list of items. Examples cover basic, checkmark, checkbox, multiple, group, filter and template."
         [docs]="docs"
         [apiDocs]="['Listbox']"
         themeDocs="listbox"

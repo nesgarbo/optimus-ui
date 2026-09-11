@@ -149,6 +149,7 @@ export class AppDocApiTable {
 
     hasNestedData = computed(() => {
         const d = this.data();
+
         return d && d.length > 0 && d[0].data && d[0].data.length > 0;
     });
 
@@ -158,11 +159,13 @@ export class AppDocApiTable {
 
     hasParameters = computed(() => {
         const d = this.data();
+
         return d?.some((item) => item.parameters && item.parameters.length > 0) ?? false;
     });
 
     visibleKeys = computed(() => {
         const d = this.data();
+
         if (!d || d.length === 0) return [];
 
         const keys = Object.keys(d[0]);
@@ -171,6 +174,7 @@ export class AppDocApiTable {
         return keys.filter((key) => {
             if (hiddenKeys.includes(key)) return false;
             if (key === 'parameters' && !this.hasParameters()) return false;
+
             return true;
         });
     });
@@ -182,6 +186,7 @@ export class AppDocApiTable {
         return entries.filter(([key]) => {
             if (hiddenKeys.includes(key)) return false;
             if (key === 'parameters' && !this.hasParameters()) return false;
+
             return true;
         });
     }
@@ -190,9 +195,11 @@ export class AppDocApiTable {
         if (this.isTemplates()) {
             return value?.split('|') ?? [];
         }
+
         if (this.isMethods() && !value) {
             return ['-'];
         }
+
         return value?.split('|').map((item) => item.replace(/(\[|\]|<|>).*$/gm, '').trim()) ?? [];
     }
 
@@ -208,6 +215,7 @@ export class AppDocApiTable {
     navigate(event: Event, param: string): void {
         if (typeof window !== 'undefined') {
             const parentElement = (event.currentTarget as HTMLElement).parentElement;
+
             this.location.go(this.location.path() + '#' + this.id() + '.' + param);
 
             setTimeout(() => {
@@ -234,6 +242,7 @@ export class AppDocApiTable {
     private scrollToLabelById(id: string): void {
         if (typeof document !== 'undefined') {
             const label = document.getElementById(id);
+
             this.location.go(`${this.location.path()}/#${id}`);
             label?.parentElement?.scrollIntoView({ block: 'start', behavior: 'smooth' });
         }

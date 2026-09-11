@@ -24,14 +24,12 @@ import { TooltipModule } from '@openng/optimus-ui/tooltip';
 export class ExamplesDoc {
     isActive = signal<boolean>(false);
 
-    boxBinding = computed(() => {
-        return {
-            class: ['flex items-center justify-center p-4 rounded-lg select-none w-[7rem] border border-primary font-medium', this.isActive() ? 'bg-primary text-primary-contrast' : 'bg-transparent text-primary-600 dark:text-primary-400'],
-            style: { cursor: 'pointer', transition: 'all 0.3s' },
-            'data-state': this.isActive() ? 'active' : 'inactive',
-            onclick: () => {
-                this.isActive.set(!this.isActive());
-            }
-        };
-    });
+    boxBinding = computed(() => ({
+        class: ['flex items-center justify-center p-4 rounded-lg select-none w-[7rem] border border-primary font-medium', this.isActive() ? 'bg-primary text-primary-contrast' : 'bg-transparent text-primary-600 dark:text-primary-400'],
+        style: { cursor: 'pointer', transition: 'all 0.3s' },
+        'data-state': this.isActive() ? 'active' : 'inactive',
+        onclick: () => {
+            this.isActive.set(!this.isActive());
+        }
+    }));
 }

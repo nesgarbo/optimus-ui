@@ -24,6 +24,7 @@ export class AppDocPtSection {
 
     navItems = computed(() => {
         const component = this.ptComponent();
+
         if (!component) {
             return [];
         }

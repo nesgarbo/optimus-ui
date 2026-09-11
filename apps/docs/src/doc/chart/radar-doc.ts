@@ -87,6 +87,7 @@ export class RadarDoc implements OnInit {
                 }
             };
         }
+
         this.cd.markForCheck();
     }
 }

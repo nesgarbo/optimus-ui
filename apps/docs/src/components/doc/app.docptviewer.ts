@@ -1,6 +1,6 @@
 import APIDoc from '@/doc/apidoc/index.json';
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, computed, ElementRef, inject, input, InputSignal, viewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, computed, ElementRef, inject, input, InputSignal, viewChild, AfterViewChecked } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { addClass, find, removeClass } from '@openng/optimus-ui-utils/dom';
 import { Optimus } from '@openng/optimus-ui/config';
@@ -106,7 +106,7 @@ export const getPTOptions = (name) => {
         </div>
     `
 })
-export class AppDocPtViewer {
+export class AppDocPtViewer implements AfterViewChecked {
     header: InputSignal<any[] | undefined | null> = input<any[] | undefined | null>();
 
     docs: InputSignal<Doc[] | undefined | null> = input<Doc[] | undefined | null>(null);
@@ -151,6 +151,7 @@ export class AppDocPtViewer {
             for (const word of whiteList) {
                 if (elemName.toLowerCase().includes(word.toLowerCase())) {
                     const regex = new RegExp(word, 'gi');
+
                     elemName = elemName.replace(regex, '');
                 }
             }
@@ -173,6 +174,7 @@ export class AppDocPtViewer {
 
         if (this.hoveredElements.length === 0) {
             const body = document.querySelector('body');
+
             if (body) {
                 this.hoveredElements = find(body, selector);
             }

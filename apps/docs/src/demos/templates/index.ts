@@ -6,7 +6,16 @@ import { Component } from '@angular/core';
     selector: 'templates-demo',
     standalone: true,
     imports: [AppDoc],
-    template: ` <app-doc docTitle="Templates - Optimus UI" header="Templates" description="Free, MIT licensed application templates built with Optimus UI." [docs]="docs" docType="page"></app-doc> `
+    template: `
+        <app-doc
+            docTitle="Templates - Optimus UI"
+            header="Templates"
+            description="Free, MIT licensed application templates built with Optimus UI."
+            metaDescription="Free, MIT licensed application templates built with Optimus UI. Examples cover sparked."
+            [docs]="docs"
+            docType="page"
+        ></app-doc>
+    `
 })
 export class TemplatesDemo {
     docs = [

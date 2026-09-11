@@ -13,6 +13,7 @@ import { Component } from '@angular/core';
         docTitle="Angular Skeleton Component - Optimus UI"
         header="Skeleton"
         description="Skeleton is a placeholder to display instead of the actual content."
+        metaDescription="Skeleton is a placeholder to display instead of the actual content. Examples cover shapes, card, list and datatable."
         [docs]="docs"
         [apiDocs]="['Skeleton']"
         [ptDocs]="ptComponent"

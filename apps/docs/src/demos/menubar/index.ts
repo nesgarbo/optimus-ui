@@ -13,6 +13,7 @@ import { AppDoc } from '@/components/doc/app.doc';
         docTitle="Angular Menubar Component - Optimus UI"
         header="Menubar"
         description="Menubar is a horizontal menu component."
+        metaDescription="Menubar is a horizontal menu component. Examples cover basic, template, command and router."
         [docs]="docs"
         [apiDocs]="['Menubar', 'MenuItem']"
         [ptDocs]="ptComponent"

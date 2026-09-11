@@ -13,7 +13,18 @@ import { AppDoc } from '@/components/doc/app.doc';
 @Component({
     standalone: true,
     imports: [AppDoc],
-    template: ` <app-doc docTitle="Angular Editor Component - Optimus UI" header="Editor" description="Editor is rich text editor component based on Quill." [docs]="docs" [apiDocs]="['Editor']" [ptDocs]="ptComponent" themeDocs="editor"></app-doc> `
+    template: `
+        <app-doc
+            docTitle="Angular Editor Component - Optimus UI"
+            header="Editor"
+            description="Editor is rich text editor component based on Quill."
+            metaDescription="Editor is rich text editor component based on Quill. Examples cover quill, basic, readonly, template and forms."
+            [docs]="docs"
+            [apiDocs]="['Editor']"
+            [ptDocs]="ptComponent"
+            themeDocs="editor"
+        ></app-doc>
+    `
 })
 export class EditorDemo {
     ptComponent = PTComponent;

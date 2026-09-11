@@ -11,6 +11,7 @@ import { AppDoc } from '@/components/doc/app.doc';
         docTitle="Angular Toolbar Component - Optimus UI"
         header="Toolbar"
         description="Toolbar is a grouping component for buttons and other content."
+        metaDescription="Toolbar is a grouping component for buttons and other content. Examples cover basic and custom."
         [docs]="docs"
         [apiDocs]="['Toolbar']"
         [ptDocs]="ptComponent"

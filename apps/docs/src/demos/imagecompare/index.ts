@@ -11,6 +11,7 @@ import { Component } from '@angular/core';
         docTitle="Angular ImageCompare Component - Optimus UI"
         header="ImageCompare"
         description="Compare two images side by side with a slider."
+        metaDescription="Compare two images side by side with a slider. Examples cover basic and responsive."
         [docs]="docs"
         [apiDocs]="['ImageCompare']"
         [ptDocs]="ptComponent"

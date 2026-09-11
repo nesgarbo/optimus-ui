@@ -10,6 +10,7 @@ import { Component } from '@angular/core';
         docTitle="Angular Animate On Scroll Directive - Optimus UI"
         header="AnimateOnScroll"
         description="AnimateOnScroll is used to apply animations to elements when entering or leaving the viewport during scrolling."
+        metaDescription="AnimateOnScroll is used to apply animations to elements when entering or leaving the viewport during scrolling. Examples cover basic."
         [docs]="docs"
         [apiDocs]="['AnimateOnScroll']"
     ></app-doc>`,

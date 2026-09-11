@@ -8,7 +8,16 @@ import { AppDoc } from '@/components/doc/app.doc';
     selector: 'llms-demo',
     standalone: true,
     imports: [AppDoc],
-    template: ` <app-doc docTitle="LLMs.txt - Optimus UI" header="LLMs.txt" description="LLM-optimized documentation endpoints for Optimus UI components." [docs]="docs" docType="page"></app-doc> `
+    template: `
+        <app-doc
+            docTitle="LLMs.txt - Optimus UI"
+            header="LLMs.txt"
+            description="LLM-optimized documentation endpoints for Optimus UI components."
+            metaDescription="LLM-optimized documentation endpoints for Optimus UI components. Examples cover /llms.txt, /llms-full.txt and .md extension."
+            [docs]="docs"
+            docType="page"
+        ></app-doc>
+    `
 })
 export class LLMsDemo {
     docs = [

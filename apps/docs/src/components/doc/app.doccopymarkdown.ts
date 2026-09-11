@@ -1,24 +1,40 @@
 import { GITHUB_REPO_HEAD } from '@/utils/constants';
 import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
-import { Component, inject, input, OnInit, PLATFORM_ID } from '@angular/core';
+import { booleanAttribute, Component, inject, input, OnInit, PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';
 import { MenuItem, MessageService } from '@openng/optimus-ui/api';
+import { MenuModule } from '@openng/optimus-ui/menu';
 import { SplitButtonModule } from '@openng/optimus-ui/splitbutton';
 import { ToastModule } from '@openng/optimus-ui/toast';
 
 @Component({
     selector: 'app-doccopymarkdown',
     standalone: true,
-    imports: [CommonModule, SplitButtonModule, ToastModule],
+    imports: [CommonModule, SplitButtonModule, MenuModule, ToastModule],
     providers: [MessageService],
     template: `
         <p-toast position="top-right" />
-        <p-splitbutton label="Copy Markdown" icon="pi pi-copy" severity="secondary" outlined [model]="menuItems" (onClick)="copyMarkdown()" appendTo="body" [menuStyleClass]="'min-w-56'" />
+
+        @if (inline()) {
+            <!-- In the rail: a row like the entries around it, with the rest behind "…". -->
+            <span class="doc-copy-markdown-inline">
+                <button type="button" (click)="copyMarkdown()">Copy Markdown</button>
+                <button type="button" class="doc-copy-markdown-more" aria-label="More formats" (click)="menu.toggle($event)">
+                    <i class="pi pi-ellipsis-h" aria-hidden="true"></i>
+                </button>
+                <p-menu #menu [model]="menuItems" [popup]="true" appendTo="body" styleClass="min-w-56" />
+            </span>
+        } @else {
+            <p-splitbutton label="Copy Markdown" icon="pi pi-copy" severity="secondary" outlined [model]="menuItems" (onClick)="copyMarkdown()" appendTo="body" [menuStyleClass]="'min-w-56'" />
+        }
     `
 })
 export class AppDocCopyMarkdown implements OnInit {
     componentName = input<string>('');
     docType = input<'component' | 'page'>('component');
+
+    /** Rendered as a rail row rather than as a button. */
+    inline = input(false, { transform: booleanAttribute });
 
     private router = inject(Router);
     private messageService = inject(MessageService);
@@ -33,6 +49,7 @@ export class AppDocCopyMarkdown implements OnInit {
         if (isPlatformBrowser(this.platformId)) {
             return this.document.location.origin;
         }
+
         return 'https://optimus.openng.org';
     }
 
@@ -40,14 +57,17 @@ export class AppDocCopyMarkdown implements OnInit {
         if (this.componentName()) {
             return this.componentName();
         }
+
         const segments = this.router.url.split('/').filter(Boolean);
         const lastSegment = segments[segments.length - 1]?.split('#')[0];
+
         return lastSegment || '';
     }
 
     get routePath(): string {
         // Get the full route path without hash
         const url = this.router.url.split('#')[0];
+
         // Remove leading slash
         return url.startsWith('/') ? url.slice(1) : url;
     }
@@ -56,6 +76,7 @@ export class AppDocCopyMarkdown implements OnInit {
         if (this.docType() === 'page') {
             return `${this.baseUrl}/llms/pages/${this.currentComponentName.toLowerCase()}.md`;
         }
+
         return `${this.baseUrl}/llms/components/${this.currentComponentName.toLowerCase()}.md`;
     }
 
@@ -63,33 +84,38 @@ export class AppDocCopyMarkdown implements OnInit {
         if (this.docType() === 'page') {
             // For pages, use the full route path for nested pages like theming/styled
             const docPath = this.routePath || this.currentComponentName;
-            return `${GITHUB_REPO_HEAD}/apps/docs/doc/${docPath}/`;
+
+            return `${GITHUB_REPO_HEAD}/apps/docs/src/doc/${docPath}/`;
         }
+
         if (this.currentComponentName) {
-            return `${GITHUB_REPO_HEAD}/apps/docs/doc/${this.currentComponentName}/`;
+            return `${GITHUB_REPO_HEAD}/apps/docs/src/doc/${this.currentComponentName}/`;
         }
-        return `${GITHUB_REPO_HEAD}/apps/docs/`;
+
+        return `${GITHUB_REPO_HEAD}/apps/docs/src/`;
     }
 
     get chatGPTLink(): string {
         const message = `Read ${this.markdownLink}, I want to ask questions about it.`;
+
         return `https://chatgpt.com/?hints=search&q=${encodeURIComponent(message)}`;
     }
 
     get claudeLink(): string {
         const message = `Read ${this.markdownLink}, I want to ask questions about it.`;
+
         return `https://claude.ai/new?q=${encodeURIComponent(message)}`;
     }
 
     ngOnInit() {
         this.menuItems = [
             {
-                label: 'Copy Markdown Link',
-                icon: 'pi pi-link',
-                command: () => this.copyMarkdownLink()
+                label: 'View Markdown',
+                icon: 'pi pi-file',
+                command: () => this.openMarkdown()
             },
             {
-                label: 'Open in GitHub',
+                label: 'View Source on GitHub',
                 icon: 'pi pi-github',
                 command: () => this.openGithub()
             },
@@ -115,6 +141,7 @@ export class AppDocCopyMarkdown implements OnInit {
 
         try {
             const response = await fetch(this.markdownLink);
+
             if (response.ok) {
                 this.markdownContent = await response.text();
             }
@@ -133,6 +160,7 @@ export class AppDocCopyMarkdown implements OnInit {
                 detail: 'Markdown content is still loading. Please try again.',
                 life: 2000
             });
+
             return;
         }
 
@@ -174,6 +202,12 @@ export class AppDocCopyMarkdown implements OnInit {
                 detail: 'Failed to copy link',
                 life: 3000
             });
+        }
+    }
+
+    openMarkdown() {
+        if (isPlatformBrowser(this.platformId)) {
+            window.open(this.markdownLink, '_blank', 'noopener,noreferrer');
         }
     }
 

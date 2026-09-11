@@ -14,6 +14,7 @@ import { AppDoc } from '@/components/doc/app.doc';
         docTitle="Angular IconField Component - Optimus UI"
         header="IconField"
         description="IconField wraps an input and an icon."
+        metaDescription="IconField wraps an input and an icon. Examples cover basic, template, float label, ifta label and sizes."
         [docs]="docs"
         [ptDocs]="ptComponent"
         [apiDocs]="['IconField', 'InputIcon']"

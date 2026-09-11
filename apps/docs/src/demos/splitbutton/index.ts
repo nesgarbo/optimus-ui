@@ -21,6 +21,7 @@ import { Component } from '@angular/core';
         docTitle="Angular SplitButton Component - Optimus UI"
         header="SplitButton"
         description="SplitButton groups a set of commands in an overlay with a default action item."
+        metaDescription="SplitButton groups a set of commands in an overlay with a default action item. Examples cover basic, icons, nested, severity, disabled, raised and rounded."
         [docs]="docs"
         [apiDocs]="['SplitButton']"
         [ptDocs]="ptComponent"

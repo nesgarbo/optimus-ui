@@ -15,6 +15,7 @@ import { Component } from '@angular/core';
             docTitle="Angular Fieldset Component - Optimus UI"
             header="Fieldset"
             description="Fieldset is a grouping component with a content toggle feature."
+            metaDescription="Fieldset is a grouping component with a content toggle feature. Examples cover basic, toggleable and template."
             [docs]="docs"
             [apiDocs]="['Fieldset']"
             themeDocs="fieldset"

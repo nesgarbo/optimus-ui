@@ -18,7 +18,14 @@ import { AppDoc } from '@/components/doc/app.doc';
     selector: 'configuration',
     standalone: true,
     imports: [AppDoc],
-    template: `<app-doc docTitle="Configuration - Optimus UI" header="Configuration" description="Application wide configuration for Optimus UI." [docs]="docs" docType="page"></app-doc>`
+    template: `<app-doc
+        docTitle="Configuration - Optimus UI"
+        header="Configuration"
+        description="Application wide configuration for Optimus UI."
+        metaDescription="Application wide configuration for Optimus UI. Examples cover provider, dynamic, theme, ripple, inputvariant, overlayappendto, zindex, csp and nonce."
+        [docs]="docs"
+        docType="page"
+    ></app-doc>`
 })
 export class ConfigurationDemo {
     docs = [

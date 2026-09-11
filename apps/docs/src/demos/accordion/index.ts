@@ -16,6 +16,7 @@ import { AppDocService } from '@/components/doc/app.doc.service';
         docTitle="Angular Accordion Component - Optimus UI"
         header="Accordion"
         description="Accordion groups a collection of contents in tabs."
+        metaDescription="Accordion groups a collection of contents in tabs. Examples cover basic, dynamic, multiple, disabled, controlled and template."
         [docs]="docs"
         [apiDocs]="['Accordion', 'AccordionPanel', 'AccordionHeader']"
         [ptDocs]="ptComponent"

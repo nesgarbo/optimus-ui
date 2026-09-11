@@ -14,6 +14,7 @@ import { Component } from '@angular/core';
         docTitle="Angular TieredMenu Component - Optimus UI"
         header="TieredMenu"
         description="TieredMenu displays submenus in nested overlays."
+        metaDescription="TieredMenu displays submenus in nested overlays. Examples cover basic, popup, template, command and router."
         [docs]="docs"
         [apiDocs]="['TieredMenu', 'MenuItem']"
         [ptDocs]="ptComponent"

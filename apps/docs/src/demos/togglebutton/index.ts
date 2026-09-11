@@ -17,6 +17,7 @@ import { AppDoc } from '@/components/doc/app.doc';
         docTitle="Angular ToggleButton Component - Optimus UI"
         header="ToggleButton"
         description="ToggleButton is used to select a boolean value using a button."
+        metaDescription="ToggleButton is used to select a boolean value using a button. Examples cover basic, customized, sizes, fluid, disabled, invalid and forms."
         [docs]="docs"
         [apiDocs]="['ToggleButton']"
         [ptDocs]="ptComponent"

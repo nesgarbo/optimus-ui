@@ -1,11 +1,11 @@
 import { CommonModule, Location } from '@angular/common';
-import { Component, ElementRef, Input, numberAttribute } from '@angular/core';
+import { booleanAttribute, Component, ElementRef, Input, numberAttribute } from '@angular/core';
 @Component({
     selector: 'app-docsectiontext',
     standalone: true,
     imports: [CommonModule],
     template: `
-        <h2 class="doc-section-label" *ngIf="level === 2">
+        <h2 class="doc-section-label" [class.doc-section-divider]="divider" *ngIf="level === 2">
             {{ title }}
             <a (click)="navigate($event)" class="cursor-pointer" [id]="id">#</a>
         </h2>
@@ -32,15 +32,19 @@ export class AppDocSectionText {
 
     @Input() description: string;
 
+    /** A heading that introduces the sections below it rather than content of its own. */
+    @Input({ transform: booleanAttribute }) divider = false;
+
     constructor(
         public location: Location,
         public el: ElementRef
     ) {}
 
     navigate(event) {
-        if (typeof window !== undefined) {
+        if (typeof window !== 'undefined') {
             const hash = window.location.hash.substring(1);
             const parentElement = event.currentTarget.parentElement;
+
             this.location.go(this.location.path().split('#')[0] + '#' + this.id);
 
             setTimeout(() => {

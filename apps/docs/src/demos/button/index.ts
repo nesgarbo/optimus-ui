@@ -28,6 +28,7 @@ import { PTComponent } from '@/doc/button/pt/PTComponent';
             docTitle="Angular Button Component - Optimus UI"
             header="Button"
             description="Button is an extension to standard button element with icons and theming."
+            metaDescription="Button is an extension to standard button element with icons and theming. Examples cover basic, directive, link, icons, loading, severity and disabled."
             [docs]="docs"
             [apiDocs]="['Button', 'ButtonDirective']"
             themeDocs="button"

@@ -22,6 +22,7 @@ import { AppDoc } from '@/components/doc/app.doc';
         docTitle="Angular Textarea Component - Optimus UI"
         header="Textarea"
         description="Textarea adds styling and autoResize functionality to standard textarea element."
+        metaDescription="Textarea adds styling and autoResize functionality to standard textarea element. Examples cover basic, autoresize, float label, ifta label, sizes and fluid."
         [docs]="docs"
         [apiDocs]="['Textarea']"
         [ptDocs]="ptComponent"

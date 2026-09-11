@@ -22,6 +22,7 @@ import { Component } from '@angular/core';
             docTitle="Angular Checkbox Component - Optimus UI"
             header="Checkbox"
             description="Checkbox is an extension to standard checkbox element with theming."
+            metaDescription="Checkbox is an extension to standard checkbox element with theming. Examples cover basic, indeterminate, group, dynamic, filled, sizes, disabled and invalid."
             [docs]="docs"
             [apiDocs]="['Checkbox']"
             [ptDocs]="ptComponent"

@@ -3,7 +3,7 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
 import { Product } from '@/domain/product';
 import { ProductService } from '@/service/productservice';
 import { CommonModule } from '@angular/common';
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { DataViewModule } from '@openng/optimus-ui/dataview';
@@ -80,7 +80,7 @@ import { SkeletonModule } from '@openng/optimus-ui/skeleton';
         <app-code [extFiles]="['Product']"></app-code>
     `
 })
-export class LoadingDoc {
+export class LoadingDoc implements OnInit {
     layout: 'grid' | 'list' = 'grid';
 
     products = signal<any>([]);

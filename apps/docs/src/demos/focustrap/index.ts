@@ -1,10 +1,20 @@
+import { AccessibilityDoc } from '@/doc/focustrap/accessibility-doc';
 import { AppDoc } from '@/components/doc/app.doc';
 import { BasicDoc } from '@/doc/focustrap/basic-doc';
 import { ImportDoc } from '@/doc/focustrap/import-doc';
 import { Component } from '@angular/core';
 
 @Component({
-    template: ` <app-doc docTitle="Angular Focus Trap Component - Optimus UI" header="Focus Trap" description="Focus Trap keeps focus within a certain DOM element while tabbing." [docs]="docs" [apiDocs]="['FocusTrap']"></app-doc> `,
+    template: `
+        <app-doc
+            docTitle="Angular Focus Trap Component - Optimus UI"
+            header="Focus Trap"
+            description="Focus Trap keeps focus within a certain DOM element while tabbing."
+            metaDescription="Focus Trap keeps focus within a certain DOM element while tabbing. Examples cover basic."
+            [docs]="docs"
+            [apiDocs]="['FocusTrap']"
+        ></app-doc>
+    `,
     standalone: true,
     imports: [AppDoc]
 })
@@ -19,6 +29,11 @@ export class FocusTrapDemo {
             id: 'basic',
             label: 'Basic',
             component: BasicDoc
+        },
+        {
+            id: 'accessibility',
+            label: 'Accessibility',
+            component: AccessibilityDoc
         }
     ];
 }

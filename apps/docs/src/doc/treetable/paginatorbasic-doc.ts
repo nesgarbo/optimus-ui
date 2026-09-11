@@ -58,6 +58,7 @@ export class PaginatorBasicDoc {
     cols!: Column[];
     loadDemoData() {
         this.files = [];
+
         for (let i = 0; i < 50; i++) {
             let node = {
                 data: {

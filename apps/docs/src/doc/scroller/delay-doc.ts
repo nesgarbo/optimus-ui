@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ScrollerModule } from '@openng/optimus-ui/scroller';
 import { AppCode } from '@/components/doc/app.code';
 import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
@@ -47,7 +47,7 @@ import { CommonModule } from '@angular/common';
         <app-code></app-code>
     `
 })
-export class DelayDoc {
+export class DelayDoc implements OnInit {
     items!: string[];
 
     ngOnInit() {

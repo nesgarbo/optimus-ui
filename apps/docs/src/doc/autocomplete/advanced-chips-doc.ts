@@ -73,6 +73,7 @@ export class AdvancedChipsDoc implements OnInit {
 
         for (let i = 0; i < this.products().length; i++) {
             let product = this.products()[i];
+
             if (product.name?.toLowerCase().indexOf(query.toLowerCase()) == 0) {
                 filtered.push(product);
             }
@@ -85,6 +86,7 @@ export class AdvancedChipsDoc implements OnInit {
         if (typeof product === 'string') {
             return product;
         }
+
         return product?.name || '';
     }
 
@@ -92,6 +94,7 @@ export class AdvancedChipsDoc implements OnInit {
         if (typeof product === 'string') {
             return { name: product, custom: true };
         }
+
         return {
             id: product.id,
             name: product.name,

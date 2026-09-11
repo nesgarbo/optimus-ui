@@ -15,6 +15,7 @@ import { Component } from '@angular/core';
             docTitle="Angular Breadcrumb Component - Optimus UI"
             header="Breadcrumb"
             description="Breadcrumb provides contextual information about page hierarchy."
+            metaDescription="Breadcrumb provides contextual information about page hierarchy. Examples cover basic, template and router."
             [docs]="docs"
             [apiDocs]="['Breadcrumb', 'MenuItem']"
             [ptDocs]="ptComponent"

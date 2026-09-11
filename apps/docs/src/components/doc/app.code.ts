@@ -1,8 +1,9 @@
 import { Code, ExtFile, RouteFile } from '@/domain/code';
 import { resolveDomainTypes, ResolvedRouteFiles, resolveRouteFiles } from '@/domain/types';
 import { DemoCodeService } from '@/service/democodeservice';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { afterNextRender, Component, computed, effect, ElementRef, inject, input, NgModule, PLATFORM_ID, signal, ViewChild } from '@angular/core';
+import { HighlightService } from '@/service/highlightservice';
+import { CommonModule } from '@angular/common';
+import { Component, computed, effect, ElementRef, inject, input, NgModule, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ButtonModule } from '@openng/optimus-ui/button';
 import { TooltipModule } from '@openng/optimus-ui/tooltip';
@@ -33,20 +34,7 @@ import { useCodeSandbox, useStackBlitz } from './codeeditor';
                     </button>
                 </div>
 
-                <div dir="ltr">
-                    @if (lang() === 'typescript') {
-                        <pre [style]="{ 'max-height': codeHeight() }" class="language-typescript"><code #codeElement>{{ resolvedCode()!.typescript }}</code></pre>
-                    }
-                    @if (lang() === 'html') {
-                        <pre [style]="{ 'max-height': codeHeight() }" class="language-markup"><code #codeElement>{{ resolvedCode()!.html }}</code></pre>
-                    }
-                    @if (lang() === 'scss') {
-                        <pre [style]="{ 'max-height': codeHeight() }" class="language-scss"><code #codeElement>{{ resolvedCode()!.scss }}</code></pre>
-                    }
-                    @if (lang() === 'command') {
-                        <pre class="language-shell"><code #codeElement>{{ resolvedCode()!.command }}</code></pre>
-                    }
-                </div>
+                <div dir="ltr" class="doc-code-surface" [style]="{ 'max-height': lang() === 'command' ? null : codeHeight() }" [innerHTML]="highlighted()"></div>
             </div>
         }
     `
@@ -63,8 +51,6 @@ export class AppCode {
     importCode = input(false, { transform: (v: boolean | string) => v === '' || v === true });
     codeHeight = computed(() => (this.fullCodeVisible() ? '50rem' : '20rem'));
 
-    @ViewChild('codeElement') codeElement: ElementRef;
-
     fullCodeVisible = signal(false);
     lang = signal('typescript');
     resolvedCode = signal<Code | null>(null);
@@ -76,24 +62,31 @@ export class AppCode {
     resolvedSelector = computed(() => {
         // 1. Use explicit selector if provided
         const explicitSelector = this.selector();
+
         if (explicitSelector) {
             return explicitSelector;
         }
 
         // 2. Auto-detect from parent component's tag name
         const parentElement = this.elementRef.nativeElement.parentElement;
+
         if (parentElement) {
             let el = parentElement;
+
             while (el) {
                 const tagName = el.tagName?.toLowerCase();
+
                 if (tagName && (tagName.endsWith('-doc') || tagName.endsWith('-demo'))) {
                     const component = this.route.snapshot.url[0]?.path || this.route.parent?.snapshot.url[0]?.path || '';
                     const section = tagName.replace('-doc', '').replace('-demo', '');
+
                     if (component && section) {
                         return `${component}-${section}-demo`;
                     }
+
                     return tagName;
                 }
+
                 el = el.parentElement;
             }
         }
@@ -104,18 +97,38 @@ export class AppCode {
     // Computed initial language based on resolved code
     private initialLang = computed(() => {
         const code = this.resolvedCode();
+
         if (code) {
             return Object.keys(code)[0];
         }
+
         return 'typescript';
+    });
+
+    private highlightService = inject(HighlightService);
+
+    /** Shiki markup for the currently selected language, both themes baked in. */
+    highlighted = computed(() => {
+        const code = this.resolvedCode();
+        const lang = this.lang();
+
+        if (!code || !code[lang]) {
+            return '';
+        }
+
+        return this.highlightService.highlightSafe(code[lang], lang);
     });
 
     private demoCodeService = inject(DemoCodeService);
     private elementRef = inject(ElementRef);
     private route = inject(ActivatedRoute);
-    private platformId = inject(PLATFORM_ID);
 
     constructor() {
+        // The snippets live in a single 1.8 MB file: it is fetched the first time a code
+        // block exists on the page rather than during bootstrap, so pages without any —
+        // the home page, the components index — never pay for it. The service dedupes.
+        this.demoCodeService.loadDemos();
+
         // Effect: Resolve code when inputs change or service loads
         effect(() => {
             const codeInput = this.code();
@@ -127,25 +140,31 @@ export class AppCode {
                 this.resolvedCode.set(codeInput);
                 this.resolvedExtFiles.set(this.resolveExtFilesInput(this.extFiles()));
                 const { routeFiles: resolvedRoutes, services: routeServices } = this.resolveRouteFilesInput(this.routeFiles());
+
                 this.resolvedRouteFiles.set(resolvedRoutes);
                 // Merge services from route files with code.service
                 const codeServices = this.service() || [];
+
                 this.resolvedService.set(this.mergeServices(codeServices, routeServices));
             } else if (selector && isLoaded) {
                 // Priority 2: Look up from JSON
                 const demo = this.demoCodeService.getCode(selector);
+
                 if (demo) {
                     this.resolvedCode.set(demo.code);
                     // Merge extFiles from input with those from demos.json
                     const inputExtFiles = this.resolveExtFilesInput(this.extFiles());
                     const demoExtFiles = demo.metadata.extFiles || [];
+
                     this.resolvedExtFiles.set(this.mergeExtFiles(inputExtFiles, demoExtFiles));
                     // Merge routeFiles from input with those from demos.json
                     const { routeFiles: inputRouteFiles, services: routeServices } = this.resolveRouteFilesInput(this.routeFiles());
                     const demoRouteFiles = demo.metadata.routeFiles || [];
+
                     this.resolvedRouteFiles.set(this.mergeRouteFiles(inputRouteFiles, demoRouteFiles));
                     // Merge services from route files with those from demos.json
                     const demoServices = demo.metadata.services || [];
+
                     this.resolvedService.set(this.mergeServices(demoServices, routeServices));
                 }
             }
@@ -154,37 +173,21 @@ export class AppCode {
         // Effect: Set initial language when code is resolved
         effect(() => {
             const initialLang = this.initialLang();
+
             if (initialLang && this.lang() === 'typescript' && initialLang !== 'typescript') {
                 // Only update if we haven't manually changed the lang
                 this.lang.set(initialLang);
             }
         });
-
-        // Prism highlighting after render
-        afterNextRender(() => {
-            this.highlightCode();
-        });
-    }
-
-    private highlightCode() {
-        if (isPlatformBrowser(this.platformId)) {
-            if (window['Prism'] && this.codeElement && !this.codeElement.nativeElement.classList.contains('prism')) {
-                window['Prism'].highlightElement(this.codeElement.nativeElement);
-                this.codeElement.nativeElement.classList.add('prism');
-                this.codeElement.nativeElement.setAttribute('tabindex', '-1');
-                this.codeElement.nativeElement.parentElement?.setAttribute('tabindex', '-1');
-            }
-        }
     }
 
     changeLang(newLang: string) {
         this.lang.set(newLang);
-        // Re-highlight after lang change
-        setTimeout(() => this.highlightCode(), 0);
     }
 
     async copyCode() {
         const code = this.resolvedCode();
+
         if (code) {
             await navigator.clipboard.writeText(code[this.lang()]);
         }
@@ -192,18 +195,19 @@ export class AppCode {
 
     toggleCode() {
         const isVisible = !this.fullCodeVisible();
+
         this.fullCodeVisible.set(isVisible);
 
         const code = this.resolvedCode();
+
         if (code) {
             this.lang.set('typescript');
-            // Re-highlight after toggle
-            setTimeout(() => this.highlightCode(), 0);
         }
     }
 
     openStackBlitz() {
         const code = this.resolvedCode();
+
         if (code) {
             let str = code.typescript;
 
@@ -225,6 +229,7 @@ export class AppCode {
 
             // Add selector to @Component if missing
             const selector = this.resolvedSelector();
+
             if (selector && !/@Component\s*\(\s*\{[\s\S]*?selector\s*:/.test(str)) {
                 str = str.replace(/@Component\s*\(\s*\{/, `@Component({\n    selector: '${selector}',`);
             }
@@ -243,9 +248,11 @@ export class AppCode {
 
     openCodeSandbox() {
         const code = this.resolvedCode();
+
         if (code) {
             // Include service array in the code object for CodeSandbox
             const codeSandboxObject = { ...code, service: this.resolvedService() };
+
             useCodeSandbox({
                 code: codeSandboxObject,
                 selector: this.resolvedSelector(),

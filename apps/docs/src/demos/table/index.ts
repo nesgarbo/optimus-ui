@@ -52,7 +52,16 @@ import { VirtualScrollLazyDoc } from '@/doc/table/virtualscrolllazy-doc';
 import { Component } from '@angular/core';
 
 @Component({
-    template: `<app-doc docTitle="Angular Table Component - Optimus UI" header="Table" description="Table displays data in tabular format." [docs]="docs" [apiDocs]="['Table', 'ColumnFilter']" themeDocs="table" [ptDocs]="ptComponent"></app-doc>`,
+    template: `<app-doc
+        docTitle="Angular Table Component - Optimus UI"
+        header="Table"
+        description="Table displays data in tabular format."
+        metaDescription="Table displays data in tabular format. Examples cover import, basic, dynamic columns, template, size, grid lines, striped rows, conditional style and loading."
+        [docs]="docs"
+        [apiDocs]="['Table', 'ColumnFilter']"
+        themeDocs="table"
+        [ptDocs]="ptComponent"
+    ></app-doc>`,
     standalone: true,
     imports: [AppDoc],
     styleUrl: './tabledemo.scss'

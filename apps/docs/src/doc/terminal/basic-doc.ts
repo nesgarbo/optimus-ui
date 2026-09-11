@@ -46,6 +46,7 @@ export class BasicDoc implements OnDestroy {
                 default:
                     response = 'Unknown command: ' + command;
             }
+
             this.terminalService.sendResponse(response);
         });
     }

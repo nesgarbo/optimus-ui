@@ -28,6 +28,7 @@ import { Component } from '@angular/core';
         docTitle="Angular Select Component - Optimus UI"
         header="Select"
         description="Select is used to choose an item from a collection of options."
+        metaDescription="Select is used to choose an item from a collection of options. Examples cover basic, checkmark, editable, group, template, filter and loading state."
         [docs]="docs"
         [apiDocs]="['Select']"
         [ptDocs]="ptComponent"

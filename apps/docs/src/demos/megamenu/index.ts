@@ -17,6 +17,7 @@ import { AppDocService } from '@/components/doc/app.doc.service';
         docTitle="Angular MegaMenu Component - Optimus UI"
         header="MegaMenu"
         description="MegaMenu is navigation component that displays submenus together."
+        metaDescription="MegaMenu is navigation component that displays submenus together. Examples cover basic, vertical, template, command and router."
         [docs]="docs"
         [apiDocs]="['MegaMenu', 'MegaMenuItem']"
         [ptDocs]="ptComponent"

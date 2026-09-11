@@ -1,6 +1,6 @@
 import APIDoc from '@/doc/apidoc/index.json';
 import { Location } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, input, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, Input, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { ObjectUtils } from '@openng/optimus-ui/utils';
 import { AppDocApiTable } from './app.docapitable';
@@ -21,7 +21,7 @@ import { AppDocSectionNav } from './app.docsection-nav';
         <app-docsection-nav [docs]="_docs()"></app-docsection-nav>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AppDocApiSection {
+export class AppDocApiSection implements OnInit, OnDestroy {
     @Input() header!: string;
 
     docs = input<any[] | undefined>([]);
@@ -44,6 +44,7 @@ export class AppDocApiSection {
             if (module.description) {
                 return module.description;
             }
+
             if (!module.description && module.components && Object.keys(module.components).length) {
                 return module.components[docName] && module.components[docName].description ? module.components[docName].description : 'No description available';
             }
@@ -96,6 +97,7 @@ export class AppDocApiSection {
 
                 if (module && module.components && !module.components[docName] && Object.keys(module.components).length && !docName.includes('Service')) {
                     const components = Object.keys(module.components);
+
                     components.forEach((component) => {
                         const comp = module.components[component];
                         const props = comp['props'] ?? undefined;
@@ -269,10 +271,12 @@ export class AppDocApiSection {
                     }
                 }
             }
+
             newDocs.push(newDoc);
         }
 
         let mergedInterfaces = [];
+
         newDocs.forEach((doc) => {
             if ((doc.isInterface || doc.label === 'Interfaces') && doc.children) {
                 doc.children.forEach((child) => mergedInterfaces.push(...child.data));
@@ -294,6 +298,7 @@ export class AppDocApiSection {
         }
 
         newDocs[0].children = [...this.merge(newDocs[0].children)];
+
         return newDocs.filter((doc) => !doc.isInterface);
     }
 
@@ -307,6 +312,7 @@ export class AppDocApiSection {
                 mergedArray.push(element);
             } else {
                 const existingElement = idMap[element.id];
+
                 if (existingElement.data && element.data) {
                     existingElement.data = existingElement.data.concat(element.data);
                 }
@@ -341,6 +347,7 @@ export class AppDocApiSection {
 
             data.push(eventData);
         }
+
         return data;
     }
 

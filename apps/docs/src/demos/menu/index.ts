@@ -15,6 +15,7 @@ import { AppDoc } from '@/components/doc/app.doc';
         docTitle="Angular Menu Component - Optimus UI"
         header="Menu"
         description="Menu is a navigation / command component that supports dynamic and static positioning."
+        metaDescription="Menu is a navigation / command component that supports dynamic and static positioning. Examples cover basic, group, popup, template, command and router."
         [docs]="docs"
         [apiDocs]="['Menu', 'MenuItem']"
         [ptDocs]="ptComponent"

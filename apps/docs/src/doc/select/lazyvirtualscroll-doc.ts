@@ -33,6 +33,7 @@ export class LazyVirtualScrollDoc {
 
     constructor() {
         this.items = [];
+
         for (let i = 0; i < 10000; i++) {
             this.items.push({ label: 'Item ' + i, value: 'Item ' + i });
         }

@@ -17,6 +17,7 @@ import { Component } from '@angular/core';
         docTitle="Angular Toast Component - Optimus UI"
         header="Toast"
         description="Toast is used to display messages in an overlay."
+        metaDescription="Toast is used to display messages in an overlay. Examples cover basic, severity, position, multiple, sticky, template, headless and responsive."
         [docs]="docs"
         [apiDocs]="['Toast', 'ToastMessage']"
         [ptDocs]="ptComponent"

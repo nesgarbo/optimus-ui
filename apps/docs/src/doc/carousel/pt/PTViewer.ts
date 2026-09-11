@@ -2,7 +2,7 @@ import { AppDocPtViewer, getPTOptions } from '@/components/doc/app.docptviewer';
 import { Product } from '@/domain/product';
 import { ProductService } from '@/service/productservice';
 import { CommonModule } from '@angular/common';
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnInit } from '@angular/core';
 import { ButtonModule } from '@openng/optimus-ui/button';
 import { CarouselModule } from '@openng/optimus-ui/carousel';
 import { TagModule } from '@openng/optimus-ui/tag';
@@ -37,7 +37,7 @@ import { TagModule } from '@openng/optimus-ui/tag';
     `,
     providers: [ProductService]
 })
-export class PTViewer {
+export class PTViewer implements OnInit {
     products = signal<Product[]>([]);
 
     responsiveOptions: any[] | undefined;

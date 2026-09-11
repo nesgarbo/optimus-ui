@@ -1,6 +1,6 @@
 import { AppCode } from '@/components/doc/app.code';
 import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SelectModule } from '@openng/optimus-ui/select';
 
@@ -55,7 +55,7 @@ interface City {
         `
     ]
 })
-export class AnchoredOverlaysDoc {
+export class AnchoredOverlaysDoc implements OnInit {
     cities: City[];
 
     selectedCity: City | undefined;

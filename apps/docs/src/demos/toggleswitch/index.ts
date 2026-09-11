@@ -16,6 +16,7 @@ import { AppDoc } from '@/components/doc/app.doc';
         docTitle="Angular ToggleSwitch Component - Optimus UI"
         header="ToggleSwitch"
         description="ToggleSwitch is used to select a boolean value."
+        metaDescription="ToggleSwitch is used to select a boolean value. Examples cover basic, preselection, template, disabled, invalid and forms."
         [docs]="docs"
         [apiDocs]="['ToggleSwitch']"
         [ptDocs]="ptComponent"

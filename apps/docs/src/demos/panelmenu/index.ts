@@ -15,6 +15,7 @@ import { Component } from '@angular/core';
         docTitle="Angular PanelMenu Component - Optimus UI"
         header="PanelMenu"
         description="PanelMenu is a hybrid of Accordion and Tree components."
+        metaDescription="PanelMenu is a hybrid of Accordion and Tree components. Examples cover basic, multiple, controlled, template, command and router."
         [docs]="docs"
         [apiDocs]="['PanelMenu', 'MenuItem']"
         themeDocs="panelmenu"

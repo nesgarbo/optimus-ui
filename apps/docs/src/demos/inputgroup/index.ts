@@ -15,6 +15,7 @@ import { Component } from '@angular/core';
         docTitle="Angular InputGroup Component - Optimus UI"
         header="InputGroup"
         description="Text, icon, buttons and other content can be grouped next to an input."
+        metaDescription="Text, icon, buttons and other content can be grouped next to an input. Examples cover basic, multiple, button, checkbox & radio, float label and ifta label."
         [docs]="docs"
         [ptDocs]="ptComponent"
         themeDocs="inputgroup"

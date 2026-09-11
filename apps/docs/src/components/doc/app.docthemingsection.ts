@@ -1,6 +1,6 @@
 import APIDoc from '@/doc/apidoc/index.json';
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, signal, OnInit } from '@angular/core';
 import ThemeDoc from '@openng/optimus-ui-themes/tokens';
 import { AppDocSectionNav } from './app.docsection-nav';
 import { AppDocStyledPreset } from './app.docstyledpreset';
@@ -32,7 +32,7 @@ import { AppDocThemingTable } from './app.docthemingtable';
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AppDocThemingSection {
+export class AppDocThemingSection implements OnInit {
     header = input.required<string>();
     docs = input<string>('');
     componentName = input<string>('');

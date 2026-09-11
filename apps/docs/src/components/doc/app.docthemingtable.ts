@@ -108,17 +108,20 @@ export class AppDocThemingTable {
 
     classData = computed(() => {
         if (this.tableType() !== 'classes') return [];
+
         return this.data() as CssClassItem[];
     });
 
     tokenData = computed(() => {
         if (this.tableType() !== 'tokens') return [];
+
         return this.data() as TokenItem[];
     });
 
     navigate(event: Event, param: string): void {
         if (typeof window !== 'undefined') {
             const parentElement = (event.currentTarget as HTMLElement).parentElement;
+
             this.location.go(this.location.path() + '#' + this.id() + '.' + param);
 
             setTimeout(() => {

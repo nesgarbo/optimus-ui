@@ -13,6 +13,7 @@ import { Component } from '@angular/core';
         docTitle="Angular Scroll Top Component - Optimus UI"
         header="ScrollTop"
         description="ScrollTop gets displayed after a certain scroll position and used to navigates to the top of the page quickly."
+        metaDescription="ScrollTop gets displayed after a certain scroll position and used to navigates to the top of the page quickly. Examples cover basic and target element."
         [docs]="docs"
         [ptDocs]="ptComponent"
         [apiDocs]="['ScrollTop']"

@@ -10,7 +10,16 @@ import { Component } from '@angular/core';
 import { AppDoc } from '@/components/doc/app.doc';
 
 @Component({
-    template: `<app-doc docTitle="Angular Timeline Component - Optimus UI" header="Timeline" description="Timeline visualizes a series of chained events." [docs]="docs" [apiDocs]="['Timeline']" [ptDocs]="ptComponent" themeDocs="timeline"></app-doc>`,
+    template: `<app-doc
+        docTitle="Angular Timeline Component - Optimus UI"
+        header="Timeline"
+        description="Timeline visualizes a series of chained events."
+        metaDescription="Timeline visualizes a series of chained events. Examples cover basic, alignment, opposite, template and horizontal."
+        [docs]="docs"
+        [apiDocs]="['Timeline']"
+        [ptDocs]="ptComponent"
+        themeDocs="timeline"
+    ></app-doc>`,
     standalone: true,
     imports: [AppDoc],
     styleUrl: './timelinedemo.scss'

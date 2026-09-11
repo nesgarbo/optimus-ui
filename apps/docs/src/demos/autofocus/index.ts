@@ -1,3 +1,4 @@
+import { AccessibilityDoc } from '@/doc/autofocus/accessibility-doc';
 import { BasicDoc } from '@/doc/autofocus/basic-doc';
 import { ImportDoc } from '@/doc/autofocus/import-doc';
 import { AppDoc } from '@/components/doc/app.doc';
@@ -6,7 +7,14 @@ import { Component } from '@angular/core';
 @Component({
     standalone: true,
     imports: [AppDoc],
-    template: ` <app-doc docTitle="Angular AutoFocus Directive - Optimus UI" header="AutoFocus" description="AutoFocus manages focus on focusable element on load." [docs]="docs" [apiDocs]="['AutoFocus']"></app-doc>`
+    template: ` <app-doc
+        docTitle="Angular AutoFocus Directive - Optimus UI"
+        header="AutoFocus"
+        description="AutoFocus manages focus on focusable element on load."
+        metaDescription="AutoFocus manages focus on focusable element on load. Examples cover basic."
+        [docs]="docs"
+        [apiDocs]="['AutoFocus']"
+    ></app-doc>`
 })
 export class AutoFocusDemo {
     docs = [
@@ -19,6 +27,11 @@ export class AutoFocusDemo {
             id: 'basic',
             label: 'Basic',
             component: BasicDoc
+        },
+        {
+            id: 'accessibility',
+            label: 'Accessibility',
+            component: AccessibilityDoc
         }
     ];
 }

@@ -19,6 +19,7 @@ import { Component } from '@angular/core';
         docTitle="Angular Message Component - Optimus UI"
         header="Message"
         description="Message component is used to display inline messages."
+        metaDescription="Message component is used to display inline messages. Examples cover basic, severity, icon, outlined, simple, sizes, forms, dynamic, closable and life."
         [docs]="docs"
         [apiDocs]="['Message']"
         [ptDocs]="ptComponent"

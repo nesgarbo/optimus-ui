@@ -25,6 +25,7 @@ import { Component } from '@angular/core';
             docTitle="Angular CascadeSelect Component - Optimus UI"
             header="CascadeSelect"
             description="CascadeSelect displays a nested structure of options."
+            metaDescription="CascadeSelect displays a nested structure of options. Examples cover basic, template, loading state, float label, ifta label, clear icon, sizes and fluid."
             [docs]="docs"
             [apiDocs]="['CascadeSelect']"
             [ptDocs]="ptComponent"

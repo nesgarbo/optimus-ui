@@ -13,6 +13,7 @@ import { Component } from '@angular/core';
         docTitle="Angular Organization Chart Component - Optimus UI"
         header="OrganizationChart"
         description="OrganizationChart visualizes hierarchical organization data."
+        metaDescription="OrganizationChart visualizes hierarchical organization data. Examples cover basic, template, selection and colored."
         [docs]="docs"
         [apiDocs]="['OrganizationChart']"
         componentName="OrganizationChart"

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { CascadeSelectModule } from '@openng/optimus-ui/cascadeselect';
@@ -38,7 +38,7 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
         <app-code></app-code>
     `
 })
-export class FloatLabelDoc {
+export class FloatLabelDoc implements OnInit {
     value1: string | undefined;
 
     value2: string | undefined;

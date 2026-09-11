@@ -13,6 +13,7 @@ import { AppDoc } from '@/components/doc/app.doc';
         docTitle="Angular Splitter Component - Optimus UI"
         header="Splitter"
         description="Splitter is utilized to separate and resize panels."
+        metaDescription="Splitter is utilized to separate and resize panels. Examples cover horizontal, size, vertical and nested."
         [docs]="docs"
         [apiDocs]="['Splitter']"
         [ptDocs]="ptComponent"

@@ -145,18 +145,22 @@ export class AppDocPtTable {
 
     isNestedData = computed(() => {
         const d = this.data();
+
         if (!d || d.length === 0) return false;
+
         return 'key' in d[0] && 'data' in d[0];
     });
 
     nestedData = computed((): DocData[] => {
         if (!this.isNestedData()) return [];
+
         return this.data() as DocData[];
     });
 
     // Normalize data to flat array for table display
     normalizedData = computed((): PtOptionItem[] => {
         const d = this.data();
+
         if (!d || d.length === 0) return [];
 
         // If nested data (DocData[]), flatten it
@@ -168,9 +172,7 @@ export class AppDocPtTable {
         return d as PtOptionItem[];
     });
 
-    hasOptions = computed(() => {
-        return this.normalizedData().some((item) => item.options && item.options.length > 0);
-    });
+    hasOptions = computed(() => this.normalizedData().some((item) => item.options && item.options.length > 0));
 
     filterVisibleItems(items: PtOptionItem[]): PtOptionItem[] {
         return items.filter((item) => item.label !== 'hooks' && item.label !== 'transition' && !item.label.includes('hidden'));
@@ -179,6 +181,7 @@ export class AppDocPtTable {
     navigate(event: Event, param: string): void {
         if (typeof window !== 'undefined') {
             const parentElement = (event.currentTarget as HTMLElement).parentElement;
+
             this.location.go(this.location.path() + '#' + this.id() + '.' + param);
 
             setTimeout(() => {
@@ -212,6 +215,7 @@ export class AppDocPtTable {
 
         if (this.hoveredElements.length === 0) {
             const body = document.querySelector('body');
+
             if (body) {
                 this.hoveredElements = find(body, selector) as HTMLElement[];
             }

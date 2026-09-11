@@ -8,7 +8,14 @@ import { Component } from '@angular/core';
 @Component({
     standalone: true,
     imports: [AppDoc],
-    template: `<app-doc docTitle="FAQ - Optimus UI" header="Frequently Asked Questions" description="Licensing, migration from PrimeNG, the ecosystem, and how support works." [docs]="docs" docType="page"></app-doc>`
+    template: `<app-doc
+        docTitle="FAQ - Optimus UI"
+        header="Frequently Asked Questions"
+        description="Licensing, migration from PrimeNG, the ecosystem, and how support works."
+        metaDescription="Licensing, migration from PrimeNG, the ecosystem, and how support works. Examples cover the project, compatibility & migration and themes, icons & ecosystem."
+        [docs]="docs"
+        docType="page"
+    ></app-doc>`
 })
 export class FaqDemo {
     docs = [

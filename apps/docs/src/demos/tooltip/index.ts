@@ -15,6 +15,7 @@ import { AppDoc } from '@/components/doc/app.doc';
         docTitle="Angular Tooltip Component - Optimus UI"
         header="Tooltip"
         description="Tooltip directive provides advisory information for a component. Tooltip is integrated within various Optimus UI components."
+        metaDescription="Tooltip directive provides advisory information for a component. Tooltip is integrated within various Optimus UI components. Examples cover position."
         [docs]="docs"
         [apiDocs]="['Tooltip', 'TooltipOptions']"
         [ptDocs]="ptComponent"

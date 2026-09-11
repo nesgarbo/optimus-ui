@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CheckboxModule } from '@openng/optimus-ui/checkbox';
@@ -24,7 +24,7 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
         <app-code></app-code>
     `
 })
-export class DynamicDoc {
+export class DynamicDoc implements OnInit {
     selectedCategories: any[] = [];
 
     categories: any[] = [

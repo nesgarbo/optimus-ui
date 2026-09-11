@@ -116,6 +116,7 @@ export class LazyLoadDoc implements OnInit {
 
                 this.files.push(node);
             }
+
             this.loading = false;
             this.cd.markForCheck();
         }, 1000);

@@ -11,6 +11,7 @@ import { Component } from '@angular/core';
         docTitle="Angular Panel Component - Optimus UI"
         header="Panel"
         description="Panel is a container component with an optional content toggle feature."
+        metaDescription="Panel is a container component with an optional content toggle feature. Examples cover basic, toggleable and template."
         [docs]="docs"
         [apiDocs]="['Panel']"
         themeDocs="panel"

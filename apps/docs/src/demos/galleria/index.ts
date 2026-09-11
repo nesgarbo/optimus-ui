@@ -27,6 +27,7 @@ import { Component } from '@angular/core';
         docTitle="Angular Gallery Component - Optimus UI"
         header="Galleria"
         description="Galleria is an advanced content gallery component."
+        metaDescription="Galleria is an advanced content gallery component. Examples cover basic, controlled, indicator, click event, hover event, position, template and thumbnail."
         [docs]="docs"
         [apiDocs]="['Galleria']"
         [ptDocs]="ptComponent"

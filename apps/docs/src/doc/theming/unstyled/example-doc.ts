@@ -6,11 +6,6 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ButtonModule } from '@openng/optimus-ui/button';
 
-interface City {
-    name: string;
-    code: string;
-}
-
 @Component({
     selector: 'example-doc',
     standalone: true,

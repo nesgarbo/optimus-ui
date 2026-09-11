@@ -1,6 +1,6 @@
 import { AppCode } from '@/components/doc/app.code';
 import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
-import { ChangeDetectorRef, Component, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TreeNode } from '@openng/optimus-ui/api';
 import { TreeSelectModule } from '@openng/optimus-ui/treeselect';
@@ -33,7 +33,7 @@ import { TreeSelectModule } from '@openng/optimus-ui/treeselect';
         <app-code></app-code>
     `
 })
-export class LazyDoc {
+export class LazyDoc implements OnInit {
     selectedNodes: TreeNode[] = [];
 
     nodes = signal<TreeNode[]>(undefined);
@@ -77,6 +77,7 @@ export class LazyDoc {
             setTimeout(() => {
                 const _nodes = this.nodes();
                 let _node = { ...event.node };
+
                 _node.children = [];
 
                 for (let i = 0; i < 3; i++) {
@@ -87,6 +88,7 @@ export class LazyDoc {
                 }
 
                 const key = parseInt(_node.key, 10);
+
                 _nodes[key] = { ..._node, loading: false };
                 this.nodes.set([..._nodes]);
             }, 500);

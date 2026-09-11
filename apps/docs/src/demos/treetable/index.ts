@@ -39,6 +39,7 @@ import { AppDoc } from '@/components/doc/app.doc';
         docTitle="Angular TreeTable Component - Optimus UI"
         header="TreeTable"
         description="TreeTable is used to display hierarchical data in tabular format."
+        metaDescription="TreeTable is used to display hierarchical data in tabular format. Examples cover import, basic, dynamic columns, controlled, template, size and grid lines."
         [docs]="docs"
         [apiDocs]="['TreeTable', 'TreeTableNode', 'TreeNode']"
         [ptDocs]="ptComponent"

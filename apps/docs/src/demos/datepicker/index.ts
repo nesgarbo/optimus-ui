@@ -37,6 +37,7 @@ import { AppDoc } from '@/components/doc/app.doc';
             docTitle="Angular DatePicker Component - Optimus UI"
             header="DatePicker"
             description="DatePicker is an input component to select a date."
+            metaDescription="DatePicker is an input component to select a date. Examples cover basic, format, mask, locale, icon, min / max, multiple, range, button bar and time."
             [docs]="docs"
             [apiDocs]="['DatePicker']"
             [ptDocs]="ptComponent"

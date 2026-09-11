@@ -1,7 +1,7 @@
 import { AppDocPtViewer, getPTOptions } from '@/components/doc/app.docptviewer';
 import { PhotoService } from '@/service/photoservice';
 import { CommonModule } from '@angular/common';
-import { Component, model } from '@angular/core';
+import { Component, model, OnInit } from '@angular/core';
 import { GalleriaModule } from '@openng/optimus-ui/galleria';
 
 @Component({
@@ -21,7 +21,7 @@ import { GalleriaModule } from '@openng/optimus-ui/galleria';
         </app-docptviewer>
     `
 })
-export class PTViewer {
+export class PTViewer implements OnInit {
     images = model([]);
 
     responsiveOptions: any[] = [

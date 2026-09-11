@@ -13,6 +13,7 @@ import { AppDoc } from '@/components/doc/app.doc';
         docTitle="Angular Paginator Component - Optimus UI"
         header="Paginator"
         description="Paginator displays data in paged format and provides navigation between pages."
+        metaDescription="Paginator displays data in paged format and provides navigation between pages. Examples cover basic, template, current page report and images."
         [docs]="docs"
         [apiDocs]="['Paginator']"
         [ptDocs]="ptComponent"

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ButtonModule } from '@openng/optimus-ui/button';
 import { DialogService, DynamicDialog, DynamicDialogRef } from '@openng/optimus-ui/dynamicdialog';
 
@@ -16,7 +16,7 @@ import { DialogService, DynamicDialog, DynamicDialogRef } from '@openng/optimus-
         </div>
     `
 })
-export class InfoDemo implements OnInit {
+export class InfoDemo implements OnInit, OnDestroy {
     totalProducts: number = 0;
 
     instance: DynamicDialog | undefined;

@@ -81,6 +81,7 @@ export class DataTableDoc implements OnInit {
     drop() {
         if (this.draggedProduct) {
             let draggedProductIndex = this.findIndex(this.draggedProduct);
+
             this.selectedProducts = [...(this.selectedProducts as Product[]), this.draggedProduct];
             this.availableProducts = this.availableProducts?.filter((val, i) => i != draggedProductIndex);
             this.draggedProduct = null;
@@ -93,12 +94,14 @@ export class DataTableDoc implements OnInit {
 
     findIndex(product: Product) {
         let index = -1;
+
         for (let i = 0; i < (this.availableProducts as Product[]).length; i++) {
             if (product.id === (this.availableProducts as Product[])[i].id) {
                 index = i;
                 break;
             }
         }
+
         return index;
     }
 

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CascadeSelectModule } from '@openng/optimus-ui/cascadeselect';
 import { AppCode } from '@/components/doc/app.code';
@@ -29,7 +29,7 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
         <app-code></app-code>
     `
 })
-export class InvalidDoc {
+export class InvalidDoc implements OnInit {
     countries: any[] | undefined;
 
     selectedCity1: any;

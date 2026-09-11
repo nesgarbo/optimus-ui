@@ -29,6 +29,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
         docTitle="Angular AutoComplete Component - Optimus UI"
         header="AutoComplete"
         description="AutoComplete is an input component that provides real-time suggestions when being typed."
+        metaDescription="AutoComplete is an input component that provides real-time suggestions when being typed. Examples cover basic, dropdown, objects, template and group."
         [docs]="docs"
         [apiDocs]="['AutoComplete']"
         [ptDocs]="ptComponent"

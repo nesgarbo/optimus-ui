@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { ScrollerModule } from '@openng/optimus-ui/scroller';
 import { Skeleton } from '@openng/optimus-ui/skeleton';
 import { AppCode } from '@/components/doc/app.code';
@@ -42,7 +42,7 @@ import { CommonModule } from '@angular/common';
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LoaderDoc {
+export class LoaderDoc implements OnInit {
     items!: string[];
 
     ngOnInit() {

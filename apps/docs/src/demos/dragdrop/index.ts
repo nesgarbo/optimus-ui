@@ -1,3 +1,4 @@
+import { AccessibilityDoc } from '@/doc/dragdrop/accessibility-doc';
 import { BasicDoc } from '@/doc/dragdrop/basic-doc';
 import { DataTableDoc } from '@/doc/dragdrop/datatable-doc';
 import { DragHandleDoc } from '@/doc/dragdrop/draghandle-doc';
@@ -9,7 +10,14 @@ import { AppDoc } from '@/components/doc/app.doc';
 @Component({
     standalone: true,
     imports: [AppDoc],
-    template: ` <app-doc docTitle="Angular Drag and Drop Component - Optimus UI" header="Drag and Drop" description="pDraggable and pDroppable directives apply drag-drop behaviors to any element." [docs]="docs" [apiDocs]="['DragDrop']"></app-doc>`,
+    template: ` <app-doc
+        docTitle="Angular Drag and Drop Component - Optimus UI"
+        header="Drag and Drop"
+        description="pDraggable and pDroppable directives apply drag-drop behaviors to any element."
+        metaDescription="pDraggable and pDroppable directives apply drag-drop behaviors to any element. Examples cover basic, datatable, drop indicator and drag handle."
+        [docs]="docs"
+        [apiDocs]="['DragDrop']"
+    ></app-doc>`,
     styleUrls: ['./dragdropdemo.scss']
 })
 export class DragDropDemo {
@@ -38,6 +46,11 @@ export class DragDropDemo {
             id: 'draghandle',
             label: 'Drag Handle',
             component: DragHandleDoc
+        },
+        {
+            id: 'accessibility',
+            label: 'Accessibility',
+            component: AccessibilityDoc
         }
     ];
 }

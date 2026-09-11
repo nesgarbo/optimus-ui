@@ -17,6 +17,7 @@ import { AppDoc } from '@/components/doc/app.doc';
             docTitle="Angular DataView Component - Optimus UI"
             header="DataView"
             description="DataView displays data in grid grid-cols-12 gap-4 or list layout with pagination and sorting features."
+            metaDescription="DataView displays data in grid grid-cols-12 gap-4 or list layout with pagination and sorting features. Examples cover basic, pagination, sorting and layout."
             [docs]="docs"
             [apiDocs]="['DataView']"
             [ptDocs]="ptComponent"

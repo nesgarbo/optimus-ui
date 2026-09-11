@@ -26,6 +26,7 @@ import { AppDoc } from '@/components/doc/app.doc';
         docTitle="Angular MultiSelect Component - Optimus UI"
         header="MultiSelect"
         description="MultiSelect is used to select multiple items from a collection."
+        metaDescription="MultiSelect is used to select multiple items from a collection. Examples cover basic, chips, group, template, filter, loading state and virtualscroll."
         [docs]="docs"
         [apiDocs]="['MultiSelect']"
         [ptDocs]="ptComponent"

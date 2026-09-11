@@ -93,15 +93,18 @@ export class ControlledDoc implements OnInit {
 
     toggleAll() {
         const expanded = !this.areAllItemsExpanded();
+
         this.items = this.toggleAllRecursive(this.items, expanded);
     }
 
     private toggleAllRecursive(items: MenuItem[], expanded: boolean): MenuItem[] {
         return items.map((menuItem) => {
             menuItem.expanded = expanded;
+
             if (menuItem.items) {
                 menuItem.items = this.toggleAllRecursive(menuItem.items, expanded);
             }
+
             return menuItem;
         });
     }

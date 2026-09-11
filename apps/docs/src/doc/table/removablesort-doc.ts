@@ -98,6 +98,7 @@ export class RemovableSortDoc {
             let value1 = data1[event.field];
             let value2 = data2[event.field];
             let result = null;
+
             if (value1 == null && value2 != null) result = -1;
             else if (value1 != null && value2 == null) result = 1;
             else if (value1 == null && value2 == null) result = 0;

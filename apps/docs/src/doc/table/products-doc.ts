@@ -360,6 +360,7 @@ export class ProductsDoc {
 
     findIndexById(id: string): number {
         let index = -1;
+
         for (let i = 0; i < this.products.length; i++) {
             if (this.products[i].id === id) {
                 index = i;
@@ -372,10 +373,12 @@ export class ProductsDoc {
 
     createId(): string {
         let id = '';
-        var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        for (var i = 0; i < 5; i++) {
+        let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+        for (let i = 0; i < 5; i++) {
             id += chars.charAt(Math.floor(Math.random() * chars.length));
         }
+
         return id;
     }
 

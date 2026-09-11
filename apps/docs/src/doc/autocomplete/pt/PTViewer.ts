@@ -27,6 +27,7 @@ export class PTViewer {
 
     search(event: any) {
         const query = event.query;
+
         this.items = query ? Array.from({ length: 10 }, (_, i) => `${query}-${i}`) : Array.from({ length: 10 }, (_, i) => String(i));
     }
 }
