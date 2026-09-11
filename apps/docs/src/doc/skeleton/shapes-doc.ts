@@ -14,7 +14,7 @@ import { SkeletonModule } from '@openng/optimus-ui/skeleton';
         <div class="card">
             <div class="flex flex-wrap">
                 <div class="w-full xl:w-6/12 p-4">
-                    <h5>Rectangle</h5>
+                    <h3>Rectangle</h3>
                     <p-skeleton class="mb-2" />
                     <p-skeleton width="10rem" class="mb-2" />
                     <p-skeleton width="5rem" class="mb-2" />
@@ -22,7 +22,7 @@ import { SkeletonModule } from '@openng/optimus-ui/skeleton';
                     <p-skeleton width="10rem" height="4rem" />
                 </div>
                 <div class="w-full xl:w-6/12 p-4">
-                    <h5>Rounded</h5>
+                    <h3>Rounded</h3>
                     <p-skeleton class="mb-2" borderRadius="16px" />
                     <p-skeleton width="10rem" class="mb-2" borderRadius="16px" />
                     <p-skeleton width="5rem" class="mb-2" borderRadius="16px" />
@@ -30,7 +30,7 @@ import { SkeletonModule } from '@openng/optimus-ui/skeleton';
                     <p-skeleton width="10rem" height="4rem" borderRadius="16px" />
                 </div>
                 <div class="w-full xl:w-6/12 p-4">
-                    <h5 class="mt-4">Square</h5>
+                    <h3 class="mt-4">Square</h3>
                     <div class="flex items-end">
                         <p-skeleton size="2rem" class="mr-2" />
                         <p-skeleton size="3rem" class="mr-2" />
@@ -39,7 +39,7 @@ import { SkeletonModule } from '@openng/optimus-ui/skeleton';
                     </div>
                 </div>
                 <div class="field w-full xl:w-6/12 p-4">
-                    <h5 class="mt-4">Circle</h5>
+                    <h3 class="mt-4">Circle</h3>
                     <div class="flex items-end">
                         <p-skeleton shape="circle" size="2rem" class="mr-2" />
                         <p-skeleton shape="circle" size="3rem" class="mr-2" />

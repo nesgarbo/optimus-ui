@@ -32,7 +32,7 @@ import { GalleriaModule } from '@openng/optimus-ui/galleria';
                 [showThumbnails]="false"
             >
                 <ng-template #item let-item>
-                    <img [src]="item.itemImageSrc" style="width: 100%; display: block;" />
+                    <img [src]="item.itemImageSrc" [alt]="item.alt" style="width: 100%; display: block;" />
                 </ng-template>
             </p-galleria>
         </div>

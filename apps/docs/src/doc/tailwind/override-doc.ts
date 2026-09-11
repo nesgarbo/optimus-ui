@@ -12,22 +12,22 @@ import { Component } from '@angular/core';
             <h3>Important</h3>
             <p>Use the <i>!</i> as a prefix to enforce the styling. This is not the recommend approach, and should be used as last resort to avoid adding unnecessary style classes to your bundle.</p>
 
-            <h5>Tailwind v4</h5>
+            <h4>Tailwind v4</h4>
             <app-code [code]="code1" [hideToggleCode]="true" [hideStackBlitz]="true" />
 
-            <h5>Tailwind v3</h5>
+            <h4>Tailwind v3</h4>
             <app-code [code]="code2" [hideToggleCode]="true" [hideStackBlitz]="true" />
 
             <h3>CSS Layer</h3>
             <p>CSS Layer provides control over the css specificity so that Tailwind utilities can safely override components.</p>
 
-            <h5>Tailwind v4</h5>
+            <h4>Tailwind v4</h4>
             <p>Ensure <i>optimus</i> layer is after <i>theme</i> and <i>base</i>, but before the other Tailwind layers such as <i>utilities</i>.</p>
             <app-code [code]="code3" [importCode]="true" [hideToggleCode]="true" [hideStackBlitz]="true" class="block mb-4" />
             <p>No change in the CSS configuration is required.</p>
             <app-code [code]="code4" [importCode]="true" [hideToggleCode]="true" [hideStackBlitz]="true" />
 
-            <h5>Tailwind v3</h5>
+            <h4>Tailwind v3</h4>
             <p>The <i>optimus</i> layer should be between base and utilities.</p>
             <app-code [code]="code5" [importCode]="true" [hideToggleCode]="true" [hideStackBlitz]="true" class="block mb-4" />
             <p>Tailwind v3 does not use native <i>layer</i> so needs to be defined with CSS.</p>

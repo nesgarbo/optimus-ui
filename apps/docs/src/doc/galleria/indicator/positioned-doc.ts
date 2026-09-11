@@ -32,7 +32,7 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
             </div>
             <p-galleria [(value)]="images" [indicatorsPosition]="position" [showIndicators]="true" [showThumbnails]="false" [showIndicatorsOnItem]="showIndicatorsOnItem" [containerStyle]="{ 'max-width': '640px', 'margin-top': '2em' }">
                 <ng-template #item let-item>
-                    <img [src]="item.itemImageSrc" style="width: 100%; display: block;" />
+                    <img [src]="item.itemImageSrc" [alt]="item.alt" style="width: 100%; display: block;" />
                 </ng-template>
             </p-galleria>
         </div>

@@ -43,7 +43,7 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
                         <ul class="list-none p-0 m-0 flex flex-col gap-4">
                             @for (member of members; track member) {
                                 <li class="flex items-center gap-2">
-                                    <img [src]="'https://optimus.openng.org/demo/avatar/' + member.image" style="width: 32px" />
+                                    <img [src]="'https://optimus.openng.org/demo/avatar/' + member.image" alt="" style="width: 32px" />
                                     <div>
                                         <span class="font-medium">{{ member.name }}</span>
                                         <div class="text-sm text-muted-color">{{ member.email }}</div>

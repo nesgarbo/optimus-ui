@@ -15,19 +15,19 @@ import { OverlayBadgeModule } from '@openng/optimus-ui/overlaybadge';
         <div class="card">
             <div class="flex flex-wrap gap-8">
                 <div class="flex-auto">
-                    <h5>Label</h5>
+                    <h3>Label</h3>
                     <p-avatar label="P" class="mr-2" size="xlarge" />
                     <p-avatar label="V" class="mr-2" size="large" [style]="{ 'background-color': '#ece9fc', color: '#2a1261' }" />
                     <p-avatar label="U" class="mr-2" [style]="{ 'background-color': '#dee9fc', color: '#1a2551' }" />
                 </div>
                 <div class="flex-auto">
-                    <h5>Circle</h5>
+                    <h3>Circle</h3>
                     <p-avatar label="P" class="mr-2" size="xlarge" shape="circle" />
                     <p-avatar label="V" class="mr-2" size="large" [style]="{ 'background-color': '#ece9fc', color: '#2a1261' }" shape="circle" />
                     <p-avatar label="U" class="mr-2" [style]="{ 'background-color': '#dee9fc', color: '#1a2551' }" shape="circle" />
                 </div>
                 <div class="flex-auto">
-                    <h5>Badge</h5>
+                    <h3>Badge</h3>
                     <p-overlay-badge value="4" severity="danger" class="inline-flex">
                         <p-avatar label="U" size="xlarge" />
                     </p-overlay-badge>

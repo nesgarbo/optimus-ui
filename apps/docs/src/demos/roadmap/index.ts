@@ -22,7 +22,7 @@ import { TimelineModule } from '@openng/optimus-ui/timeline';
                     <ng-template #content let-event>
                         <div class="p-4 mb-4 border rounded-xl shadow-sm bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-800">
                             <div class="flex items-center gap-2 mb-2">
-                                <h3 class="text-xl font-semibold m-0">{{ event.title }}</h3>
+                                <h2 class="text-xl font-semibold m-0">{{ event.title }}</h2>
                                 <p-tag *ngIf="event.shipped" value="Shipped" severity="success" />
                             </div>
                             <p *ngIf="event.description" class="text-surface-600 dark:text-surface-400 m-0">{{ event.description }}</p>
@@ -45,7 +45,10 @@ export class RoadmapDemo {
         private metaService: Meta
     ) {
         this.titleService.setTitle('Roadmap - Optimus UI');
-        this.metaService.updateTag({ name: 'description', content: 'Optimus UI Roadmap' });
+        this.metaService.updateTag({
+            name: 'description',
+            content: 'What the Optimus UI maintainers are working on: the milestones behind each release, what has landed already, and where the project is heading next.'
+        });
 
         this.events = [
             {

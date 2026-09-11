@@ -16,7 +16,7 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
         <div class="card">
             <p-galleria [(value)]="images" [showIndicators]="true" [showThumbnails]="false" [showIndicatorsOnItem]="true" indicatorsPosition="left" [containerStyle]="{ maxWidth: '640px' }">
                 <ng-template #item let-item>
-                    <img [src]="item.itemImageSrc" style="width: 100%; display: block;" />
+                    <img [src]="item.itemImageSrc" [alt]="item.alt" style="width: 100%; display: block;" />
                 </ng-template>
                 <ng-template #indicator let-index>
                     <span style="color: #ffffff; cursor: pointer">

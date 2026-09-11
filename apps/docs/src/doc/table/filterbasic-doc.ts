@@ -100,7 +100,7 @@ import { DeferredDemo } from '@/components/demo/deferreddemo';
                             </td>
                             <td>
                                 <div class="flex items-center gap-2">
-                                    <img src="https://optimus.openng.org/demo/flag/flag_placeholder.png" [class]="'flag flag-' + customer.country.code" style="width: 20px" />
+                                    <img src="https://optimus.openng.org/demo/flag/flag_placeholder.png" alt="" [class]="'flag flag-' + customer.country.code" style="width: 20px" />
                                     <span>{{ customer.country.name }}</span>
                                 </div>
                             </td>

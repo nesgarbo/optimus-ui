@@ -16,10 +16,10 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
         <div class="card">
             <p-galleria [(value)]="images" [responsiveOptions]="responsiveOptions" [containerStyle]="{ 'max-width': '640px' }" [numVisible]="5">
                 <ng-template #item let-item>
-                    <img [src]="item.itemImageSrc" style="width: 100%; display: block;" />
+                    <img [src]="item.itemImageSrc" [alt]="item.alt" style="width: 100%; display: block;" />
                 </ng-template>
                 <ng-template #thumbnail let-item>
-                    <img [src]="item.thumbnailImageSrc" style="display: block;" />
+                    <img [src]="item.thumbnailImageSrc" [alt]="item.alt" style="display: block;" />
                 </ng-template>
                 <ng-template #caption let-item>
                     <div class="text-xl mb-2 font-bold">{{ item.title }}</div>

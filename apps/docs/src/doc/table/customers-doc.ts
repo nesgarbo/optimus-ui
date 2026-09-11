@@ -146,7 +146,7 @@ import { TagModule } from '@openng/optimus-ui/tag';
                             </td>
                             <td>
                                 <div class="flex items-center gap-2">
-                                    <img src="https://optimus.openng.org/demo/flag/flag_placeholder.png" [class]="'flag flag-' + customer.country.code" style="width: 20px" />
+                                    <img src="https://optimus.openng.org/demo/flag/flag_placeholder.png" alt="" [class]="'flag flag-' + customer.country.code" style="width: 20px" />
                                     <span class="ml-1 align-middle">{{ customer.country.name }}</span>
                                 </div>
                             </td>
