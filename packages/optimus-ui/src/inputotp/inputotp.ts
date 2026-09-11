@@ -39,8 +39,10 @@ export const INPUT_OTP_VALUE_ACCESSOR: any = {
     multi: true
 };
 
-// Re-export interfaces from types for backwards compatibility
-export { InputOtpChangeEvent, InputOtpInputTemplateContext, InputOtpTemplateEvents } from '@openng/optimus-ui/types/inputotp';
+// Re-export interfaces from types for backwards compatibility. They are types, and say
+// so: a bundler that erases types per file - which is what builds the documentation now -
+// cannot tell from the name alone, and fails on a binding that does not exist at runtime.
+export type { InputOtpChangeEvent, InputOtpInputTemplateContext, InputOtpTemplateEvents } from '@openng/optimus-ui/types/inputotp';
 
 /**
  * Input Otp is used to enter one time passwords.
