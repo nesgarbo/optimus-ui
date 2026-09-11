@@ -51,7 +51,13 @@ function lastModifiedOf(route) {
     }
 }
 
-const routes = docsRoutes().sort();
+/* The not-found page is prerendered and marked noindex: listing it asks a crawler to
+ * index a page that tells it not to. */
+const EXCLUDED = new Set(['/notfound']);
+
+const routes = docsRoutes()
+    .filter((route) => !EXCLUDED.has(route))
+    .sort();
 
 const urls = routes.map((route) => `    <url>\n        <loc>${SITE_URL}${route === '/' ? '/' : route}</loc>\n        <lastmod>${lastModifiedOf(route)}</lastmod>\n        <priority>${priorityOf(route)}</priority>\n    </url>`).join('\n');
 
