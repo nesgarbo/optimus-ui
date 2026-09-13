@@ -262,9 +262,7 @@ export class AssistSuggestions {
                 }
 
                 @if (state.pendingAttachments().length) {
-                    <ul class="p-aiassistview-attachments">
-                        <p-assist-attachments [files]="state.pendingAttachments()" [editable]="true" />
-                    </ul>
+                    <p-assist-attachments [files]="state.pendingAttachments()" [editable]="true" />
                 }
 
                 <p-inputgroup styleClass="p-aiassistview-composer">

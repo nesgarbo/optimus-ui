@@ -63,6 +63,30 @@ describe('renderMarkdown', () => {
         expect(html).toContain('type="checkbox" disabled />');
     });
 
+    it('keeps a generated href out of reach of the emphasis rules', () => {
+        const html = renderMarkdown('see [docs](https://host/my_file_latest) now');
+
+        expect(html).toContain('href="https://host/my_file_latest"');
+        expect(html).not.toContain('<em>file</em>');
+    });
+
+    it('still emphasises the label of a link', () => {
+        expect(renderMarkdown('[**bold**](https://a.dev)')).toContain('<strong>bold</strong>');
+    });
+
+    it('refuses a remote image until it is allowed, and leaves it as text', () => {
+        const blocked = renderMarkdown('![x](https://host/a.png)');
+
+        expect(blocked).not.toContain('<img');
+        // Not half-swallowed by the link rule either.
+        expect(blocked).toContain('![x](https://host/a.png)');
+        expect(renderMarkdown('![x](https://host/a.png)', { allowRemoteImages: true })).toContain('<img src="https://host/a.png"');
+    });
+
+    it('renders a same-origin image without being asked', () => {
+        expect(renderMarkdown('![x](/local.png)')).toContain('<img src="/local.png"');
+    });
+
     it('leaves an empty answer empty', () => {
         expect(renderMarkdown('')).toBe('');
     });
@@ -84,6 +108,12 @@ describe('splitMarkdownBlocks', () => {
 
     it('marks an unterminated fence as still streaming', () => {
         const blocks = splitMarkdownBlocks('Here:\n\n```ts\nconst a = ');
+
+        expect(blocks.at(-1)).toMatchObject({ blockType: 'code', streaming: true });
+    });
+
+    it('does not call a fence terminated by backticks inside a line', () => {
+        const blocks = splitMarkdownBlocks('```ts\nvalue = ```');
 
         expect(blocks.at(-1)).toMatchObject({ blockType: 'code', streaming: true });
     });

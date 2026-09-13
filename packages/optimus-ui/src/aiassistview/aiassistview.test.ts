@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, provideZonelessChangeDetection, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, TemplateRef, provideZonelessChangeDetection, signal, viewChild } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import type { AssistPrompt, AssistPromptRequestPayload } from '@openng/optimus-ui/types/aiassistview';
@@ -19,7 +19,12 @@ import { AIAssistViewModule } from './aiassistview.module';
     standalone: true,
     imports: [AIAssistViewModule],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    template: ` <p-aiassistview #assist [(prompts)]="prompts" [(prompt)]="prompt" heading="Assistant" [enableStreaming]="streaming()" [promptSuggestions]="suggestions()" (promptRequest)="onPrompt($event)" /> `
+    template: `
+        <p-aiassistview #assist [(prompts)]="prompts" [(prompt)]="prompt" heading="Assistant" [enableStreaming]="streaming()" [promptSuggestions]="suggestions()" [showClearButton]="showClear()" (promptRequest)="onPrompt($event)"> </p-aiassistview>
+        <ng-template #weather let-props="props">
+            <div class="registered-tool">{{ props.city }}</div>
+        </ng-template>
+    `
 })
 class Host {
     readonly assist = viewChild.required<AIAssistView>('assist');
@@ -32,6 +37,10 @@ class Host {
 
     readonly suggestions = signal<string[]>(['First suggestion']);
 
+    readonly showClear = signal(false);
+
+    readonly weather = viewChild<TemplateRef<any>>('weather');
+
     readonly requests: AssistPromptRequestPayload[] = [];
 
     cancelNext = false;
@@ -43,6 +52,24 @@ class Host {
     }
 }
 
+@Component({
+    standalone: true,
+    imports: [AIAssistViewModule],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    template: `
+        <p-aiassistview #assist [(prompts)]="prompts">
+            <ng-template pAssistTurnDef let-turn let-index="index">
+                <div class="custom-turn">{{ index }}: {{ turn.prompt }}</div>
+            </ng-template>
+        </p-aiassistview>
+    `
+})
+class TurnDefHost {
+    readonly assist = viewChild.required<AIAssistView>('assist');
+
+    readonly prompts = signal<AssistPrompt[]>([]);
+}
+
 describe('AIAssistView', () => {
     let fixture: ComponentFixture<Host>;
     let host: Host;
@@ -51,7 +78,7 @@ describe('AIAssistView', () => {
     const root = () => fixture.debugElement.query(By.css('[data-part="root"]')).nativeElement as HTMLElement;
 
     beforeEach(async () => {
-        await TestBed.configureTestingModule({ imports: [Host], providers: [provideZonelessChangeDetection()] }).compileComponents();
+        await TestBed.configureTestingModule({ imports: [Host, TurnDefHost], providers: [provideZonelessChangeDetection()] }).compileComponents();
 
         fixture = TestBed.createComponent(Host);
         host = fixture.componentInstance;
@@ -263,6 +290,55 @@ describe('AIAssistView', () => {
         like.click();
         await fixture.whenStable();
         expect(host.prompts()[0].isResponseHelpful).toBeNull();
+    });
+
+    it('offers a clear entry in the header when asked, without losing the configured ones', async () => {
+        expect(root().querySelector('[data-assist-toolbar="header"] [data-assist-item="clear"]')).toBeNull();
+
+        host.showClear.set(true);
+        await fixture.whenStable();
+
+        expect(root().querySelector('[data-assist-toolbar="header"] [data-assist-item="clear"]')).toBeTruthy();
+
+        assist().executePrompt('Ask');
+        await fixture.whenStable();
+
+        root().querySelector<HTMLButtonElement>('[data-assist-toolbar="header"] [data-assist-item="clear"] button')!.click();
+        await fixture.whenStable();
+
+        expect(host.prompts().length).toBe(0);
+    });
+
+    it('replaces the whole turn with pAssistTurnDef', async () => {
+        const custom = TestBed.createComponent(TurnDefHost);
+
+        await custom.whenStable();
+        custom.componentInstance.assist().executePrompt('Custom');
+        await custom.whenStable();
+
+        const element = custom.nativeElement as HTMLElement;
+
+        expect(element.querySelector('.custom-turn')?.textContent).toContain('0: Custom');
+        // The definition replaces the turn outright, so the supplied halves are gone.
+        expect(element.querySelector('[data-part="prompt-message"]')).toBeNull();
+    });
+
+    it('draws a tool registered from code, and stops once it is dropped', async () => {
+        assist().registerToolUI({ toolName: 'weather', template: host.weather()! });
+        assist().executePrompt('Weather');
+        await fixture.whenStable();
+
+        assist().addPromptResponse([{ blockType: 'tool', toolName: 'weather', props: { city: 'Valencia' } }]);
+        await fixture.whenStable();
+
+        expect(root().querySelector('.registered-tool')?.textContent).toContain('Valencia');
+
+        assist().unregisterToolUI('weather');
+        await fixture.whenStable();
+
+        expect(root().querySelector('.registered-tool')).toBeNull();
+        // The built-in card takes over rather than the block vanishing.
+        expect(root().querySelector('[data-part="tool-block"]')?.textContent).toContain('weather');
     });
 
     it('empties the transcript and says so', async () => {

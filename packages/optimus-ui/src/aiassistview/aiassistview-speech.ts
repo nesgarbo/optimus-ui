@@ -162,9 +162,14 @@ export class AssistSpeech {
      * Read-aloud
      * ----------------------------------------------------------------------------------------- */
 
-    /** Reads `text` aloud, cutting off whatever was being read. */
-    speak(text: string, options: AssistTextToSpeechOptions, onEnd?: () => void): void {
-        if (!this.synthesisSupported || !text.trim()) return;
+    /**
+     * Reads `text` aloud, cutting off whatever was being read.
+     *
+     * Reports whether the engine took it. A browser without a voice refuses silently and never calls
+     * back, so a caller that assumed it started would be left showing a stop control over silence.
+     */
+    speak(text: string, options: AssistTextToSpeechOptions, onEnd?: () => void): boolean {
+        if (!this.synthesisSupported || !text.trim()) return false;
 
         const view = this.document.defaultView!;
         const synthesis = view.speechSynthesis;
@@ -196,6 +201,8 @@ export class AssistSpeech {
 
         this.speaking.set(true);
         synthesis.speak(utterance);
+
+        return true;
     }
 
     /** Stops reading. */
