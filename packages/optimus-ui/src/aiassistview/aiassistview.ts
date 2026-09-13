@@ -1,5 +1,24 @@
 import { DOCUMENT, NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, PLATFORM_ID, ViewEncapsulation, booleanAttribute, computed, contentChild, contentChildren, effect, inject, input, model, output, untracked, viewChild } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    DestroyRef,
+    ElementRef,
+    PLATFORM_ID,
+    TemplateRef,
+    ViewEncapsulation,
+    booleanAttribute,
+    computed,
+    contentChild,
+    contentChildren,
+    effect,
+    inject,
+    input,
+    model,
+    output,
+    untracked,
+    viewChild
+} from '@angular/core';
 import { BaseComponent, PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { Bind } from '@openng/optimus-ui/bind';
 import { Button } from '@openng/optimus-ui/button';
@@ -19,8 +38,10 @@ import type {
     AssistPromptChangedPayload,
     AssistPromptEditPayload,
     AssistPromptRequestPayload,
+    AssistPromptToolbarOptions,
     AssistResponseBlock,
     AssistResponseNavigatePayload,
+    AssistResponseToolbarOptions,
     AssistScrollPolicy,
     AssistSendTrigger,
     AssistSpeechPayload,
@@ -32,6 +53,7 @@ import type {
     AssistSuggestionClickPayload,
     AssistTextToSpeechOptions,
     AssistToolbarItem,
+    AssistToolUIConfig,
     AssistToolbarItemClickPayload,
     AssistToolbarOptions,
     AssistView,
@@ -41,7 +63,7 @@ import type {
 } from '@openng/optimus-ui/types/aiassistview';
 import { AssistAttachments } from './aiassistview-attachments';
 import { copyToClipboard } from './aiassistview-clipboard';
-import { ASSIST_COMMANDS, type AssistCommands } from './aiassistview-context';
+import { ASSIST_COMMANDS, type AssistCommands, type AssistToolTemplateContext } from './aiassistview-context';
 import { AssistGlyph } from './aiassistview-icons';
 import { blocksToPlainText } from './aiassistview-markdown';
 import { AssistTurn } from './aiassistview-message';
@@ -60,10 +82,11 @@ import {
     AssistSuggestionDef,
     AssistToolDef,
     AssistToolbarItemDef,
+    AssistTurnDef,
     AssistViewDef,
     type AssistTemplates
 } from './aiassistview-registry';
-import { ASSIST_DEFAULT_LABELS, ASSIST_STATE, AssistState, type AssistLabelOverrides, type AssistLabels, assistId, assistTurnKey, formatLabel } from './aiassistview-state';
+import { ASSIST_DEFAULT_LABELS, ASSIST_STATE, AssistState, type AssistLabelOverrides, type AssistLabels, assistTurnKey, createAssistIdFactory, formatLabel } from './aiassistview-state';
 import { AssistSpeech } from './aiassistview-speech';
 import { AIAssistViewStyle } from './style/aiassistviewstyle';
 
@@ -113,7 +136,11 @@ import { AIAssistViewStyle } from './style/aiassistviewstyle';
                     } @else {
                         <div class="p-aiassistview-turns">
                             @for (turn of state.prompts(); track trackTurn($index, turn)) {
-                                <p-assist-turn [turn]="turn" [index]="$index" [showAvatars]="showAvatars()" [promptIconCss]="promptIconCss()" [responseIconCss]="responseIconCss()" [showOnHover]="toolbarOnHover()" [markdown]="renderMarkdown()" />
+                                @if (turnTemplate(); as definition) {
+                                    <ng-container *ngTemplateOutlet="definition; context: { $implicit: turn, turn, index: $index, last: $index === state.prompts().length - 1, streaming: turn.status === 'streaming' }" />
+                                } @else {
+                                    <p-assist-turn [turn]="turn" [index]="$index" [showAvatars]="showAvatars()" [promptIconCss]="promptIconCss()" [responseIconCss]="responseIconCss()" [showOnHover]="toolbarOnHover()" [markdown]="renderMarkdown()" />
+                                }
                             }
                         </div>
                     }
@@ -138,15 +165,21 @@ import { AIAssistViewStyle } from './style/aiassistviewstyle';
                         <p-assist-glyph name="arrow-down" />
                     </p-button>
                 }
-            } @else {
+            } @else if (activeViewTemplate(); as definition) {
                 <div class="p-aiassistview-custom-view" role="tabpanel" [id]="panelId()" [attr.aria-labelledby]="tabId()">
-                    @if (activeViewTemplate(); as definition) {
-                        <ng-container *ngTemplateOutlet="definition; context: activeViewContext()" />
-                    } @else {
-                        <ng-content />
-                    }
+                    <ng-container *ngTemplateOutlet="definition; context: activeViewContext()" />
                 </div>
             }
+
+            <!--
+                The projection point is ALWAYS in the tree, hidden while it has nothing to show.
+                Projected content that is never projected anywhere is never instantiated, and a
+                definition written as \`@if (x) { <ng-template pAssistResponseDef> }\` would then never
+                exist for the content query to find.
+            -->
+            <div class="p-aiassistview-custom-view" role="tabpanel" [hidden]="state.assistViewActive() || !!activeViewTemplate()" [id]="contentPanelId()" [attr.aria-labelledby]="tabId()">
+                <ng-content />
+            </div>
         </div>
 
         @if (showFooter() && state.assistViewActive()) {
@@ -195,8 +228,16 @@ export class AIAssistView extends BaseComponent<AssistViewPassThrough> implement
     private readonly speech = inject(AssistSpeech);
     private readonly attachmentsService = inject(AssistAttachments);
 
+    /**
+     * @internal
+     *
+     * Ids from a counter of this component's own, so a server render and the browser render that
+     * follows it produce the same ones and the hydration survives.
+     */
+    private readonly nextId = createAssistIdFactory();
+
     /** @internal Identity of this assistant, used to build the tab panel ids. */
-    readonly assistId = assistId('assist');
+    readonly assistId = this.nextId('assist');
 
     onAfterViewChecked(): void {
         this.bindDirectiveInstance.setAttrs(this.ptms(['host', 'root']));
@@ -323,6 +364,14 @@ export class AIAssistView extends BaseComponent<AssistViewPassThrough> implement
      */
     readonly renderMarkdown = input(true, { transform: booleanAttribute });
     /**
+     * Whether the header offers a clear-conversation button.
+     *
+     * Added to whatever `toolbarSettings` already carries rather than replacing it, so a product with
+     * its own header entries keeps them.
+     * @group Props
+     */
+    readonly showClearButton = input(false, { transform: booleanAttribute });
+    /**
      * Whether the scroll-to-newest button appears once the transcript is scrolled away.
      * @group Props
      */
@@ -390,13 +439,31 @@ export class AIAssistView extends BaseComponent<AssistViewPassThrough> implement
      */
     readonly footerToolbarSettings = input<AssistFooterToolbarOptions | undefined>(undefined);
     /**
-     * Entries offered on a prompt bubble. Left unset, the stock edit entry is offered.
+     * The toolbar offered on a prompt: its entries, its width and whether it waits for a hover.
+     *
+     * Left unset, the stock edit entry is offered.
+     * @group Props
+     */
+    readonly promptToolbarSettings = input<AssistPromptToolbarOptions | undefined>(undefined);
+    /**
+     * The toolbar offered under a response.
+     *
+     * Left unset, the stock copy, feedback and regenerate entries are offered, plus read-aloud when
+     * speech is on.
+     * @group Props
+     */
+    readonly responseToolbarSettings = input<AssistResponseToolbarOptions | undefined>(undefined);
+    /**
+     * The prompt toolbar's entries on their own, for the common case that needs nothing else.
+     *
+     * `promptToolbarSettings` wins when both are bound.
      * @group Props
      */
     readonly promptToolbarItems = input<AssistToolbarItem[] | undefined>(undefined);
     /**
-     * Entries offered under a response. Left unset, the stock copy, feedback and regenerate entries
-     * are offered, plus read-aloud when speech is on.
+     * The response toolbar's entries on their own.
+     *
+     * `responseToolbarSettings` wins when both are bound.
      * @group Props
      */
     readonly responseToolbarItems = input<AssistToolbarItem[] | undefined>(undefined);
@@ -467,21 +534,26 @@ export class AIAssistView extends BaseComponent<AssistViewPassThrough> implement
     // Templates
     // ---------------------------------------------------------------------------------------------
 
-    private readonly promptDef = contentChild(AssistPromptDef);
-    private readonly responseDef = contentChild(AssistResponseDef);
-    private readonly blockDef = contentChild(AssistBlockDef);
-    private readonly toolDefs = contentChildren(AssistToolDef);
-    private readonly stageDef = contentChild(AssistStageDef);
-    private readonly suggestionDef = contentChild(AssistSuggestionDef);
-    private readonly viewDefs = contentChildren(AssistViewDef);
-    private readonly toolbarItemDefs = contentChildren(AssistToolbarItemDef);
-    private readonly attachmentDef = contentChild(AssistAttachmentDef);
-    private readonly bannerDef = contentChild(AssistBannerDef);
-    private readonly footerDef = contentChild(AssistFooterDef);
-    private readonly headerDef = contentChild(AssistHeaderDef);
+    // `descendants: true` on every one of them: a definition is as likely to sit inside an `@if` or a
+    // repeated block as at the top level, and a content query does not cross an embedded view without
+    // it — the template would simply never be found.
+    private readonly turnDef = contentChild(AssistTurnDef, { descendants: true });
+    private readonly promptDef = contentChild(AssistPromptDef, { descendants: true });
+    private readonly responseDef = contentChild(AssistResponseDef, { descendants: true });
+    private readonly blockDef = contentChild(AssistBlockDef, { descendants: true });
+    private readonly toolDefs = contentChildren(AssistToolDef, { descendants: true });
+    private readonly stageDef = contentChild(AssistStageDef, { descendants: true });
+    private readonly suggestionDef = contentChild(AssistSuggestionDef, { descendants: true });
+    private readonly viewDefs = contentChildren(AssistViewDef, { descendants: true });
+    private readonly toolbarItemDefs = contentChildren(AssistToolbarItemDef, { descendants: true });
+    private readonly attachmentDef = contentChild(AssistAttachmentDef, { descendants: true });
+    private readonly bannerDef = contentChild(AssistBannerDef, { descendants: true });
+    private readonly footerDef = contentChild(AssistFooterDef, { descendants: true });
+    private readonly headerDef = contentChild(AssistHeaderDef, { descendants: true });
 
     /** @internal What the parts read instead of querying for templates themselves. */
     readonly assistTemplates: AssistTemplates = {
+        turn: this.turnDef,
         prompt: this.promptDef,
         response: this.responseDef,
         block: this.blockDef,
@@ -506,6 +578,24 @@ export class AIAssistView extends BaseComponent<AssistViewPassThrough> implement
     /** @internal The chrome strings, merged over the defaults. */
     protected readonly resolvedLabels = computed<AssistLabels>(() => ({ ...ASSIST_DEFAULT_LABELS, ...(this.labels() ?? {}) }));
 
+    /**
+     * @internal
+     *
+     * The header toolbar, with the clear entry folded in when it is asked for.
+     */
+    private readonly resolvedHeaderToolbar = computed<AssistToolbarOptions | undefined>(() => {
+        const configured = this.toolbarSettings();
+
+        if (!this.showClearButton()) return configured;
+
+        const items = configured?.items ?? [];
+
+        // A product that already put a clear entry in its own toolbar keeps that one.
+        if (items.some((item) => item.id === 'clear')) return configured;
+
+        return { ...configured, items: [...items, { id: 'clear', tooltip: this.resolvedLabels().clear }] };
+    });
+
     /** @internal Whether the browser can take dictation and the application asked for it. */
     protected readonly speechAvailable = computed(() => (this.speechToTextSettings()?.enabled ?? false) && this.speech.recognitionSupported);
 
@@ -518,20 +608,22 @@ export class AIAssistView extends BaseComponent<AssistViewPassThrough> implement
      * The stock prompt entries. Only `edit`, because everything else a prompt bubble could offer —
      * copying the question back, deleting the turn — is product policy rather than a default.
      */
-    private readonly resolvedPromptItems = computed<AssistToolbarItem[]>(() => {
-        const configured = this.promptToolbarItems();
+    private readonly resolvedPromptToolbar = computed<AssistPromptToolbarOptions>(() => {
+        const settings = this.promptToolbarSettings();
+        const configured = settings?.items ?? this.promptToolbarItems();
 
-        if (configured) return configured;
-        if (this.readonly() || this.disabled()) return [];
+        if (configured) return { ...settings, items: configured };
+        if (this.readonly() || this.disabled()) return { ...settings, items: [] };
 
-        return [{ id: 'edit', tooltip: this.resolvedLabels().edit }];
+        return { ...settings, items: [{ id: 'edit', tooltip: this.resolvedLabels().edit }] };
     });
 
     /** @internal The stock response entries. */
-    private readonly resolvedResponseItems = computed<AssistToolbarItem[]>(() => {
-        const configured = this.responseToolbarItems();
+    private readonly resolvedResponseToolbar = computed<AssistResponseToolbarOptions>(() => {
+        const settings = this.responseToolbarSettings();
+        const configured = settings?.items ?? this.responseToolbarItems();
 
-        if (configured) return configured;
+        if (configured) return { ...settings, items: configured };
 
         const labels = this.resolvedLabels();
         const items: AssistToolbarItem[] = [
@@ -543,7 +635,7 @@ export class AIAssistView extends BaseComponent<AssistViewPassThrough> implement
         if (this.readAloudAvailable()) items.push({ id: 'readAloud', tooltip: labels.readAloud });
         if (!this.readonly()) items.push({ id: 'regenerate', tooltip: labels.regenerate });
 
-        return items;
+        return { ...settings, items };
     });
 
     /** @internal */
@@ -571,6 +663,9 @@ export class AIAssistView extends BaseComponent<AssistViewPassThrough> implement
      */
     protected readonly panelId = computed(() => `${this.assistId}_tabpanel_${this.state.activeView()}`);
 
+    /** @internal The projection point's own id, so two panels never share one. */
+    protected readonly contentPanelId = computed(() => (this.state.assistViewActive() || this.activeViewTemplate() ? `${this.assistId}-projected` : this.panelId()));
+
     /** @internal The tab that labels the panel, when there is a switcher at all. */
     protected readonly tabId = computed(() => (this.state.views().length > 1 ? `${this.assistId}_tab_${this.state.activeView()}` : null));
 
@@ -585,6 +680,11 @@ export class AIAssistView extends BaseComponent<AssistViewPassThrough> implement
 
         return (named ?? definitions.find((definition) => !definition.pAssistViewDef()))?.template;
     });
+
+    /** @internal */
+    protected turnTemplate() {
+        return this.turnDef()?.template;
+    }
 
     /** @internal */
     protected activeViewContext() {
@@ -614,10 +714,10 @@ export class AIAssistView extends BaseComponent<AssistViewPassThrough> implement
         streaming: computed(() => this.enableStreaming()),
         attachments: computed(() => this.enableAttachments()),
         attachmentOptions: computed(() => this.attachmentSettings()),
-        toolbar: computed(() => this.toolbarSettings()),
+        toolbar: this.resolvedHeaderToolbar,
         footerToolbar: computed(() => this.footerToolbarSettings()),
-        promptToolbarItems: this.resolvedPromptItems,
-        responseToolbarItems: this.resolvedResponseItems,
+        promptToolbar: this.resolvedPromptToolbar,
+        responseToolbar: this.resolvedResponseToolbar,
         density: computed(() => this.density()),
         layout: computed(() => this.layout()),
         scrollPolicy: computed(() => this.scrollPolicy()),
@@ -647,7 +747,18 @@ export class AIAssistView extends BaseComponent<AssistViewPassThrough> implement
         // from something they scrolled back to.
         effect(() => {
             const turns = this.state.prompts();
-            const signature = `${turns.length}:${turns[turns.length - 1]?.response?.length ?? 0}:${turns[turns.length - 1]?.blocks?.length ?? 0}`;
+            // The block COUNT is not enough: a streamed answer patches one block in place and grows
+            // its text, and a signature that only counts blocks never changes, so the transcript
+            // stops following halfway through the answer.
+            const last = turns[turns.length - 1];
+            const blocks = last?.blocks ?? [];
+            const blockSize = blocks.reduce((total, block) => {
+                const content = 'content' in block ? (block.content?.length ?? 0) : 0;
+                const stages = 'stages' in block ? (block.stages ?? []) : [];
+
+                return total + content + stages.reduce((sum, stage) => sum + (stage.content?.length ?? 0), stages.length);
+            }, 0);
+            const signature = `${turns.length}:${last?.response?.length ?? 0}:${blocks.length}:${blockSize}`;
 
             if (signature === this.lastTurnSignature) return;
 
@@ -727,7 +838,7 @@ export class AIAssistView extends BaseComponent<AssistViewPassThrough> implement
         if (!text && files.length === 0) return;
 
         const turn: AssistPrompt = {
-            id: assistId('turn'),
+            id: this.nextId('turn'),
             prompt: text,
             attachedFiles: files.length ? files : undefined,
             status: 'pending',
@@ -744,11 +855,12 @@ export class AIAssistView extends BaseComponent<AssistViewPassThrough> implement
             responseToolbarItems: undefined
         };
 
-        this.promptRequest.emit(payload);
-
-        if (payload.cancel) return;
-
-        if (payload.responseToolbarItems) turn.toolbarItems = payload.responseToolbarItems;
+        // The turn is opened BEFORE the event goes out, so a handler that answers synchronously —
+        // `streamResponse(...)` right there in `promptRequest` — finds a turn to write into. Emitting
+        // first left the handler holding an index for a turn that did not exist yet, and a synchronous
+        // answer went nowhere.
+        const snapshot = this.state.prompts();
+        const previousPrompt = this.prompt();
 
         if (this.managed()) {
             if (options.regenerate && options.atIndex != null) this.state.patchTurn(options.atIndex, { status: 'pending' });
@@ -759,6 +871,26 @@ export class AIAssistView extends BaseComponent<AssistViewPassThrough> implement
         this.state.clearAttachments();
 
         if (prompt == null) this.setPromptValue('');
+
+        this.promptRequest.emit(payload);
+
+        if (payload.cancel) {
+            // Put everything back exactly as it was: the transcript, the open turn, the attachments
+            // and the text the reader had typed.
+            if (this.managed()) this.state.setPrompts(snapshot);
+
+            this.state.activeTurnIndex.set(-1);
+            this.state.pendingAttachments.set(files);
+
+            if (prompt == null) {
+                this.previousPrompt = previousPrompt;
+                this.prompt.set(previousPrompt);
+            }
+
+            return;
+        }
+
+        if (payload.responseToolbarItems && this.managed()) this.state.patchTurn(index, { toolbarItems: payload.responseToolbarItems });
 
         this.state.announce(this.resolvedLabels().promptSent);
     }
@@ -1224,6 +1356,10 @@ export class AIAssistView extends BaseComponent<AssistViewPassThrough> implement
         const external = options.signal;
         const forward = () => controller.abort();
 
+        // A signal that is ALREADY aborted never fires the event again, so a caller reusing one
+        // controller across turns would get a stream it could not cancel.
+        if (external?.aborted) return;
+
         external?.addEventListener('abort', forward);
         this.streamAbort = controller;
 
@@ -1359,14 +1495,32 @@ export class AIAssistView extends BaseComponent<AssistViewPassThrough> implement
 
         if (!text) return;
 
+        // Only once the engine has actually taken it: a browser without a voice returns without ever
+        // calling back, and the read-aloud control would keep its stop state over silence.
+        if (!this.speech.speak(text, this.textToSpeechSettings() ?? {}, () => this.state.speakingIndex.set(-1))) return;
+
         this.state.speakingIndex.set(position);
-        this.speech.speak(text, this.textToSpeechSettings() ?? {}, () => this.state.speakingIndex.set(-1));
     }
 
     /** Stops reading. */
     stopSpeaking(): void {
         this.speech.cancelSpeech();
         this.state.speakingIndex.set(-1);
+    }
+
+    /**
+     * Registers a tool renderer from code.
+     *
+     * The declarative `pAssistToolDef` covers the normal case; this is for a tool whose name is only
+     * known at runtime. Markup wins over the registry, so a page can override a plugin's renderer.
+     */
+    registerToolUI(config: AssistToolUIConfig<TemplateRef<AssistToolTemplateContext>>): void {
+        this.state.registerTool(config.toolName, config.template);
+    }
+
+    /** Drops a renderer registered by {@link registerToolUI}. */
+    unregisterToolUI(toolName: string): void {
+        this.state.unregisterTool(toolName);
     }
 
     /** The transcript, for a download or the clipboard. */

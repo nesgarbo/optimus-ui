@@ -7,7 +7,9 @@ import type {
     AssistFooterToolbarOptions,
     AssistLayout,
     AssistPrompt,
+    AssistPromptToolbarOptions,
     AssistResponseBlock,
+    AssistResponseToolbarOptions,
     AssistScrollPolicy,
     AssistSendTrigger,
     AssistSuggestion,
@@ -237,22 +239,35 @@ export function formatTime(value: Date | string | number | undefined): string {
  * Identity
  * ---------------------------------------------------------------------------------------------- */
 
-let assistSequence = 0;
-
 /**
- * A transcript-unique id.
+ * A counter scoped to whoever holds it.
  *
- * A counter with a prefix, not `crypto.randomUUID`: ids are generated during rendering, they must be
- * stable between the server render and the client one when the transcript is seeded on the server,
- * and a random id differs between the two and throws the hydration away.
+ * Deliberately not a module-level counter. On a server one module instance serves every request, so a
+ * shared counter keeps climbing between them: the same transcript renders as `turn-42` on the server
+ * and `turn-1` in the browser, the ids disagree and the hydration is thrown away. Concurrent renders
+ * interleave on top of that.
  *
  * @group Function
  */
-export function assistId(prefix = 'turn'): string {
-    assistSequence += 1;
+export function createAssistIdFactory(): (prefix?: string) => string {
+    let sequence = 0;
 
-    return `${prefix}-${assistSequence}`;
+    return (prefix = 'turn') => {
+        sequence += 1;
+
+        return `${prefix}-${sequence}`;
+    };
 }
+
+/**
+ * An id from a counter of its own.
+ *
+ * For a caller with no assistant to hand — a fixture, a store seeding a transcript. Inside the
+ * component every id comes from the root's own factory.
+ *
+ * @group Function
+ */
+export const assistId = createAssistIdFactory();
 
 /** What `@for` tracks a turn by. @group Function */
 export function assistTurnKey(index: number, turn: AssistPrompt): string {
@@ -297,10 +312,10 @@ export interface AssistStateConfig {
     toolbar: Signal<AssistToolbarOptions | undefined>;
     /** The footer toolbar. */
     footerToolbar: Signal<AssistFooterToolbarOptions | undefined>;
-    /** Entries offered on a prompt bubble. */
-    promptToolbarItems: Signal<AssistToolbarItem[] | undefined>;
-    /** Entries offered under a response. */
-    responseToolbarItems: Signal<AssistToolbarItem[] | undefined>;
+    /** The toolbar offered on a prompt. */
+    promptToolbar: Signal<AssistPromptToolbarOptions | undefined>;
+    /** The toolbar offered under a response. */
+    responseToolbar: Signal<AssistResponseToolbarOptions | undefined>;
     /** How tightly the surface is packed. */
     density: Signal<AssistDensity>;
     /** How a turn is laid out. */
@@ -385,6 +400,14 @@ export class AssistState {
     /** Which toolbar entry last reported success, so the copy entry can say `Copied`. */
     readonly flashedItem = signal<string | null>(null);
 
+    /**
+     * Tool renderers registered from code, by tool name.
+     *
+     * A signal rather than a plain map: a registration that arrives after the block it draws has to
+     * repaint that block, and a map would leave the tool rendering its fallback forever.
+     */
+    readonly registeredTools = signal<ReadonlyMap<string, unknown>>(new Map());
+
     /** Which reasoning panels the reader folded away, by block id. */
     readonly collapsedBlocks = signal<ReadonlySet<string>>(new Set());
 
@@ -461,11 +484,22 @@ export class AssistState {
     /** The header toolbar's visible entries. */
     readonly headerToolbarItems = computed(() => visibleItems(this.config.toolbar()?.items));
 
-    /** The entries a prompt bubble offers. */
-    readonly promptToolbarItems = computed(() => visibleItems(this.config.promptToolbarItems()));
+    /** The entries a prompt offers. */
+    readonly promptToolbarItems = computed(() => (this.config.promptToolbar()?.visible === false ? [] : visibleItems(this.config.promptToolbar()?.items)));
 
     /** The entries a response offers, unless the turn carries its own. */
-    readonly responseToolbarItems = computed(() => visibleItems(this.config.responseToolbarItems()));
+    readonly responseToolbarItems = computed(() => (this.config.responseToolbar()?.visible === false ? [] : visibleItems(this.config.responseToolbar()?.items)));
+
+    /** Width of the strip on a prompt. */
+    readonly promptToolbarWidth = computed(() => this.config.promptToolbar()?.width);
+
+    /** Width of the strip under a response. */
+    readonly responseToolbarWidth = computed(() => this.config.responseToolbar()?.width);
+
+    /** Whether a strip waits for a hover, per strip, falling back to the component-wide default. */
+    toolbarOnHover(kind: 'prompt' | 'response', fallback: boolean): boolean {
+        return (kind === 'prompt' ? this.config.promptToolbar()?.showOnHover : this.config.responseToolbar()?.showOnHover) ?? fallback;
+    }
 
     /** The entries one particular response offers. */
     responseToolbarItemsOf(turn: AssistPrompt): AssistToolbarItem[] {
@@ -555,13 +589,19 @@ export class AssistState {
      * Responses
      * ----------------------------------------------------------------------------------------- */
 
-    /** Replaces the open turn's answer. */
+    /**
+     * Replaces the open turn's answer.
+     *
+     * Both representations are written, not just the one handed in: `blocks` win over `response` at
+     * render time, so a string answer arriving after a structured one would otherwise be invisible,
+     * and blocks arriving after a string would leave the old text behind for copy, export and speech.
+     */
     setResponse(response: string | AssistResponseBlock[], final: boolean): void {
         const index = this.activeTurnIndex();
 
         if (index < 0) return;
 
-        const patch: Partial<AssistPrompt> = typeof response === 'string' ? { response } : { blocks: response };
+        const patch: Partial<AssistPrompt> = typeof response === 'string' ? { response, blocks: undefined } : { blocks: response, response: '' };
 
         this.patchTurn(index, { ...patch, status: final ? 'complete' : 'streaming' });
 
@@ -742,6 +782,22 @@ export class AssistState {
     alert(message: string): void {
         this.alertMessage.set('');
         this.alertMessage.set(message);
+    }
+
+    /** Adds or replaces a tool renderer. */
+    registerTool(toolName: string, template: unknown): void {
+        this.registeredTools.update((current) => new Map(current).set(toolName, template));
+    }
+
+    /** Drops a registered tool renderer. */
+    unregisterTool(toolName: string): void {
+        this.registeredTools.update((current) => {
+            const next = new Map(current);
+
+            next.delete(toolName);
+
+            return next;
+        });
     }
 
     /** Marks one toolbar entry as having just succeeded, for the `Copied` flash. */

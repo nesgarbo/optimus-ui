@@ -151,13 +151,20 @@ export class AssistAttachmentList {
                     <p class="p-aiassistview-prompt-text">{{ turn().prompt }}</p>
                 </div>
                 @if (turn().attachedFiles?.length) {
-                    <ul class="p-aiassistview-attachments">
-                        <p-assist-attachments [files]="turn().attachedFiles ?? []" />
-                    </ul>
+                    <p-assist-attachments [files]="turn().attachedFiles ?? []" />
                 }
             }
             @if (toolbarItems().length && !editing()) {
-                <p-assist-toolbar kind="prompt" [items]="toolbarItems()" [turn]="turn()" [index]="index()" [showOnHover]="showOnHover()" [disabled]="state.disabled()" (itemClick)="commands?.toolbarItemClick($event)" />
+                <p-assist-toolbar
+                    kind="prompt"
+                    [items]="toolbarItems()"
+                    [turn]="turn()"
+                    [index]="index()"
+                    [showOnHover]="state.toolbarOnHover('prompt', showOnHover())"
+                    [width]="state.promptToolbarWidth()"
+                    [disabled]="state.disabled()"
+                    (itemClick)="commands?.toolbarItemClick($event)"
+                />
             }
         </div>
     `,
@@ -237,6 +244,9 @@ export class AssistPromptMessage {
      * multi-line as the original was.
      */
     protected onEditKeydown(event: KeyboardEvent): void {
+        // A composition is in progress: Enter is accepting an IME candidate, not saving the edit.
+        if (event.isComposing) return;
+
         if (event.key === 'Escape') {
             event.preventDefault();
             this.cancelEdit();
@@ -327,7 +337,16 @@ export class AssistPromptMessage {
                     </span>
                 }
                 @if (toolbarItems().length && !pending()) {
-                    <p-assist-toolbar kind="response" [items]="toolbarItems()" [turn]="turn()" [index]="index()" [showOnHover]="showOnHover()" [disabled]="state.disabled()" (itemClick)="commands?.toolbarItemClick($event)" />
+                    <p-assist-toolbar
+                        kind="response"
+                        [items]="toolbarItems()"
+                        [turn]="turn()"
+                        [index]="index()"
+                        [showOnHover]="state.toolbarOnHover('response', showOnHover())"
+                        [width]="state.responseToolbarWidth()"
+                        [disabled]="state.disabled()"
+                        (itemClick)="commands?.toolbarItemClick($event)"
+                    />
                 }
                 @if (turn().usage; as usage) {
                     <span class="p-aiassistview-usage">{{ usageLabel(usage) }}</span>

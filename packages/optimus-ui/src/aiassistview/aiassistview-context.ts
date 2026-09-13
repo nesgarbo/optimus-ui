@@ -60,6 +60,20 @@ export const ASSIST_THINKING_CONTEXT = new InjectionToken<AssistThinkingContext>
  * Template contexts
  * ---------------------------------------------------------------------------------------------- */
 
+/** `let-` bindings of the whole-turn template. @group Interface */
+export interface AssistTurnTemplateContext {
+    /** The turn. */
+    $implicit: AssistPrompt;
+    /** The turn, named. */
+    turn: AssistPrompt;
+    /** Where it sits. */
+    index: number;
+    /** Whether this is the newest turn. */
+    last: boolean;
+    /** Whether the answer is still arriving. */
+    streaming: boolean;
+}
+
 /** `let-` bindings of the prompt template. @group Interface */
 export interface AssistPromptTemplateContext {
     /** The turn. */

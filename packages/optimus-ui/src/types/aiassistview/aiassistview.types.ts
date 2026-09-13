@@ -390,6 +390,27 @@ export interface AssistFooterToolbarOptions extends AssistToolbarOptions {
     position?: AssistFooterToolbarPosition;
 }
 
+/**
+ * A tool renderer registered from code rather than declared in markup.
+ *
+ * The declarative `pAssistToolDef` covers the normal case. This is for the one it does not: a tool
+ * whose name is only known at runtime — read from a manifest, negotiated with the model, loaded with
+ * a plugin — where there is no template in the markup to label ahead of time.
+ *
+ * @group Interface
+ */
+export interface AssistToolUIConfig<T = unknown> {
+    /** Which `toolName` this renderer draws. */
+    toolName: string;
+    /**
+     * The template to stamp.
+     *
+     * A `TemplateRef`, not an HTML string: a string would have to be parsed and sanitised at runtime
+     * and would give up type checking, change detection and content projection along the way.
+     */
+    template: T;
+}
+
 /* -------------------------------------------------------------------------------------------------
  * Attachments
  * ---------------------------------------------------------------------------------------------- */
@@ -903,6 +924,15 @@ export interface AssistViewExpose {
     speak(index?: number): void;
     /** Stops reading. */
     stopSpeaking(): void;
+    /**
+     * Registers a tool renderer from code.
+     *
+     * Registering the same name twice replaces the first. A tool declared in markup with
+     * `pAssistToolDef` wins over one registered here, so a page can override a plugin's renderer.
+     */
+    registerToolUI(config: AssistToolUIConfig<any>): void;
+    /** Drops a renderer registered by {@link registerToolUI}. */
+    unregisterToolUI(toolName: string): void;
     /** The transcript as markdown, for download or the clipboard. */
     exportTranscript(format?: 'markdown' | 'text' | 'json'): string;
 }

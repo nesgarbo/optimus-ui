@@ -96,6 +96,7 @@ const BUILT_IN_ICONS: Record<string, AssistIconName> = {
         'data-part': 'toolbar',
         '[class]': 'hostClass()',
         '[attr.data-assist-toolbar]': 'kind()',
+        '[style.width]': 'widthStyle()',
         role: 'toolbar'
     }
 })
@@ -121,6 +122,9 @@ export class AssistToolbar {
     /** Whether every entry refuses the pointer, on top of each entry's own `disabled`. */
     readonly disabled = input(false, { transform: booleanAttribute });
 
+    /** Width of the strip. A number is read as pixels. */
+    readonly width = input<string | number | undefined>(undefined);
+
     /** Fired when an entry is activated. The payload's `cancel` suppresses the built-in behaviour. */
     readonly itemClick = output<AssistToolbarItemClickPayload>();
 
@@ -131,6 +135,13 @@ export class AssistToolbar {
         if (this.showOnHover()) classes.push('p-aiassistview-actions-on-hover');
 
         return classes.join(' ');
+    });
+
+    /** @internal */
+    protected readonly widthStyle = computed(() => {
+        const width = this.width();
+
+        return width == null ? null : typeof width === 'number' ? `${width}px` : width;
     });
 
     /** @internal */

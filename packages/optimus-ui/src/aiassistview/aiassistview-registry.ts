@@ -10,6 +10,7 @@ import type {
     AssistSuggestionTemplateContext,
     AssistToolTemplateContext,
     AssistToolbarItemTemplateContext,
+    AssistTurnTemplateContext,
     AssistViewTemplateContext
 } from './aiassistview-context';
 
@@ -66,6 +67,30 @@ export class AssistResponseDef {
 
     /** @internal */
     static ngTemplateContextGuard(_directive: AssistResponseDef, context: unknown): context is AssistResponseTemplateContext {
+        return true;
+    }
+}
+
+/**
+ * The whole turn: the prompt, the answer and everything between them.
+ *
+ * The widest of the definitions. Where `pAssistPromptDef` and `pAssistResponseDef` replace one half
+ * each and keep the row, the avatar and the toolbars around it, this replaces the turn outright.
+ *
+ * `<ng-template pAssistTurnDef let-turn let-index="index">`
+ *
+ * @group Components
+ */
+@Directive({ selector: '[pAssistTurnDef]', standalone: true })
+export class AssistTurnDef {
+    /** @internal The template itself, stamped by the transcript. */
+    readonly template = inject<TemplateRef<AssistTurnTemplateContext>>(TemplateRef);
+
+    /** @internal Unused: present so the microsyntax form parses. */
+    readonly pAssistTurnDef = input<unknown>(undefined);
+
+    /** @internal Narrows `let-` bindings to the turn context. */
+    static ngTemplateContextGuard(_directive: AssistTurnDef, context: unknown): context is AssistTurnTemplateContext {
         return true;
     }
 }
@@ -267,7 +292,21 @@ export class AssistHeaderDef {
 }
 
 /** Every definition, for the module to import and export in one go. @internal */
-export const ASSIST_DEFS = [AssistPromptDef, AssistResponseDef, AssistBlockDef, AssistToolDef, AssistStageDef, AssistSuggestionDef, AssistViewDef, AssistToolbarItemDef, AssistAttachmentDef, AssistBannerDef, AssistFooterDef, AssistHeaderDef] as const;
+export const ASSIST_DEFS = [
+    AssistTurnDef,
+    AssistPromptDef,
+    AssistResponseDef,
+    AssistBlockDef,
+    AssistToolDef,
+    AssistStageDef,
+    AssistSuggestionDef,
+    AssistViewDef,
+    AssistToolbarItemDef,
+    AssistAttachmentDef,
+    AssistBannerDef,
+    AssistFooterDef,
+    AssistHeaderDef
+] as const;
 
 /**
  * Every definition the root found in its content, as signals.
@@ -280,6 +319,8 @@ export const ASSIST_DEFS = [AssistPromptDef, AssistResponseDef, AssistBlockDef, 
  * @group Interface
  */
 export interface AssistTemplates {
+    /** Replaces the whole turn. */
+    readonly turn: Signal<AssistTurnDef | undefined>;
     /** Replaces the prompt bubble's body. */
     readonly prompt: Signal<AssistPromptDef | undefined>;
     /** Replaces the whole answer. */

@@ -1,5 +1,5 @@
 import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, booleanAttribute, computed, inject, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, TemplateRef, ViewEncapsulation, booleanAttribute, computed, inject, input, output, signal } from '@angular/core';
 import { Button } from '@openng/optimus-ui/button';
 import { Chip } from '@openng/optimus-ui/chip';
 import { Message } from '@openng/optimus-ui/message';
@@ -171,7 +171,12 @@ export class AssistCodeBlockView {
     standalone: true,
     imports: [AssistGlyph, Chip, NgTemplateOutlet, Panel],
     template: `
-        <p-panel styleClass="p-aiassistview-block-panel" [toggleable]="collapsible()" toggler="header" [collapsed]="collapsed()" (collapsedChange)="onCollapsedChange($event)">
+        <!--
+                The toggler stays the panel's own button rather than the whole header: a clickable
+                header is a plain div with no role, no tab stop and no aria-expanded, so the panel
+                would be unreachable by keyboard and silent to a screen reader.
+            -->
+        <p-panel styleClass="p-aiassistview-block-panel" [toggleable]="collapsible()" [collapsed]="collapsed()" (collapsedChange)="onCollapsedChange($event)">
             <ng-template #header>
                 <span class="p-panel-title p-aiassistview-panel-title">
                     <p-assist-glyph [name]="block().isActive ? 'sparkles' : 'check'" />
@@ -349,6 +354,17 @@ export class AssistThinkingBlockView {
         return formatLabel(this.state.labels().thoughtFor, seconds);
     }
 
+    /**
+     * @internal
+     *
+     * Keyboard activation. The chip is a `role="button"` with a tab stop, and Space on one of those
+     * scrolls the page unless the default is taken away.
+     */
+    protected activateContext(contextItem: AssistThinkingContextItem, stage: AssistThinkingStage, event: Event): void {
+        event.preventDefault();
+        this.clickContext(contextItem, stage, event);
+    }
+
     /** @internal */
     protected clickContext(contextItem: AssistThinkingContextItem, stage: AssistThinkingStage, event: Event): void {
         this.contextClick.emit({ originalEvent: event, contextItem, stage, turn: this.turn(), index: this.index() });
@@ -401,6 +417,7 @@ export class AssistThinkingBlockView {
 })
 export class AssistToolBlockView {
     private readonly templates = inject(ASSIST_TEMPLATES, { optional: true });
+    private readonly state = inject(ASSIST_STATE);
 
     /** The block. */
     readonly block = input.required<AssistToolBlock>();
@@ -408,13 +425,24 @@ export class AssistToolBlockView {
     /** The turn it belongs to. */
     readonly turn = input<AssistPrompt | undefined>(undefined);
 
-    /** @internal The template registered for this tool's name, or the catch-all one. */
+    /**
+     * @internal
+     *
+     * Markup wins over code, so a page can override a renderer a plugin registered; the catch-all
+     * definition is the last resort before the built-in card.
+     */
     protected readonly template = computed(() => {
         const definitions = this.templates?.tools() ?? [];
         const name = this.block().toolName;
         const named = definitions.find((definition) => definition.pAssistToolDef() === name);
 
-        return (named ?? definitions.find((definition) => !definition.pAssistToolDef()))?.template;
+        if (named) return named.template;
+
+        const registered = this.state.registeredTools().get(name);
+
+        if (registered) return registered as TemplateRef<unknown>;
+
+        return definitions.find((definition) => !definition.pAssistToolDef())?.template;
     });
 
     /** @internal */
