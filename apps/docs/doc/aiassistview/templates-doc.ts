@@ -18,8 +18,8 @@ import { answerFor } from './demo-assistant';
                 blank.
             </p>
             <p>
-                <i>pAssistPromptDef</i> and <i>pAssistResponseDef</i> replace a bubble, <i>pAssistBlockDef</i> one block, <i>pAssistBannerDef</i> the empty state, <i>pAssistSuggestionDef</i> a chip and <i>pAssistFooterDef</i> the whole composer — the
-                footer context hands over <i>send</i> and <i>stop</i>, so a replacement keeps the behaviour without reimplementing it.
+                <i>pAssistTurnDef</i> replaces a whole turn, <i>pAssistPromptDef</i> and <i>pAssistResponseDef</i> one half each, <i>pAssistBlockDef</i> one block, <i>pAssistBannerDef</i> the empty state, <i>pAssistSuggestionDef</i> a chip and
+                <i>pAssistFooterDef</i> the whole composer — the footer context hands over <i>send</i> and <i>stop</i>, so a replacement keeps the behaviour without reimplementing it.
             </p>
         </app-docsectiontext>
         <div class="card">

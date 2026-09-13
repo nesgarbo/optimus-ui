@@ -14,7 +14,8 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
             </p>
             <p>
                 The view switcher is a <i>tablist</i> whose <i>aria-controls</i> names the panel actually rendered. Every icon-only control — send, stop, the microphone, the paperclip, copy, the feedback pair, the response navigator — carries an
-                <i>aria-label</i>, and the toggling ones carry <i>aria-pressed</i>. A reasoning panel's header is a button with <i>aria-expanded</i> pointing at the panel it folds.
+                <i>aria-label</i>, and the toggling ones carry <i>aria-pressed</i>. A reasoning panel folds through the Panel's own toggle button, which carries <i>aria-expanded</i> for its state and <i>aria-controls</i> naming the region it
+                controls.
             </p>
             <p>The copy entry's accessible name becomes <i>Copied</i> for a moment after it fires: a colour flash is the usual feedback and a screen reader cannot see one.</p>
 
