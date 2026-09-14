@@ -78,6 +78,7 @@ import tabmenu from '@openng/optimus-ui-themes/nora/tabmenu';
 import tabs from '@openng/optimus-ui-themes/nora/tabs';
 import tabview from '@openng/optimus-ui-themes/nora/tabview';
 import tag from '@openng/optimus-ui-themes/nora/tag';
+import taskboard from '@openng/optimus-ui-themes/nora/taskboard';
 import terminal from '@openng/optimus-ui-themes/nora/terminal';
 import textarea from '@openng/optimus-ui-themes/nora/textarea';
 import tieredmenu from '@openng/optimus-ui-themes/nora/tieredmenu';
@@ -173,6 +174,7 @@ export default {
         textarea,
         tieredmenu,
         tag,
+        taskboard,
         terminal,
         timeline,
         togglebutton,

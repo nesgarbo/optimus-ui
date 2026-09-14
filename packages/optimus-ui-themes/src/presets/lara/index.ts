@@ -78,6 +78,7 @@ import tabmenu from '@openng/optimus-ui-themes/lara/tabmenu';
 import tabs from '@openng/optimus-ui-themes/lara/tabs';
 import tabview from '@openng/optimus-ui-themes/lara/tabview';
 import tag from '@openng/optimus-ui-themes/lara/tag';
+import taskboard from '@openng/optimus-ui-themes/lara/taskboard';
 import terminal from '@openng/optimus-ui-themes/lara/terminal';
 import textarea from '@openng/optimus-ui-themes/lara/textarea';
 import tieredmenu from '@openng/optimus-ui-themes/lara/tieredmenu';
@@ -173,6 +174,7 @@ export default {
         textarea,
         tieredmenu,
         tag,
+        taskboard,
         terminal,
         timeline,
         togglebutton,

@@ -79,6 +79,7 @@ import tabmenu from '@openng/optimus-ui-themes/aura/tabmenu';
 import tabs from '@openng/optimus-ui-themes/aura/tabs';
 import tabview from '@openng/optimus-ui-themes/aura/tabview';
 import tag from '@openng/optimus-ui-themes/aura/tag';
+import taskboard from '@openng/optimus-ui-themes/aura/taskboard';
 import terminal from '@openng/optimus-ui-themes/aura/terminal';
 import textarea from '@openng/optimus-ui-themes/aura/textarea';
 import tieredmenu from '@openng/optimus-ui-themes/aura/tieredmenu';
@@ -172,6 +173,7 @@ export default {
         tabs,
         tabview,
         tag,
+        taskboard,
         terminal,
         textarea,
         tieredmenu,
