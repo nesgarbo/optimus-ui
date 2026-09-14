@@ -34,6 +34,7 @@ export const routes: Routes = [
                 loadChildren: () => import('@/pages/customicons/routes')
             },
             { path: 'passthrough', loadChildren: () => import('@/pages/passthrough/routes') },
+            { path: 'aiassistview', loadChildren: () => import('@/pages/aiassistview/routes') },
             { path: 'accordion', loadChildren: () => import('@/pages/accordion/routes') },
             { path: 'avatar', loadChildren: () => import('@/pages/avatar/routes') },
             { path: 'blockui', loadChildren: () => import('@/pages/blockui/routes') },

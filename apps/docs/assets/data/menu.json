@@ -378,6 +378,16 @@
                     ]
                 },
                 {
+                    "name": "AI",
+                    "children": [
+                        {
+                            "name": "AIAssistView",
+                            "routerLink": "/aiassistview",
+                            "badge": "New"
+                        }
+                    ]
+                },
+                {
                     "name": "Messages",
                     "children": [
                         {

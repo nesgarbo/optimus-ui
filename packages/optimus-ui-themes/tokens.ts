@@ -11,6 +11,7 @@ export interface TokenMetaData {
 
 export interface Tokens {
     accordion: TokenMetaData;
+    aiassistview: TokenMetaData;
     autocomplete: TokenMetaData;
     avatar: TokenMetaData;
     badge: TokenMetaData;
@@ -308,6 +309,461 @@ export default {
                 token: 'accordion.content.padding',
                 variable: '--p-accordion-content-padding',
                 description: 'Padding of content'
+            }
+        ]
+    },
+    aiassistview: {
+        description: 'AIAssistView Design Tokens',
+        tokens: [
+            {
+                name: 'aiassistview.root.background',
+                token: 'aiassistview.background',
+                variable: '--p-aiassistview-background',
+                description: 'Background of root'
+            },
+            {
+                name: 'aiassistview.root.borderColor',
+                token: 'aiassistview.border.color',
+                variable: '--p-aiassistview-border-color',
+                description: 'Border color of root'
+            },
+            {
+                name: 'aiassistview.root.borderRadius',
+                token: 'aiassistview.border.radius',
+                variable: '--p-aiassistview-border-radius',
+                description: 'Border radius of root'
+            },
+            {
+                name: 'aiassistview.root.color',
+                token: 'aiassistview.color',
+                variable: '--p-aiassistview-color',
+                description: 'Color of root'
+            },
+            {
+                name: 'aiassistview.root.lineHeight',
+                token: 'aiassistview.line.height',
+                variable: '--p-aiassistview-line-height',
+                description: 'Line height of root'
+            },
+            {
+                name: 'aiassistview.muted.color',
+                token: 'aiassistview.muted.color',
+                variable: '--p-aiassistview-muted-color',
+                description: 'Color of muted'
+            },
+            {
+                name: 'aiassistview.author.color',
+                token: 'aiassistview.author.color',
+                variable: '--p-aiassistview-author-color',
+                description: 'Color of author'
+            },
+            {
+                name: 'aiassistview.author.fontSize',
+                token: 'aiassistview.author.font.size',
+                variable: '--p-aiassistview-author-font-size',
+                description: 'Font size of author'
+            },
+            {
+                name: 'aiassistview.timestamp.fontSize',
+                token: 'aiassistview.timestamp.font.size',
+                variable: '--p-aiassistview-timestamp-font-size',
+                description: 'Font size of timestamp'
+            },
+            {
+                name: 'aiassistview.link.color',
+                token: 'aiassistview.link.color',
+                variable: '--p-aiassistview-link-color',
+                description: 'Color of link'
+            },
+            {
+                name: 'aiassistview.quote.borderColor',
+                token: 'aiassistview.quote.border.color',
+                variable: '--p-aiassistview-quote-border-color',
+                description: 'Border color of quote'
+            },
+            {
+                name: 'aiassistview.drop.borderColor',
+                token: 'aiassistview.drop.border.color',
+                variable: '--p-aiassistview-drop-border-color',
+                description: 'Border color of drop'
+            },
+            {
+                name: 'aiassistview.disabled.opacity',
+                token: 'aiassistview.disabled.opacity',
+                variable: '--p-aiassistview-disabled-opacity',
+                description: 'Opacity of disabled'
+            },
+            {
+                name: 'aiassistview.transition.duration',
+                token: 'aiassistview.transition.duration',
+                variable: '--p-aiassistview-transition-duration',
+                description: 'Duration of transition'
+            },
+            {
+                name: 'aiassistview.focus.ringColor',
+                token: 'aiassistview.focus.ring.color',
+                variable: '--p-aiassistview-focus-ring-color',
+                description: 'Ring color of focus'
+            },
+            {
+                name: 'aiassistview.focus.ringStyle',
+                token: 'aiassistview.focus.ring.style',
+                variable: '--p-aiassistview-focus-ring-style',
+                description: 'Ring style of focus'
+            },
+            {
+                name: 'aiassistview.focus.ringWidth',
+                token: 'aiassistview.focus.ring.width',
+                variable: '--p-aiassistview-focus-ring-width',
+                description: 'Ring width of focus'
+            },
+            {
+                name: 'aiassistview.meta.fontSize',
+                token: 'aiassistview.meta.font.size',
+                variable: '--p-aiassistview-meta-font-size',
+                description: 'Font size of meta'
+            },
+            {
+                name: 'aiassistview.header.fontWeight',
+                token: 'aiassistview.header.font.weight',
+                variable: '--p-aiassistview-header-font-weight',
+                description: 'Font weight of header'
+            },
+            {
+                name: 'aiassistview.header.gap',
+                token: 'aiassistview.header.gap',
+                variable: '--p-aiassistview-header-gap',
+                description: 'Gap of header'
+            },
+            {
+                name: 'aiassistview.footer.background',
+                token: 'aiassistview.footer.background',
+                variable: '--p-aiassistview-footer-background',
+                description: 'Background of footer'
+            },
+            {
+                name: 'aiassistview.footer.borderColor',
+                token: 'aiassistview.footer.border.color',
+                variable: '--p-aiassistview-footer-border-color',
+                description: 'Border color of footer'
+            },
+            {
+                name: 'aiassistview.footer.gap',
+                token: 'aiassistview.footer.gap',
+                variable: '--p-aiassistview-footer-gap',
+                description: 'Gap of footer'
+            },
+            {
+                name: 'aiassistview.footer.padding',
+                token: 'aiassistview.footer.padding',
+                variable: '--p-aiassistview-footer-padding',
+                description: 'Padding of footer'
+            },
+            {
+                name: 'aiassistview.content.maxWidth',
+                token: 'aiassistview.content.max.width',
+                variable: '--p-aiassistview-content-max-width',
+                description: 'Max width of content'
+            },
+            {
+                name: 'aiassistview.content.padding',
+                token: 'aiassistview.content.padding',
+                variable: '--p-aiassistview-content-padding',
+                description: 'Padding of content'
+            },
+            {
+                name: 'aiassistview.turn.gap',
+                token: 'aiassistview.turn.gap',
+                variable: '--p-aiassistview-turn-gap',
+                description: 'Gap of turn'
+            },
+            {
+                name: 'aiassistview.turn.innerGap',
+                token: 'aiassistview.turn.inner.gap',
+                variable: '--p-aiassistview-turn-inner-gap',
+                description: 'Inner gap of turn'
+            },
+            {
+                name: 'aiassistview.message.gap',
+                token: 'aiassistview.message.gap',
+                variable: '--p-aiassistview-message-gap',
+                description: 'Gap of message'
+            },
+            {
+                name: 'aiassistview.message.innerGap',
+                token: 'aiassistview.message.inner.gap',
+                variable: '--p-aiassistview-message-inner-gap',
+                description: 'Inner gap of message'
+            },
+            {
+                name: 'aiassistview.avatar.assistantBackground',
+                token: 'aiassistview.avatar.assistant.background',
+                variable: '--p-aiassistview-avatar-assistant-background',
+                description: 'Assistant background of avatar'
+            },
+            {
+                name: 'aiassistview.avatar.assistantColor',
+                token: 'aiassistview.avatar.assistant.color',
+                variable: '--p-aiassistview-avatar-assistant-color',
+                description: 'Assistant color of avatar'
+            },
+            {
+                name: 'aiassistview.prompt.background',
+                token: 'aiassistview.prompt.background',
+                variable: '--p-aiassistview-prompt-background',
+                description: 'Background of prompt'
+            },
+            {
+                name: 'aiassistview.prompt.borderColor',
+                token: 'aiassistview.prompt.border.color',
+                variable: '--p-aiassistview-prompt-border-color',
+                description: 'Border color of prompt'
+            },
+            {
+                name: 'aiassistview.prompt.borderRadius',
+                token: 'aiassistview.prompt.border.radius',
+                variable: '--p-aiassistview-prompt-border-radius',
+                description: 'Border radius of prompt'
+            },
+            {
+                name: 'aiassistview.prompt.maxWidth',
+                token: 'aiassistview.prompt.max.width',
+                variable: '--p-aiassistview-prompt-max-width',
+                description: 'Max width of prompt'
+            },
+            {
+                name: 'aiassistview.prompt.padding',
+                token: 'aiassistview.prompt.padding',
+                variable: '--p-aiassistview-prompt-padding',
+                description: 'Padding of prompt'
+            },
+            {
+                name: 'aiassistview.block.gap',
+                token: 'aiassistview.block.gap',
+                variable: '--p-aiassistview-block-gap',
+                description: 'Gap of block'
+            },
+            {
+                name: 'aiassistview.panel.headerPadding',
+                token: 'aiassistview.panel.header.padding',
+                variable: '--p-aiassistview-panel-header-padding',
+                description: 'Header padding of panel'
+            },
+            {
+                name: 'aiassistview.code.background',
+                token: 'aiassistview.code.background',
+                variable: '--p-aiassistview-code-background',
+                description: 'Background of code'
+            },
+            {
+                name: 'aiassistview.code.color',
+                token: 'aiassistview.code.color',
+                variable: '--p-aiassistview-code-color',
+                description: 'Color of code'
+            },
+            {
+                name: 'aiassistview.code.fontFamily',
+                token: 'aiassistview.code.font.family',
+                variable: '--p-aiassistview-code-font-family',
+                description: 'Font family of code'
+            },
+            {
+                name: 'aiassistview.code.fontSize',
+                token: 'aiassistview.code.font.size',
+                variable: '--p-aiassistview-code-font-size',
+                description: 'Font size of code'
+            },
+            {
+                name: 'aiassistview.code.inlineBackground',
+                token: 'aiassistview.code.inline.background',
+                variable: '--p-aiassistview-code-inline-background',
+                description: 'Inline background of code'
+            },
+            {
+                name: 'aiassistview.code.inlineBorderRadius',
+                token: 'aiassistview.code.inline.border.radius',
+                variable: '--p-aiassistview-code-inline-border-radius',
+                description: 'Inline border radius of code'
+            },
+            {
+                name: 'aiassistview.code.inlineColor',
+                token: 'aiassistview.code.inline.color',
+                variable: '--p-aiassistview-code-inline-color',
+                description: 'Inline color of code'
+            },
+            {
+                name: 'aiassistview.code.padding',
+                token: 'aiassistview.code.padding',
+                variable: '--p-aiassistview-code-padding',
+                description: 'Padding of code'
+            },
+            {
+                name: 'aiassistview.thinking.activeColor',
+                token: 'aiassistview.thinking.active.color',
+                variable: '--p-aiassistview-thinking-active-color',
+                description: 'Active color of thinking'
+            },
+            {
+                name: 'aiassistview.stages.padding',
+                token: 'aiassistview.stages.padding',
+                variable: '--p-aiassistview-stages-padding',
+                description: 'Padding of stages'
+            },
+            {
+                name: 'aiassistview.stage.completedColor',
+                token: 'aiassistview.stage.completed.color',
+                variable: '--p-aiassistview-stage-completed-color',
+                description: 'Completed color of stage'
+            },
+            {
+                name: 'aiassistview.stage.failedColor',
+                token: 'aiassistview.stage.failed.color',
+                variable: '--p-aiassistview-stage-failed-color',
+                description: 'Failed color of stage'
+            },
+            {
+                name: 'aiassistview.stage.gap',
+                token: 'aiassistview.stage.gap',
+                variable: '--p-aiassistview-stage-gap',
+                description: 'Gap of stage'
+            },
+            {
+                name: 'aiassistview.stage.paddingY',
+                token: 'aiassistview.stage.padding.y',
+                variable: '--p-aiassistview-stage-padding-y',
+                description: 'Padding y of stage'
+            },
+            {
+                name: 'aiassistview.stage.progressColor',
+                token: 'aiassistview.stage.progress.color',
+                variable: '--p-aiassistview-stage-progress-color',
+                description: 'Progress color of stage'
+            },
+            {
+                name: 'aiassistview.stage.railColor',
+                token: 'aiassistview.stage.rail.color',
+                variable: '--p-aiassistview-stage-rail-color',
+                description: 'Rail color of stage'
+            },
+            {
+                name: 'aiassistview.stage.railWidth',
+                token: 'aiassistview.stage.rail.width',
+                variable: '--p-aiassistview-stage-rail-width',
+                description: 'Rail width of stage'
+            },
+            {
+                name: 'aiassistview.context.fontSize',
+                token: 'aiassistview.context.font.size',
+                variable: '--p-aiassistview-context-font-size',
+                description: 'Font size of context'
+            },
+            {
+                name: 'aiassistview.context.paddingX',
+                token: 'aiassistview.context.padding.x',
+                variable: '--p-aiassistview-context-padding-x',
+                description: 'Padding x of context'
+            },
+            {
+                name: 'aiassistview.context.paddingY',
+                token: 'aiassistview.context.padding.y',
+                variable: '--p-aiassistview-context-padding-y',
+                description: 'Padding y of context'
+            },
+            {
+                name: 'aiassistview.badge.failedColor',
+                token: 'aiassistview.badge.failed.color',
+                variable: '--p-aiassistview-badge-failed-color',
+                description: 'Failed color of badge'
+            },
+            {
+                name: 'aiassistview.badge.successColor',
+                token: 'aiassistview.badge.success.color',
+                variable: '--p-aiassistview-badge-success-color',
+                description: 'Success color of badge'
+            },
+            {
+                name: 'aiassistview.badge.warningColor',
+                token: 'aiassistview.badge.warning.color',
+                variable: '--p-aiassistview-badge-warning-color',
+                description: 'Warning color of badge'
+            },
+            {
+                name: 'aiassistview.table.borderColor',
+                token: 'aiassistview.table.border.color',
+                variable: '--p-aiassistview-table-border-color',
+                description: 'Border color of table'
+            },
+            {
+                name: 'aiassistview.table.cellPadding',
+                token: 'aiassistview.table.cell.padding',
+                variable: '--p-aiassistview-table-cell-padding',
+                description: 'Cell padding of table'
+            },
+            {
+                name: 'aiassistview.table.headerBackground',
+                token: 'aiassistview.table.header.background',
+                variable: '--p-aiassistview-table-header-background',
+                description: 'Header background of table'
+            },
+            {
+                name: 'aiassistview.banner.gap',
+                token: 'aiassistview.banner.gap',
+                variable: '--p-aiassistview-banner-gap',
+                description: 'Gap of banner'
+            },
+            {
+                name: 'aiassistview.banner.iconColor',
+                token: 'aiassistview.banner.icon.color',
+                variable: '--p-aiassistview-banner-icon-color',
+                description: 'Icon color of banner'
+            },
+            {
+                name: 'aiassistview.banner.paddingBlock',
+                token: 'aiassistview.banner.padding.block',
+                variable: '--p-aiassistview-banner-padding-block',
+                description: 'Padding block of banner'
+            },
+            {
+                name: 'aiassistview.banner.titleFontSize',
+                token: 'aiassistview.banner.title.font.size',
+                variable: '--p-aiassistview-banner-title-font-size',
+                description: 'Title font size of banner'
+            },
+            {
+                name: 'aiassistview.suggestion.gap',
+                token: 'aiassistview.suggestion.gap',
+                variable: '--p-aiassistview-suggestion-gap',
+                description: 'Gap of suggestion'
+            },
+            {
+                name: 'aiassistview.toolbar.gap',
+                token: 'aiassistview.toolbar.gap',
+                variable: '--p-aiassistview-toolbar-gap',
+                description: 'Gap of toolbar'
+            },
+            {
+                name: 'aiassistview.editor.maxHeight',
+                token: 'aiassistview.editor.max.height',
+                variable: '--p-aiassistview-editor-max-height',
+                description: 'Max height of editor'
+            },
+            {
+                name: 'aiassistview.compact.promptPadding',
+                token: 'aiassistview.compact.prompt.padding',
+                variable: '--p-aiassistview-compact-prompt-padding',
+                description: 'Prompt padding of compact'
+            },
+            {
+                name: 'aiassistview.compact.turnGap',
+                token: 'aiassistview.compact.turn.gap',
+                variable: '--p-aiassistview-compact-turn-gap',
+                description: 'Turn gap of compact'
+            },
+            {
+                name: 'aiassistview.scrollbar.thumbColor',
+                token: 'aiassistview.scrollbar.thumb.color',
+                variable: '--p-aiassistview-scrollbar-thumb-color',
+                description: 'Thumb color of scrollbar'
             }
         ]
     },

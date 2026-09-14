@@ -2,6 +2,7 @@ import type { Preset } from '@openng/optimus-ui-themes/types';
 import type { LaraBaseDesignTokens } from './base/index.d';
 
 import accordion from '@openng/optimus-ui-themes/lara/accordion';
+import aiassistview from '@openng/optimus-ui-themes/lara/aiassistview';
 import autocomplete from '@openng/optimus-ui-themes/lara/autocomplete';
 import avatar from '@openng/optimus-ui-themes/lara/avatar';
 import badge from '@openng/optimus-ui-themes/lara/badge';
@@ -95,6 +96,7 @@ export default {
     ...base,
     components: {
         accordion,
+        aiassistview,
         autocomplete,
         avatar,
         badge,

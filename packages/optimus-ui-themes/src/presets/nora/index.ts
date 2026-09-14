@@ -2,6 +2,7 @@ import type { Preset } from '@openng/optimus-ui-themes/types';
 import type { NoraBaseDesignTokens } from './base/index.d';
 
 import accordion from '@openng/optimus-ui-themes/nora/accordion';
+import aiassistview from '@openng/optimus-ui-themes/nora/aiassistview';
 import autocomplete from '@openng/optimus-ui-themes/nora/autocomplete';
 import avatar from '@openng/optimus-ui-themes/nora/avatar';
 import badge from '@openng/optimus-ui-themes/nora/badge';
@@ -95,6 +96,7 @@ export default {
     ...base,
     components: {
         accordion,
+        aiassistview,
         autocomplete,
         avatar,
         badge,
