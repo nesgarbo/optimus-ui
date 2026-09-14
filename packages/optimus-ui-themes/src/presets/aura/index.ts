@@ -13,6 +13,7 @@ import button from '@openng/optimus-ui-themes/aura/button';
 import card from '@openng/optimus-ui-themes/aura/card';
 import carousel from '@openng/optimus-ui-themes/aura/carousel';
 import cascadeselect from '@openng/optimus-ui-themes/aura/cascadeselect';
+import charts from '@openng/optimus-ui-themes/aura/charts';
 import checkbox from '@openng/optimus-ui-themes/aura/checkbox';
 import chip from '@openng/optimus-ui-themes/aura/chip';
 import colorpicker from '@openng/optimus-ui-themes/aura/colorpicker';
@@ -108,6 +109,7 @@ export default {
         card,
         carousel,
         cascadeselect,
+        charts,
         checkbox,
         chip,
         colorpicker,
