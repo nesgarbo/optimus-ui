@@ -237,6 +237,11 @@
                             "badge": "New"
                         },
                         {
+                            "name": "Scheduler",
+                            "routerLink": "/scheduler",
+                            "badge": "New"
+                        },
+                        {
                             "name": "Timeline",
                             "routerLink": "/timeline"
                         },

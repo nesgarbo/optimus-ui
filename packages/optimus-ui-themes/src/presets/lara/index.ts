@@ -84,6 +84,7 @@ import terminal from '@openng/optimus-ui-themes/lara/terminal';
 import textarea from '@openng/optimus-ui-themes/lara/textarea';
 import texteditor from '@openng/optimus-ui-themes/lara/texteditor';
 import tieredmenu from '@openng/optimus-ui-themes/lara/tieredmenu';
+import scheduler from '@openng/optimus-ui-themes/lara/scheduler';
 import timeline from '@openng/optimus-ui-themes/lara/timeline';
 import toast from '@openng/optimus-ui-themes/lara/toast';
 import togglebutton from '@openng/optimus-ui-themes/lara/togglebutton';
@@ -180,6 +181,7 @@ export default {
         tag,
         taskboard,
         terminal,
+        scheduler,
         timeline,
         togglebutton,
         toggleswitch,

@@ -273,6 +273,10 @@ export const routes: Routes = [
                 loadChildren: () => import('@/pages/texteditor/routes')
             },
             {
+                path: 'scheduler',
+                loadChildren: () => import('@/pages/scheduler/routes')
+            },
+            {
                 path: 'timeline',
                 loadChildren: () => import('@/pages/timeline/routes')
             },
