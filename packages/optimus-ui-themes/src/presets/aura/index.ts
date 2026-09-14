@@ -83,6 +83,7 @@ import tag from '@openng/optimus-ui-themes/aura/tag';
 import taskboard from '@openng/optimus-ui-themes/aura/taskboard';
 import terminal from '@openng/optimus-ui-themes/aura/terminal';
 import textarea from '@openng/optimus-ui-themes/aura/textarea';
+import texteditor from '@openng/optimus-ui-themes/aura/texteditor';
 import tieredmenu from '@openng/optimus-ui-themes/aura/tieredmenu';
 import timeline from '@openng/optimus-ui-themes/aura/timeline';
 import toast from '@openng/optimus-ui-themes/aura/toast';
@@ -178,6 +179,7 @@ export default {
         taskboard,
         terminal,
         textarea,
+        texteditor,
         tieredmenu,
         timeline,
         toast,
