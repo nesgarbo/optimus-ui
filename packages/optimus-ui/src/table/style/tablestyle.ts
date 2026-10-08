@@ -116,32 +116,35 @@ p-sortIcon, p-sort-icon, p-sorticon {
 }
 `;
 
+// The instance is the table or one of its parts: their props are signals.
+const read = (value: any) => (typeof value === 'function' ? value() : value);
+
 const classes = {
     root: ({ instance }) => [
         'p-datatable p-component',
         {
-            'p-datatable-hoverable': instance.rowHover || instance.selectionMode,
-            'p-datatable-resizable': instance.resizableColumns,
-            'p-datatable-resizable-fit': instance.resizableColumns && instance.columnResizeMode === 'fit',
-            'p-datatable-scrollable': instance.scrollable,
-            'p-datatable-flex-scrollable': instance.scrollable && instance.scrollHeight === 'flex',
-            'p-datatable-striped': instance.stripedRows,
-            'p-datatable-gridlines': instance.showGridlines,
-            'p-datatable-sm': instance.size === 'small',
-            'p-datatable-lg': instance.size === 'large'
+            'p-datatable-hoverable': !!(read(instance.rowHover) || read(instance.selectionMode)),
+            'p-datatable-resizable': !!read(instance.resizableColumns),
+            'p-datatable-resizable-fit': !!read(instance.resizableColumns) && read(instance.columnResizeMode) === 'fit',
+            'p-datatable-scrollable': !!read(instance.scrollable),
+            'p-datatable-flex-scrollable': !!read(instance.scrollable) && read(instance.scrollHeight) === 'flex',
+            'p-datatable-striped': !!read(instance.stripedRows),
+            'p-datatable-gridlines': !!read(instance.showGridlines),
+            'p-datatable-sm': read(instance.size) === 'small',
+            'p-datatable-lg': read(instance.size) === 'large'
         }
     ],
     mask: 'p-datatable-mask p-overlay-mask',
     loadingIcon: 'p-datatable-loading-icon',
     header: 'p-datatable-header',
-    pcPaginator: ({ instance }) => 'p-datatable-paginator-' + instance.paginatorPosition,
+    pcPaginator: ({ instance }) => 'p-datatable-paginator-' + read(instance.paginatorPosition),
     tableContainer: 'p-datatable-table-container',
     table: ({ instance }) => [
         'p-datatable-table',
         {
-            'p-datatable-scrollable-table': instance.scrollable,
-            'p-datatable-resizable-table': instance.resizableColumns,
-            'p-datatable-resizable-table-fit': instance.resizableColumns && instance.columnResizeMode === 'fit'
+            'p-datatable-scrollable-table': !!read(instance.scrollable),
+            'p-datatable-resizable-table': !!read(instance.resizableColumns),
+            'p-datatable-resizable-table-fit': !!read(instance.resizableColumns) && read(instance.columnResizeMode) === 'fit'
         }
     ],
     thead: 'p-datatable-thead',
@@ -153,15 +156,15 @@ const classes = {
     pcSortBadge: 'p-datatable-sort-badge',
     filter: ({ instance }) => ({
         'p-datatable-filter': true,
-        'p-datatable-inline-filter': instance.display === 'row',
-        'p-datatable-popover-filter': instance.display === 'menu'
+        'p-datatable-inline-filter': read(instance.display) === 'row',
+        'p-datatable-popover-filter': read(instance.display) === 'menu'
     }),
     filterElementContainer: 'p-datatable-filter-element-container',
     pcColumnFilterButton: 'p-datatable-column-filter-button',
     pcColumnFilterClearButton: 'p-datatable-column-filter-clear-button',
     filterOverlay: ({ instance }) => ({
         'p-datatable-filter-overlay p-component': true,
-        'p-datatable-filter-overlay-popover': instance.display === 'menu'
+        'p-datatable-filter-overlay-popover': read(instance.display) === 'menu'
     }),
     filterConstraintList: 'p-datatable-filter-constraint-list',
 
@@ -182,8 +185,8 @@ const classes = {
     pcFilterApplyButton: 'p-datatable-filter-apply-button',
     tbody: ({ instance }) => ({
         'p-datatable-tbody': true,
-        'p-datatable-frozen-tbody': instance.frozenValue || instance.frozenBodyTemplate,
-        'p-virtualscroller-content': instance.virtualScroll
+        'p-datatable-frozen-tbody': !!(read(instance.frozenValue) || instance.frozenBodyTemplate),
+        'p-virtualscroller-content': !!read(instance.virtualScroll)
     }),
     rowGroupHeader: 'p-datatable-row-group-header',
     rowToggleButton: 'p-datatable-row-toggle-button',
@@ -221,8 +224,8 @@ const classes = {
     reorderableColumn: 'p-datatable-reorderable-column',
     rowEditorCancel: 'p-datatable-row-editor-cancel',
     frozenColumn: ({ instance }) => ({
-        'p-datatable-frozen-column': instance.frozen,
-        'p-datatable-frozen-column-left': instance.alignFrozenLeft === 'left'
+        'p-datatable-frozen-column': !!read(instance.frozen),
+        'p-datatable-frozen-column-left': read(instance.alignFrozenLeft) === 'left'
     }),
     contextMenuRowSelected: ({ instance }) => ({
         'p-datatable-contextmenu-row-selected': instance.selected
@@ -231,7 +234,7 @@ const classes = {
 
 const inlineStyles = {
     tableContainer: ({ instance }) => ({
-        'max-height': instance.virtualScroll ? null : (instance.scrollHeight ?? null),
+        'max-height': read(instance.virtualScroll) ? null : (read(instance.scrollHeight) ?? null),
         height: instance.virtualScrollViewportHeight,
         overflow: 'auto'
     }),

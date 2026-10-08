@@ -435,7 +435,7 @@ describe('Table', () => {
 
         it('should have correct dataKey', () => {
             const tableInstance = testFixture.debugElement.query(By.css('p-table')).componentInstance;
-            expect(tableInstance.dataKey).toBe('id');
+            expect(tableInstance.dataKey()).toBe('id');
         });
     });
 
@@ -452,7 +452,7 @@ describe('Table', () => {
 
         it('should enable multiple selection', () => {
             const tableInstance = testFixture.debugElement.query(By.css('p-table')).componentInstance;
-            expect(tableInstance.selectionMode).toBe('multiple');
+            expect(tableInstance.selectionMode()).toBe('multiple');
         });
 
         it('should render checkboxes for selection', () => {
@@ -479,7 +479,7 @@ describe('Table', () => {
 
         it('should enable multiple sort mode', () => {
             const tableInstance = testFixture.debugElement.query(By.css('p-table')).componentInstance;
-            expect(tableInstance.sortMode).toBe('multiple');
+            expect(tableInstance.sortMode()).toBe('multiple');
         });
 
         it('should render sort icons', () => {
@@ -512,8 +512,8 @@ describe('Table', () => {
 
                 const tableInstance: Table = groupedFixture.debugElement.query(By.css('p-table')).componentInstance;
 
-                expect(tableInstance.multiSortMeta).toEqual([{ field: 'category', order: 1 }]);
-                expect(tableInstance.value.map((product: any) => product.category)).toEqual(['Accessories', 'Accessories', 'Electronics']);
+                expect(tableInstance._multiSortMeta()).toEqual([{ field: 'category', order: 1 }]);
+                expect(tableInstance._value().map((product: any) => product.category)).toEqual(['Accessories', 'Accessories', 'Electronics']);
             });
 
             it('should keep the grouped field first when multiSortMeta is emptied later', async () => {
@@ -525,7 +525,7 @@ describe('Table', () => {
 
                 const tableInstance: Table = groupedFixture.debugElement.query(By.css('p-table')).componentInstance;
 
-                expect(tableInstance.multiSortMeta).toEqual([{ field: 'category', order: 1 }]);
+                expect(tableInstance._multiSortMeta()).toEqual([{ field: 'category', order: 1 }]);
             });
         });
     });
@@ -543,7 +543,7 @@ describe('Table', () => {
 
         it('should have global filter fields configured', () => {
             const tableInstance = testFixture.debugElement.query(By.css('p-table')).componentInstance;
-            expect(tableInstance.globalFilterFields).toEqual(['name', 'category']);
+            expect(tableInstance.globalFilterFields()).toEqual(['name', 'category']);
         });
 
         it('should render column filters', () => {
@@ -565,12 +565,12 @@ describe('Table', () => {
 
         it('should enable virtual scrolling', () => {
             const tableInstance = testFixture.debugElement.query(By.css('p-table')).componentInstance;
-            expect(tableInstance.virtualScroll).toBe(true);
+            expect(tableInstance.virtualScroll()).toBe(true);
         });
 
         it('should have correct virtual scroll item size', () => {
             const tableInstance = testFixture.debugElement.query(By.css('p-table')).componentInstance;
-            expect(tableInstance.virtualScrollItemSize).toBe(46);
+            expect(tableInstance.virtualScrollItemSize()).toBe(46);
         });
 
         it('should handle large datasets efficiently', () => {
@@ -640,12 +640,12 @@ describe('Table', () => {
 
         it('should enable lazy loading', () => {
             const tableInstance = testFixture.debugElement.query(By.css('p-table')).componentInstance;
-            expect(tableInstance.lazy).toBe(true);
+            expect(tableInstance.lazy()).toBe(true);
         });
 
         it('should have correct total records', () => {
             const tableInstance = testFixture.debugElement.query(By.css('p-table')).componentInstance;
-            expect(tableInstance.totalRecords).toBe(1000);
+            expect(tableInstance._totalRecords()).toBe(1000);
         });
 
         it('should emit lazy load event', () => {
@@ -705,7 +705,7 @@ describe('Table', () => {
             await new Promise((resolve) => setTimeout(resolve, 350));
             await ecommerceFixture.whenStable();
 
-            const inStockProducts = tableInstance.filteredValue || tableInstance.value;
+            const inStockProducts = tableInstance.filteredValue || tableInstance._value();
             const inStock = inStockProducts.filter((product: any) => product.inventoryStatus === 'INSTOCK');
             expect(inStock.length).toBe(3);
         });
@@ -716,8 +716,8 @@ describe('Table', () => {
             tableInstance.sort({ field: 'price', order: 1 });
             await ecommerceFixture.whenStable();
 
-            expect(tableInstance.sortField).toBe('price');
-            expect(tableInstance.sortOrder).toBe(1);
+            expect(tableInstance._sortField()).toBe('price');
+            expect(tableInstance._sortOrder()).toBe(1);
         });
 
         it('should support price range filtering for budget constraints', async () => {
@@ -727,7 +727,7 @@ describe('Table', () => {
             await new Promise((resolve) => setTimeout(resolve, 350));
             await ecommerceFixture.whenStable();
 
-            const filteredData = tableInstance.filteredValue || tableInstance.value;
+            const filteredData = tableInstance.filteredValue || tableInstance._value();
             const affordableProducts = filteredData.filter((product: any) => product.price < 100);
             expect(affordableProducts.length).toBe(1); // Only the mouse under $100
         });
@@ -769,17 +769,17 @@ describe('Table', () => {
             it('should maintain state across user interactions', () => {
                 const tableInstance = ecommerceFixture.debugElement.query(By.css('p-table')).componentInstance;
                 expect(tableInstance).toBeTruthy();
-                expect(tableInstance.value).toBeDefined();
+                expect(tableInstance._value()).toBeDefined();
             });
 
             it('should support row expansion for master-detail views', () => {
-                expect(component.expandedRowKeys).toBeDefined();
+                expect(component.expandedRowKeys()).toBeDefined();
             });
 
             it('should handle column reordering and resizing', () => {
                 const tableInstance = ecommerceFixture.debugElement.query(By.css('p-table')).componentInstance;
                 expect(tableInstance).toBeTruthy();
-                expect(tableInstance.value).toBeDefined();
+                expect(tableInstance._value()).toBeDefined();
             });
 
             it('should provide advanced sorting capabilities', () => {
@@ -1772,7 +1772,7 @@ describe('Table robustness', () => {
         table.sort({ field: 'n', order: 1 });
 
         expect(data).toEqual(original);
-        expect(table.value.map((r: any) => r.n)).toEqual([1, 2, 3]);
+        expect(table._value().map((r: any) => r.n)).toEqual([1, 2, 3]);
     });
 
     it('should sort multiple fields on a copy and sort a frozen array', async () => {
@@ -1783,9 +1783,10 @@ describe('Table robustness', () => {
         fixture.componentRef.setInput('sortMode', 'multiple');
         fixture.detectChanges();
 
-        table.sortMultiple.call(Object.assign(table, { _multiSortMeta: [{ field: 'n', order: -1 }] }));
+        table._multiSortMeta.set([{ field: 'n', order: -1 }]);
+        table.sortMultiple();
 
         expect(data.map((r) => r.n)).toEqual([3, 1, 2]);
-        expect(table.value.map((r: any) => r.n)).toEqual([3, 2, 1]);
+        expect(table._value().map((r: any) => r.n)).toEqual([3, 2, 1]);
     });
 });
