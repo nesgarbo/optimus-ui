@@ -5,6 +5,23 @@ import accordion from '@openng/optimus-ui-themes/material/accordion';
 import autocomplete from '@openng/optimus-ui-themes/material/autocomplete';
 import avatar from '@openng/optimus-ui-themes/material/avatar';
 import badge from '@openng/optimus-ui-themes/material/badge';
+import aiassistview from '@openng/optimus-ui-themes/material/aiassistview';
+import barcode from '@openng/optimus-ui-themes/material/barcode';
+import blockeditor from '@openng/optimus-ui-themes/material/blockeditor';
+import charts from '@openng/optimus-ui-themes/material/charts';
+import cropper from '@openng/optimus-ui-themes/material/cropper';
+import dashboardlayout from '@openng/optimus-ui-themes/material/dashboardlayout';
+import gantt from '@openng/optimus-ui-themes/material/gantt';
+import gauge from '@openng/optimus-ui-themes/material/gauge';
+import map from '@openng/optimus-ui-themes/material/map';
+import mention from '@openng/optimus-ui-themes/material/mention';
+import pdfeditor from '@openng/optimus-ui-themes/material/pdfeditor';
+import querybuilder from '@openng/optimus-ui-themes/material/querybuilder';
+import scheduler from '@openng/optimus-ui-themes/material/scheduler';
+import signature from '@openng/optimus-ui-themes/material/signature';
+import spreadsheet from '@openng/optimus-ui-themes/material/spreadsheet';
+import taskboard from '@openng/optimus-ui-themes/material/taskboard';
+import texteditor from '@openng/optimus-ui-themes/material/texteditor';
 import base from '@openng/optimus-ui-themes/material/base';
 import blockui from '@openng/optimus-ui-themes/material/blockui';
 import breadcrumb from '@openng/optimus-ui-themes/material/breadcrumb';
@@ -94,6 +111,23 @@ import virtualscroller from '@openng/optimus-ui-themes/material/virtualscroller'
 export default {
     ...base,
     components: {
+        aiassistview,
+        barcode,
+        blockeditor,
+        charts,
+        cropper,
+        dashboardlayout,
+        gantt,
+        gauge,
+        map,
+        mention,
+        pdfeditor,
+        querybuilder,
+        scheduler,
+        signature,
+        spreadsheet,
+        taskboard,
+        texteditor,
         accordion,
         autocomplete,
         avatar,
