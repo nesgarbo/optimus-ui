@@ -1,22 +1,5 @@
-import { CommonModule } from '@angular/common';
-import {
-    AfterContentInit,
-    booleanAttribute,
-    ChangeDetectionStrategy,
-    Component,
-    ContentChild,
-    ContentChildren,
-    EventEmitter,
-    inject,
-    InjectionToken,
-    Input,
-    NgModule,
-    Output,
-    QueryList,
-    SimpleChanges,
-    TemplateRef,
-    ViewEncapsulation
-} from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import { AfterContentInit, booleanAttribute, ChangeDetectionStrategy, Component, ContentChild, ContentChildren, inject, InjectionToken, Input, NgModule, output, QueryList, SimpleChanges, TemplateRef, ViewEncapsulation } from '@angular/core';
 import { PrimeTemplate, SharedModule, TranslationKeys } from '@openng/optimus-ui/api';
 import { BaseComponent, PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { Bind } from '@openng/optimus-ui/bind';
@@ -33,14 +16,14 @@ const CHIP_INSTANCE = new InjectionToken<Chip>('CHIP_INSTANCE');
 @Component({
     selector: 'p-chip',
     standalone: true,
-    imports: [CommonModule, TimesCircleIcon, SharedModule, Bind],
+    imports: [NgTemplateOutlet, TimesCircleIcon, SharedModule, Bind],
     template: `
         <ng-content></ng-content>
         @if (image) {
             <img [pBind]="ptm('image')" [class]="cx('image')" [src]="image" (error)="imageError($event)" [alt]="alt" />
         } @else {
             @if (icon) {
-                <span [pBind]="ptm('icon')" [class]="icon" [ngClass]="cx('icon')"></span>
+                <span [pBind]="ptm('icon')" [class]="cn(icon, cx('icon'))"></span>
             }
         }
         @if (label) {
@@ -49,16 +32,7 @@ const CHIP_INSTANCE = new InjectionToken<Chip>('CHIP_INSTANCE');
         @if (removable) {
             @if (!removeIconTemplate && !_removeIconTemplate) {
                 @if (removeIcon) {
-                    <span
-                        [pBind]="ptm('removeIcon')"
-                        [class]="removeIcon"
-                        [ngClass]="cx('removeIcon')"
-                        (click)="close($event)"
-                        (keydown)="onKeydown($event)"
-                        [attr.tabindex]="disabled ? -1 : 0"
-                        [attr.aria-label]="removeAriaLabel"
-                        role="button"
-                    ></span>
+                    <span [pBind]="ptm('removeIcon')" [class]="cn(removeIcon, cx('removeIcon'))" (click)="close($event)" (keydown)="onKeydown($event)" [attr.tabindex]="disabled ? -1 : 0" [attr.aria-label]="removeAriaLabel" role="button"></span>
                 }
                 @if (!removeIcon) {
                     <svg [pBind]="ptm('removeIcon')" data-p-icon="times-circle" [class]="cx('removeIcon')" (click)="close($event)" (keydown)="onKeydown($event)" [attr.tabindex]="disabled ? -1 : 0" [attr.aria-label]="removeAriaLabel" role="button" />
@@ -138,13 +112,13 @@ export class Chip extends BaseComponent<ChipPassThrough> {
      * @param {MouseEvent} event - Mouse event.
      * @group Emits
      */
-    @Output() onRemove: EventEmitter<MouseEvent> = new EventEmitter<MouseEvent>();
+    onRemove = output<MouseEvent>();
     /**
      * This event is triggered if an error occurs while loading an image file.
      * @param {Event} event - Browser event.
      * @group Emits
      */
-    @Output() onImageError: EventEmitter<Event> = new EventEmitter<Event>();
+    onImageError = output<Event>();
 
     visible: boolean = true;
 

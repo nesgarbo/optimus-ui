@@ -7,14 +7,12 @@ import {
     ContentChild,
     ContentChildren,
     ElementRef,
-    EventEmitter,
     forwardRef,
-    Inject,
     inject,
     InjectionToken,
     Input,
     NgModule,
-    Output,
+    output,
     QueryList,
     TemplateRef,
     ViewEncapsulation
@@ -71,12 +69,12 @@ const ORGANIZATIONCHART_INSTANCE = new InjectionToken<OrganizationChart>('ORGANI
                         </div>
                     </td>
                 </tr>
-                <tr [ngStyle]="getChildStyle(node)" [class]="cx('connectors')" [pBind]="ptm('connectors')">
+                <tr [style]="getChildStyle(node)" [class]="cx('connectors')" [pBind]="ptm('connectors')">
                     <td [pBind]="ptm('lineCell')" [attr.colspan]="colspan">
                         <div [pBind]="ptm('connectorDown')" [class]="cx('connectorDown')"></div>
                     </td>
                 </tr>
-                <tr [ngStyle]="getChildStyle(node)" [class]="cx('connectors')" [pBind]="ptm('connectors')">
+                <tr [style]="getChildStyle(node)" [class]="cx('connectors')" [pBind]="ptm('connectors')">
                     @if (node.children && node.children.length === 1) {
                         <td [pBind]="ptm('lineCell')" [attr.colspan]="colspan">
                             <div [pBind]="ptm('connectorDown')" [class]="cx('connectorDown')"></div>
@@ -89,7 +87,7 @@ const ORGANIZATIONCHART_INSTANCE = new InjectionToken<OrganizationChart>('ORGANI
                         }
                     }
                 </tr>
-                <tr [ngStyle]="getChildStyle(node)" [class]="cx('nodeChildren')" [pBind]="ptm('nodeChildren')">
+                <tr [style]="getChildStyle(node)" [class]="cx('nodeChildren')" [pBind]="ptm('nodeChildren')">
                     @for (child of node.children; track child) {
                         <td colspan="2" [pBind]="ptm('nodeCell')">
                             <table [class]="cx('table')" pOrganizationChartNode [unstyled]="unstyled()" [pt]="pt" [node]="child" [collapsible]="node.children && node.children.length > 0 && collapsible"></table>
@@ -100,6 +98,7 @@ const ORGANIZATIONCHART_INSTANCE = new InjectionToken<OrganizationChart>('ORGANI
         }
     `,
     encapsulation: ViewEncapsulation.None,
+    // Eager on purpose: a TreeNode mutated from outside (node.expanded = false) must repaint, and OnPush cannot see it.
     changeDetection: ChangeDetectionStrategy.Eager,
     providers: [OrganizationChartStyle, { provide: PARENT_INSTANCE, useExisting: OrganizationChartNode }]
 })
@@ -120,12 +119,11 @@ export class OrganizationChartNode extends BaseComponent {
 
     _componentStyle = inject(OrganizationChartStyle);
 
-    constructor(
-        @Inject(forwardRef(() => OrganizationChart)) chart: OrganizationChart,
-        public cd: ChangeDetectorRef
-    ) {
+    cd: ChangeDetectorRef = inject(ChangeDetectorRef);
+
+    constructor() {
         super();
-        this.chart = chart as OrganizationChart;
+        this.chart = inject(forwardRef(() => OrganizationChart));
         this.subscription = this.chart.selectionSource$.subscribe(() => {
             this.cd.markForCheck();
         });
@@ -202,6 +200,7 @@ export class OrganizationChartNode extends BaseComponent {
             <table [class]="cx('table')" [collapsible]="collapsible" pOrganizationChartNode [pt]="pt" [unstyled]="unstyled()" [node]="root" [pBind]="ptm('table')"></table>
         }
     `,
+    // Eager on purpose: a TreeNode mutated from outside (node.expanded = false) must repaint, and OnPush cannot see it.
     changeDetection: ChangeDetectionStrategy.Eager,
     providers: [OrganizationChartStyle, { provide: ORGANIZATIONCHART_INSTANCE, useExisting: OrganizationChart }, { provide: PARENT_INSTANCE, useExisting: OrganizationChart }],
     host: {
@@ -256,31 +255,31 @@ export class OrganizationChart extends BaseComponent<OrganizationChartPassThroug
      * @param {*} any - selected value.
      * @group Emits
      */
-    @Output() selectionChange: EventEmitter<any> = new EventEmitter();
+    selectionChange = output<any>();
     /**
      * Callback to invoke when a node is selected.
      * @param {OrganizationChartNodeSelectEvent} event - custom node select event.
      * @group Emits
      */
-    @Output() onNodeSelect: EventEmitter<OrganizationChartNodeSelectEvent> = new EventEmitter<OrganizationChartNodeSelectEvent>();
+    onNodeSelect = output<OrganizationChartNodeSelectEvent>();
     /**
      * Callback to invoke when a node is unselected.
      * @param {OrganizationChartNodeUnSelectEvent} event - custom node unselect event.
      * @group Emits
      */
-    @Output() onNodeUnselect: EventEmitter<OrganizationChartNodeUnSelectEvent> = new EventEmitter<OrganizationChartNodeUnSelectEvent>();
+    onNodeUnselect = output<OrganizationChartNodeUnSelectEvent>();
     /**
      * Callback to invoke when a node is expanded.
      * @param {OrganizationChartNodeExpandEvent} event - custom node expand event.
      * @group Emits
      */
-    @Output() onNodeExpand: EventEmitter<OrganizationChartNodeExpandEvent> = new EventEmitter<OrganizationChartNodeExpandEvent>();
+    onNodeExpand = output<OrganizationChartNodeExpandEvent>();
     /**
      * Callback to invoke when a node is collapsed.
      * @param {OrganizationChartNodeCollapseEvent} event - custom node collapse event.
      * @group Emits
      */
-    @Output() onNodeCollapse: EventEmitter<OrganizationChartNodeCollapseEvent> = new EventEmitter<OrganizationChartNodeCollapseEvent>();
+    onNodeCollapse = output<OrganizationChartNodeCollapseEvent>();
 
     @ContentChildren(PrimeTemplate) templates: Nullable<QueryList<PrimeTemplate>>;
 
@@ -304,14 +303,11 @@ export class OrganizationChart extends BaseComponent<OrganizationChartPassThroug
 
     $pcOrganizationChart: OrganizationChart | undefined = inject(ORGANIZATIONCHART_INSTANCE, { optional: true, skipSelf: true }) ?? undefined;
 
-    constructor(
-        public el: ElementRef,
-        public cd: ChangeDetectorRef
-    ) {
-        super();
-    }
+    el: ElementRef = inject(ElementRef);
 
-    ngAfterViewChecked(): void {
+    cd: ChangeDetectorRef = inject(ChangeDetectorRef);
+
+    onAfterViewChecked(): void {
         this.bindDirectiveInstance.setAttrs(this.ptms(['host', 'root']));
     }
 

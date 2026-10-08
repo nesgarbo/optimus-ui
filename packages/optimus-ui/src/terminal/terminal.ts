@@ -87,11 +87,14 @@ export class Terminal extends BaseComponent<TerminalPassThrough> implements Afte
         this.focus(this.inputRef?.nativeElement);
     }
 
-    constructor(public terminalService: TerminalService) {
+    public terminalService: TerminalService = inject(TerminalService);
+
+    constructor() {
         super();
-        this.subscription = terminalService.responseHandler.subscribe((response) => {
+        this.subscription = this.terminalService.responseHandler.subscribe((response) => {
             this.commands[this.commands.length - 1].response = response;
             this.commandProcessed = true;
+            this.cd.markForCheck();
         });
     }
 

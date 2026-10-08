@@ -1,5 +1,5 @@
 import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, TemplateRef, ViewEncapsulation, booleanAttribute, computed, inject, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, TemplateRef, ViewEncapsulation, booleanAttribute, computed, inject, input, output, signal } from '@angular/core';
 import { Button } from '@openng/optimus-ui/button';
 import { Chip } from '@openng/optimus-ui/chip';
 import { Message } from '@openng/optimus-ui/message';
@@ -132,6 +132,13 @@ export class AssistTextBlockView {
 export class AssistCodeBlockView {
     private readonly document = inject(DOCUMENT);
     private readonly state = inject(ASSIST_STATE);
+    private copiedTimer: ReturnType<typeof setTimeout> | null = null;
+
+    constructor() {
+        inject(DestroyRef).onDestroy(() => {
+            if (this.copiedTimer !== null) clearTimeout(this.copiedTimer);
+        });
+    }
 
     /** The block. */
     readonly block = input.required<AssistCodeBlock>();
@@ -149,7 +156,9 @@ export class AssistCodeBlockView {
         if (!done) return;
 
         this.copied.set(true);
-        setTimeout(() => this.copied.set(false), 1600);
+        if (this.copiedTimer !== null) clearTimeout(this.copiedTimer);
+
+        this.copiedTimer = setTimeout(() => this.copied.set(false), 1600);
     }
 }
 

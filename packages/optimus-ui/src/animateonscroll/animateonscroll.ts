@@ -82,6 +82,8 @@ export class AnimateOnScroll extends BaseComponent {
         };
     }
 
+    private observeTimer: ReturnType<typeof setTimeout> | null = null;
+
     bindIntersectionObserver() {
         this.observer = new IntersectionObserver(([entry]) => {
             if (this.isObserverActive) {
@@ -95,7 +97,7 @@ export class AnimateOnScroll extends BaseComponent {
             this.isObserverActive = true;
         }, this.options);
 
-        setTimeout(() => this.observer?.observe(this.el.nativeElement), 0);
+        this.observeTimer = setTimeout(() => this.observer?.observe(this.el.nativeElement), 0);
 
         // Reset
 
@@ -162,6 +164,11 @@ export class AnimateOnScroll extends BaseComponent {
     }
 
     onDestroy() {
+        if (this.observeTimer !== null) {
+            clearTimeout(this.observeTimer);
+            this.observeTimer = null;
+        }
+
         this.unbindAnimationEvents();
         this.unbindIntersectionObserver();
     }

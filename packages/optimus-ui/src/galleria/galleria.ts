@@ -15,7 +15,9 @@ import {
     Input,
     KeyValueDiffers,
     NgModule,
+    NgZone,
     numberAttribute,
+    output,
     Output,
     QueryList,
     signal,
@@ -60,8 +62,7 @@ const GALLERIA_INSTANCE = new InjectionToken<Galleria>('GALLERIA_INSTANCE');
                         [pMotionLeaveActiveClass]="fullScreen ? 'p-overlay-mask-leave-active' : ''"
                         [pMotionOptions]="computedMaskMotionOptions()"
                         (pMotionOnAfterLeave)="onMaskAfterLeave()"
-                        [ngClass]="cx('mask')"
-                        [class]="maskClass"
+                        [class]="cn(cx('mask'), maskClass)"
                         [attr.role]="fullScreen ? 'dialog' : 'region'"
                         [attr.aria-modal]="fullScreen ? 'true' : undefined"
                         (click)="onMaskHide($event)"
@@ -81,7 +82,7 @@ const GALLERIA_INSTANCE = new InjectionToken<Galleria>('GALLERIA_INSTANCE');
                                 [numVisible]="numVisibleLimit || numVisible"
                                 (maskHide)="onMaskHide()"
                                 (activeItemChange)="onActiveItemChange($event)"
-                                [ngStyle]="containerStyle"
+                                [style]="containerStyle"
                                 [fullScreen]="fullScreen"
                                 [pt]="pt()"
                                 pFocusTrap
@@ -299,13 +300,13 @@ export class Galleria extends BaseComponent<GalleriaPassThrough> {
      * @param {number} number - Active index.
      * @group Emits
      */
-    @Output() activeIndexChange: EventEmitter<number> = new EventEmitter<number>();
+    activeIndexChange = output<number>();
     /**
      * Callback to invoke on visiblity change.
      * @param {boolean} boolean - Visible value.
      * @group Emits
      */
-    @Output() visibleChange: EventEmitter<boolean> = new EventEmitter<boolean>();
+    visibleChange = output<boolean>();
 
     @ViewChild('container') container: ElementRef | undefined;
 
@@ -400,9 +401,9 @@ export class Galleria extends BaseComponent<GalleriaPassThrough> {
 
     @ContentChildren(PrimeTemplate) templates: QueryList<PrimeTemplate> | undefined;
 
-    constructor(public element: ElementRef) {
-        super();
-    }
+    element: ElementRef = inject(ElementRef);
+
+    private focusTimeout: ReturnType<typeof setTimeout> | undefined;
 
     onAfterContentInit() {
         this.templates?.forEach((item) => {
@@ -479,7 +480,8 @@ export class Galleria extends BaseComponent<GalleriaPassThrough> {
     onBeforeEnter(event: MotionEvent) {
         this.mask = <HTMLElement>event.element?.parentElement;
         this.enableModality();
-        setTimeout(() => {
+        clearTimeout(this.focusTimeout);
+        this.focusTimeout = setTimeout(() => {
             const focusTarget = findSingle(this.container?.nativeElement, '[data-pc-section="closebutton"]');
             if (focusTarget) focus(focusTarget as HTMLElement);
         }, 25);
@@ -521,6 +523,8 @@ export class Galleria extends BaseComponent<GalleriaPassThrough> {
     }
 
     onDestroy() {
+        clearTimeout(this.focusTimeout);
+
         if (this.fullScreen) {
             removeClass(this.document.body, 'p-overflow-hidden');
         }
@@ -627,9 +631,9 @@ export class GalleriaContent extends BaseComponent<GalleriaPassThrough> {
 
     @Input({ transform: booleanAttribute }) fullScreen: boolean;
 
-    @Output() maskHide: EventEmitter<boolean> = new EventEmitter();
+    maskHide = output<boolean>();
 
-    @Output() activeItemChange: EventEmitter<number> = new EventEmitter();
+    activeItemChange = output<number>();
 
     @ViewChild('closeButton') closeButton: ElementRef | undefined;
 
@@ -649,10 +653,11 @@ export class GalleriaContent extends BaseComponent<GalleriaPassThrough> {
 
     private differ: any;
 
-    constructor(
-        public galleria: Galleria,
-        private differs: KeyValueDiffers
-    ) {
+    galleria: Galleria = inject(Galleria);
+
+    private differs = inject(KeyValueDiffers);
+
+    constructor() {
         super();
         this.id = this.galleria.id || uuid('pn_id_');
         this.differ = this.differs.find(this.galleria).create();
@@ -666,6 +671,8 @@ export class GalleriaContent extends BaseComponent<GalleriaPassThrough> {
         } else {
             this.fullScreen = false;
         }
+
+        this.cd.markForCheck();
     }
 
     onDoCheck(): void {
@@ -687,10 +694,14 @@ export class GalleriaContent extends BaseComponent<GalleriaPassThrough> {
 
     startSlideShow() {
         if (isPlatformBrowser(this.galleria.platformId)) {
+            // Never leave a previous timer running: it would be orphaned and keep sliding.
+            this.clearSlideShowInterval();
+
             this.interval = setInterval(() => {
                 let activeIndex = this.galleria.circular && this.value.length - 1 === this.activeIndex ? 0 : this.activeIndex + 1;
                 this.onActiveIndexChange(activeIndex);
                 this.activeIndex = activeIndex;
+                this.cd.markForCheck();
             }, this.galleria.transitionInterval);
 
             this.slideShowActive = true;
@@ -702,11 +713,21 @@ export class GalleriaContent extends BaseComponent<GalleriaPassThrough> {
             return;
         }
 
-        if (this.interval) {
-            clearInterval(this.interval);
-        }
+        this.clearSlideShowInterval();
 
         this.slideShowActive = false;
+    }
+
+    private clearSlideShowInterval() {
+        if (this.interval) {
+            clearInterval(this.interval);
+            this.interval = undefined;
+        }
+    }
+
+    onDestroy() {
+        // Unconditional on purpose: stopSlideShow() returns early while autoplay is on.
+        this.clearSlideShowInterval();
     }
 
     getPositionClass(preClassName: string, position: string) {
@@ -983,7 +1004,7 @@ export class GalleriaItem extends BaseComponent<GalleriaPassThrough> {
 
     @Output() stopSlideShow: EventEmitter<Event> = new EventEmitter();
 
-    @Output() onActiveIndexChange: EventEmitter<number> = new EventEmitter();
+    onActiveIndexChange = output<number>();
 
     _componentStyle = inject(GalleriaStyle);
 
@@ -1005,9 +1026,7 @@ export class GalleriaItem extends BaseComponent<GalleriaPassThrough> {
 
     rightButtonFocused: boolean = false;
 
-    constructor(public galleria: Galleria) {
-        super();
-    }
+    galleria: Galleria = inject(Galleria);
 
     getIndicatorPTOptions(index: number) {
         return this.ptm('indicator', {
@@ -1151,7 +1170,7 @@ export class GalleriaItem extends BaseComponent<GalleriaPassThrough> {
                     <ng-template *ngTemplateOutlet="galleria.previousThumbnailIconTemplate || galleria._previousThumbnailIconTemplate"></ng-template>
                 </button>
             }
-            <div [pBind]="ptm('thumbnailsViewport')" [class]="cx('thumbnailsViewport')" [ngStyle]="{ height: isVertical ? contentHeight : '' }">
+            <div [pBind]="ptm('thumbnailsViewport')" [class]="cx('thumbnailsViewport')" [style]="{ height: isVertical ? contentHeight : '' }">
                 <div #itemsContainer [pBind]="ptm('thumbnailItems')" [class]="cx('thumbnailItems')" (transitionend)="onTransitionEnd()" (touchstart)="onTouchStart($event)" (touchmove)="onTouchMove($event)" role="tablist">
                     @for (item of value; track item; let index = $index) {
                         <div
@@ -1227,7 +1246,7 @@ export class GalleriaThumbnails extends BaseComponent<GalleriaPassThrough> {
 
     @Input() templates: QueryList<PrimeTemplate> | undefined;
 
-    @Output() onActiveIndexChange: EventEmitter<number> = new EventEmitter();
+    onActiveIndexChange = output<number>();
 
     @Output() stopSlideShow: EventEmitter<Event> = new EventEmitter();
 
@@ -1278,9 +1297,9 @@ export class GalleriaThumbnails extends BaseComponent<GalleriaPassThrough> {
 
     _componentStyle = inject(GalleriaStyle);
 
-    constructor(public galleria: Galleria) {
-        super();
-    }
+    galleria: Galleria = inject(Galleria);
+
+    private zone = inject(NgZone);
 
     onInit() {
         if (isPlatformBrowser(this.platformId)) {
@@ -1663,8 +1682,10 @@ export class GalleriaThumbnails extends BaseComponent<GalleriaPassThrough> {
     bindDocumentListeners() {
         if (isPlatformBrowser(this.platformId)) {
             const window = this.document.defaultView || 'window';
-            this.documentResizeListener = this.renderer.listen(window, 'resize', () => {
-                this.calculatePosition();
+            this.zone.runOutsideAngular(() => {
+                this.documentResizeListener = this.renderer.listen(window, 'resize', () => {
+                    this.calculatePosition();
+                });
             });
         }
     }
@@ -1677,9 +1698,7 @@ export class GalleriaThumbnails extends BaseComponent<GalleriaPassThrough> {
     }
 
     onDestroy() {
-        if (this.responsiveOptions) {
-            this.unbindDocumentListeners();
-        }
+        this.unbindDocumentListeners();
 
         if (this.thumbnailsStyle) {
             this.thumbnailsStyle.parentNode?.removeChild(this.thumbnailsStyle);

@@ -1,24 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-    booleanAttribute,
-    ChangeDetectionStrategy,
-    Component,
-    computed,
-    ContentChild,
-    ContentChildren,
-    ElementRef,
-    EventEmitter,
-    inject,
-    InjectionToken,
-    input,
-    Input,
-    NgModule,
-    Output,
-    QueryList,
-    TemplateRef,
-    ViewChild,
-    ViewEncapsulation
-} from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, computed, ContentChild, ContentChildren, ElementRef, inject, InjectionToken, Input, input, NgModule, output, QueryList, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { MotionEvent, MotionOptions } from '@openng/optimus-ui-motion';
 import { uuid } from '@openng/optimus-ui-utils';
 import { BlockableUI, Footer, PrimeTemplate, SharedModule } from '@openng/optimus-ui/api';
@@ -225,21 +206,21 @@ export class Panel extends BaseComponent<PanelPassThrough> implements BlockableU
      * @param {boolean} value - New Value.
      * @group Emits
      */
-    @Output() collapsedChange: EventEmitter<boolean | undefined> = new EventEmitter<boolean | undefined>();
+    collapsedChange = output<boolean | undefined>();
 
     /**
      * Callback to invoke before panel toggle.
      * @param {PanelBeforeToggleEvent} event - Custom panel toggle event
      * @group Emits
      */
-    @Output() onBeforeToggle: EventEmitter<PanelBeforeToggleEvent> = new EventEmitter<PanelBeforeToggleEvent>();
+    onBeforeToggle = output<PanelBeforeToggleEvent>();
 
     /**
      * Callback to invoke after panel toggle.
      * @param {PanelAfterToggleEvent} event - Custom panel toggle event
      * @group Emits
      */
-    @Output() onAfterToggle: EventEmitter<PanelAfterToggleEvent> = new EventEmitter<PanelAfterToggleEvent>();
+    onAfterToggle = output<PanelAfterToggleEvent>();
 
     @ContentChild(Footer) footerFacet: Nullable<TemplateRef<void>>;
     /**

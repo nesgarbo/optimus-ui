@@ -1,4 +1,4 @@
-import { booleanAttribute, Directive, ElementRef, HostListener, Input, NgModule, NgZone, OnDestroy, Renderer2 } from '@angular/core';
+import { booleanAttribute, Directive, ElementRef, HostListener, inject, Input, NgModule, NgZone, OnDestroy, Renderer2 } from '@angular/core';
 import { addClass, getTargetElement, hasClass, isElement, removeClass } from '@openng/optimus-ui-utils';
 import { VoidListener } from '@openng/optimus-ui/ts-helpers';
 
@@ -11,11 +11,12 @@ import { VoidListener } from '@openng/optimus-ui/ts-helpers';
     standalone: true
 })
 export class StyleClass implements OnDestroy {
-    constructor(
-        public el: ElementRef,
-        public renderer: Renderer2,
-        private zone: NgZone
-    ) {}
+    public el: ElementRef = inject(ElementRef);
+
+    public renderer: Renderer2 = inject(Renderer2);
+
+    private zone: NgZone = inject(NgZone);
+
     /**
      * Selector to define the target element. Available selectors are '@next', '@prev', '@parent' and '@grandparent'.
      * @group Props
@@ -215,9 +216,11 @@ export class StyleClass implements OnDestroy {
 
     bindDocumentClickListener() {
         if (!this.documentClickListener) {
-            this.documentClickListener = this.renderer.listen(this.el.nativeElement.ownerDocument, 'click', (event) => {
-                if (!this.isVisible() || getComputedStyle(this.target as HTMLElement).getPropertyValue('position') === 'static') this.unbindDocumentClickListener();
-                else if (this.isOutsideClick(event)) this.leave();
+            this.zone.runOutsideAngular(() => {
+                this.documentClickListener = this.renderer.listen(this.el.nativeElement.ownerDocument, 'click', (event) => {
+                    if (!this.isVisible() || getComputedStyle(this.target as HTMLElement).getPropertyValue('position') === 'static') this.unbindDocumentClickListener();
+                    else if (this.isOutsideClick(event)) this.leave();
+                });
             });
         }
     }

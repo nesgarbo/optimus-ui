@@ -1,4 +1,4 @@
-import { AfterViewInit, booleanAttribute, Directive, ElementRef, EventEmitter, HostListener, Input, NgModule, NgZone, OnDestroy, Output, Renderer2 } from '@angular/core';
+import { AfterViewInit, booleanAttribute, Directive, ElementRef, HostListener, inject, Input, NgModule, NgZone, OnDestroy, output, Renderer2 } from '@angular/core';
 import { addClass, removeClass } from '@openng/optimus-ui-utils';
 import { DomHandler } from '@openng/optimus-ui/dom';
 import { VoidListener } from '@openng/optimus-ui/ts-helpers';
@@ -28,19 +28,19 @@ export class Draggable implements AfterViewInit, OnDestroy {
      * @param {DragEvent} event - Drag event.
      * @group Emits
      */
-    @Output() onDragStart: EventEmitter<DragEvent> = new EventEmitter();
+    onDragStart = output<DragEvent>();
     /**
      * Callback to invoke when drag ends.
      * @param {DragEvent} event - Drag event.
      * @group Emits
      */
-    @Output() onDragEnd: EventEmitter<DragEvent> = new EventEmitter();
+    onDragEnd = output<DragEvent>();
     /**
      * Callback to invoke on dragging.
      * @param {DragEvent} event - Drag event.
      * @group Emits
      */
-    @Output() onDrag: EventEmitter<DragEvent> = new EventEmitter();
+    onDrag = output<DragEvent>();
 
     handle: any;
 
@@ -52,11 +52,11 @@ export class Draggable implements AfterViewInit, OnDestroy {
 
     _pDraggableDisabled: boolean = false;
 
-    constructor(
-        public el: ElementRef,
-        public zone: NgZone,
-        private renderer: Renderer2
-    ) {}
+    public el: ElementRef = inject(ElementRef);
+
+    public zone: NgZone = inject(NgZone);
+
+    private renderer: Renderer2 = inject(Renderer2);
 
     @Input() get pDraggableDisabled(): boolean {
         return this._pDraggableDisabled;
@@ -197,23 +197,23 @@ export class Droppable implements AfterViewInit, OnDestroy {
      * Callback to invoke when a draggable enters drop area.
      * @group Emits
      */
-    @Output() onDragEnter: EventEmitter<DragEvent> = new EventEmitter();
+    onDragEnter = output<DragEvent>();
     /**
      * Callback to invoke when a draggable leave drop area.
      * @group Emits
      */
-    @Output() onDragLeave: EventEmitter<DragEvent> = new EventEmitter();
+    onDragLeave = output<DragEvent>();
     /**
      * Callback to invoke when a draggable is dropped onto drop area.
      * @group Emits
      */
-    @Output() onDrop: EventEmitter<DragEvent> = new EventEmitter();
+    onDrop = output<DragEvent>();
 
-    constructor(
-        public el: ElementRef,
-        public zone: NgZone,
-        private renderer: Renderer2
-    ) {}
+    public el: ElementRef = inject(ElementRef);
+
+    public zone: NgZone = inject(NgZone);
+
+    private renderer: Renderer2 = inject(Renderer2);
 
     dragOverListener: VoidListener;
 

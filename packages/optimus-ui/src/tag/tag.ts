@@ -21,7 +21,7 @@ const TAG_INSTANCE = new InjectionToken<Tag>('TAG_INSTANCE');
         <ng-content></ng-content>
         @if (!iconTemplate && !_iconTemplate) {
             @if (icon) {
-                <span [class]="cx('icon')" [ngClass]="icon" [pBind]="ptm('icon')"></span>
+                <span [class]="cn(cx('icon'), icon)" [pBind]="ptm('icon')"></span>
             }
         }
         @if (iconTemplate || _iconTemplate) {

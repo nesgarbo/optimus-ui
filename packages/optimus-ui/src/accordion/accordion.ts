@@ -1,24 +1,5 @@
-import { CommonModule } from '@angular/common';
-import {
-    ChangeDetectionStrategy,
-    Component,
-    computed,
-    ContentChild,
-    EventEmitter,
-    forwardRef,
-    HostListener,
-    inject,
-    InjectionToken,
-    Input,
-    input,
-    InputSignalWithTransform,
-    model,
-    NgModule,
-    Output,
-    signal,
-    TemplateRef,
-    ViewEncapsulation
-} from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, ContentChild, forwardRef, HostListener, inject, InjectionToken, Input, input, InputSignalWithTransform, model, NgModule, output, signal, TemplateRef, ViewEncapsulation } from '@angular/core';
 import { MotionOptions } from '@openng/optimus-ui-motion';
 import { findSingle, focus, getAttribute, uuid } from '@openng/optimus-ui-utils';
 import { BlockableUI, SharedModule } from '@openng/optimus-ui/api';
@@ -131,7 +112,7 @@ export class AccordionPanel extends BaseComponent<AccordionPanelPassThrough> {
  */
 @Component({
     selector: 'p-accordion-header, p-accordionheader',
-    imports: [CommonModule, ChevronDownIcon, ChevronUpIcon, BindModule],
+    imports: [NgTemplateOutlet, ChevronDownIcon, ChevronUpIcon, BindModule],
     standalone: true,
     template: `
         <ng-content />
@@ -480,13 +461,13 @@ export class Accordion extends BaseComponent<AccordionPassThrough> implements Bl
      * @param {AccordionTabCloseEvent} event - Custom tab close event.
      * @group Emits
      */
-    @Output() onClose: EventEmitter<AccordionTabCloseEvent> = new EventEmitter();
+    onClose = output<AccordionTabCloseEvent>();
     /**
      * Callback to invoke when a tab gets expanded.
      * @param {AccordionTabOpenEvent} event - Custom tab open event.
      * @group Emits
      */
-    @Output() onOpen: EventEmitter<AccordionTabOpenEvent> = new EventEmitter();
+    onOpen = output<AccordionTabOpenEvent>();
 
     id = signal(uuid('pn_id_'));
 

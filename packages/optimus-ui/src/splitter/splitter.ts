@@ -1,5 +1,5 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, contentChild, ContentChildren, ElementRef, EventEmitter, forwardRef, inject, InjectionToken, Input, NgModule, numberAttribute, Output, QueryList, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, contentChild, ContentChildren, ElementRef, forwardRef, inject, InjectionToken, Input, NgModule, numberAttribute, output, QueryList, ViewEncapsulation } from '@angular/core';
 import { addClass, getHeight, getOuterHeight, getOuterWidth, getWidth, hasClass, isRTL, removeClass } from '@openng/optimus-ui-utils';
 import { PrimeTemplate, SharedModule } from '@openng/optimus-ui/api';
 import { BaseComponent, PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
@@ -21,7 +21,7 @@ const SPLITTER_INSTANCE = new InjectionToken<Splitter>('SPLITTER_INSTANCE');
     imports: [CommonModule, SharedModule, BindModule],
     template: `
         @for (panel of panels; track panel; let i = $index) {
-            <div [pBind]="ptm('panel')" [class]="cn(cx('panel'), panelStyleClass)" [ngStyle]="panelStyle" tabindex="-1">
+            <div [pBind]="ptm('panel')" [class]="cn(cx('panel'), panelStyleClass)" [style]="panelStyle" tabindex="-1">
                 <ng-container *ngTemplateOutlet="panel"></ng-container>
             </div>
             @if (i !== panels.length - 1) {
@@ -41,7 +41,7 @@ const SPLITTER_INSTANCE = new InjectionToken<Splitter>('SPLITTER_INSTANCE');
                         [pBind]="ptm('gutterHandle')"
                         [class]="cx('gutterHandle')"
                         tabindex="0"
-                        [ngStyle]="gutterStyle()"
+                        [style]="gutterStyle()"
                         [attr.aria-orientation]="layout"
                         [attr.aria-valuenow]="prevSize"
                         (keyup)="onGutterKeyUp($event)"
@@ -144,13 +144,13 @@ export class Splitter extends BaseComponent<SplitterPassThrough> {
      * @param {SplitterResizeEndEvent} event - Custom panel resize end event
      * @group Emits
      */
-    @Output() onResizeEnd: EventEmitter<SplitterResizeEndEvent> = new EventEmitter<SplitterResizeEndEvent>();
+    onResizeEnd = output<SplitterResizeEndEvent>();
     /**
      * Callback to invoke when resize starts.
      * @param {SplitterResizeStartEvent} event - Custom panel resize start event
      * @group Emits
      */
-    @Output() onResizeStart: EventEmitter<SplitterResizeStartEvent> = new EventEmitter<SplitterResizeStartEvent>();
+    onResizeStart = output<SplitterResizeStartEvent>();
 
     @ContentChildren(PrimeTemplate) templates!: QueryList<PrimeTemplate>;
 
@@ -361,6 +361,12 @@ export class Splitter extends BaseComponent<SplitterPassThrough> {
         if (this.timer) {
             clearTimeout(this.timer);
         }
+    }
+
+    onDestroy() {
+        this.clearTimer();
+        this.unbindMouseListeners();
+        this.unbindTouchListeners();
     }
 
     onGutterKeyUp(event) {

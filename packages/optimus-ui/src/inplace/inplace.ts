@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import { AfterContentInit, booleanAttribute, ChangeDetectionStrategy, Component, ContentChild, ContentChildren, EventEmitter, inject, InjectionToken, Input, NgModule, Output, QueryList, TemplateRef, ViewEncapsulation } from '@angular/core';
 import { PrimeTemplate, SharedModule } from '@openng/optimus-ui/api';
 import { BaseComponent, PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
@@ -12,7 +12,7 @@ import { InplaceStyle } from './style/inplacestyle';
 const INPLACE_INSTANCE = new InjectionToken<Inplace>('INPLACE_INSTANCE');
 
 @Component({
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'p-inplacedisplay, p-inplaceDisplay',
     standalone: true,
     imports: [],
@@ -21,7 +21,7 @@ const INPLACE_INSTANCE = new InjectionToken<Inplace>('INPLACE_INSTANCE');
 export class InplaceDisplay extends BaseComponent {}
 
 @Component({
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'p-inplacecontent, p-inplaceContent',
     standalone: true,
     imports: [],
@@ -35,7 +35,7 @@ export class InplaceContent extends BaseComponent {}
 @Component({
     selector: 'p-inplace',
     standalone: true,
-    imports: [CommonModule, ButtonModule, TimesIcon, SharedModule, Ripple, Bind],
+    imports: [NgTemplateOutlet, ButtonModule, TimesIcon, SharedModule, Ripple, Bind],
     template: `
         @if (!active) {
             <div [class]="cx('display')" [pBind]="ptm('display')" (click)="onActivateClick($event)" tabindex="0" role="button" (keydown)="onKeydown($event)" [attr.data-p-disabled]="disabled">

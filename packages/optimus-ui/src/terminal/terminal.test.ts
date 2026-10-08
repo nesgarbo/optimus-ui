@@ -822,7 +822,8 @@ describe('Terminal', () => {
             await fixture.whenStable();
 
             expect(terminalInstance.commands[0].response).toBe('total 8\ndrwxr-xr-x  2 user user 4096 Jan  1 12:00 .\ndrwxr-xr-x  3 user user 4096 Jan  1 12:00 ..');
-            expect(terminalInstance.commandProcessed).toBe(true);
+            // The response arrives outside the template, so the view must have been marked and rendered.
+            expect(fixture.nativeElement.textContent).toContain('total 8');
         });
     });
 

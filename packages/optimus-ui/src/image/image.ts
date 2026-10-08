@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import {
     booleanAttribute,
     ChangeDetectionStrategy,
@@ -7,14 +7,13 @@ import {
     ContentChild,
     ContentChildren,
     ElementRef,
-    EventEmitter,
     HostListener,
     inject,
     InjectionToken,
     input,
     Input,
     NgModule,
-    Output,
+    output,
     QueryList,
     signal,
     TemplateRef,
@@ -45,7 +44,7 @@ const IMAGE_INSTANCE = new InjectionToken<Image>('IMAGE_INSTANCE');
 @Component({
     selector: 'p-image',
     standalone: true,
-    imports: [CommonModule, RefreshIcon, EyeIcon, UndoIcon, SearchMinusIcon, SearchPlusIcon, TimesIcon, FocusTrap, SharedModule, BindModule, MotionModule],
+    imports: [NgTemplateOutlet, RefreshIcon, EyeIcon, UndoIcon, SearchMinusIcon, SearchPlusIcon, TimesIcon, FocusTrap, SharedModule, BindModule, MotionModule],
     template: `
         @if (!imageTemplate && !_imageTemplate) {
             <img
@@ -56,7 +55,7 @@ const IMAGE_INSTANCE = new InjectionToken<Image>('IMAGE_INSTANCE');
                 [attr.width]="width"
                 [attr.height]="height"
                 [attr.loading]="loading"
-                [ngStyle]="imageStyle"
+                [style]="imageStyle"
                 [class]="imageClass"
                 (error)="imageError($event)"
                 [pBind]="ptm('image')"
@@ -66,7 +65,15 @@ const IMAGE_INSTANCE = new InjectionToken<Image>('IMAGE_INSTANCE');
         <ng-container *ngTemplateOutlet="imageTemplate || _imageTemplate; context: { errorCallback: imageError.bind(this) }"></ng-container>
 
         @if (preview) {
-            <button [attr.aria-label]="zoomImageAriaLabel" type="button" [class]="cx('previewMask')" (click)="onImageClick()" #previewButton [ngStyle]="{ height: height + 'px', width: width + 'px' }" [pBind]="ptm('previewMask')">
+            <button
+                [attr.aria-label]="zoomImageAriaLabel"
+                type="button"
+                [class]="cx('previewMask')"
+                (click)="onImageClick()"
+                #previewButton
+                [style]="{ height: height != null ? height + 'px' : null, width: width != null ? width + 'px' : null }"
+                [pBind]="ptm('previewMask')"
+            >
                 @if (indicatorTemplate || _indicatorTemplate) {
                     <ng-container *ngTemplateOutlet="indicatorTemplate || _indicatorTemplate"></ng-container>
                 } @else {
@@ -131,7 +138,7 @@ const IMAGE_INSTANCE = new InjectionToken<Image>('IMAGE_INSTANCE');
                                 [attr.srcset]="previewImageSrcSet"
                                 [attr.sizes]="previewImageSizes"
                                 [class]="cx('original')"
-                                [ngStyle]="imagePreviewStyle()"
+                                [style]="imagePreviewStyle()"
                                 (click)="onPreviewImageClick()"
                                 [pBind]="ptm('original')"
                             />
@@ -295,18 +302,18 @@ export class Image extends BaseComponent<ImagePassThrough> {
      * Triggered when the preview overlay is shown.
      * @group Emits
      */
-    @Output() onShow: EventEmitter<any> = new EventEmitter<any>();
+    onShow = output<any>();
     /**
      * Triggered when the preview overlay is hidden.
      * @group Emits
      */
-    @Output() onHide: EventEmitter<any> = new EventEmitter<any>();
+    onHide = output<any>();
     /**
      * This event is triggered if an error occurs while loading an image file.
      * @param {Event} event - Browser event.
      * @group Emits
      */
-    @Output() onImageError: EventEmitter<Event> = new EventEmitter<Event>();
+    onImageError = output<Event>();
 
     @ViewChild('mask') mask: ElementRef | undefined;
 
@@ -485,9 +492,7 @@ export class Image extends BaseComponent<ImagePassThrough> {
         switch (event.code) {
             case 'Escape':
                 this.onMaskClick();
-                setTimeout(() => {
-                    focus(this.previewButton?.nativeElement);
-                }, 25);
+                this.focusTimeout = this.delayedFocus(() => this.previewButton?.nativeElement, this.focusTimeout);
                 event.preventDefault();
 
                 break;
@@ -528,9 +533,29 @@ export class Image extends BaseComponent<ImagePassThrough> {
         this.appendContainer();
         this.moveOnTop();
         this.onShow.emit({});
-        setTimeout(() => {
-            focus(this.closeButton?.nativeElement);
+        this.focusTimeout = this.delayedFocus(() => this.closeButton?.nativeElement, this.focusTimeout);
+    }
+
+    private focusTimeout: ReturnType<typeof setTimeout> | undefined;
+
+    private delayedFocus(getTarget: () => HTMLElement | undefined, previous: ReturnType<typeof setTimeout> | undefined) {
+        clearTimeout(previous);
+
+        return setTimeout(() => {
+            this.focusTimeout = undefined;
+            focus(getTarget() as HTMLElement);
         }, 25);
+    }
+
+    onDestroy() {
+        clearTimeout(this.focusTimeout);
+        this.focusTimeout = undefined;
+
+        // Destroyed while the preview is open: give back the page scroll and the stacking level.
+        if (this.maskVisible || this.renderMask()) {
+            unblockBodyScroll();
+            ZIndexUtils.clear(this.wrapper);
+        }
     }
 
     onBeforeLeave() {

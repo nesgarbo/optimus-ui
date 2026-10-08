@@ -128,6 +128,8 @@ export class ScrollPanel extends BaseComponent<ScrollPanelPassThrough> {
 
     timer: any;
 
+    private destroyed: boolean = false;
+
     contentId: string | undefined;
 
     windowResizeListener: VoidFunction | null | undefined;
@@ -342,19 +344,22 @@ export class ScrollPanel extends BaseComponent<ScrollPanelPassThrough> {
     }
 
     bindDocumentMouseListeners(): void {
-        if (!this.documentMouseMoveListener) {
-            this.documentMouseMoveListener = (e) => {
-                this.onDocumentMouseMove(e);
-            };
-            this.document.addEventListener('mousemove', this.documentMouseMoveListener);
-        }
+        // The drag only moves the thumb through the DOM, so it does not need to trigger change detection on every move.
+        this.zone.runOutsideAngular(() => {
+            if (!this.documentMouseMoveListener) {
+                this.documentMouseMoveListener = (e) => {
+                    this.onDocumentMouseMove(e);
+                };
+                this.document.addEventListener('mousemove', this.documentMouseMoveListener);
+            }
 
-        if (!this.documentMouseUpListener) {
-            this.documentMouseUpListener = (e) => {
-                this.onDocumentMouseUp(e);
-            };
-            this.document.addEventListener('mouseup', this.documentMouseUpListener);
-        }
+            if (!this.documentMouseUpListener) {
+                this.documentMouseUpListener = (e) => {
+                    this.onDocumentMouseUp(e);
+                };
+                this.document.addEventListener('mouseup', this.documentMouseUpListener);
+            }
+        });
     }
 
     unbindDocumentMouseListeners(): void {
@@ -364,7 +369,7 @@ export class ScrollPanel extends BaseComponent<ScrollPanelPassThrough> {
         }
 
         if (this.documentMouseUpListener) {
-            document.removeEventListener('mouseup', this.documentMouseUpListener);
+            this.document.removeEventListener('mouseup', this.documentMouseUpListener);
             this.documentMouseUpListener = null;
         }
     }
@@ -466,7 +471,11 @@ export class ScrollPanel extends BaseComponent<ScrollPanelPassThrough> {
 
     requestAnimationFrame(f: VoidFunction) {
         let frame = window.requestAnimationFrame || this.timeoutFrame;
-        frame(f);
+        frame(() => {
+            if (!this.destroyed) {
+                f();
+            }
+        });
     }
 
     unbindListeners() {
@@ -497,6 +506,10 @@ export class ScrollPanel extends BaseComponent<ScrollPanelPassThrough> {
     }
 
     onDestroy() {
+        this.destroyed = true;
+        this.clearTimer();
+        this.unbindDocumentMouseListeners();
+
         if (this.initialized) {
             this.unbindListeners();
         }

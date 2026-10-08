@@ -1,5 +1,4 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, EventEmitter, HostBinding, inject, InjectionToken, Input, NgModule, Output, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostBinding, inject, InjectionToken, Input, NgModule, output, ViewEncapsulation } from '@angular/core';
 import { SharedModule } from '@openng/optimus-ui/api';
 import { BaseComponent, PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { Bind } from '@openng/optimus-ui/bind';
@@ -15,14 +14,14 @@ const AVATAR_INSTANCE = new InjectionToken<Avatar>('AVATAR_INSTANCE');
 @Component({
     selector: 'p-avatar',
     standalone: true,
-    imports: [CommonModule, SharedModule, Bind],
+    imports: [SharedModule, Bind],
     template: `
         <ng-content></ng-content>
         @if (label) {
             <span [pBind]="ptm('label')" [class]="cx('label')" [attr.data-p]="dataP">{{ label }}</span>
         } @else {
             @if (icon) {
-                <span [pBind]="ptm('icon')" [class]="icon" [ngClass]="cx('icon')" [attr.data-p]="dataP"></span>
+                <span [pBind]="ptm('icon')" [class]="cn(icon, cx('icon'))" [attr.data-p]="dataP"></span>
             } @else {
                 @if (image) {
                     <img [pBind]="ptm('image')" [src]="image" (error)="imageError($event)" [attr.aria-label]="ariaLabel" [attr.data-p]="dataP" />
@@ -97,7 +96,7 @@ export class Avatar extends BaseComponent<AvatarPassThrough> {
      * @param {Event} event - Browser event.
      * @group Emits
      */
-    @Output() onImageError: EventEmitter<Event> = new EventEmitter<Event>();
+    onImageError = output<Event>();
 
     _componentStyle = inject(AvatarStyle);
 

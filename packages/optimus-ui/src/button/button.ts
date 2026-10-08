@@ -1,4 +1,4 @@
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
 import {
     booleanAttribute,
     ChangeDetectionStrategy,
@@ -9,14 +9,13 @@ import {
     ContentChildren,
     Directive,
     effect,
-    EventEmitter,
     inject,
     InjectionToken,
     input,
     Input,
     NgModule,
     numberAttribute,
-    Output,
+    output,
     QueryList,
     TemplateRef,
     ViewEncapsulation
@@ -30,7 +29,7 @@ import { Bind } from '@openng/optimus-ui/bind';
 import { Fluid } from '@openng/optimus-ui/fluid';
 import { SpinnerIcon } from '@openng/optimus-ui/icons';
 import { Ripple } from '@openng/optimus-ui/ripple';
-import type { ButtonIconTemplateContext, ButtonLoadingIconTemplateContext, ButtonPassThrough, ButtonProps, ButtonSeverity } from '@openng/optimus-ui/types/button';
+import type { ButtonIconPosition, ButtonIconTemplateContext, ButtonLoadingIconTemplateContext, ButtonPassThrough, ButtonProps, ButtonSeverity } from '@openng/optimus-ui/types/button';
 import { ButtonStyle } from './style/buttonstyle';
 
 const BUTTON_INSTANCE = new InjectionToken<Button>('BUTTON_INSTANCE');
@@ -40,8 +39,6 @@ const BUTTON_DIRECTIVE_INSTANCE = new InjectionToken<ButtonDirective>('BUTTON_DI
 const BUTTON_LABEL_INSTANCE = new InjectionToken<ButtonLabel>('BUTTON_LABEL_INSTANCE');
 
 const BUTTON_ICON_INSTANCE = new InjectionToken<ButtonIcon>('BUTTON_ICON_INSTANCE');
-
-export type ButtonIconPosition = 'left' | 'right' | 'top' | 'bottom';
 
 const INTERNAL_BUTTON_CLASSES = {
     button: 'p-button',
@@ -576,12 +573,12 @@ export class ButtonDirective extends BaseComponent {
 @Component({
     selector: 'p-button',
     standalone: true,
-    imports: [CommonModule, Ripple, AutoFocus, SpinnerIcon, BadgeModule, SharedModule, Bind],
+    imports: [NgTemplateOutlet, Ripple, AutoFocus, SpinnerIcon, BadgeModule, SharedModule, Bind],
     template: `
         <button
             [attr.type]="type || buttonProps?.type"
             [attr.aria-label]="ariaLabel || buttonProps?.ariaLabel"
-            [ngStyle]="style || buttonProps?.style"
+            [style]="style || buttonProps?.style"
             [disabled]="disabled || loading || buttonProps?.disabled"
             [class]="cn(cx('root'), styleClass, buttonProps?.styleClass)"
             (click)="onClick.emit($event)"
@@ -811,7 +808,7 @@ export class Button extends BaseComponent<ButtonPassThrough> {
      * @param {MouseEvent} event - Mouse event.
      * @group Emits
      */
-    @Output() onClick: EventEmitter<MouseEvent> = new EventEmitter();
+    onClick = output<MouseEvent>();
 
     /**
      * Callback to execute when button is focused.
@@ -819,7 +816,7 @@ export class Button extends BaseComponent<ButtonPassThrough> {
      * @param {FocusEvent} event - Focus event.
      * @group Emits
      */
-    @Output() onFocus: EventEmitter<FocusEvent> = new EventEmitter<FocusEvent>();
+    onFocus = output<FocusEvent>();
 
     /**
      * Callback to execute when button loses focus.
@@ -827,7 +824,7 @@ export class Button extends BaseComponent<ButtonPassThrough> {
      * @param {FocusEvent} event - Focus event.
      * @group Emits
      */
-    @Output() onBlur: EventEmitter<FocusEvent> = new EventEmitter<FocusEvent>();
+    onBlur = output<FocusEvent>();
 
     /**
      * Custom content template.
@@ -918,7 +915,7 @@ export class Button extends BaseComponent<ButtonPassThrough> {
 }
 
 @NgModule({
-    imports: [CommonModule, ButtonDirective, Button, SharedModule, ButtonLabel, ButtonIcon],
+    imports: [ButtonDirective, Button, SharedModule, ButtonLabel, ButtonIcon],
     exports: [ButtonDirective, Button, ButtonLabel, ButtonIcon, SharedModule]
 })
 export class ButtonModule {}

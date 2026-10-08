@@ -1,24 +1,5 @@
-import { CommonModule } from '@angular/common';
-import {
-    booleanAttribute,
-    ChangeDetectionStrategy,
-    Component,
-    computed,
-    ContentChild,
-    ContentChildren,
-    ElementRef,
-    EventEmitter,
-    inject,
-    InjectionToken,
-    input,
-    Input,
-    NgModule,
-    Output,
-    QueryList,
-    TemplateRef,
-    ViewChild,
-    ViewEncapsulation
-} from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import { booleanAttribute, ChangeDetectionStrategy, Component, computed, ContentChild, ContentChildren, ElementRef, inject, InjectionToken, input, Input, NgModule, output, QueryList, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { MotionEvent, MotionOptions } from '@openng/optimus-ui-motion';
 import { uuid } from '@openng/optimus-ui-utils';
 import { BlockableUI, PrimeTemplate, SharedModule } from '@openng/optimus-ui/api';
@@ -38,9 +19,9 @@ const FIELDSET_INSTANCE = new InjectionToken<Fieldset>('FIELDSET_INSTANCE');
 @Component({
     selector: 'p-fieldset',
     standalone: true,
-    imports: [CommonModule, MinusIcon, PlusIcon, SharedModule, BindModule, MotionModule],
+    imports: [NgTemplateOutlet, MinusIcon, PlusIcon, SharedModule, BindModule, MotionModule],
     template: `
-        <fieldset [attr.id]="id" [ngStyle]="style" [class]="cn(cx('root'), styleClass)" [pBind]="ptm('root')" [attr.data-p]="dataP">
+        <fieldset [attr.id]="id" [style]="style" [class]="cn(cx('root'), styleClass)" [pBind]="ptm('root')" [attr.data-p]="dataP">
             <legend [class]="cx('legend')" [pBind]="ptm('legend')" [attr.data-p]="dataP">
                 @if (toggleable) {
                     <button
@@ -179,19 +160,19 @@ export class Fieldset extends BaseComponent<FieldsetPassThrough> implements Bloc
      * @param {boolean} value - New value.
      * @group Emits
      */
-    @Output() collapsedChange: EventEmitter<boolean> = new EventEmitter<boolean>();
+    collapsedChange = output<boolean>();
     /**
      * Callback to invoke before panel toggle.
      * @param {PanelBeforeToggleEvent} event - Custom toggle event
      * @group Emits
      */
-    @Output() onBeforeToggle: EventEmitter<FieldsetBeforeToggleEvent> = new EventEmitter<FieldsetBeforeToggleEvent>();
+    onBeforeToggle = output<FieldsetBeforeToggleEvent>();
     /**
      * Callback to invoke after panel toggle.
      * @param {PanelAfterToggleEvent} event - Custom toggle event
      * @group Emits
      */
-    @Output() onAfterToggle: EventEmitter<FieldsetAfterToggleEvent> = new EventEmitter<FieldsetAfterToggleEvent>();
+    onAfterToggle = output<FieldsetAfterToggleEvent>();
 
     @ViewChild('contentWrapper') contentWrapperViewChild: ElementRef;
 

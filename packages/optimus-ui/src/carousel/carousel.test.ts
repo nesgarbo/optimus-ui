@@ -229,7 +229,7 @@ describe('Carousel', () => {
         it('should have default values', () => {
             expect(carouselInstance.page).toBe(0);
             expect(carouselInstance.numVisible).toBe(3);
-            expect(carouselInstance.numScroll).toBe(3); // Note: numScroll getter returns _numVisible by default
+            expect(carouselInstance.numScroll).toBe(1); // the getter used to return numVisible (bug), now returns numScroll
             expect(carouselInstance.orientation).toBe('horizontal');
             expect(carouselInstance.verticalViewPortHeight).toBe('300px');
             expect(carouselInstance.circular).toBe(false);
@@ -863,6 +863,26 @@ describe('Carousel', () => {
             carouselInstance.ngOnDestroy();
 
             expect(carouselInstance.stopAutoplay).toHaveBeenCalled();
+        });
+
+        it('should remove its style element on destroy', () => {
+            const style = carouselInstance.carouselStyle as HTMLStyleElement;
+            expect(style.isConnected).toBe(true);
+
+            fixture.destroy();
+
+            expect(style.isConnected).toBe(false);
+        });
+
+        it('should not start two autoplay timers', () => {
+            const clear = vi.spyOn(globalThis, 'clearInterval');
+            carouselInstance.autoplayInterval = 1000;
+            carouselInstance.startAutoplay();
+            const first = carouselInstance.interval;
+            carouselInstance.startAutoplay();
+
+            expect(clear).toHaveBeenCalledWith(first);
+            carouselInstance.stopAutoplay();
         });
 
         it('should handle destroy when no responsive options', () => {

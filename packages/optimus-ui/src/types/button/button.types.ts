@@ -95,7 +95,7 @@ export interface ButtonTemplates {
     loadingicon(context: ButtonLoadingIconTemplateContext): TemplateRef<ButtonLoadingIconTemplateContext>;
 }
 
-type ButtonIconPosition = 'left' | 'right' | 'top' | 'bottom';
+export type ButtonIconPosition = 'left' | 'right' | 'top' | 'bottom';
 
 export interface ButtonProps {
     type?: string;

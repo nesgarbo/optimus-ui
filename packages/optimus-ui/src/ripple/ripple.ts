@@ -35,10 +35,12 @@ export class Ripple extends BaseComponent {
         effect(() => {
             if (isPlatformBrowser(this.platformId)) {
                 if (this.config.ripple()) {
-                    this.zone.runOutsideAngular(() => {
-                        this.create();
-                        this.mouseDownListener = this.renderer.listen(this.el.nativeElement, 'mousedown', this.onMouseDown.bind(this));
-                    });
+                    if (!this.getInk()) {
+                        this.zone.runOutsideAngular(() => {
+                            this.create();
+                            this.mouseDownListener = this.renderer.listen(this.el.nativeElement, 'mousedown', this.onMouseDown.bind(this));
+                        });
+                    }
                 } else {
                     this.remove();
                 }
@@ -136,6 +138,8 @@ export class Ripple extends BaseComponent {
     }
 
     onDestroy() {
+        clearTimeout(this.timeout);
+
         if (this.config && this.config.ripple()) {
             this.remove();
         }

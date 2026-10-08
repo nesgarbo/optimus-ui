@@ -5,7 +5,7 @@ import { By } from '@angular/platform-browser';
 
 import { PrimeTemplate, SharedModule } from '@openng/optimus-ui/api';
 import { GalleriaResponsiveOptions } from '@openng/optimus-ui/types/galleria';
-import { Galleria, GalleriaModule } from './galleria';
+import { Galleria, GalleriaContent, GalleriaModule } from './galleria';
 
 // Mock data for testing
 const mockImages = [
@@ -1288,6 +1288,26 @@ describe('Galleria', () => {
             if (footer) {
                 expect(footer.classList.contains('custom-footer')).toBe(true);
             }
+        });
+    });
+
+    describe('Slideshow cleanup', () => {
+        it('should clear the slideshow interval when destroyed, even with autoplay on', () => {
+            const fixture = TestBed.createComponent(TestBasicGalleriaComponent);
+            fixture.detectChanges();
+            const content: GalleriaContent = fixture.debugElement.query(By.directive(GalleriaContent)).componentInstance;
+            const clear = vi.spyOn(globalThis, 'clearInterval');
+
+            content.startSlideShow();
+            const first = content.interval;
+            content.startSlideShow();
+            expect(clear).toHaveBeenCalledWith(first);
+
+            const second = content.interval;
+            fixture.destroy();
+
+            expect(clear).toHaveBeenCalledWith(second);
+            expect(content.interval).toBeUndefined();
         });
     });
 });

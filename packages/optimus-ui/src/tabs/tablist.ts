@@ -1,5 +1,5 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, ContentChild, ContentChildren, effect, ElementRef, forwardRef, inject, InjectionToken, QueryList, signal, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, ContentChild, ContentChildren, effect, ElementRef, forwardRef, inject, InjectionToken, NgZone, QueryList, signal, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { findSingle, getOffset, getOuterWidth, getWidth, isRTL } from '@openng/optimus-ui-utils';
 import { PrimeTemplate, SharedModule } from '@openng/optimus-ui/api';
 import { BaseComponent, PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
@@ -115,7 +115,11 @@ export class TabList extends BaseComponent<TabListPassThrough> {
 
     isNextButtonEnabled = signal<boolean>(false);
 
+    private zone: NgZone = inject(NgZone);
+
     resizeObserver!: ResizeObserver;
+
+    inkBarTimer: ReturnType<typeof setTimeout> | undefined;
 
     showNavigators = computed(() => this.pcTabs.showNavigators());
 
@@ -130,7 +134,8 @@ export class TabList extends BaseComponent<TabListPassThrough> {
         effect(() => {
             this.pcTabs.value();
             if (isPlatformBrowser(this.platformId)) {
-                setTimeout(() => {
+                clearTimeout(this.inkBarTimer);
+                this.inkBarTimer = setTimeout(() => {
                     this.updateInkBar();
                 });
             }
@@ -170,6 +175,7 @@ export class TabList extends BaseComponent<TabListPassThrough> {
     }
 
     onDestroy() {
+        clearTimeout(this.inkBarTimer);
         this.unbindResizeObserver();
     }
 
@@ -216,7 +222,7 @@ export class TabList extends BaseComponent<TabListPassThrough> {
         const _tabs = this.tabs?.nativeElement;
 
         const activeTab = findSingle(_content, '[data-pc-name="tab"][data-p-active="true"]');
-        if (_inkbar) {
+        if (_inkbar && activeTab) {
             _inkbar.style.width = getOuterWidth(activeTab) + 'px';
             _inkbar.style.left = <any>getOffset(activeTab).left - <any>getOffset(_tabs).left + 'px';
         }
@@ -230,13 +236,16 @@ export class TabList extends BaseComponent<TabListPassThrough> {
     }
 
     bindResizeObserver() {
-        this.resizeObserver = new ResizeObserver(() => this.updateButtonState());
-        this.resizeObserver.observe(this.el.nativeElement);
+        // The observer only writes signals, so it does not need to run inside the zone.
+        this.zone.runOutsideAngular(() => {
+            this.resizeObserver = new ResizeObserver(() => this.updateButtonState());
+            this.resizeObserver.observe(this.el.nativeElement);
+        });
     }
 
     unbindResizeObserver() {
         if (this.resizeObserver) {
-            this.resizeObserver.unobserve(this.el.nativeElement);
+            this.resizeObserver.disconnect();
             this.resizeObserver = null!;
         }
     }

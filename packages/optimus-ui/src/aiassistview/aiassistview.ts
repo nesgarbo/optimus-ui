@@ -731,6 +731,7 @@ export class AIAssistView extends BaseComponent<AssistViewPassThrough> implement
     private lastTurnSignature = '';
 
     /** The ticker behind the reasoning panels' elapsed counter. */
+    private flashTimer: ReturnType<typeof setTimeout> | null = null;
     private thinkingTimer: ReturnType<typeof setInterval> | null = null;
 
     /** What the editor last held, so `promptChanged` can carry the previous value. */
@@ -785,6 +786,7 @@ export class AIAssistView extends BaseComponent<AssistViewPassThrough> implement
         this.destroyRef.onDestroy(() => {
             this.streamAbort?.abort();
             this.setThinkingTimer(false);
+            if (this.flashTimer !== null) clearTimeout(this.flashTimer);
             this.speech.dispose();
             this.attachmentsService.dispose();
         });
@@ -945,7 +947,9 @@ export class AIAssistView extends BaseComponent<AssistViewPassThrough> implement
         if (await copyToClipboard(this.documentRef, text)) {
             this.state.flash(`response:${index}:copy`);
             this.state.announce(this.resolvedLabels().copied);
-            setTimeout(() => this.state.flashedItem.set(null), 1600);
+            if (this.flashTimer !== null) clearTimeout(this.flashTimer);
+
+            this.flashTimer = setTimeout(() => this.state.flashedItem.set(null), 1600);
         }
     }
 

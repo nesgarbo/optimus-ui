@@ -20,6 +20,8 @@ export class AutoFocus extends BaseComponent {
 
     focused: boolean = false;
 
+    private focusTimer: ReturnType<typeof setTimeout> | null = null;
+
     platformId = inject(PLATFORM_ID);
 
     document: Document = inject(DOCUMENT);
@@ -47,7 +49,10 @@ export class AutoFocus extends BaseComponent {
 
     autoFocus() {
         if (isPlatformBrowser(this.platformId) && this.autofocus) {
-            setTimeout(() => {
+            if (this.focusTimer !== null) clearTimeout(this.focusTimer);
+
+            this.focusTimer = setTimeout(() => {
+                this.focusTimer = null;
                 const focusableElements = DomHandler.getFocusableElements(this.host?.nativeElement);
 
                 if (focusableElements.length === 0) {
@@ -59,6 +64,13 @@ export class AutoFocus extends BaseComponent {
 
                 this.focused = true;
             });
+        }
+    }
+
+    onDestroy() {
+        if (this.focusTimer !== null) {
+            clearTimeout(this.focusTimer);
+            this.focusTimer = null;
         }
     }
 }
