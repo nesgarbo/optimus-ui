@@ -1,4 +1,4 @@
-import { booleanAttribute, ChangeDetectionStrategy, Component, forwardRef, inject, InjectionToken, Input, NgModule, numberAttribute, output, signal, ViewEncapsulation } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, forwardRef, inject, InjectionToken, NgModule, numberAttribute, output, signal, ViewEncapsulation, input } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { $dt } from '@openng/optimus-ui-styled';
 import { SharedModule } from '@openng/optimus-ui/api';
@@ -29,8 +29,8 @@ export const KNOB_VALUE_ACCESSOR: any = {
         <svg
             viewBox="0 0 100 100"
             role="slider"
-            [style.width]="size + 'px'"
-            [style.height]="size + 'px'"
+            [style.width]="size() + 'px'"
+            [style.height]="size() + 'px'"
             (click)="onClick($event)"
             (keydown)="onKeyDown($event)"
             (blur)="onModelTouched()"
@@ -38,19 +38,19 @@ export const KNOB_VALUE_ACCESSOR: any = {
             (mouseup)="onMouseUp($event)"
             (touchstart)="onTouchStart($event)"
             (touchend)="onTouchEnd($event)"
-            [attr.aria-valuemin]="min"
-            [attr.aria-valuemax]="max"
+            [attr.aria-valuemin]="min()"
+            [attr.aria-valuemax]="max()"
             [attr.required]="required() ? '' : undefined"
             [attr.aria-valuenow]="_value"
-            [attr.aria-labelledby]="ariaLabelledBy"
-            [attr.aria-label]="ariaLabel"
-            [attr.tabindex]="readonly || $disabled() ? -1 : tabindex"
+            [attr.aria-labelledby]="ariaLabelledBy()"
+            [attr.aria-label]="ariaLabel()"
+            [attr.tabindex]="readonly() || $disabled() ? -1 : tabindex()"
             [pBind]="ptm('svg')"
         >
-            <path [attr.d]="rangePath()" [attr.stroke-width]="strokeWidth" [attr.stroke]="rangeColor" [class]="cx('range')" [pBind]="ptm('range')"></path>
-            <path [attr.d]="valuePath()" [attr.stroke-width]="strokeWidth" [attr.stroke]="valueColor" [class]="cx('value')" [pBind]="ptm('value')"></path>
-            @if (showValue) {
-                <text [attr.x]="50" [attr.y]="57" text-anchor="middle" [attr.fill]="textColor" [class]="cx('text')" [attr.name]="name()" [pBind]="ptm('text')">
+            <path [attr.d]="rangePath()" [attr.stroke-width]="strokeWidth()" [attr.stroke]="rangeColor()" [class]="cx('range')" [pBind]="ptm('range')"></path>
+            <path [attr.d]="valuePath()" [attr.stroke-width]="strokeWidth()" [attr.stroke]="valueColor()" [class]="cx('value')" [pBind]="ptm('value')"></path>
+            @if (showValue()) {
+                <text [attr.x]="50" [attr.y]="57" text-anchor="middle" [attr.fill]="textColor()" [class]="cx('text')" [attr.name]="name()" [pBind]="ptm('text')">
                     {{ valueToDisplay() }}
                 </text>
             }
@@ -60,7 +60,7 @@ export const KNOB_VALUE_ACCESSOR: any = {
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
     host: {
-        '[class]': "cn(cx('root'), styleClass)"
+        '[class]': "cn(cx('root'), styleClass())"
     },
     hostDirectives: [Bind]
 })
@@ -80,77 +80,77 @@ export class Knob extends BaseEditableHolder<KnobPassThrough> {
      * @deprecated since v20.0.0, use `class` instead.
      * @group Props
      */
-    @Input() styleClass: string | undefined;
+    readonly styleClass = input<string | undefined>(undefined);
     /**
      * Defines a string that labels the input for accessibility.
      * @group Props
      */
-    @Input() ariaLabel: string | undefined;
+    readonly ariaLabel = input<string | undefined>(undefined);
     /**
      * Specifies one or more IDs in the DOM that labels the input field.
      * @group Props
      */
-    @Input() ariaLabelledBy: string | undefined;
+    readonly ariaLabelledBy = input<string | undefined>(undefined);
     /**
      * Index of the element in tabbing order.
      * @group Props
      */
-    @Input({ transform: numberAttribute }) tabindex: number = 0;
+    readonly tabindex = input<number, unknown>(0, { transform: numberAttribute });
     /**
      * Background of the value.
      * @group Props
      */
-    @Input() valueColor: string = $dt('knob.value.background').variable;
+    readonly valueColor = input<string>($dt('knob.value.background').variable);
     /**
      * Background color of the range.
      * @group Props
      */
-    @Input() rangeColor: string = $dt('knob.range.background').variable;
+    readonly rangeColor = input<string>($dt('knob.range.background').variable);
     /**
      * Color of the value text.
      * @group Props
      */
-    @Input() textColor: string = $dt('knob.text.color').variable;
+    readonly textColor = input<string>($dt('knob.text.color').variable);
     /**
      * Template string of the value.
      * @group Props
      */
-    @Input() valueTemplate: string = '{value}';
+    readonly valueTemplate = input<string>('{value}');
     /**
      * Size of the component in pixels.
      * @group Props
      */
-    @Input({ transform: numberAttribute }) size: number = 100;
+    readonly size = input<number, unknown>(100, { transform: numberAttribute });
     /**
      * Mininum boundary value.
      * @group Props
      */
-    @Input({ transform: numberAttribute }) min: number = 0;
+    readonly min = input<number, unknown>(0, { transform: numberAttribute });
     /**
      * Maximum boundary value.
      * @group Props
      */
-    @Input({ transform: numberAttribute }) max: number = 100;
+    readonly max = input<number, unknown>(100, { transform: numberAttribute });
     /**
      * Step factor to increment/decrement the value.
      * @group Props
      */
-    @Input({ transform: numberAttribute }) step: number = 1;
+    readonly step = input<number, unknown>(1, { transform: numberAttribute });
     /**
      * Width of the knob stroke.
      * @group Props
      */
-    @Input({ transform: numberAttribute }) strokeWidth: number = 14;
+    readonly strokeWidth = input<number, unknown>(14, { transform: numberAttribute });
     /**
      * Whether the show the value inside the knob.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) showValue: boolean = true;
+    readonly showValue = input<boolean, unknown>(true, { transform: booleanAttribute });
     /**
      * When present, it specifies that the component value cannot be edited.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) readonly: boolean = false;
+    readonly readonly = input<boolean, unknown>(false, { transform: booleanAttribute });
     /**
      * Callback to invoke on value change.
      * @param {number} value - New value.
@@ -185,14 +185,14 @@ export class Knob extends BaseEditableHolder<KnobPassThrough> {
     }
 
     onClick(event: MouseEvent) {
-        if (!this.$disabled() && !this.readonly) {
+        if (!this.$disabled() && !this.readonly()) {
             this.updateValue(event.offsetX, event.offsetY);
         }
     }
 
     updateValue(offsetX: number, offsetY: number) {
-        let dx = offsetX - this.size / 2;
-        let dy = this.size / 2 - offsetY;
+        let dx = offsetX - this.size() / 2;
+        let dy = this.size() / 2 - offsetY;
         let angle = Math.atan2(dy, dx);
         let start = -Math.PI / 2 - Math.PI / 6;
         this.updateModel(angle, start);
@@ -200,11 +200,11 @@ export class Knob extends BaseEditableHolder<KnobPassThrough> {
 
     updateModel(angle: number, start: number) {
         let mappedValue;
-        if (angle > this.maxRadians) mappedValue = this.mapRange(angle, this.minRadians, this.maxRadians, this.min, this.max);
-        else if (angle < start) mappedValue = this.mapRange(angle + 2 * Math.PI, this.minRadians, this.maxRadians, this.min, this.max);
+        if (angle > this.maxRadians) mappedValue = this.mapRange(angle, this.minRadians, this.maxRadians, this.min(), this.max());
+        else if (angle < start) mappedValue = this.mapRange(angle + 2 * Math.PI, this.minRadians, this.maxRadians, this.min(), this.max());
         else return;
 
-        let newValue = Math.round((mappedValue - this.min) / this.step) * this.step + this.min;
+        let newValue = Math.round((mappedValue - this.min()) / this.step()) * this.step() + this.min();
 
         this.value.set(newValue);
         this.writeModelValue(this.value());
@@ -213,7 +213,7 @@ export class Knob extends BaseEditableHolder<KnobPassThrough> {
     }
 
     onMouseDown(event: MouseEvent) {
-        if (!this.$disabled() && !this.readonly) {
+        if (!this.$disabled() && !this.readonly()) {
             const window = this.document.defaultView || 'window';
             this.unbindMouseListeners();
             this.windowMouseMoveListener = this.renderer.listen(window, 'mousemove', this.onMouseMove.bind(this));
@@ -223,14 +223,14 @@ export class Knob extends BaseEditableHolder<KnobPassThrough> {
     }
 
     onMouseUp(event: MouseEvent) {
-        if (!this.$disabled() && !this.readonly) {
+        if (!this.$disabled() && !this.readonly()) {
             this.unbindMouseListeners();
             event.preventDefault();
         }
     }
 
     onTouchStart(event: TouchEvent) {
-        if (!this.$disabled() && !this.readonly) {
+        if (!this.$disabled() && !this.readonly()) {
             const window = this.document.defaultView || 'window';
             this.unbindTouchListeners();
             this.windowTouchMoveListener = this.renderer.listen(window, 'touchmove', this.onTouchMove.bind(this));
@@ -240,7 +240,7 @@ export class Knob extends BaseEditableHolder<KnobPassThrough> {
     }
 
     onTouchEnd(event: TouchEvent) {
-        if (!this.$disabled() && !this.readonly) {
+        if (!this.$disabled() && !this.readonly()) {
             this.unbindTouchListeners();
             event.preventDefault();
         }
@@ -266,14 +266,14 @@ export class Knob extends BaseEditableHolder<KnobPassThrough> {
     }
 
     onMouseMove(event: MouseEvent) {
-        if (!this.$disabled() && !this.readonly) {
+        if (!this.$disabled() && !this.readonly()) {
             this.updateValue(event.offsetX, event.offsetY);
             event.preventDefault();
         }
     }
 
     onTouchMove(event: Event) {
-        if (!this.$disabled() && !this.readonly && event instanceof TouchEvent && event.touches.length === 1) {
+        if (!this.$disabled() && !this.readonly() && event instanceof TouchEvent && event.touches.length === 1) {
             const rect = this.el.nativeElement.children[0].getBoundingClientRect();
             const touch = event.targetTouches.item(0);
             if (touch) {
@@ -285,8 +285,8 @@ export class Knob extends BaseEditableHolder<KnobPassThrough> {
     }
 
     updateModelValue(newValue) {
-        if (newValue > this.max) this.value.set(this.max);
-        else if (newValue < this.min) this.value.set(this.min);
+        if (newValue > this.max()) this.value.set(this.max());
+        else if (newValue < this.min()) this.value.set(this.min());
         else this.value.set(newValue);
 
         this.writeModelValue(this.value());
@@ -295,7 +295,7 @@ export class Knob extends BaseEditableHolder<KnobPassThrough> {
     }
 
     onKeyDown(event: KeyboardEvent) {
-        if (!this.$disabled() && !this.readonly) {
+        if (!this.$disabled() && !this.readonly()) {
             switch (event.code) {
                 case 'ArrowRight':
 
@@ -315,14 +315,14 @@ export class Knob extends BaseEditableHolder<KnobPassThrough> {
 
                 case 'Home': {
                     event.preventDefault();
-                    this.updateModelValue(this.min);
+                    this.updateModelValue(this.min());
 
                     break;
                 }
 
                 case 'End': {
                     event.preventDefault();
-                    this.updateModelValue(this.max);
+                    this.updateModelValue(this.max());
                     break;
                 }
 
@@ -350,12 +350,12 @@ export class Knob extends BaseEditableHolder<KnobPassThrough> {
     }
 
     zeroRadians() {
-        if (this.min > 0 && this.max > 0) return this.mapRange(this.min, this.min, this.max, this.minRadians, this.maxRadians);
-        else return this.mapRange(0, this.min, this.max, this.minRadians, this.maxRadians);
+        if (this.min() > 0 && this.max() > 0) return this.mapRange(this.min(), this.min(), this.max(), this.minRadians, this.maxRadians);
+        else return this.mapRange(0, this.min(), this.max(), this.minRadians, this.maxRadians);
     }
 
     valueRadians() {
-        return this.mapRange(this._value, this.min, this.max, this.minRadians, this.maxRadians);
+        return this.mapRange(this._value, this.min(), this.max(), this.minRadians, this.maxRadians);
     }
 
     minX() {
@@ -399,11 +399,11 @@ export class Knob extends BaseEditableHolder<KnobPassThrough> {
     }
 
     valueToDisplay() {
-        return this.valueTemplate.replace('{value}', this._value.toString());
+        return this.valueTemplate().replace('{value}', this._value.toString());
     }
 
     get _value(): number {
-        return this.value() != null ? this.value() : this.min;
+        return this.value() != null ? this.value() : this.min();
     }
 
     /**

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, ViewEncapsulation, computed, inject, input, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, viewChild, ViewEncapsulation } from '@angular/core';
 import { BaseComponent } from '@openng/optimus-ui/basecomponent';
 import type { TextEditorPartPassThrough } from '@openng/optimus-ui/types/texteditor';
 import { createTableControlsCommands } from './core/tables';

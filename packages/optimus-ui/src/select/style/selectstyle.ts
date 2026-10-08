@@ -40,7 +40,7 @@ const classes = {
         'p-select-label',
         {
             'p-placeholder': instance.placeholder() && instance.label() === instance.placeholder(),
-            'p-select-label-empty': !instance.editable && !instance.selectedItemTemplate && (instance.label() === undefined || instance.label() === null || instance.label() === 'p-emptylabel' || instance.label().length === 0)
+            'p-select-label-empty': !instance.editable() && !instance.selectedItemTemplate() && (instance.label() === undefined || instance.label() === null || instance.label() === 'p-emptylabel' || instance.label().length === 0)
         }
     ],
     clearIcon: 'p-select-clear-icon',
@@ -57,9 +57,9 @@ const classes = {
     option: ({ instance }) => [
         'p-select-option',
         {
-            'p-select-option-selected': instance.selected && !instance.checkmark,
-            'p-disabled': instance.disabled,
-            'p-focus': instance.focused
+            'p-select-option-selected': instance.selected() && !instance.checkmark(),
+            'p-disabled': instance.disabled(),
+            'p-focus': instance.focused()
         }
     ],
     optionLabel: 'p-select-option-label',

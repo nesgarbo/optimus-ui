@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DebugElement, PLATFORM_ID, provideZonelessChangeDetection } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DebugElement, PLATFORM_ID, provideZonelessChangeDetection, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
@@ -7,6 +7,11 @@ import { Button } from '@openng/optimus-ui/button';
 import { ZIndexUtils } from '@openng/optimus-ui/utils';
 import { provideOptimus } from '@openng/optimus-ui/config';
 import { ScrollTop, ScrollTopModule } from './scrolltop';
+
+/** Replaces an input of an instance taken from a host template, for tests that exercise logic without rendering. */
+function overrideInput(instance: any, name: string, value: unknown) {
+    Object.defineProperty(instance, name, { value: signal(value), configurable: true, writable: true });
+}
 
 @Component({
     changeDetection: ChangeDetectionStrategy.Eager,
@@ -142,20 +147,20 @@ describe('ScrollTop', () => {
             const newFixture = TestBed.createComponent(TestBasicScrollTopComponent);
             const newScrollTop = newFixture.debugElement.query(By.directive(ScrollTop)).componentInstance;
 
-            expect(newScrollTop.target).toBe('window');
-            expect(newScrollTop.threshold).toBe(400);
-            expect(newScrollTop.behavior).toBe('smooth');
-            expect(newScrollTop.showTransitionOptions).toBe('.15s');
-            expect(newScrollTop.hideTransitionOptions).toBe('.15s');
+            expect(newScrollTop.target()).toBe('window');
+            expect(newScrollTop.threshold()).toBe(400);
+            expect(newScrollTop.behavior()).toBe('smooth');
+            expect(newScrollTop.showTransitionOptions()).toBe('.15s');
+            expect(newScrollTop.hideTransitionOptions()).toBe('.15s');
             expect(newScrollTop.visible()).toBe(false);
         });
 
         it('should accept custom threshold', () => {
-            expect(scrollTop.threshold).toBe(component.threshold);
+            expect(scrollTop.threshold()).toBe(component.threshold);
         });
 
         it('should accept custom target', () => {
-            expect(scrollTop.target).toBe(component.target);
+            expect(scrollTop.target()).toBe(component.target);
         });
 
         it('should extend BaseComponent', () => {
@@ -180,7 +185,6 @@ describe('ScrollTop', () => {
             fixture.detectChanges();
 
             vi.spyOn(scrollTop, 'bindParentScrollListener').mockImplementation(() => {});
-            scrollTop.target = 'parent';
             scrollTop.ngOnInit();
             expect(scrollTop.bindParentScrollListener).toHaveBeenCalled();
         });
@@ -244,10 +248,10 @@ describe('ScrollTop', () => {
 
     describe('Style', () => {
         it('should apply the style input to the p-button host, where the fixed position lives', () => {
-            const fixture = TestBed.createComponent(TestBasicScrollTopComponent);
+            const fixture = TestBed.createComponent(ScrollTop);
+            fixture.componentRef.setInput('style', { 'bottom.px': 40 });
             fixture.detectChanges();
-            const scrollTop: ScrollTop = fixture.debugElement.query(By.directive(ScrollTop)).componentInstance;
-            scrollTop.style = { 'bottom.px': 40 };
+            const scrollTop = fixture.componentInstance;
             scrollTop.checkVisibility(500);
             fixture.detectChanges();
 
@@ -283,7 +287,7 @@ describe('ScrollTop', () => {
         });
 
         it('should scroll to top with auto behavior', () => {
-            scrollTop.behavior = 'auto';
+            overrideInput(scrollTop, 'behavior', 'auto');
             const scrollSpy = vi.fn();
             const mockWindow = { scroll: scrollSpy };
             vi.spyOn(scrollTop.document, 'defaultView', 'get').mockReturnValue(mockWindow as any);
@@ -297,7 +301,7 @@ describe('ScrollTop', () => {
         });
 
         it('should scroll parent element when target is parent', () => {
-            scrollTop.target = 'parent';
+            overrideInput(scrollTop, 'target', 'parent');
             const parentElement = document.createElement('div');
             const scrollSpy = vi.fn();
             parentElement.scroll = scrollSpy;
@@ -394,7 +398,7 @@ describe('ScrollTop', () => {
             scrollTop.visible.set(true);
             fixture.detectChanges();
 
-            expect(scrollTop.icon).toBe(component.icon);
+            expect(scrollTop.icon()).toBe(component.icon);
 
             const iconElement = fixture.debugElement.query(By.css('.pi-arrow-up'));
             expect(iconElement).toBeTruthy();
@@ -431,13 +435,13 @@ describe('ScrollTop', () => {
 
             // Mock the templates property to simulate template processing
             const mockTemplate = { getType: () => 'icon', template: {} };
-            scrollTop.templates = { first: () => mockTemplate, forEach: (fn: Function) => fn(mockTemplate) };
+            overrideInput(scrollTop, 'templates', [mockTemplate]);
 
             expect(() => scrollTop.ngAfterContentInit()).not.toThrow();
             if (scrollTop._iconTemplate) {
                 expect(scrollTop._iconTemplate).toBeDefined();
             } else {
-                expect(scrollTop.templates).toBeDefined();
+                expect(scrollTop.templates()).toBeDefined();
             }
         });
     });
@@ -464,14 +468,14 @@ describe('ScrollTop', () => {
                 expect(button.nativeElement.getAttribute('aria-label')).toBe(component.buttonAriaLabel);
             } else {
                 // If button component doesn't render, check component property
-                expect(scrollTop.buttonAriaLabel).toBe(component.buttonAriaLabel);
+                expect(scrollTop.buttonAriaLabel()).toBe(component.buttonAriaLabel);
             }
         });
 
         it('should apply default button props', () => {
             const defaultScrollTop = TestBed.createComponent(TestBasicScrollTopComponent).debugElement.query(By.directive(ScrollTop)).componentInstance;
 
-            expect(defaultScrollTop.buttonProps).toEqual({
+            expect(defaultScrollTop.buttonProps()).toEqual({
                 rounded: true
             });
         });
@@ -483,8 +487,8 @@ describe('ScrollTop', () => {
             const scrollTop = fixture.debugElement.query(By.directive(ScrollTop)).componentInstance;
 
             // Check if the component received the button props
-            if (scrollTop.buttonProps && scrollTop.buttonProps.severity === 'danger') {
-                expect(scrollTop.buttonProps).toEqual(
+            if (scrollTop.buttonProps() && scrollTop.buttonProps().severity === 'danger') {
+                expect(scrollTop.buttonProps()).toEqual(
                     expect.objectContaining({
                         rounded: false,
                         severity: 'danger'
@@ -514,16 +518,16 @@ describe('ScrollTop', () => {
         });
 
         it('should apply custom style', () => {
-            expect(scrollTop.style).toEqual(component.customStyle);
+            expect(scrollTop.style()).toEqual(component.customStyle);
         });
 
         it('should apply custom styleClass', () => {
-            expect(scrollTop.styleClass).toBe(component.customClass);
+            expect(scrollTop.styleClass()).toBe(component.customClass);
         });
 
         it('should apply transition options', () => {
-            expect(scrollTop.showTransitionOptions).toBe(component.showTransitionOptions);
-            expect(scrollTop.hideTransitionOptions).toBe(component.hideTransitionOptions);
+            expect(scrollTop.showTransitionOptions()).toBe(component.showTransitionOptions);
+            expect(scrollTop.hideTransitionOptions()).toBe(component.hideTransitionOptions);
         });
     });
 
@@ -648,7 +652,7 @@ describe('ScrollTop', () => {
         });
 
         it('should clean up on destroy for parent target', () => {
-            scrollTop.target = 'parent';
+            overrideInput(scrollTop, 'target', 'parent');
             vi.spyOn(scrollTop, 'unbindParentScrollListener').mockImplementation(() => {});
 
             scrollTop.ngOnDestroy();
@@ -680,7 +684,7 @@ describe('ScrollTop', () => {
         });
 
         it('should handle zero threshold', () => {
-            scrollTop.threshold = 0;
+            overrideInput(scrollTop, 'threshold', 0);
             scrollTop.checkVisibility(1);
             expect(scrollTop.visible()).toBe(true);
 
@@ -710,7 +714,7 @@ describe('ScrollTop', () => {
         });
 
         it('should handle missing parent element', () => {
-            scrollTop.target = 'parent';
+            overrideInput(scrollTop, 'target', 'parent');
             vi.spyOn(scrollTop.el.nativeElement, 'parentElement', 'get').mockReturnValue(null);
 
             // Mock the scroll method on parent element to avoid null access
@@ -733,7 +737,7 @@ describe('ScrollTop', () => {
                 try {
                     const defaultView = scrollTop.document.defaultView;
                     if (defaultView) {
-                        defaultView.scroll({ top: 0, behavior: scrollTop.behavior as ScrollBehavior });
+                        defaultView.scroll({ top: 0, behavior: scrollTop.behavior() as ScrollBehavior });
                     }
                 } catch (error) {
                     // Handle error gracefully
@@ -765,15 +769,17 @@ describe('ScrollTop', () => {
         });
 
         it('should set and get icon property', () => {
-            scrollTop.icon = 'pi pi-chevron-up';
-            expect(scrollTop.icon).toBe('pi pi-chevron-up');
-            expect(scrollTop._icon).toBe('pi pi-chevron-up');
+            fixture.componentInstance.icon = 'pi pi-chevron-up';
+            fixture.changeDetectorRef.markForCheck();
+            fixture.detectChanges();
+            expect(scrollTop.icon()).toBe('pi pi-chevron-up');
         });
 
         it('should handle undefined icon', () => {
-            scrollTop.icon = undefined as any;
-            expect(scrollTop.icon).toBeUndefined();
-            expect(scrollTop._icon).toBeUndefined();
+            fixture.componentInstance.icon = undefined as any;
+            fixture.changeDetectorRef.markForCheck();
+            fixture.detectChanges();
+            expect(scrollTop.icon()).toBeUndefined();
         });
     });
 
@@ -832,7 +838,7 @@ describe('ScrollTop', () => {
             if (button) {
                 expect(button.nativeElement.getAttribute('aria-label')).toBe(component.buttonAriaLabel);
             } else {
-                expect(scrollTop.buttonAriaLabel).toBe(component.buttonAriaLabel);
+                expect(scrollTop.buttonAriaLabel()).toBe(component.buttonAriaLabel);
             }
         });
 
@@ -852,7 +858,7 @@ describe('ScrollTop', () => {
                 expect(button.nativeElement.hasAttribute('aria-label')).toBe(false);
             } else {
                 // Button might not be rendered in test environment
-                expect(scrollTop.buttonAriaLabel).toBeUndefined();
+                expect(scrollTop.buttonAriaLabel()).toBeUndefined();
             }
         });
 
@@ -892,8 +898,8 @@ describe('ScrollTop', () => {
 
             const scrollTops = fixture.debugElement.queryAll(By.directive(ScrollTop));
             expect(scrollTops.length).toBe(2);
-            expect(scrollTops[0].componentInstance.threshold).toBe(100);
-            expect(scrollTops[1].componentInstance.threshold).toBe(200);
+            expect(scrollTops[0].componentInstance.threshold()).toBe(100);
+            expect(scrollTops[1].componentInstance.threshold()).toBe(200);
         });
 
         it('should work with nested scrollable containers', () => {
@@ -1116,8 +1122,8 @@ describe('ScrollTop', () => {
                 host: ({ instance }: any) => {
                     return {
                         class: {
-                            TARGET_PARENT: instance?.target === 'parent',
-                            TARGET_WINDOW: instance?.target === 'window'
+                            TARGET_PARENT: instance?.target() === 'parent',
+                            TARGET_WINDOW: instance?.target() === 'window'
                         }
                     };
                 }
@@ -1138,7 +1144,7 @@ describe('ScrollTop', () => {
                 root: ({ instance }: any) => {
                     return {
                         style: {
-                            opacity: instance?.threshold > 400 ? '1' : '0.5'
+                            opacity: instance?.threshold() > 400 ? '1' : '0.5'
                         }
                     };
                 }

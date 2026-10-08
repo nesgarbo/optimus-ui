@@ -1,5 +1,5 @@
 import { NgTemplateOutlet, isPlatformServer } from '@angular/common';
-import { afterNextRender, ChangeDetectionStrategy, Component, ContentChild, ContentChildren, forwardRef, inject, InjectionToken, Input, NgModule, output, QueryList, TemplateRef, ViewEncapsulation } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, contentChild, contentChildren, effect, forwardRef, inject, InjectionToken, input, NgModule, output, TemplateRef, ViewEncapsulation } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { findSingle } from '@openng/optimus-ui-utils';
 import { Header, PrimeTemplate, SharedModule } from '@openng/optimus-ui/api';
@@ -26,13 +26,13 @@ export const EDITOR_VALUE_ACCESSOR: any = {
     standalone: true,
     imports: [NgTemplateOutlet, SharedModule, BindModule],
     template: `
-        @if (toolbar || headerTemplate || _headerTemplate) {
+        @if (toolbar() || headerTemplate() || _headerTemplate) {
             <div [class]="cx('toolbar')" [pBind]="ptm('toolbar')">
                 <ng-content select="p-header"></ng-content>
-                <ng-container *ngTemplateOutlet="headerTemplate || _headerTemplate"></ng-container>
+                <ng-container *ngTemplateOutlet="headerTemplate() || _headerTemplate"></ng-container>
             </div>
         }
-        @if (!toolbar && !headerTemplate && !_headerTemplate) {
+        @if (!toolbar() && !headerTemplate() && !_headerTemplate) {
             <div [class]="cx('toolbar')" [pBind]="ptm('toolbar')">
                 <span class="ql-formats" [pBind]="ptm('formats')">
                     <select class="ql-header" [pBind]="ptm('header')">
@@ -75,13 +75,13 @@ export const EDITOR_VALUE_ACCESSOR: any = {
                 </span>
             </div>
         }
-        <div [class]="cx('content')" [style]="style" [pBind]="ptm('content')"></div>
+        <div [class]="cx('content')" [style]="style()" [pBind]="ptm('content')"></div>
     `,
     providers: [EDITOR_VALUE_ACCESSOR, EditorStyle, { provide: EDITOR_INSTANCE, useExisting: Editor }, { provide: PARENT_INSTANCE, useExisting: Editor }],
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
     host: {
-        '[class]': "cn(cx('root'), styleClass)"
+        '[class]': "cn(cx('root'), styleClass())"
     },
     hostDirectives: [Bind]
 })
@@ -100,58 +100,54 @@ export class Editor extends BaseEditableHolder<EditorPassThrough> {
      * Inline style of the container.
      * @group Props
      */
-    @Input() style: { [klass: string]: any } | null | undefined;
+    readonly style = input<
+        | {
+              [klass: string]: any;
+          }
+        | null
+        | undefined
+    >(undefined);
     /**
      * Style class of the container.
      * @deprecated since v20.0.0, use `class` instead.
      * @group Props
      */
-    @Input() styleClass: string | undefined;
+    readonly styleClass = input<string | undefined>(undefined);
     /**
      * Placeholder text to show when editor is empty.
      * @group Props
      */
-    @Input() placeholder: string | undefined;
+    readonly placeholder = input<string | undefined>(undefined);
     /**
      * Whitelist of formats to display, see [here](https://quilljs.com/docs/formats/) for available options.
      * @group Props
      */
-    @Input() formats: string[] | undefined;
+    readonly formats = input<string[] | undefined>(undefined);
     /**
      * Modules configuration of Editor, see [here](https://quilljs.com/docs/modules/) for available options.
      * @group Props
      */
-    @Input() modules: object | undefined;
+    readonly modules = input<object | undefined>(undefined);
     /**
      * DOM Element or a CSS selector for a DOM Element, within which the editor’s p elements (i.e. tooltips, etc.) should be confined. Currently, it only considers left and right boundaries.
      * @group Props
      */
-    @Input() bounds: HTMLElement | string | undefined;
+    readonly bounds = input<HTMLElement | string | undefined>(undefined);
     /**
      * DOM Element or a CSS selector for a DOM Element, specifying which container has the scrollbars (i.e. overflow-y: auto), if is has been changed from the default ql-editor with custom CSS. Necessary to fix scroll jumping bugs when Quill is set to auto grow its height, and another ancestor container is responsible from the scrolling..
      * @group Props
      */
-    @Input() scrollingContainer: HTMLElement | string | undefined;
+    readonly scrollingContainer = input<HTMLElement | string | undefined>(undefined);
     /**
      * Shortcut for debug. Note debug is a static method and will affect other instances of Quill editors on the page. Only warning and error messages are enabled by default.
      * @group Props
      */
-    @Input() debug: string | undefined;
+    readonly debug = input<string | undefined>(undefined);
     /**
      * Whether to instantiate the editor to read-only mode.
      * @group Props
      */
-    @Input() get readonly(): boolean {
-        return this._readonly;
-    }
-    set readonly(val: boolean) {
-        this._readonly = val;
-
-        if (this.quill) {
-            if (this._readonly) this.quill.disable();
-            else this.quill.enable();
-        }
-    }
+    readonly readonly = input<boolean>(false);
     /**
      * Callback to invoke when the quill modules are loaded.
      * @param {EditorInitEvent} event - custom event.
@@ -189,13 +185,11 @@ export class Editor extends BaseEditableHolder<EditorPassThrough> {
      */
     onBlur = output<EditorBlurEvent>();
 
-    @ContentChild(Header) toolbar: any;
+    readonly toolbar = contentChild(Header);
 
     value: Nullable<string>;
 
     delayedCommand: Function | null = null;
-
-    _readonly: boolean = false;
 
     quill: any;
 
@@ -205,9 +199,9 @@ export class Editor extends BaseEditableHolder<EditorPassThrough> {
      * Custom item template.
      * @group Templates
      */
-    @ContentChild('header', { descendants: false }) headerTemplate: Nullable<TemplateRef<any>>;
+    readonly headerTemplate = contentChild<Nullable<TemplateRef<any>>>('header', { descendants: false });
 
-    @ContentChildren(PrimeTemplate) templates!: QueryList<PrimeTemplate>;
+    readonly templates = contentChildren(PrimeTemplate);
 
     _headerTemplate: TemplateRef<any> | undefined;
 
@@ -232,13 +226,22 @@ export class Editor extends BaseEditableHolder<EditorPassThrough> {
             this.initQuillElements();
             this.initQuillEditor();
         });
+
+        effect(() => {
+            const readonly = this.readonly();
+
+            if (this.quill) {
+                if (readonly) this.quill.disable();
+                else this.quill.enable();
+            }
+        });
     }
 
     onAfterContentInit() {
-        this.templates.forEach((item) => {
+        this.templates().forEach((item) => {
             switch (item.getType()) {
                 case 'header':
-                    this.headerTemplate = item.template;
+                    this._headerTemplate = item.template;
                     break;
             }
         });
@@ -308,16 +311,17 @@ export class Editor extends BaseEditableHolder<EditorPassThrough> {
 
         const { toolbarElement, editorElement } = this.quillElements;
         let defaultModule = { toolbar: toolbarElement };
-        let modules = this.modules ? { ...defaultModule, ...this.modules } : defaultModule;
+        const modulesValue = this.modules();
+        let modules = modulesValue ? { ...defaultModule, ...modulesValue } : defaultModule;
         this.quill = new this.dynamicQuill(editorElement, {
             modules: modules,
-            placeholder: this.placeholder,
-            readOnly: this.readonly,
+            placeholder: this.placeholder(),
+            readOnly: this.readonly(),
             theme: 'snow',
-            formats: this.formats,
-            bounds: this.bounds,
-            debug: this.debug,
-            scrollingContainer: this.scrollingContainer
+            formats: this.formats(),
+            bounds: this.bounds(),
+            debug: this.debug(),
+            scrollingContainer: this.scrollingContainer()
         });
 
         const isQuill2 = this.dynamicQuill.version.startsWith('2');

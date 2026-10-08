@@ -1,4 +1,4 @@
-import { booleanAttribute, computed, Directive, effect, HostListener, inject, InjectionToken, input, Input, NgModule, signal } from '@angular/core';
+import { booleanAttribute, computed, Directive, effect, inject, InjectionToken, input, NgModule, signal } from '@angular/core';
 import { NgControl } from '@angular/forms';
 import { FORM_FIELD } from '@angular/forms/signals';
 import { PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
@@ -19,7 +19,8 @@ const INPUTTEXT_INSTANCE = new InjectionToken<InputText>('INPUTTEXT_INSTANCE');
     standalone: true,
     host: {
         '[class]': "cx('root')",
-        '[attr.data-p]': 'dataP'
+        '[attr.data-p]': 'dataP',
+        '(input)': 'onInput()'
     },
     providers: [InputTextStyle, { provide: INPUTTEXT_INSTANCE, useExisting: InputText }, { provide: PARENT_INSTANCE, useExisting: InputText }],
     hostDirectives: [Bind]
@@ -27,7 +28,7 @@ const INPUTTEXT_INSTANCE = new InjectionToken<InputText>('INPUTTEXT_INSTANCE');
 export class InputText extends BaseModelHolder<InputTextPassThrough> {
     componentName = 'InputText';
 
-    @Input() hostName: any = '';
+    readonly hostName = input<any>('');
 
     /**
      * Used to pass attributes to DOM elements inside the InputText component.
@@ -61,7 +62,7 @@ export class InputText extends BaseModelHolder<InputTextPassThrough> {
      * Defines the size of the component.
      * @group Props
      */
-    @Input('pSize') pSize: 'large' | 'small' | undefined;
+    readonly pSize = input<'large' | 'small' | undefined>(undefined);
     /**
      * Specifies the input variant of the component.
      * @defaultValue undefined
@@ -122,7 +123,6 @@ export class InputText extends BaseModelHolder<InputTextPassThrough> {
         this.writeModelValue(this.ngControl?.value ?? this.el.nativeElement.value);
     }
 
-    @HostListener('input')
     onInput() {
         this.edited.set(true);
         this.writeModelValue(this.ngControl?.value ?? this.el.nativeElement.value);
@@ -137,7 +137,7 @@ export class InputText extends BaseModelHolder<InputTextPassThrough> {
             invalid: this.$invalid(),
             fluid: this.hasFluid,
             filled: this.$variant() === 'filled',
-            [this.pSize as string]: this.pSize
+            [this.pSize() as string]: this.pSize()
         });
     }
 }

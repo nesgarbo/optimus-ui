@@ -1,5 +1,5 @@
 import { NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, ViewEncapsulation, booleanAttribute, computed, contentChild, effect, forwardRef, inject, input, model, NgZone, numberAttribute, output, signal, untracked, viewChild } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, computed, contentChild, effect, ElementRef, forwardRef, inject, input, model, NgZone, numberAttribute, output, signal, untracked, viewChild, ViewEncapsulation } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { BaseEditableHolder } from '@openng/optimus-ui/baseeditableholder';

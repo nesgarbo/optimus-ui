@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { ElementRef, NgZone, Signal, effect, inject, signal } from '@angular/core';
+import { effect, ElementRef, inject, NgZone, Signal, signal } from '@angular/core';
 import type { CaretPosition, TextEditorSubmenu } from '@openng/optimus-ui/types/texteditor';
 
 /**

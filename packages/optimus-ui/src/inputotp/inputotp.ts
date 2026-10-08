@@ -6,18 +6,16 @@ import {
     ChangeDetectionStrategy,
     Component,
     computed,
-    ContentChild,
-    ContentChildren,
     forwardRef,
     inject,
     InjectionToken,
     input,
-    Input,
     NgModule,
     output,
-    QueryList,
     TemplateRef,
-    ViewEncapsulation
+    ViewEncapsulation,
+    contentChild,
+    contentChildren
 } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { PrimeTemplate, SharedModule } from '@openng/optimus-ui/api';
@@ -50,23 +48,23 @@ export { InputOtpChangeEvent, InputOtpInputTemplateContext, InputOtpTemplateEven
     standalone: true,
     imports: [NgTemplateOutlet, InputText, AutoFocus, SharedModule, BindModule],
     template: `
-        @for (i of getRange(length); track trackByFn($index)) {
-            @if (!inputTemplate && !_inputTemplate) {
+        @for (i of getRange(length()); track trackByFn($index)) {
+            @if (!inputTemplate() && !_inputTemplate) {
                 <input
                     type="text"
                     pInputText
                     [value]="getModelValue(i)"
-                    [attr.maxlength]="i === 1 ? length : 1"
+                    [attr.maxlength]="i === 1 ? length() : 1"
                     [attr.type]="inputType"
-                    [class]="cn(cx('pcInputText'), styleClass)"
+                    [class]="cn(cx('pcInputText'), styleClass())"
                     [pSize]="size()"
                     [variant]="$variant()"
                     [invalid]="$invalid()"
                     [attr.inputmode]="inputMode"
                     [attr.name]="name()"
-                    [attr.tabindex]="tabindex"
+                    [attr.tabindex]="tabindex()"
                     [attr.required]="required() ? '' : undefined"
-                    [attr.readonly]="readonly ? '' : undefined"
+                    [attr.readonly]="readonly() ? '' : undefined"
                     [attr.disabled]="$disabled() ? '' : undefined"
                     (input)="onInput($event, i - 1)"
                     (focus)="onInputFocus($event)"
@@ -78,8 +76,8 @@ export { InputOtpChangeEvent, InputOtpInputTemplateContext, InputOtpTemplateEven
                     [unstyled]="unstyled()"
                 />
             }
-            @if (inputTemplate || _inputTemplate) {
-                <ng-container *ngTemplateOutlet="inputTemplate || _inputTemplate; context: { $implicit: getToken(i - 1), events: getTemplateEvents(i - 1), index: i }"> </ng-container>
+            @if (inputTemplate() || _inputTemplate) {
+                <ng-container *ngTemplateOutlet="inputTemplate() || _inputTemplate; context: { $implicit: getToken(i - 1), events: getTemplateEvents(i - 1), index: i }"> </ng-container>
             }
         }
     `,
@@ -108,37 +106,37 @@ export class InputOtp extends BaseEditableHolder<InputOtpPassThrough> implements
      * When present, it specifies that an input field is read-only.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) readonly: boolean;
+    readonly readonly = input<boolean, unknown>(undefined, { transform: booleanAttribute });
     /**
      * Index of the element in tabbing order.
      * @group Props
      */
-    @Input() tabindex: number | null = null;
+    readonly tabindex = input<number | null>(null);
     /**
      * Number of characters to initiate.
      * @group Props
      */
-    @Input() length: number = 4;
+    readonly length = input<number>(4);
     /**
      * Style class of the input element.
      * @group Props
      */
-    @Input() styleClass: string | undefined;
+    readonly styleClass = input<string | undefined>(undefined);
     /**
      * Mask pattern.
      * @group Props
      */
-    @Input() mask: boolean = false;
+    readonly mask = input<boolean>(false);
     /**
      * When present, it specifies that an input field is integer-only.
      * @group Props
      */
-    @Input() integerOnly: boolean = false;
+    readonly integerOnly = input<boolean>(false);
     /**
      * When present, it specifies that the component should automatically get focus on load.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) autofocus: boolean | undefined;
+    readonly autofocus = input<boolean | undefined, unknown>(undefined, { transform: booleanAttribute });
     /**
      * Specifies the input variant of the component.
      * @defaultValue undefined
@@ -174,9 +172,9 @@ export class InputOtp extends BaseEditableHolder<InputOtpPassThrough> implements
      * @see {@link InputOtpInputTemplateContext}
      * @group Templates
      */
-    @ContentChild('input', { descendants: false }) inputTemplate: TemplateRef<InputOtpInputTemplateContext> | undefined;
+    readonly inputTemplate = contentChild<TemplateRef<InputOtpInputTemplateContext>>('input', { descendants: false });
 
-    @ContentChildren(PrimeTemplate) templates: Nullable<QueryList<PrimeTemplate>>;
+    readonly templates = contentChildren(PrimeTemplate);
 
     _inputTemplate: TemplateRef<InputOtpInputTemplateContext> | undefined;
 
@@ -187,15 +185,15 @@ export class InputOtp extends BaseEditableHolder<InputOtpPassThrough> implements
     $variant = computed(() => this.variant() || this.config.inputStyle() || this.config.inputVariant());
 
     get inputMode(): string {
-        return this.integerOnly ? 'numeric' : 'text';
+        return this.integerOnly() ? 'numeric' : 'text';
     }
 
     get inputType(): string {
-        return this.mask ? 'password' : 'text';
+        return this.mask() ? 'password' : 'text';
     }
 
     onAfterContentInit() {
-        (this.templates as QueryList<PrimeTemplate>).forEach((item) => {
+        this.templates().forEach((item) => {
             switch (item.getType()) {
                 case 'input':
                     this._inputTemplate = item.template;
@@ -267,7 +265,7 @@ export class InputOtp extends BaseEditableHolder<InputOtpPassThrough> implements
 
     getAutofocus(i: number): boolean {
         if (i === 1) {
-            return this.autofocus || false;
+            return this.autofocus() || false;
         }
         return false;
     }
@@ -351,8 +349,8 @@ export class InputOtp extends BaseEditableHolder<InputOtpPassThrough> implements
             default:
                 const target = event.target;
                 const hasSelection = target.selectionStart !== target.selectionEnd;
-                const isAtMaxLength = this.tokens.join('').length >= this.length;
-                const isValidKey = this.integerOnly ? /^[0-9]$/.test(event.key) : true;
+                const isAtMaxLength = this.tokens.join('').length >= this.length();
+                const isValidKey = this.integerOnly() ? /^[0-9]$/.test(event.key) : true;
 
                 if (!isValidKey || (isAtMaxLength && event.key !== 'Delete' && !hasSelection)) {
                     event.preventDefault();
@@ -363,7 +361,7 @@ export class InputOtp extends BaseEditableHolder<InputOtpPassThrough> implements
     }
 
     onPaste(event) {
-        if (!this.$disabled() && !this.readonly) {
+        if (!this.$disabled() && !this.readonly()) {
             let paste = event.clipboardData.getData('text');
 
             if (paste.length) {
@@ -375,9 +373,9 @@ export class InputOtp extends BaseEditableHolder<InputOtpPassThrough> implements
     }
 
     handleOnPaste(paste, event) {
-        let pastedCode = paste.substring(0, this.length + 1);
+        let pastedCode = paste.substring(0, this.length() + 1);
 
-        if (!this.integerOnly || !isNaN(pastedCode)) {
+        if (!this.integerOnly() || !isNaN(pastedCode)) {
             this.tokens = pastedCode.split('');
             this.updateModel(event);
         }
@@ -400,9 +398,9 @@ export class InputOtp extends BaseEditableHolder<InputOtpPassThrough> implements
     writeControlValue(value: any, setModelValue: (value: any) => void): void {
         if (value) {
             if (Array.isArray(value) && value.length > 0) {
-                this.value = value.slice(0, this.length);
+                this.value = value.slice(0, this.length());
             } else {
-                this.value = value.toString().split('').slice(0, this.length);
+                this.value = value.toString().split('').slice(0, this.length());
             }
         } else {
             this.value = value;

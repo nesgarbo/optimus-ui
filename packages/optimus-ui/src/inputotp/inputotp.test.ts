@@ -170,10 +170,10 @@ describe('InputOtp', () => {
         });
 
         it('should initialize with default properties', () => {
-            expect(inputOtpInstance.length).toBe(4);
-            expect(inputOtpInstance.mask).toBeFalsy();
-            expect(inputOtpInstance.integerOnly).toBeFalsy();
-            expect(inputOtpInstance.readonly).toBeFalsy();
+            expect(inputOtpInstance.length()).toBe(4);
+            expect(inputOtpInstance.mask()).toBeFalsy();
+            expect(inputOtpInstance.integerOnly()).toBeFalsy();
+            expect(inputOtpInstance.readonly()).toBeFalsy();
             expect(inputOtpInstance.tokens).toEqual([]);
         });
 
@@ -396,7 +396,7 @@ describe('InputOtp', () => {
         it('should respect length property', () => {
             const inputs = fixture.debugElement.queryAll(By.css('input'));
             expect(inputs.length).toBe(6);
-            expect(inputOtpInstance.length).toBe(6);
+            expect(inputOtpInstance.length()).toBe(6);
         });
 
         it('should apply mask property', () => {
@@ -620,7 +620,7 @@ describe('InputOtp', () => {
 
         it('should have input pTemplate', () => {
             expect(inputOtpInstance).toBeTruthy();
-            expect(() => inputOtpInstance.inputTemplate).not.toThrow();
+            expect(() => inputOtpInstance.inputTemplate()).not.toThrow();
         });
 
         it('should pass context parameters to input template', async () => {
@@ -706,7 +706,7 @@ describe('InputOtp', () => {
 
         it('should have input #template', () => {
             expect(inputOtpInstance).toBeTruthy();
-            expect(() => inputOtpInstance.inputTemplate).not.toThrow();
+            expect(() => inputOtpInstance.inputTemplate()).not.toThrow();
         });
 
         it('should pass context parameters to input template', async () => {
@@ -824,10 +824,10 @@ describe('InputOtp PassThrough Tests', () => {
 
     describe('PT Case 3: Instance variables', () => {
         it('should access instance variables in PT function', () => {
-            component.length = 6;
+            fixture.componentRef.setInput('length', 6);
             fixture.componentRef.setInput('pt', {
                 root: ({ instance }: any) => ({
-                    class: instance?.length === 6 ? 'LENGTH_SIX' : ''
+                    class: instance?.length() === 6 ? 'LENGTH_SIX' : ''
                 })
             });
             fixture.detectChanges();

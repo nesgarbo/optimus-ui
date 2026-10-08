@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, contentChild, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, contentChild, inject, input, ViewEncapsulation } from '@angular/core';
 import { BaseComponent } from '@openng/optimus-ui/basecomponent';
 import type { TextEditorMentionHandler, TextEditorMentionTemplate, TextEditorPartPassThrough } from '@openng/optimus-ui/types/texteditor';
 import { TextEditorRoot } from './texteditor';

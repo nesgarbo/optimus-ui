@@ -1,25 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-    booleanAttribute,
-    ChangeDetectionStrategy,
-    Component,
-    ContentChild,
-    ContentChildren,
-    ElementRef,
-    forwardRef,
-    HostListener,
-    inject,
-    InjectionToken,
-    Input,
-    input,
-    NgModule,
-    numberAttribute,
-    output,
-    QueryList,
-    TemplateRef,
-    ViewChild,
-    ViewEncapsulation
-} from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, contentChild, contentChildren, ElementRef, forwardRef, inject, InjectionToken, input, NgModule, numberAttribute, output, TemplateRef, viewChild, ViewEncapsulation } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { PrimeTemplate, SharedModule } from '@openng/optimus-ui/api';
 import { AutoFocus } from '@openng/optimus-ui/autofocus';
@@ -47,7 +27,7 @@ export const TOGGLESWITCH_VALUE_ACCESSOR: any = {
     template: `
         <input
             #input
-            [attr.id]="inputId"
+            [attr.id]="inputId()"
             type="checkbox"
             role="switch"
             [class]="cx('input')"
@@ -55,19 +35,19 @@ export const TOGGLESWITCH_VALUE_ACCESSOR: any = {
             [attr.required]="required() ? '' : undefined"
             [attr.disabled]="$disabled() ? '' : undefined"
             [attr.aria-checked]="checked()"
-            [attr.aria-labelledby]="ariaLabelledBy"
-            [attr.aria-label]="ariaLabel"
+            [attr.aria-labelledby]="ariaLabelledBy()"
+            [attr.aria-label]="ariaLabel()"
             [attr.name]="name()"
-            [attr.tabindex]="tabindex"
+            [attr.tabindex]="tabindex()"
             (focus)="onFocus()"
             (blur)="onBlur()"
-            [pAutoFocus]="autofocus"
+            [pAutoFocus]="autofocus()"
             [pBind]="ptm('input')"
         />
         <div [class]="cx('slider')" [pBind]="ptm('slider')" [attr.data-p]="dataP">
             <div [class]="cx('handle')" [pBind]="ptm('handle')" [attr.data-p]="dataP">
-                @if (handleTemplate || _handleTemplate) {
-                    <ng-container *ngTemplateOutlet="handleTemplate || _handleTemplate; context: { checked: checked() }" />
+                @if (handleTemplate() || _handleTemplate) {
+                    <ng-container *ngTemplateOutlet="handleTemplate() || _handleTemplate; context: { checked: checked() }" />
                 }
             </div>
         </div>
@@ -76,11 +56,12 @@ export const TOGGLESWITCH_VALUE_ACCESSOR: any = {
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
     host: {
-        '[class]': "cn(cx('root'), styleClass)",
+        '[class]': "cn(cx('root'), styleClass())",
         '[style]': "sx('root')",
         '[attr.data-p-checked]': 'checked()',
         '[attr.data-p-disabled]': '$disabled()',
-        '[attr.data-p]': 'dataP'
+        '[attr.data-p]': 'dataP',
+        '(click)': 'onHostClick($event)'
     },
     hostDirectives: [Bind]
 })
@@ -100,37 +81,37 @@ export class ToggleSwitch extends BaseEditableHolder<ToggleSwitchPassThrough> {
      * @deprecated since v20.0.0, use `class` instead.
      * @group Props
      */
-    @Input() styleClass: string | undefined;
+    readonly styleClass = input<string | undefined>(undefined);
     /**
      * Index of the element in tabbing order.
      * @group Props
      */
-    @Input({ transform: numberAttribute }) tabindex: number | undefined;
+    readonly tabindex = input<number | undefined, unknown>(undefined, { transform: numberAttribute });
     /**
      * Identifier of the input element.
      * @group Props
      */
-    @Input() inputId: string | undefined;
+    readonly inputId = input<string | undefined>(undefined);
     /**
      * When present, it specifies that the component cannot be edited.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) readonly: boolean | undefined;
+    readonly readonly = input<boolean | undefined, unknown>(undefined, { transform: booleanAttribute });
     /**
      * Value in checked state.
      * @group Props
      */
-    @Input() trueValue: any = true;
+    readonly trueValue = input<any>(true);
     /**
      * Value in unchecked state.
      * @group Props
      */
-    @Input() falseValue: any = false;
+    readonly falseValue = input<any>(false);
     /**
      * Used to define a string that autocomplete attribute the current element.
      * @group Props
      */
-    @Input() ariaLabel: string | undefined;
+    readonly ariaLabel = input<string | undefined>(undefined);
     /**
      * Specifies the size of the component.
      * @defaultValue undefined
@@ -141,12 +122,12 @@ export class ToggleSwitch extends BaseEditableHolder<ToggleSwitchPassThrough> {
      * Establishes relationships between the component and label(s) where its value should be one or more element IDs.
      * @group Props
      */
-    @Input() ariaLabelledBy: string | undefined;
+    readonly ariaLabelledBy = input<string | undefined>(undefined);
     /**
      * When present, it specifies that the component should automatically get focus on load.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) autofocus: boolean | undefined;
+    readonly autofocus = input<boolean | undefined, unknown>(undefined, { transform: booleanAttribute });
     /**
      * Callback to invoke when the on value change.
      * @param {ToggleSwitchChangeEvent} event - Custom change event.
@@ -154,14 +135,14 @@ export class ToggleSwitch extends BaseEditableHolder<ToggleSwitchPassThrough> {
      */
     onChange = output<ToggleSwitchChangeEvent>();
 
-    @ViewChild('input') input!: ElementRef;
+    readonly input = viewChild.required<ElementRef>('input');
     /**
      * Custom handle template.
      * @param {ToggleSwitchHandleTemplateContext} context - handle context.
      * @see {@link ToggleSwitchHandleTemplateContext}
      * @group Templates
      */
-    @ContentChild('handle', { descendants: false }) handleTemplate: TemplateRef<ToggleSwitchHandleTemplateContext> | undefined;
+    readonly handleTemplate = contentChild<TemplateRef<ToggleSwitchHandleTemplateContext>>('handle', { descendants: false });
 
     _handleTemplate: TemplateRef<ToggleSwitchHandleTemplateContext> | undefined;
 
@@ -169,15 +150,14 @@ export class ToggleSwitch extends BaseEditableHolder<ToggleSwitchPassThrough> {
 
     _componentStyle = inject(ToggleSwitchStyle);
 
-    @ContentChildren(PrimeTemplate) templates!: QueryList<PrimeTemplate>;
+    readonly templates = contentChildren(PrimeTemplate);
 
-    @HostListener('click', ['$event'])
     onHostClick(event: MouseEvent) {
         this.onClick(event);
     }
 
     onAfterContentInit() {
-        this.templates.forEach((item) => {
+        this.templates().forEach((item) => {
             switch (item.getType()) {
                 case 'handle':
                     this._handleTemplate = item.template;
@@ -190,8 +170,8 @@ export class ToggleSwitch extends BaseEditableHolder<ToggleSwitchPassThrough> {
     }
 
     onClick(event: Event) {
-        if (!this.$disabled() && !this.readonly) {
-            this.writeModelValue(this.checked() ? this.falseValue : this.trueValue);
+        if (!this.$disabled() && !this.readonly()) {
+            this.writeModelValue(this.checked() ? this.falseValue() : this.trueValue());
 
             this.onModelChange(this.modelValue());
             this.onChange.emit({
@@ -199,7 +179,7 @@ export class ToggleSwitch extends BaseEditableHolder<ToggleSwitchPassThrough> {
                 checked: this.modelValue()
             });
 
-            this.input.nativeElement.focus();
+            this.input().nativeElement.focus();
         }
     }
 
@@ -213,7 +193,7 @@ export class ToggleSwitch extends BaseEditableHolder<ToggleSwitchPassThrough> {
     }
 
     checked() {
-        return this.modelValue() === this.trueValue;
+        return this.modelValue() === this.trueValue();
     }
 
     /**

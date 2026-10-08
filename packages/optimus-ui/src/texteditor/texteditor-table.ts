@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, contentChild, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, contentChild, inject, ViewEncapsulation } from '@angular/core';
 import { BaseComponent } from '@openng/optimus-ui/basecomponent';
 import type { TextEditorPartPassThrough } from '@openng/optimus-ui/types/texteditor';
 import { createTableControlsCommands } from './core/tables';

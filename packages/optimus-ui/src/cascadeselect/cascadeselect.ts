@@ -4,25 +4,23 @@ import {
     ChangeDetectionStrategy,
     Component,
     computed,
-    ContentChild,
-    ContentChildren,
     effect,
     ElementRef,
     forwardRef,
-    HostListener,
     inject,
     InjectionToken,
     input,
-    Input,
+    linkedSignal,
     NgModule,
     numberAttribute,
     output,
-    QueryList,
     signal,
     SimpleChanges,
     TemplateRef,
-    ViewChild,
-    ViewEncapsulation
+    ViewEncapsulation,
+    viewChild,
+    contentChild,
+    contentChildren
 } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MotionOptions } from '@openng/optimus-ui-motion';
@@ -62,12 +60,12 @@ export const CASCADESELECT_VALUE_ACCESSOR: any = {
     standalone: true,
     imports: [NgTemplateOutlet, Ripple, AngleRightIcon, SharedModule, Bind],
     template: `
-        @for (processedOption of options; track processedOption; let i = $index) {
+        @for (processedOption of options(); track processedOption; let i = $index) {
             <li
                 [class]="cx('option', { processedOption })"
                 role="treeitem"
-                [attr.aria-level]="level + 1"
-                [attr.aria-setsize]="options.length"
+                [attr.aria-level]="level() + 1"
+                [attr.aria-setsize]="options().length"
                 [pBind]="getPTOptions(processedOption, i, 'option')"
                 [id]="getOptionId(processedOption)"
                 [attr.aria-label]="getOptionLabelToRender(processedOption)"
@@ -82,17 +80,17 @@ export const CASCADESELECT_VALUE_ACCESSOR: any = {
                     pRipple
                     [pBind]="getPTOptions(processedOption, i, 'optionContent')"
                 >
-                    @if (optionTemplate) {
-                        <ng-container [ngTemplateOutlet]="optionTemplate" [ngTemplateOutletContext]="{ $implicit: processedOption?.option, level: level }"></ng-container>
+                    @if (optionTemplate()) {
+                        <ng-container [ngTemplateOutlet]="optionTemplate()" [ngTemplateOutletContext]="{ $implicit: processedOption?.option, level: level() }"></ng-container>
                     } @else {
                         <span [class]="cx('optionText')" [pBind]="getPTOptions(processedOption, i, 'optionText')">{{ getOptionLabelToRender(processedOption) }}</span>
                     }
                     @if (isOptionGroup(processedOption)) {
                         <span [class]="cx('groupIcon')" [pBind]="getPTOptions(processedOption, i, 'groupIcon')">
-                            @if (!groupicon) {
+                            @if (!groupicon()) {
                                 <svg data-p-icon="angle-right" [pBind]="getPTOptions(processedOption, i, 'groupIcon')" />
                             }
-                            <ng-template [ngTemplateOutlet]="groupicon"></ng-template>
+                            <ng-template [ngTemplateOutlet]="groupicon()"></ng-template>
                         </span>
                     }
                 </div>
@@ -101,20 +99,20 @@ export const CASCADESELECT_VALUE_ACCESSOR: any = {
                         pCascadeSelectSub
                         [attr.role]="'group'"
                         [class]="cx('optionList')"
-                        [selectId]="selectId"
-                        [focusedOptionId]="focusedOptionId"
-                        [activeOptionPath]="activeOptionPath"
+                        [selectId]="selectId()"
+                        [focusedOptionId]="focusedOptionId()"
+                        [activeOptionPath]="activeOptionPath()"
                         [options]="getOptionGroupChildren(processedOption)"
-                        [optionLabel]="optionLabel"
-                        [optionValue]="optionValue"
-                        [level]="level + 1"
+                        [optionLabel]="optionLabel()"
+                        [optionValue]="optionValue()"
+                        [level]="level() + 1"
                         (onChange)="onChange.emit($event)"
                         (onFocusChange)="onFocusChange.emit($event)"
                         (onFocusEnterChange)="onFocusEnterChange.emit($event)"
-                        [optionGroupLabel]="optionGroupLabel"
-                        [optionGroupChildren]="optionGroupChildren"
-                        [dirty]="dirty"
-                        [optionTemplate]="optionTemplate"
+                        [optionGroupLabel]="optionGroupLabel()"
+                        [optionGroupChildren]="optionGroupChildren()"
+                        [dirty]="dirty()"
+                        [optionTemplate]="optionTemplate()"
                         [pBind]="ptm('optionList')"
                         [pt]="pt"
                         [unstyled]="unstyled()"
@@ -128,33 +126,33 @@ export const CASCADESELECT_VALUE_ACCESSOR: any = {
     providers: [CascadeSelectStyle, { provide: PARENT_INSTANCE, useExisting: CascadeSelectSub }]
 })
 export class CascadeSelectSub extends BaseComponent {
-    @Input() selectId: string | undefined;
+    readonly selectId = input<string | undefined>(undefined);
 
-    @Input() activeOptionPath: any[];
+    readonly activeOptionPath = input<any[]>([]);
 
-    @Input() optionDisabled: any[];
+    readonly optionDisabled = input<any[] | undefined>(undefined);
 
-    @Input() focusedOptionId: string | undefined;
+    readonly focusedOptionId = input<string | undefined>(undefined);
 
-    @Input() options: any[] | string[] | string | undefined | null;
+    readonly options = input<any[] | string[] | string | undefined | null>(undefined);
 
-    @Input() optionGroupChildren: string[] | string | undefined | null;
+    readonly optionGroupChildren = input<string[] | string | undefined | null>(undefined);
 
-    @Input() optionTemplate: Nullable<TemplateRef<any>>;
+    readonly optionTemplate = input<Nullable<TemplateRef<any>>>(undefined);
 
-    @Input() groupicon: Nullable<TemplateRef<any>>;
+    readonly groupicon = input<Nullable<TemplateRef<any>>>(undefined);
 
-    @Input({ transform: numberAttribute }) level: number = 0;
+    readonly level = input<number, unknown>(0, { transform: numberAttribute });
 
-    @Input() optionLabel: string | undefined;
+    readonly optionLabel = input<string | undefined>(undefined);
 
-    @Input() optionValue: string | undefined;
+    readonly optionValue = input<string | undefined>(undefined);
 
-    @Input() optionGroupLabel: string | undefined;
+    readonly optionGroupLabel = input<string | undefined>(undefined);
 
-    @Input({ transform: booleanAttribute }) dirty: boolean | undefined;
+    readonly dirty = input<boolean | undefined, unknown>(undefined, { transform: booleanAttribute });
 
-    @Input({ transform: booleanAttribute }) root: boolean | undefined;
+    readonly root = input<boolean | undefined, unknown>(undefined, { transform: booleanAttribute });
 
     onChange = output<any>();
 
@@ -171,7 +169,7 @@ export class CascadeSelectSub extends BaseComponent {
             context: {
                 option: processedOption,
                 index,
-                level: this.level,
+                level: this.level(),
                 optionGroup: this.isOptionGroup(processedOption),
                 active: this.isOptionActive(processedOption),
                 focused: this.isOptionFocused(processedOption),
@@ -181,7 +179,7 @@ export class CascadeSelectSub extends BaseComponent {
     }
 
     onInit() {
-        if (!this.root) {
+        if (!this.root()) {
             this.position();
         }
     }
@@ -203,15 +201,17 @@ export class CascadeSelectSub extends BaseComponent {
     }
 
     getOptionId(processedOption) {
-        return `${this.selectId}_${processedOption.key}`;
+        return `${this.selectId()}_${processedOption.key}`;
     }
 
     getOptionLabel(processedOption) {
-        return this.optionLabel ? resolveFieldData(processedOption.option, this.optionLabel) : processedOption.option;
+        const optionLabel = this.optionLabel();
+        return optionLabel ? resolveFieldData(processedOption.option, optionLabel) : processedOption.option;
     }
 
     getOptionValue(processedOption) {
-        return this.optionValue ? resolveFieldData(processedOption.option, this.optionValue) : processedOption.option;
+        const optionValue = this.optionValue();
+        return optionValue ? resolveFieldData(processedOption.option, optionValue) : processedOption.option;
     }
 
     getOptionLabelToRender(processedOption) {
@@ -219,11 +219,13 @@ export class CascadeSelectSub extends BaseComponent {
     }
 
     isOptionDisabled(processedOption) {
-        return this.optionDisabled ? resolveFieldData(processedOption.option, this.optionDisabled) : false;
+        const optionDisabled = this.optionDisabled();
+        return optionDisabled ? resolveFieldData(processedOption.option, optionDisabled) : false;
     }
 
     getOptionGroupLabel(processedOption) {
-        return this.optionGroupLabel ? resolveFieldData(processedOption.option, this.optionGroupLabel) : null;
+        const optionGroupLabel = this.optionGroupLabel();
+        return optionGroupLabel ? resolveFieldData(processedOption.option, optionGroupLabel) : null;
     }
 
     getOptionGroupChildren(processedOption) {
@@ -239,11 +241,11 @@ export class CascadeSelectSub extends BaseComponent {
     }
 
     isOptionActive(processedOption) {
-        return this.activeOptionPath.some((path) => path.key === processedOption.key);
+        return this.activeOptionPath().some((path) => path.key === processedOption.key);
     }
 
     isOptionFocused(processedOption) {
-        return this.focusedOptionId === this.getOptionId(processedOption);
+        return this.focusedOptionId() === this.getOptionId(processedOption);
     }
 
     position() {
@@ -275,61 +277,61 @@ export class CascadeSelectSub extends BaseComponent {
                 [attr.name]="name()"
                 [attr.required]="required() ? '' : undefined"
                 [attr.disabled]="$disabled() ? '' : undefined"
-                [attr.placeholder]="placeholder"
-                [attr.tabindex]="!$disabled() ? tabindex : -1"
-                [attr.id]="inputId"
-                [attr.aria-label]="ariaLabel"
-                [attr.aria-labelledby]="ariaLabelledBy"
+                [attr.placeholder]="placeholder()"
+                [attr.tabindex]="!$disabled() ? tabindex() : -1"
+                [attr.id]="inputId()"
+                [attr.aria-label]="ariaLabel()"
+                [attr.aria-labelledby]="ariaLabelledBy()"
                 [attr.aria-haspopup]="'tree'"
                 [attr.aria-expanded]="overlayVisible ?? false"
-                [attr.aria-controls]="overlayVisible ? id + '_tree' : null"
+                [attr.aria-controls]="overlayVisible ? _id() + '_tree' : null"
                 [attr.aria-activedescendant]="focused ? focusedOptionId : undefined"
                 (focus)="onInputFocus($event)"
                 (blur)="onInputBlur($event)"
                 (keydown)="onInputKeyDown($event)"
-                [pAutoFocus]="autofocus"
+                [pAutoFocus]="autofocus()"
                 [pBind]="ptm('hiddenInput')"
             />
         </div>
         <span [class]="cx('label')" [pBind]="ptm('label')">
-            @if (valueTemplate || _valueTemplate) {
-                <ng-container [ngTemplateOutlet]="valueTemplate || _valueTemplate" [ngTemplateOutletContext]="{ $implicit: value, placeholder: placeholder }"></ng-container>
+            @if (valueTemplate() || _valueTemplate) {
+                <ng-container [ngTemplateOutlet]="valueTemplate() || _valueTemplate" [ngTemplateOutletContext]="{ $implicit: _value(), placeholder: placeholder() }"></ng-container>
             } @else {
                 {{ label() }}
             }
         </span>
 
-        @if ($filled() && !$disabled() && showClear) {
-            @if (!clearIconTemplate && !_clearIconTemplate) {
+        @if ($filled() && !$disabled() && showClear()) {
+            @if (!clearIconTemplate() && !_clearIconTemplate) {
                 <svg data-p-icon="times" [class]="cx('clearIcon')" (click)="clear($event)" [pBind]="ptm('clearIcon')" [attr.aria-hidden]="true" />
             }
-            @if (clearIconTemplate || _clearIconTemplate) {
+            @if (clearIconTemplate() || _clearIconTemplate) {
                 <span [class]="cx('clearIcon')" (click)="clear($event)" [pBind]="ptm('clearIcon')" [attr.aria-hidden]="true">
-                    <ng-template [ngTemplateOutlet]="clearIconTemplate || _clearIconTemplate"></ng-template>
+                    <ng-template [ngTemplateOutlet]="clearIconTemplate() || _clearIconTemplate"></ng-template>
                 </span>
             }
         }
 
         <div [class]="cx('dropdown')" role="button" aria-haspopup="listbox" [attr.aria-expanded]="overlayVisible ?? false" [pBind]="ptm('dropdown')" [attr.aria-hidden]="true">
-            @if (loading) {
-                @if (loadingIconTemplate || _loadingIconTemplate) {
-                    <ng-container [ngTemplateOutlet]="loadingIconTemplate || _loadingIconTemplate"></ng-container>
+            @if (loading()) {
+                @if (loadingIconTemplate() || _loadingIconTemplate) {
+                    <ng-container [ngTemplateOutlet]="loadingIconTemplate() || _loadingIconTemplate"></ng-container>
                 }
-                @if (!loadingIconTemplate && !_loadingIconTemplate) {
-                    @if (loadingIcon) {
-                        <span [class]="cn(cx('loadingIcon'), loadingIcon + 'pi-spin')" aria-hidden="true" [pBind]="ptm('loadingIcon')"></span>
+                @if (!loadingIconTemplate() && !_loadingIconTemplate) {
+                    @if (loadingIcon()) {
+                        <span [class]="cn(cx('loadingIcon'), loadingIcon() + 'pi-spin')" aria-hidden="true" [pBind]="ptm('loadingIcon')"></span>
                     }
-                    @if (!loadingIcon) {
-                        <span [class]="cn(cx('loadingIcon'), loadingIcon + ' pi pi-spinner pi-spin')" aria-hidden="true" [pBind]="ptm('loadingIcon')"></span>
+                    @if (!loadingIcon()) {
+                        <span [class]="cn(cx('loadingIcon'), loadingIcon() + ' pi pi-spinner pi-spin')" aria-hidden="true" [pBind]="ptm('loadingIcon')"></span>
                     }
                 }
             } @else {
-                @if (!triggerIconTemplate && !_triggerIconTemplate) {
+                @if (!triggerIconTemplate() && !_triggerIconTemplate) {
                     <svg data-p-icon="chevron-down" [class]="cx('dropdownIcon')" [pBind]="ptm('dropdownIcon')" />
                 }
-                @if (triggerIconTemplate || _triggerIconTemplate) {
+                @if (triggerIconTemplate() || _triggerIconTemplate) {
                     <span [class]="cx('dropdownIcon')" [pBind]="ptm('dropdownIcon')">
-                        <ng-template [ngTemplateOutlet]="triggerIconTemplate || _triggerIconTemplate"></ng-template>
+                        <ng-template [ngTemplateOutlet]="triggerIconTemplate() || _triggerIconTemplate"></ng-template>
                     </span>
                 }
             }
@@ -341,7 +343,7 @@ export class CascadeSelectSub extends BaseComponent {
             #overlay
             [hostAttrSelector]="$attrSelector"
             [(visible)]="overlayVisible"
-            [options]="overlayOptions"
+            [options]="overlayOptions()"
             [target]="'@parent'"
             [appendTo]="$appendTo()"
             [unstyled]="unstyled()"
@@ -354,24 +356,24 @@ export class CascadeSelectSub extends BaseComponent {
             (onHide)="hide($event)"
         >
             <ng-template #content>
-                <div #panel [class]="cn(cx('overlay'), panelStyleClass)" [style]="panelStyle" [pBind]="ptm('overlay')">
-                    <ng-template [ngTemplateOutlet]="headerTemplate || _headerTemplate"></ng-template>
+                <div #panel [class]="cn(cx('overlay'), panelStyleClass())" [style]="panelStyle()" [pBind]="ptm('overlay')">
+                    <ng-template [ngTemplateOutlet]="headerTemplate() || _headerTemplate"></ng-template>
                     <div [class]="cx('listContainer')" [pBind]="ptm('listContainer')">
                         <ul
                             pCascadeSelectSub
                             [class]="cx('list')"
                             [options]="processedOptions"
-                            [selectId]="id"
+                            [selectId]="_id()"
                             [focusedOptionId]="focused ? focusedOptionId : undefined"
                             [activeOptionPath]="activeOptionPath()"
-                            [optionLabel]="optionLabel"
-                            [optionValue]="optionValue"
+                            [optionLabel]="optionLabel()"
+                            [optionValue]="optionValue()"
                             [level]="0"
-                            [optionTemplate]="optionTemplate || _optionTemplate"
-                            [groupicon]="groupIconTemplate || _groupIconTemplate"
-                            [optionGroupLabel]="optionGroupLabel"
-                            [optionGroupChildren]="optionGroupChildren"
-                            [optionDisabled]="optionDisabled"
+                            [optionTemplate]="optionTemplate() || _optionTemplate"
+                            [groupicon]="groupIconTemplate() || _groupIconTemplate"
+                            [optionGroupLabel]="optionGroupLabel()"
+                            [optionGroupChildren]="optionGroupChildren()"
+                            [optionDisabled]="optionDisabled()"
                             [root]="true"
                             (onChange)="onOptionClick($event)"
                             (onFocusChange)="onOptionMouseMove($event)"
@@ -388,7 +390,7 @@ export class CascadeSelectSub extends BaseComponent {
                     <span role="status" aria-live="polite" class="p-hidden-accessible" [pBind]="ptm('selectedMessageText')">
                         {{ selectedMessageText }}
                     </span>
-                    <ng-template [ngTemplateOutlet]="footerTemplate || _footerTemplate"></ng-template>
+                    <ng-template [ngTemplateOutlet]="footerTemplate() || _footerTemplate"></ng-template>
                 </div>
             </ng-template>
         </p-overlay>
@@ -397,8 +399,9 @@ export class CascadeSelectSub extends BaseComponent {
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
     host: {
-        '[class]': "cn(cx('root'), styleClass)",
-        '[style]': "sx('root')"
+        '[class]': "cn(cx('root'), styleClass())",
+        '[style]': "sx('root')",
+        '(mousedown)': 'onHostClick($event)'
     },
     hostDirectives: [Bind]
 })
@@ -417,172 +420,180 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
      * Unique identifier of the component
      * @group Props
      */
-    @Input() id: string | undefined;
+    readonly id = input<string | undefined>(undefined);
+    readonly _id = linkedSignal(() => this.id() || uuid('pn_id_'));
     /**
      * Text to display when the search is active. Defaults to global value in i18n translation configuration.
      * @group Props
      * @defaultValue '{0} results are available'
      */
-    @Input() searchMessage: string | undefined;
+    readonly searchMessage = input<string | undefined>(undefined);
     /**
      * Text to display when there is no data. Defaults to global value in i18n translation configuration.
      * @group Props
      */
-    @Input() emptyMessage: string | undefined;
+    readonly emptyMessage = input<string | undefined>(undefined);
     /**
      * Text to be displayed in hidden accessible field when options are selected. Defaults to global value in i18n translation configuration.
      * @group Props
      * @defaultValue '{0} items selected'
      */
-    @Input() selectionMessage: string | undefined;
+    readonly selectionMessage = input<string | undefined>(undefined);
     /**
      * Text to display when filtering does not return any results. Defaults to value from Optimus locale configuration.
      * @group Props
      * @defaultValue 'No available options'
      */
-    @Input() emptySearchMessage: string | undefined;
+    readonly emptySearchMessage = input<string | undefined>(undefined);
     /**
      * Text to display when filtering does not return any results. Defaults to global value in i18n translation configuration.
      * @group Props
      * @defaultValue 'No selected item'
      */
-    @Input() emptySelectionMessage: string | undefined;
+    readonly emptySelectionMessage = input<string | undefined>(undefined);
     /**
      * Locale to use in searching. The default locale is the host environment's current locale.
      * @group Props
      */
-    @Input() searchLocale: string | undefined;
+    readonly searchLocale = input<string | undefined>(undefined);
     /**
      * Name of the disabled field of an option.
      * @group Props
      */
-    @Input() optionDisabled: any;
+    readonly optionDisabled = input<any>(undefined);
     /**
      * Fields used when filtering the options, defaults to optionLabel.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) focusOnHover: boolean = true;
+    readonly focusOnHover = input<boolean, unknown>(true, { transform: booleanAttribute });
     /**
      * Determines if the option will be selected on focus.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) selectOnFocus: boolean = false;
+    readonly selectOnFocus = input<boolean, unknown>(false, { transform: booleanAttribute });
     /**
      * Whether to focus on the first visible or selected element when the overlay panel is shown.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) autoOptionFocus: boolean = false;
+    readonly autoOptionFocus = input<boolean, unknown>(false, { transform: booleanAttribute });
     /**
      * Style class of the component.
      * @deprecated since v20.0.0, use `class` instead.
      * @group Props
      */
-    @Input() styleClass: string | undefined;
+    readonly styleClass = input<string | undefined>(undefined);
     /**
      * An array of selectitems to display as the available options.
      * @group Props
      */
-    @Input() options: any[] | string[] | string | undefined | null;
+    readonly options = input<any[] | string[] | string | undefined | null>(undefined);
     /**
      * Property name or getter function to use as the label of an option.
      * @group Props
      */
-    @Input() optionLabel: string | undefined;
+    readonly optionLabel = input<string | undefined>(undefined);
     /**
      * Property name or getter function to use as the value of an option, defaults to the option itself when not defined.
      * @group Props
      */
-    @Input() optionValue: string | undefined;
+    readonly optionValue = input<string | undefined>(undefined);
     /**
      * Property name or getter function to use as the label of an option group.
      * @group Props
      */
-    @Input() optionGroupLabel: string | undefined;
+    readonly optionGroupLabel = input<string | undefined>(undefined);
     /**
      * Property name or getter function to retrieve the items of a group.
      * @group Props
      */
-    @Input() optionGroupChildren: string[] | string | undefined | null;
+    readonly optionGroupChildren = input<string[] | string | undefined | null>(undefined);
     /**
      * Default text to display when no option is selected.
      * @group Props
      */
-    @Input() placeholder: string | undefined;
+    readonly placeholder = input<string | undefined>(undefined);
     /**
      * Selected value of the component.
      * @group Props
      */
-    @Input() value: string | undefined | null;
+    readonly value = input<string | undefined | null>(undefined);
+    readonly _value = linkedSignal<any>(() => this.value());
     /**
      * A property to uniquely identify an option.
      * @group Props
      */
-    @Input() dataKey: string | undefined;
+    readonly dataKey = input<string | undefined>(undefined);
     /**
      * Identifier of the underlying input element.
      * @group Props
      */
-    @Input() inputId: string | undefined;
+    readonly inputId = input<string | undefined>(undefined);
     /**
      * Index of the element in tabbing order.
      * @group Props
      */
-    @Input({ transform: numberAttribute }) tabindex: number | undefined = 0;
+    readonly tabindex = input<number | undefined, unknown>(0, { transform: numberAttribute });
     /**
      * Establishes relationships between the component and label(s) where its value should be one or more element IDs.
      * @group Props
      */
-    @Input() ariaLabelledBy: string | undefined;
+    readonly ariaLabelledBy = input<string | undefined>(undefined);
     /**
      * Label of the input for accessibility.
      * @group Props
      */
-    @Input() inputLabel: string | undefined;
+    readonly inputLabel = input<string | undefined>(undefined);
     /**
      * Defines a string that labels the input for accessibility.
      * @group Props
      */
-    @Input() ariaLabel: string | undefined;
+    readonly ariaLabel = input<string | undefined>(undefined);
     /**
      * When enabled, a clear icon is displayed to clear the value.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) showClear: boolean = false;
+    readonly showClear = input<boolean, unknown>(false, { transform: booleanAttribute });
     /**
      * Style class of the overlay panel.
      * @group Props
      */
-    @Input() panelStyleClass: string | undefined;
+    readonly panelStyleClass = input<string | undefined>(undefined);
     /**
      * Inline style of the overlay panel.
      * @group Props
      */
-    @Input() panelStyle: { [klass: string]: any } | null | undefined;
+    readonly panelStyle = input<
+        | {
+              [klass: string]: any;
+          }
+        | null
+        | undefined
+    >(undefined);
     /**
      * Whether to use overlay API feature. The properties of overlay API can be used like an object in it.
      * @group Props
      */
-    @Input() overlayOptions: OverlayOptions | undefined;
+    readonly overlayOptions = input<OverlayOptions | undefined>(undefined);
     /**
      * When present, it specifies that the component should automatically get focus on load.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) autofocus: boolean | undefined;
+    readonly autofocus = input<boolean | undefined, unknown>(undefined, { transform: booleanAttribute });
     /**
      * Whether the dropdown is in loading state.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) loading: boolean | undefined = false;
+    readonly loading = input<boolean | undefined, unknown>(false, { transform: booleanAttribute });
     /**
      * Icon to display in loading state.
      * @group Props
      */
-    @Input() loadingIcon: string | undefined;
+    readonly loadingIcon = input<string | undefined>(undefined);
     /**
      * The breakpoint to define the maximum width boundary.
      * @group Props
      */
-    @Input() breakpoint: string = '960px';
+    readonly breakpoint = input<string>('960px');
     /**
      * Specifies the size of the component.
      * @defaultValue undefined
@@ -666,58 +677,58 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
      */
     onBlur = output<FocusEvent>();
 
-    @ViewChild('focusInput') focusInputViewChild: Nullable<ElementRef>;
+    readonly focusInputViewChild = viewChild<Nullable<ElementRef>>('focusInput');
 
-    @ViewChild('panel') panelViewChild: Nullable<ElementRef>;
+    readonly panelViewChild = viewChild<Nullable<ElementRef>>('panel');
 
-    @ViewChild('overlay') overlayViewChild: Nullable<Overlay>;
+    readonly overlayViewChild = viewChild<Nullable<Overlay>>('overlay');
     /**
      * Custom value template.
      * @group Templates
      */
-    @ContentChild('value', { descendants: false }) valueTemplate: Nullable<TemplateRef<CascadeSelectValueTemplateContext>>;
+    readonly valueTemplate = contentChild<Nullable<TemplateRef<CascadeSelectValueTemplateContext>>>('value', { descendants: false });
 
     /**
      * Custom option template.
      * @group Templates
      */
-    @ContentChild('option', { descendants: false }) optionTemplate: Nullable<TemplateRef<CascadeSelectOptionTemplateContext>>;
+    readonly optionTemplate = contentChild<Nullable<TemplateRef<CascadeSelectOptionTemplateContext>>>('option', { descendants: false });
 
     /**
      * Custom header template.
      * @group Templates
      */
-    @ContentChild('header', { descendants: false }) headerTemplate: Nullable<TemplateRef<void>>;
+    readonly headerTemplate = contentChild<Nullable<TemplateRef<void>>>('header', { descendants: false });
 
     /**
      * Custom footer template.
      * @group Templates
      */
-    @ContentChild('footer', { descendants: false }) footerTemplate: Nullable<TemplateRef<void>>;
+    readonly footerTemplate = contentChild<Nullable<TemplateRef<void>>>('footer', { descendants: false });
 
     /**
      * Custom trigger icon template.
      * @group Templates
      */
-    @ContentChild('triggericon', { descendants: false }) triggerIconTemplate: Nullable<TemplateRef<void>>;
+    readonly triggerIconTemplate = contentChild<Nullable<TemplateRef<void>>>('triggericon', { descendants: false });
 
     /**
      * Custom loading icon template.
      * @group Templates
      */
-    @ContentChild('loadingicon', { descendants: false }) loadingIconTemplate: Nullable<TemplateRef<void>>;
+    readonly loadingIconTemplate = contentChild<Nullable<TemplateRef<void>>>('loadingicon', { descendants: false });
 
     /**
      * Custom option group icon template.
      * @group Templates
      */
-    @ContentChild('optiongroupicon', { descendants: false }) groupIconTemplate: Nullable<TemplateRef<void>>;
+    readonly groupIconTemplate = contentChild<Nullable<TemplateRef<void>>>('optiongroupicon', { descendants: false });
 
     /**
      * Custom clear icon template.
      * @group Templates
      */
-    @ContentChild('clearicon', { descendants: false }) clearIconTemplate: Nullable<TemplateRef<void>>;
+    readonly clearIconTemplate = contentChild<Nullable<TemplateRef<void>>>('clearicon', { descendants: false });
 
     _valueTemplate: TemplateRef<CascadeSelectValueTemplateContext> | undefined;
 
@@ -769,7 +780,6 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
         return this.fluid() ?? !!this.pcFluid;
     }
 
-    @HostListener('mousedown', ['$event'])
     onHostClick(event: MouseEvent) {
         this.onContainerClick(event);
     }
@@ -779,7 +789,7 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
     }
 
     get focusedOptionId() {
-        return this.focusedOptionInfo().index !== -1 ? `${this.id}${isNotEmpty(this.focusedOptionInfo().parentKey) ? '_' + this.focusedOptionInfo().parentKey : ''}_${this.focusedOptionInfo().index}` : null;
+        return this.focusedOptionInfo().index !== -1 ? `${this._id()}${isNotEmpty(this.focusedOptionInfo().parentKey) ? '_' + this.focusedOptionInfo().parentKey : ''}_${this.focusedOptionInfo().index}` : null;
     }
 
     get searchResultMessageText() {
@@ -787,23 +797,23 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
     }
 
     get searchMessageText() {
-        return this.searchMessage || this.config.translation.searchMessage || '';
+        return this.searchMessage() || this.config.translation.searchMessage || '';
     }
 
     get emptySearchMessageText() {
-        return this.emptySearchMessage || this.config.translation.emptySearchMessage || '';
+        return this.emptySearchMessage() || this.config.translation.emptySearchMessage || '';
     }
 
     get emptyMessageText() {
-        return this.emptyMessage || this.config.translation.emptyMessage || '';
+        return this.emptyMessage() || this.config.translation.emptyMessage || '';
     }
 
     get selectionMessageText() {
-        return this.selectionMessage || this.config.translation.selectionMessage || '';
+        return this.selectionMessage() || this.config.translation.selectionMessage || '';
     }
 
     get emptySelectionMessageText() {
-        return this.emptySelectionMessage || this.config.translation.emptySelectionMessage || '';
+        return this.emptySelectionMessage() || this.config.translation.emptySelectionMessage || '';
     }
 
     get selectedMessageText() {
@@ -817,7 +827,7 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
     });
 
     label = computed(() => {
-        const label = this.placeholder || 'p-emptylabel';
+        const label = this.placeholder() || 'p-emptylabel';
 
         if (this.hasSelectedOption()) {
             const activeOptionPath = this.findOptionPathByValue(this.modelValue(), null);
@@ -829,7 +839,7 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
     });
 
     get _label() {
-        const label = this.placeholder || 'p-emptylabel';
+        const label = this.placeholder() || 'p-emptylabel';
 
         if (this.hasSelectedOption()) {
             const activeOptionPath = this.findOptionPathByValue(this.modelValue(), null);
@@ -840,10 +850,10 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
         return label;
     }
 
-    @ContentChildren(PrimeTemplate) templates!: QueryList<PrimeTemplate>;
+    readonly templates = contentChildren(PrimeTemplate);
 
     onAfterContentInit() {
-        this.templates.forEach((item) => {
+        this.templates().forEach((item) => {
             switch (item.getType()) {
                 case 'value':
                     this._valueTemplate = item.template;
@@ -932,7 +942,7 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
     }
 
     onInputKeyDown(event: KeyboardEvent) {
-        if (this.$disabled() || this.loading) {
+        if (this.$disabled() || this.loading()) {
             event.preventDefault();
 
             return;
@@ -1133,7 +1143,7 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
     }
 
     onBackspaceKey(event) {
-        if (isNotEmpty(this.modelValue()) && this.showClear) {
+        if (isNotEmpty(this.modelValue()) && this.showClear()) {
             this.clear();
         }
 
@@ -1141,11 +1151,11 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
     }
 
     equalityKey() {
-        return this.optionValue ? undefined : this.dataKey;
+        return this.optionValue() ? undefined : this.dataKey();
     }
 
     updateModel(value, event?) {
-        this.value = value;
+        this._value.set(value);
         this.onModelChange(value);
         this.writeModelValue(value);
 
@@ -1158,7 +1168,7 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
     }
 
     autoUpdateModel() {
-        if (this.selectOnFocus && this.autoOptionFocus && !this.hasSelectedOption()) {
+        if (this.selectOnFocus() && this.autoOptionFocus() && !this.hasSelectedOption()) {
             this.focusedOptionInfo().index = this.findFirstFocusedOptionIndex();
             this.onOptionChange({
                 originalEvent: null,
@@ -1171,8 +1181,8 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
     }
 
     scrollInView(index = -1) {
-        const id = index !== -1 ? `${this.id}_${index}` : this.focusedOptionId;
-        const element = findSingle(this.panelViewChild?.nativeElement, `li[id="${id}"]`);
+        const id = index !== -1 ? `${this._id()}_${index}` : this.focusedOptionId;
+        const element = findSingle(this.panelViewChild()?.nativeElement, `li[id="${id}"]`);
 
         if (element) {
             element.scrollIntoView && element.scrollIntoView({ block: 'nearest', inline: 'start' });
@@ -1186,11 +1196,11 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
             this.focusedOptionInfo.set({ ...focusedOptionInfo, index });
             this.scrollInView();
 
-            if (this.focusOnHover) {
+            if (this.focusOnHover()) {
                 this.onOptionClick({ originalEvent: event, processedOption: this.visibleOptions()[index], isHide: false, preventSelection });
             }
 
-            if (this.selectOnFocus) {
+            if (this.selectOnFocus()) {
                 this.onOptionChange({ originalEvent: event, processedOption: this.visibleOptions()[index], isHide: false });
             }
         }
@@ -1215,29 +1225,30 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
     }
 
     onContainerClick(event: MouseEvent) {
-        if (this.$disabled() || this.loading) {
+        if (this.$disabled() || this.loading()) {
             return;
         }
 
-        if (!this.overlayViewChild?.el?.nativeElement?.contains(event.target)) {
+        if (!this.overlayViewChild()?.el?.nativeElement?.contains(event.target)) {
             if (this.overlayVisible) {
                 this.hide();
             } else {
                 this.show();
             }
 
-            this.focusInputViewChild?.nativeElement.focus();
+            this.focusInputViewChild()?.nativeElement.focus();
         }
 
         this.clicked = true;
     }
 
     isOptionMatched(processedOption) {
-        return this.isValidOption(processedOption) && this.getProccessedOptionLabel(processedOption).toLocaleLowerCase(this.searchLocale).startsWith(this.searchValue?.toLocaleLowerCase(this.searchLocale));
+        return this.isValidOption(processedOption) && this.getProccessedOptionLabel(processedOption).toLocaleLowerCase(this.searchLocale()).startsWith(this.searchValue?.toLocaleLowerCase(this.searchLocale()));
     }
 
     isOptionDisabled(option) {
-        return this.optionDisabled ? resolveFieldData(option, this.optionDisabled) : false;
+        const optionDisabled = this.optionDisabled();
+        return optionDisabled ? resolveFieldData(option, optionDisabled) : false;
     }
 
     isValidOption(processedOption) {
@@ -1368,7 +1379,7 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
             this.activeOptionPath.set([]);
             this.focusedOptionInfo.set({ index: -1, level: 0, parentKey: '' });
 
-            isFocus && focus(this.focusInputViewChild?.nativeElement);
+            isFocus && focus(this.focusInputViewChild()?.nativeElement);
             this.onHide.emit(event);
             this.cd.markForCheck();
         };
@@ -1397,17 +1408,17 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
                 parentKey: processedOption.parentKey
             };
         } else {
-            focusedOptionInfo = { index: this.autoOptionFocus ? this.findFirstFocusedOptionIndex() : this.findSelectedOptionIndex(), level: 0, parentKey: '' };
+            focusedOptionInfo = { index: this.autoOptionFocus() ? this.findFirstFocusedOptionIndex() : this.findSelectedOptionIndex(), level: 0, parentKey: '' };
         }
 
         this.focusedOptionInfo.set(focusedOptionInfo);
 
-        isFocus && focus(this.focusInputViewChild?.nativeElement);
+        isFocus && focus(this.focusInputViewChild()?.nativeElement);
         this.cd.markForCheck();
     }
 
     clear(event?: MouseEvent) {
-        if (isNotEmpty(this.modelValue()) && this.showClear) {
+        if (isNotEmpty(this.modelValue()) && this.showClear()) {
             this.updateModel(null);
             this.focusedOptionInfo.set({ index: -1, level: 0, parentKey: '' });
             this.activeOptionPath.set([]);
@@ -1418,23 +1429,26 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
     }
 
     getOptionLabel(option) {
-        return this.optionLabel ? resolveFieldData(option, this.optionLabel) : option;
+        const optionLabel = this.optionLabel();
+        return optionLabel ? resolveFieldData(option, optionLabel) : option;
     }
 
     getOptionValue(option) {
-        return this.optionValue ? resolveFieldData(option, this.optionValue) : option;
+        const optionValue = this.optionValue();
+        return optionValue ? resolveFieldData(option, optionValue) : option;
     }
 
     getOptionGroupLabel(optionGroup) {
-        return this.optionGroupLabel ? resolveFieldData(optionGroup, this.optionGroupLabel) : null;
+        const optionGroupLabel = this.optionGroupLabel();
+        return optionGroupLabel ? resolveFieldData(optionGroup, optionGroupLabel) : null;
     }
 
     getOptionGroupChildren(optionGroup, level) {
-        return resolveFieldData(optionGroup, this.optionGroupChildren?.[level]);
+        return resolveFieldData(optionGroup, this.optionGroupChildren()?.[level]);
     }
 
     isOptionGroup(option, level) {
-        return Object.prototype.hasOwnProperty.call(option, this.optionGroupChildren?.[level]);
+        return Object.prototype.hasOwnProperty.call(option, this.optionGroupChildren()?.[level]);
     }
 
     isProccessedOptionGroup(processedOption) {
@@ -1458,7 +1472,7 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
         effect(() => {
             const activeOptionPath = this.activeOptionPath();
             if (isNotEmpty(activeOptionPath)) {
-                this.overlayViewChild?.alignOverlay();
+                this.overlayViewChild()?.alignOverlay();
             }
         });
     }
@@ -1516,11 +1530,11 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
             }
         }
 
-        isFocus && focus(this.focusInputViewChild?.nativeElement);
+        isFocus && focus(this.focusInputViewChild()?.nativeElement);
     }
 
     onOptionMouseEnter(event) {
-        if (this.focusOnHover) {
+        if (this.focusOnHover()) {
             if (this.dirty || (!this.dirty && isNotEmpty(this.modelValue()))) {
                 this.onOptionChange({ ...event, type: 'hover' });
             } else if (!this.dirty && event.processedOption.level === 0) {
@@ -1530,13 +1544,12 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
     }
 
     onOptionMouseMove(event) {
-        if (this.focused && this.focusOnHover) {
+        if (this.focused && this.focusOnHover()) {
             this.changeFocusedOptionIndex(event, event.processedOption.index);
         }
     }
 
     onInit() {
-        this.id = this.id || uuid('pn_id_');
         this.autoUpdateModel();
         this.bindMatchMediaListener();
     }
@@ -1549,7 +1562,7 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
         if (!this.matchMediaListener) {
             const window: Window | null = this.document.defaultView;
             if (window && window.matchMedia) {
-                const query = window.matchMedia(`(max-width: ${this.breakpoint})`);
+                const query = window.matchMedia(`(max-width: ${this.breakpoint()})`);
                 this.query = query;
                 this.queryMatches.set(query?.matches);
 
@@ -1582,7 +1595,7 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
      * Writes the value to the control.
      */
     writeControlValue(value: any, setModelValue: (value: any) => void): void {
-        this.value = value;
+        this._value.set(value);
         setModelValue(value);
         this.cd.markForCheck();
     }
