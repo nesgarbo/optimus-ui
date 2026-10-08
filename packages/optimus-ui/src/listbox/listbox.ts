@@ -1201,6 +1201,7 @@ export class Listbox extends BaseEditableHolder<ListBoxPassThrough> {
 
     onListBlur(event: FocusEvent) {
         this.focused = false;
+        this.onModelTouched();
         this.focusedOptionIndex.set(-1);
         this.startRangeIndex.set(-1);
         this.searchValue = '';

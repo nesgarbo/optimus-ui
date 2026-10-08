@@ -41,13 +41,13 @@ export class BaseInput<PT = any> extends BaseEditableHolder<PT> {
      * @defaultValue undefined
      * @group Props
      */
-    min = input<number | string | Date | null | undefined>();
+    min = input<number | string | Date | null | undefined, unknown>(undefined, { transform: asLimit });
     /**
      * The value must be less than or equal to the value.
      * @defaultValue undefined
      * @group Props
      */
-    max = input<number | string | Date | null | undefined>();
+    max = input<number | string | Date | null | undefined, unknown>(undefined, { transform: asLimit });
     /**
      * Unless the step is set to the any literal, the value must be min + an integral multiple of the step.
      * @defaultValue undefined
@@ -102,6 +102,11 @@ export class BaseInput<PT = any> extends BaseEditableHolder<PT> {
     get hasFluid() {
         return this.fluid() ?? !!this.pcFluid;
     }
+}
+
+/** A signal form binds the limit with the type of the field value, which can be any (an object for a `p-select`). Only numbers are used as limits. */
+function asLimit(value: unknown): number | string | Date | null | undefined {
+    return value as number | string | Date | null | undefined;
 }
 
 function nullableNumber(value: unknown): number | null | undefined {
