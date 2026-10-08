@@ -12,7 +12,7 @@ const INPUTGROUP_INSTANCE = new InjectionToken<InputGroup>('INPUTGROUP_INSTANCE'
  * @group Components
  */
 @Component({
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'p-inputgroup, p-inputGroup, p-input-group',
     standalone: true,
     imports: [BindModule],

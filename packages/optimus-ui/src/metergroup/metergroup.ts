@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import { AfterContentInit, ChangeDetectionStrategy, Component, ContentChild, ContentChildren, ElementRef, forwardRef, inject, InjectionToken, Input, NgModule, QueryList, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { getOuterHeight } from '@openng/optimus-ui-utils';
 import { PrimeTemplate, SharedModule } from '@openng/optimus-ui/api';
@@ -10,20 +10,20 @@ import { MeterGroupStyle } from './style/metergroupstyle';
 const METERGROUP_INSTANCE = new InjectionToken<MeterGroup>('METERGROUP_INSTANCE');
 
 @Component({
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'p-meterGroupLabel, p-metergrouplabel',
     standalone: true,
-    imports: [CommonModule, SharedModule, Bind],
+    imports: [NgTemplateOutlet, SharedModule, Bind],
     template: `
         <ol [class]="cx('labelList')" [pBind]="ptm('labelList')" [attr.data-p]="dataP">
             @for (labelItem of value; track parentInstance.trackByFn(index); let index = $index) {
                 <li [class]="cx('label')" [pBind]="ptm('label')">
                     @if (!iconTemplate) {
                         @if (labelItem.icon) {
-                            <i [class]="labelItem.icon" [ngClass]="cx('labelIcon')" [pBind]="ptm('labelIcon')" [ngStyle]="{ color: labelItem.color }"></i>
+                            <i [class]="cn(labelItem.icon, cx('labelIcon'))" [pBind]="ptm('labelIcon')" [style]="{ color: labelItem.color }"></i>
                         }
                         @if (!labelItem.icon) {
-                            <span [class]="cx('labelMarker')" [pBind]="ptm('labelMarker')" [ngStyle]="{ backgroundColor: labelItem.color }"></span>
+                            <span [class]="cx('labelMarker')" [pBind]="ptm('labelMarker')" [style]="{ backgroundColor: labelItem.color }"></span>
                         }
                     }
                     <ng-container *ngTemplateOutlet="iconTemplate; context: { $implicit: labelItem, icon: labelItem.icon }"></ng-container>
@@ -63,13 +63,13 @@ export class MeterGroupLabel extends BaseComponent<MeterGroupPassThrough> {
 @Component({
     selector: 'p-meterGroup, p-metergroup, p-meter-group',
     standalone: true,
-    imports: [CommonModule, MeterGroupLabel, SharedModule, Bind],
+    imports: [NgTemplateOutlet, MeterGroupLabel, SharedModule, Bind],
     template: `
         @if (labelPosition === 'start') {
             @if (!labelTemplate && !_labelTemplate) {
                 <p-meterGroupLabel [value]="value" [labelPosition]="labelPosition" [labelOrientation]="labelOrientation" [min]="min" [max]="max" [iconTemplate]="iconTemplate || _iconTemplate" [pt]="pt" [unstyled]="unstyled()" />
             }
-            <ng-container *ngTemplateOutlet="labelTemplate || labelTemplate; context: { $implicit: value, totalPercent: totalPercent(), percentages: percentages() }"></ng-container>
+            <ng-container *ngTemplateOutlet="labelTemplate || _labelTemplate; context: { $implicit: value, totalPercent: totalPercent(), percentages: percentages() }"></ng-container>
         }
         <ng-container *ngTemplateOutlet="startTemplate || _startTemplate; context: { $implicit: value, totalPercent: totalPercent(), percentages: percentages() }"></ng-container>
         <div [class]="cx('meters')" [pBind]="ptm('meters')" [attr.data-p]="dataP">
@@ -90,7 +90,7 @@ export class MeterGroupLabel extends BaseComponent<MeterGroupPassThrough> {
                 >
                 </ng-container>
                 @if (!meterTemplate && !_meterTemplate && meterItem.value > 0) {
-                    <span [class]="cx('meter')" [attr.data-p]="dataP" [pBind]="ptm('meter')" [ngStyle]="meterStyle(meterItem)"></span>
+                    <span [class]="cx('meter')" [attr.data-p]="dataP" [pBind]="ptm('meter')" [style]="meterStyle(meterItem)"></span>
                 }
             }
         </div>
@@ -273,8 +273,8 @@ export class MeterGroup extends BaseComponent<MeterGroupPassThrough> {
     meterStyle(val: MeterItem) {
         return {
             backgroundColor: val.color,
-            width: this.orientation === 'horizontal' && this.percentValue(val.value || 0),
-            height: this.orientation === 'vertical' && this.percentValue(val.value || 0)
+            width: this.orientation === 'horizontal' ? this.percentValue(val.value || 0) : null,
+            height: this.orientation === 'vertical' ? this.percentValue(val.value || 0) : null
         };
     }
 

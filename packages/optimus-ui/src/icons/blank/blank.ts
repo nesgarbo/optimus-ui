@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { BaseIcon } from '@openng/optimus-ui/icons/baseicon';
 
 @Component({
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: '[data-p-icon="blank"]',
     standalone: true,
     template: ` <svg:rect width="1" height="1" fill="currentColor" fill-opacity="0" /> `

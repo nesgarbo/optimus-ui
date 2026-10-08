@@ -3,7 +3,7 @@ import { uuid } from '@openng/optimus-ui-utils';
 import { BaseIcon } from '@openng/optimus-ui/icons/baseicon';
 
 @Component({
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: '[data-p-icon="trash"]',
     standalone: true,
     template: `
