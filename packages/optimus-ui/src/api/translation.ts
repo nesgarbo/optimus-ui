@@ -155,4 +155,6 @@ export interface Aria {
     browseFiles?: string;
     maximizeLabel?: string;
     minimizeLabel?: string;
+    showPassword?: string;
+    hidePassword?: string;
 }

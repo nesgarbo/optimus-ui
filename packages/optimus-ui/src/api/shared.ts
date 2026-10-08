@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Directive, Input, NgModule, TemplateRef } from '@angular/core';
 
 @Component({
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'p-header',
     template: '<ng-content></ng-content>',
     standalone: false
@@ -10,7 +10,7 @@ import { ChangeDetectionStrategy, Component, Directive, Input, NgModule, Templat
 export class Header {}
 
 @Component({
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'p-footer',
     template: '<ng-content></ng-content>',
     standalone: false

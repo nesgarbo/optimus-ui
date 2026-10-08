@@ -174,7 +174,9 @@ export class Optimus extends ThemeProvider {
             removeLabel: 'Remove',
             browseFiles: 'Browse Files',
             maximizeLabel: 'Maximize',
-            minimizeLabel: 'Minimize'
+            minimizeLabel: 'Minimize',
+            showPassword: 'Show password',
+            hidePassword: 'Hide password'
         }
     };
 
