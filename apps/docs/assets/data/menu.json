@@ -569,6 +569,11 @@
                 {
                     "name": "RTL",
                     "routerLink": "/guides/rtl"
+                },
+                {
+                    "name": "Signal Forms",
+                    "routerLink": "/guides/signalforms",
+                    "badge": "New"
                 }
             ]
         },
