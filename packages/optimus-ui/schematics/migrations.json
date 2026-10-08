@@ -1,4 +1,10 @@
 {
     "$schema": "../node_modules/@angular-devkit/schematics/collection-schema.json",
-    "schematics": {}
+    "schematics": {
+        "migrate-signal-forms": {
+            "version": "2.1.0",
+            "description": "Rename the removed minLength input of p-autocomplete to minQueryLength.",
+            "factory": "./migrate-signal-forms/index#migrateSignalForms"
+        }
+    }
 }
