@@ -126,10 +126,10 @@ describe('Divider', () => {
         });
 
         it('should have default values', () => {
-            expect(divider.layout).toBe('horizontal');
-            expect(divider.type).toBe('solid');
-            expect(divider.align).toBeUndefined();
-            expect(divider.styleClass).toBeUndefined();
+            expect(divider.layout()).toBe('horizontal');
+            expect(divider.type()).toBe('solid');
+            expect(divider.align()).toBeUndefined();
+            expect(divider.styleClass()).toBeUndefined();
         });
 
         it('should have correct host attributes', () => {
@@ -958,7 +958,7 @@ describe('Divider', () => {
                 ptFixture.componentRef.setInput('pt', {
                     root: ({ instance }) => {
                         return {
-                            class: instance.layout === 'vertical' ? 'VERTICAL_LAYOUT' : ''
+                            class: instance.layout() === 'vertical' ? 'VERTICAL_LAYOUT' : ''
                         };
                     }
                 });
@@ -975,7 +975,7 @@ describe('Divider', () => {
                     content: ({ instance }) => {
                         return {
                             style: {
-                                'border-color': instance.type === 'dashed' ? 'yellow' : 'red'
+                                'border-color': instance.type() === 'dashed' ? 'yellow' : 'red'
                             }
                         };
                     }
@@ -993,7 +993,7 @@ describe('Divider', () => {
                 ptFixture.componentRef.setInput('pt', {
                     root: ({ instance }) => {
                         return {
-                            class: instance.align === 'center' ? 'CENTERED' : ''
+                            class: instance.align() === 'center' ? 'CENTERED' : ''
                         };
                     }
                 });
@@ -1010,7 +1010,7 @@ describe('Divider', () => {
                 ptFixture.componentRef.setInput('pt', {
                     root: ({ instance }) => {
                         return {
-                            class: instance.layout === 'horizontal' && instance.type === 'dotted' ? 'HORIZONTAL_DOTTED' : ''
+                            class: instance.layout() === 'horizontal' && instance.type() === 'dotted' ? 'HORIZONTAL_DOTTED' : ''
                         };
                     }
                 });
@@ -1065,7 +1065,7 @@ describe('Divider', () => {
                     root: ({ instance }) => {
                         return {
                             onclick: () => {
-                                instanceLayout = instance.layout || '';
+                                instanceLayout = instance.layout() || '';
                             }
                         };
                     }

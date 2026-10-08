@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DebugElement, provideZonelessChangeDetection, TemplateRef, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DebugElement, provideZonelessChangeDetection, TemplateRef, viewChild } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
@@ -93,11 +93,11 @@ class TestFacetCardComponent {}
     `
 })
 class TestContentChildCardComponent {
-    @ViewChild('header') headerTemplate!: TemplateRef<any>;
-    @ViewChild('title') titleTemplate!: TemplateRef<any>;
-    @ViewChild('subtitle') subtitleTemplate!: TemplateRef<any>;
-    @ViewChild('content') contentTemplate!: TemplateRef<any>;
-    @ViewChild('footer') footerTemplate!: TemplateRef<any>;
+    readonly headerTemplate = viewChild.required<TemplateRef<any>>('header');
+    readonly titleTemplate = viewChild.required<TemplateRef<any>>('title');
+    readonly subtitleTemplate = viewChild.required<TemplateRef<any>>('subtitle');
+    readonly contentTemplate = viewChild.required<TemplateRef<any>>('content');
+    readonly footerTemplate = viewChild.required<TemplateRef<any>>('footer');
 }
 
 @Component({
@@ -233,9 +233,9 @@ describe('Card', () => {
         });
 
         it('should have default values', () => {
-            expect(card.header).toBeUndefined();
-            expect(card.subheader).toBeUndefined();
-            expect(card.styleClass).toBeUndefined();
+            expect(card.header()).toBeUndefined();
+            expect(card.subheader()).toBeUndefined();
+            expect(card.styleClass()).toBeUndefined();
         });
 
         it('should have correct host attributes', async () => {
@@ -588,11 +588,11 @@ describe('Card', () => {
         });
 
         it('should have correct template references in component', () => {
-            expect(contentChildComponent.headerTemplate).toBeDefined();
-            expect(contentChildComponent.titleTemplate).toBeDefined();
-            expect(contentChildComponent.subtitleTemplate).toBeDefined();
-            expect(contentChildComponent.contentTemplate).toBeDefined();
-            expect(contentChildComponent.footerTemplate).toBeDefined();
+            expect(contentChildComponent.headerTemplate()).toBeDefined();
+            expect(contentChildComponent.titleTemplate()).toBeDefined();
+            expect(contentChildComponent.subtitleTemplate()).toBeDefined();
+            expect(contentChildComponent.contentTemplate()).toBeDefined();
+            expect(contentChildComponent.footerTemplate()).toBeDefined();
         });
     });
 
@@ -1203,8 +1203,8 @@ describe('Card', () => {
                 fixture.componentRef.setInput('pt', {
                     root: ({ instance }) => ({
                         class: {
-                            HAS_HEADER: !!instance?.header,
-                            NO_HEADER: !instance?.header
+                            HAS_HEADER: !!instance?.header(),
+                            NO_HEADER: !instance?.header()
                         }
                     })
                 });

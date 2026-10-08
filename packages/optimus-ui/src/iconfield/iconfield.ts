@@ -1,4 +1,4 @@
-import { AfterViewChecked, ChangeDetectionStrategy, Component, inject, InjectionToken, Input, NgModule, ViewEncapsulation } from '@angular/core';
+import { AfterViewChecked, ChangeDetectionStrategy, Component, inject, InjectionToken, NgModule, ViewEncapsulation, input } from '@angular/core';
 import { BaseComponent, PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { Bind, BindModule } from '@openng/optimus-ui/bind';
 import { IconFieldPassThrough } from '@openng/optimus-ui/types/iconfield';
@@ -19,14 +19,14 @@ const ICONFIELD_INSTANCE = new InjectionToken<IconField>('ICONFIELD_INSTANCE');
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
-        '[class]': "cn(cx('root'), styleClass)"
+        '[class]': "cn(cx('root'), styleClass())"
     },
     hostDirectives: [Bind]
 })
 export class IconField extends BaseComponent<IconFieldPassThrough> implements AfterViewChecked {
     componentName = 'IconField';
 
-    @Input() hostName: any = '';
+    readonly hostName = input<any>('');
 
     _componentStyle = inject(IconFieldStyle);
 
@@ -42,13 +42,13 @@ export class IconField extends BaseComponent<IconFieldPassThrough> implements Af
      * Position of the icon.
      * @group Props
      */
-    @Input() iconPosition: 'right' | 'left' = 'left';
+    readonly iconPosition = input<'right' | 'left'>('left');
     /**
      * Style class of the component.
      * @deprecated since v20.0.0, use `class` instead.
      * @group Props
      */
-    @Input() styleClass: string;
+    readonly styleClass = input<string | undefined>(undefined);
 }
 
 @NgModule({

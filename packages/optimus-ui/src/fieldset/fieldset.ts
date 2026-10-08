@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { booleanAttribute, ChangeDetectionStrategy, Component, computed, ContentChild, ContentChildren, ElementRef, inject, InjectionToken, input, Input, NgModule, output, QueryList, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, computed, ElementRef, inject, InjectionToken, input, linkedSignal, NgModule, output, TemplateRef, ViewEncapsulation, viewChild, contentChild, contentChildren } from '@angular/core';
 import { MotionEvent, MotionOptions } from '@openng/optimus-ui-motion';
 import { uuid } from '@openng/optimus-ui-utils';
 import { BlockableUI, PrimeTemplate, SharedModule } from '@openng/optimus-ui/api';
@@ -21,72 +21,72 @@ const FIELDSET_INSTANCE = new InjectionToken<Fieldset>('FIELDSET_INSTANCE');
     standalone: true,
     imports: [NgTemplateOutlet, MinusIcon, PlusIcon, SharedModule, BindModule, MotionModule],
     template: `
-        <fieldset [attr.id]="id" [style]="style" [class]="cn(cx('root'), styleClass)" [pBind]="ptm('root')" [attr.data-p]="dataP">
+        <fieldset [attr.id]="id" [style]="style()" [class]="cn(cx('root'), styleClass())" [pBind]="ptm('root')" [attr.data-p]="dataP">
             <legend [class]="cx('legend')" [pBind]="ptm('legend')" [attr.data-p]="dataP">
-                @if (toggleable) {
+                @if (toggleable()) {
                     <button
                         [attr.id]="id + '_header'"
                         tabindex="0"
                         role="button"
                         [attr.aria-controls]="id + '_content'"
-                        [attr.aria-expanded]="!collapsed"
+                        [attr.aria-expanded]="!_collapsed()"
                         [attr.aria-label]="buttonAriaLabel"
                         (click)="toggle($event)"
                         (keydown)="onKeyDown($event)"
                         [class]="cx('toggleButton')"
                         [pBind]="ptm('toggleButton')"
                     >
-                        @if (collapsed) {
-                            @if (!expandIconTemplate && !_expandIconTemplate) {
+                        @if (_collapsed()) {
+                            @if (!expandIconTemplate() && !_expandIconTemplate) {
                                 <svg data-p-icon="plus" [class]="cx('toggleIcon')" [pBind]="ptm('toggleIcon')" />
                             }
-                            @if (expandIconTemplate || _expandIconTemplate) {
+                            @if (expandIconTemplate() || _expandIconTemplate) {
                                 <span [class]="cx('toggleIcon')" [pBind]="ptm('toggleIcon')">
-                                    <ng-container *ngTemplateOutlet="expandIconTemplate || _expandIconTemplate"></ng-container>
+                                    <ng-container *ngTemplateOutlet="expandIconTemplate() || _expandIconTemplate"></ng-container>
                                 </span>
                             }
                         }
-                        @if (!collapsed) {
-                            @if (!collapseIconTemplate && !_collapseIconTemplate) {
+                        @if (!_collapsed()) {
+                            @if (!collapseIconTemplate() && !_collapseIconTemplate) {
                                 <svg data-p-icon="minus" [class]="cx('toggleIcon')" [attr.aria-hidden]="true" [pBind]="ptm('toggleIcon')" />
                             }
-                            @if (collapseIconTemplate || _collapseIconTemplate) {
+                            @if (collapseIconTemplate() || _collapseIconTemplate) {
                                 <span [class]="cx('toggleIcon')" [pBind]="ptm('toggleIcon')">
-                                    <ng-container *ngTemplateOutlet="collapseIconTemplate || _collapseIconTemplate"></ng-container>
+                                    <ng-container *ngTemplateOutlet="collapseIconTemplate() || _collapseIconTemplate"></ng-container>
                                 </span>
                             }
                         }
                         <ng-container *ngTemplateOutlet="legendContent"></ng-container>
                     </button>
                 } @else {
-                    <span [class]="cx('legendLabel')" [pBind]="ptm('legendLabel')">{{ legend }}</span>
+                    <span [class]="cx('legendLabel')" [pBind]="ptm('legendLabel')">{{ legend() }}</span>
                     <ng-content select="p-header"></ng-content>
-                    <ng-container *ngTemplateOutlet="headerTemplate || _headerTemplate"></ng-container>
+                    <ng-container *ngTemplateOutlet="headerTemplate() || _headerTemplate"></ng-container>
                 }
                 <ng-template #legendContent>
-                    <span [class]="cx('legendLabel')" [pBind]="ptm('legendLabel')">{{ legend }}</span>
+                    <span [class]="cx('legendLabel')" [pBind]="ptm('legendLabel')">{{ legend() }}</span>
                     <ng-content select="p-header"></ng-content>
-                    <ng-container *ngTemplateOutlet="headerTemplate || _headerTemplate"></ng-container>
+                    <ng-container *ngTemplateOutlet="headerTemplate() || _headerTemplate"></ng-container>
                 </ng-template>
             </legend>
             <div
                 [pBind]="ptm('contentContainer')"
-                [pMotion]="!toggleable || (toggleable && !collapsed)"
+                [pMotion]="!toggleable() || (toggleable() && !_collapsed())"
                 pMotionName="p-collapsible"
                 [pMotionOptions]="computedMotionOptions()"
                 [class]="cx('contentContainer')"
                 [id]="id + '_content'"
                 role="region"
                 [attr.aria-labelledby]="id + '_header'"
-                [attr.aria-hidden]="collapsed"
-                [attr.tabindex]="collapsed ? '-1' : undefined"
+                [attr.aria-hidden]="_collapsed()"
+                [attr.tabindex]="_collapsed() ? '-1' : undefined"
                 (pMotionOnAfterEnter)="onToggleDone($event)"
                 (pMotionOnAfterLeave)="onToggleDone($event)"
             >
                 <div [pBind]="ptm('contentWrapper')" [class]="cx('contentWrapper')">
                     <div [class]="cx('content')" [pBind]="ptm('content')" #contentWrapper>
                         <ng-content></ng-content>
-                        <ng-container *ngTemplateOutlet="contentTemplate || _contentTemplate"></ng-container>
+                        <ng-container *ngTemplateOutlet="contentTemplate() || _contentTemplate"></ng-container>
                     </div>
                 </div>
             </div>
@@ -112,7 +112,7 @@ export class Fieldset extends BaseComponent<FieldsetPassThrough> implements Bloc
 
     get dataP() {
         return this.cn({
-            toggleable: this.toggleable
+            toggleable: this.toggleable()
         });
     }
 
@@ -120,29 +120,35 @@ export class Fieldset extends BaseComponent<FieldsetPassThrough> implements Bloc
      * Header text of the fieldset.
      * @group Props
      */
-    @Input() legend: string | undefined;
+    readonly legend = input<string | undefined>(undefined);
     /**
      * When specified, content can toggled by clicking the legend.
      * @group Props
      * @defaultValue false
      */
-    @Input({ transform: booleanAttribute }) toggleable: boolean | undefined;
+    readonly toggleable = input<boolean | undefined, unknown>(undefined, { transform: booleanAttribute });
     /**
      * Inline style of the component.
      * @group Props
      */
-    @Input() style: { [klass: string]: any } | null | undefined;
+    readonly style = input<
+        | {
+              [klass: string]: any;
+          }
+        | null
+        | undefined
+    >(undefined);
     /**
      * Style class of the component.
      * @group Props
      */
-    @Input() styleClass: string | undefined;
+    readonly styleClass = input<string | undefined>(undefined);
     /**
      * Transition options of the panel animation.
      * @group Props
      * @deprecated since v21.0.0, use `motionOptions` instead.
      */
-    @Input() transitionOptions: string = '400ms cubic-bezier(0.86, 0, 0.07, 1)';
+    readonly transitionOptions = input<string>('400ms cubic-bezier(0.86, 0, 0.07, 1)');
     /**
      * The motion options.
      * @group Props
@@ -174,7 +180,7 @@ export class Fieldset extends BaseComponent<FieldsetPassThrough> implements Bloc
      */
     onAfterToggle = output<FieldsetAfterToggleEvent>();
 
-    @ViewChild('contentWrapper') contentWrapperViewChild: ElementRef;
+    readonly contentWrapperViewChild = viewChild<ElementRef>('contentWrapper');
 
     private _id: string = uuid('pn_id_');
 
@@ -183,54 +189,48 @@ export class Fieldset extends BaseComponent<FieldsetPassThrough> implements Bloc
     }
 
     get buttonAriaLabel() {
-        return this.legend;
+        return this.legend();
     }
-
-    /**
-     * Internal collapsed state
-     */
-    _collapsed: boolean | undefined;
 
     /**
      * Defines the initial state of content, supports one or two-way binding as well.
      * @group Props
      */
-    @Input({ transform: booleanAttribute })
-    get collapsed(): boolean | undefined {
-        return this._collapsed;
-    }
-    set collapsed(value: boolean | undefined) {
-        this._collapsed = value;
-    }
+    readonly collapsed = input<boolean | undefined, unknown>(undefined, { transform: booleanAttribute });
+
+    /**
+     * Internal collapsed state: follows the `collapsed` input and is written when the fieldset is toggled.
+     */
+    readonly _collapsed = linkedSignal<boolean | undefined>(() => this.collapsed());
 
     /**
      * Custom header template.
      * @group Templates
      */
-    @ContentChild('header', { descendants: false }) headerTemplate: TemplateRef<void> | undefined;
+    readonly headerTemplate = contentChild<TemplateRef<void>>('header', { descendants: false });
 
     /**
      * Custom expand icon template.
      * @group Templates
      */
-    @ContentChild('expandicon', { descendants: false }) expandIconTemplate: TemplateRef<void> | undefined;
+    readonly expandIconTemplate = contentChild<TemplateRef<void>>('expandicon', { descendants: false });
 
     /**
      * Custom collapse icon template.
      * @group Templates
      */
-    @ContentChild('collapseicon', { descendants: false }) collapseIconTemplate: TemplateRef<void> | undefined;
+    readonly collapseIconTemplate = contentChild<TemplateRef<void>>('collapseicon', { descendants: false });
 
     /**
      * Custom content template.
      * @group Templates
      */
-    @ContentChild('content', { descendants: false }) contentTemplate: TemplateRef<void> | undefined;
+    readonly contentTemplate = contentChild<TemplateRef<void>>('content', { descendants: false });
 
     toggle(event: MouseEvent) {
-        this.onBeforeToggle.emit({ originalEvent: event, collapsed: this.collapsed });
+        this.onBeforeToggle.emit({ originalEvent: event, collapsed: this._collapsed() });
 
-        if (this.collapsed) this.expand();
+        if (this._collapsed()) this.expand();
         else this.collapse();
 
         event.preventDefault();
@@ -244,13 +244,13 @@ export class Fieldset extends BaseComponent<FieldsetPassThrough> implements Bloc
     }
 
     expand() {
-        this._collapsed = false;
+        this._collapsed.set(false);
         this.collapsedChange.emit(false);
         this.updateTabIndex();
     }
 
     collapse() {
-        this._collapsed = true;
+        this._collapsed.set(true);
         this.collapsedChange.emit(true);
         this.updateTabIndex();
     }
@@ -260,10 +260,11 @@ export class Fieldset extends BaseComponent<FieldsetPassThrough> implements Bloc
     }
 
     updateTabIndex() {
-        if (this.contentWrapperViewChild) {
-            const focusableElements = this.contentWrapperViewChild.nativeElement.querySelectorAll('input, button, select, a, textarea, [tabindex]');
+        const contentWrapperViewChild = this.contentWrapperViewChild();
+        if (contentWrapperViewChild) {
+            const focusableElements = contentWrapperViewChild.nativeElement.querySelectorAll('input, button, select, a, textarea, [tabindex]');
             focusableElements.forEach((element: HTMLElement) => {
-                if (this.collapsed) {
+                if (this._collapsed()) {
                     element.setAttribute('tabindex', '-1');
                 } else {
                     element.removeAttribute('tabindex');
@@ -273,7 +274,7 @@ export class Fieldset extends BaseComponent<FieldsetPassThrough> implements Bloc
     }
 
     onToggleDone(event: MotionEvent) {
-        this.onAfterToggle.emit({ originalEvent: event as any, collapsed: this.collapsed });
+        this.onAfterToggle.emit({ originalEvent: event as any, collapsed: this._collapsed() });
     }
 
     _headerTemplate: TemplateRef<void> | undefined;
@@ -284,10 +285,10 @@ export class Fieldset extends BaseComponent<FieldsetPassThrough> implements Bloc
 
     _contentTemplate: TemplateRef<void> | undefined;
 
-    @ContentChildren(PrimeTemplate) templates!: QueryList<PrimeTemplate>;
+    readonly templates = contentChildren(PrimeTemplate);
 
     onAfterContentInit() {
-        this.templates.forEach((item) => {
+        this.templates().forEach((item) => {
             switch (item.getType()) {
                 case 'header':
                     this._headerTemplate = item.template;

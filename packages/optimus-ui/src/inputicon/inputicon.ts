@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, InjectionToken, Input, NgModule, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, InjectionToken, NgModule, ViewEncapsulation, input } from '@angular/core';
 import { SharedModule } from '@openng/optimus-ui/api';
 import { BaseComponent, PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { Bind, BindModule } from '@openng/optimus-ui/bind';
@@ -21,19 +21,19 @@ const INPUTICON_INSTANCE = new InjectionToken<InputIcon>('INPUTICON_INSTANCE');
     providers: [InputIconStyle, { provide: INPUTICON_INSTANCE, useExisting: InputIcon }, { provide: PARENT_INSTANCE, useExisting: InputIcon }],
     hostDirectives: [Bind],
     host: {
-        '[class]': "cn(cx('root'), styleClass)"
+        '[class]': "cn(cx('root'), styleClass())"
     }
 })
 export class InputIcon extends BaseComponent<InputIconPassThrough> {
     componentName = 'InputIcon';
 
-    @Input() hostName: any = '';
+    readonly hostName = input<any>('');
     /**
      * Style class of the element.
      * @deprecated since v20.0.0, use `class` instead.
      * @group Props
      */
-    @Input() styleClass: string | undefined;
+    readonly styleClass = input<string | undefined>(undefined);
 
     _componentStyle = inject(InputIconStyle);
 

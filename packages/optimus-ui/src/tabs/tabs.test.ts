@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DebugElement, Input, provideZonelessChangeDetection } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DebugElement, provideZonelessChangeDetection, input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideOptimus } from '@openng/optimus-ui/config';
@@ -165,7 +165,7 @@ class TestContentChildIconsTabsComponent {
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false,
     template: `
-        <p-tabs [value]="1" [pt]="pt">
+        <p-tabs [value]="1" [pt]="pt()">
             <p-tablist>
                 <p-tab [value]="1">PT Test Tab 1</p-tab>
                 <p-tab [value]="2">PT Test Tab 2</p-tab>
@@ -182,7 +182,7 @@ class TestContentChildIconsTabsComponent {
     `
 })
 class TestPTTabsComponent {
-    @Input() pt: any;
+    readonly pt = input<any>(undefined);
 }
 
 describe('Tabs', () => {
@@ -1098,10 +1098,10 @@ describe('Tabs', () => {
         });
 
         it('should apply simple string classes to PT sections', async () => {
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 root: 'ROOT_CLASS',
                 host: 'HOST_CLASS'
-            };
+            });
             ptFixture.detectChanges();
             await new Promise((resolve) => setTimeout(resolve, 100));
             await ptFixture.whenStable();
@@ -1115,14 +1115,14 @@ describe('Tabs', () => {
         });
 
         it('should apply object-based PT options with class and attributes', async () => {
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 root: {
                     class: 'PT_ROOT_CLASS',
                     'data-test': 'tabs-test',
                     'aria-label': 'PT Tabs Label',
                     'data-role': 'tabs-role'
                 }
-            };
+            });
             ptFixture.detectChanges();
             await new Promise((resolve) => setTimeout(resolve, 100));
             await ptFixture.whenStable();
@@ -1137,12 +1137,12 @@ describe('Tabs', () => {
         });
 
         it('should apply mixed object and string PT values', async () => {
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 root: {
                     class: 'PT_ROOT_CLASS'
                 },
                 host: 'PT_HOST_CLASS'
-            };
+            });
             ptFixture.detectChanges();
             await new Promise((resolve) => setTimeout(resolve, 100));
             await ptFixture.whenStable();
@@ -1156,14 +1156,14 @@ describe('Tabs', () => {
         });
 
         it('should use instance variables in PT functions', async () => {
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 root: ({ instance }) => {
                     return {
                         class: instance?.scrollable() ? 'SCROLLABLE' : 'NON_SCROLLABLE',
                         'data-lazy': instance?.lazy()
                     };
                 }
-            };
+            });
             ptFixture.detectChanges();
             await new Promise((resolve) => setTimeout(resolve, 100));
             await ptFixture.whenStable();
@@ -1178,13 +1178,13 @@ describe('Tabs', () => {
 
         it('should handle event binding in PT options', async () => {
             let clicked = false;
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 root: {
                     onclick: () => {
                         clicked = true;
                     }
                 }
-            };
+            });
             ptFixture.detectChanges();
             await new Promise((resolve) => setTimeout(resolve, 100));
             await ptFixture.whenStable();

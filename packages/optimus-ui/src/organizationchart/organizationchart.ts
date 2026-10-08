@@ -4,18 +4,19 @@ import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
     Component,
-    ContentChild,
-    ContentChildren,
     ElementRef,
     forwardRef,
     inject,
     InjectionToken,
-    Input,
     NgModule,
     output,
-    QueryList,
     TemplateRef,
-    ViewEncapsulation
+    ViewEncapsulation,
+    input,
+    model,
+    effect,
+    contentChildren,
+    contentChild
 } from '@angular/core';
 import { hasClass, isAttributeEquals } from '@openng/optimus-ui-utils';
 import { PrimeTemplate, SharedModule, TreeNode } from '@openng/optimus-ui/api';
@@ -34,33 +35,40 @@ const ORGANIZATIONCHART_INSTANCE = new InjectionToken<OrganizationChart>('ORGANI
     standalone: true,
     imports: [CommonModule, ChevronDownIcon, ChevronUpIcon, SharedModule, BindModule],
     template: `
-        @if (node) {
+        @if (node()) {
             <tbody [pBind]="ptm('body')">
                 <tr [pBind]="ptm('row')">
                     <td [attr.colspan]="colspan" [pBind]="ptm('cell')">
-                        <div [class]="cn(cx('node'), node.styleClass)" (click)="onNodeClick($event, node)" [pBind]="getPTOptions('node')">
-                            @if (!chart.getTemplateForNode(node)) {
-                                <div>{{ node.label }}</div>
+                        <div [class]="cn(cx('node'), node().styleClass)" (click)="onNodeClick($event, node())" [pBind]="getPTOptions('node')">
+                            @if (!chart.getTemplateForNode(node())) {
+                                <div>{{ node().label }}</div>
                             }
-                            @if (chart.getTemplateForNode(node)) {
+                            @if (chart.getTemplateForNode(node())) {
                                 <div>
-                                    <ng-container *ngTemplateOutlet="chart.getTemplateForNode(node); context: { $implicit: node }"></ng-container>
+                                    <ng-container *ngTemplateOutlet="chart.getTemplateForNode(node()); context: { $implicit: node() }"></ng-container>
                                 </div>
                             }
-                            @if (collapsible) {
+                            @if (collapsible()) {
                                 @if (!leaf) {
-                                    <a tabindex="0" [class]="cx('nodeToggleButton')" (click)="toggleNode($event, node)" (keydown.enter)="toggleNode($event, node)" (keydown.space)="toggleNode($event, node)" [pBind]="getPTOptions('nodeToggleButton')">
-                                        @if (!chart.togglerIconTemplate && !chart._togglerIconTemplate) {
-                                            @if (node.expanded) {
+                                    <a
+                                        tabindex="0"
+                                        [class]="cx('nodeToggleButton')"
+                                        (click)="toggleNode($event, node())"
+                                        (keydown.enter)="toggleNode($event, node())"
+                                        (keydown.space)="toggleNode($event, node())"
+                                        [pBind]="getPTOptions('nodeToggleButton')"
+                                    >
+                                        @if (!chart.togglerIconTemplate() && !chart._togglerIconTemplate) {
+                                            @if (node().expanded) {
                                                 <svg data-p-icon="chevron-down" [class]="cx('nodeToggleButtonIcon')" [pBind]="getPTOptions('nodeToggleButtonIcon')" />
                                             }
-                                            @if (!node.expanded) {
+                                            @if (!node().expanded) {
                                                 <svg data-p-icon="chevron-up" [class]="cx('nodeToggleButtonIcon')" [pBind]="getPTOptions('nodeToggleButtonIcon')" />
                                             }
                                         }
-                                        @if (chart.togglerIconTemplate || chart._togglerIconTemplate) {
+                                        @if (chart.togglerIconTemplate() || chart._togglerIconTemplate) {
                                             <span [class]="cx('nodeToggleButtonIcon')" [pBind]="getPTOptions('nodeToggleButtonIcon')">
-                                                <ng-template *ngTemplateOutlet="chart.togglerIconTemplate || chart._togglerIconTemplate; context: { $implicit: node.expanded }"></ng-template>
+                                                <ng-template *ngTemplateOutlet="chart.togglerIconTemplate() || chart._togglerIconTemplate; context: { $implicit: node().expanded }"></ng-template>
                                             </span>
                                         }
                                     </a>
@@ -69,28 +77,28 @@ const ORGANIZATIONCHART_INSTANCE = new InjectionToken<OrganizationChart>('ORGANI
                         </div>
                     </td>
                 </tr>
-                <tr [style]="getChildStyle(node)" [class]="cx('connectors')" [pBind]="ptm('connectors')">
+                <tr [style]="getChildStyle(node())" [class]="cx('connectors')" [pBind]="ptm('connectors')">
                     <td [pBind]="ptm('lineCell')" [attr.colspan]="colspan">
                         <div [pBind]="ptm('connectorDown')" [class]="cx('connectorDown')"></div>
                     </td>
                 </tr>
-                <tr [style]="getChildStyle(node)" [class]="cx('connectors')" [pBind]="ptm('connectors')">
-                    @if (node.children && node.children.length === 1) {
+                <tr [style]="getChildStyle(node())" [class]="cx('connectors')" [pBind]="ptm('connectors')">
+                    @if (node().children && node().children.length === 1) {
                         <td [pBind]="ptm('lineCell')" [attr.colspan]="colspan">
                             <div [pBind]="ptm('connectorDown')" [class]="cx('connectorDown')"></div>
                         </td>
                     }
-                    @if (node.children && node.children.length > 1) {
-                        @for (child of node.children; track child; let first = $first; let last = $last; let index = $index) {
+                    @if (node().children && node().children.length > 1) {
+                        @for (child of node().children; track child; let first = $first; let last = $last; let index = $index) {
                             <td [class]="cx('connectorLeft', { first })" [pBind]="getNodeOptions(!(index === 0), 'connectorLeft')">&nbsp;</td>
-                            <td [class]="cx('connectorRight', { last })" [pBind]="getNodeOptions(!(index === node.children.length - 1), 'connectorRight')">&nbsp;</td>
+                            <td [class]="cx('connectorRight', { last })" [pBind]="getNodeOptions(!(index === node().children.length - 1), 'connectorRight')">&nbsp;</td>
                         }
                     }
                 </tr>
-                <tr [style]="getChildStyle(node)" [class]="cx('nodeChildren')" [pBind]="ptm('nodeChildren')">
-                    @for (child of node.children; track child) {
+                <tr [style]="getChildStyle(node())" [class]="cx('nodeChildren')" [pBind]="ptm('nodeChildren')">
+                    @for (child of node().children; track child) {
                         <td colspan="2" [pBind]="ptm('nodeCell')">
-                            <table [class]="cx('table')" pOrganizationChartNode [unstyled]="unstyled()" [pt]="pt" [node]="child" [collapsible]="node.children && node.children.length > 0 && collapsible"></table>
+                            <table [class]="cx('table')" pOrganizationChartNode [unstyled]="unstyled()" [pt]="pt" [node]="child" [collapsible]="node().children && node().children.length > 0 && collapsible()"></table>
                         </td>
                     }
                 </tr>
@@ -103,15 +111,15 @@ const ORGANIZATIONCHART_INSTANCE = new InjectionToken<OrganizationChart>('ORGANI
     providers: [OrganizationChartStyle, { provide: PARENT_INSTANCE, useExisting: OrganizationChartNode }]
 })
 export class OrganizationChartNode extends BaseComponent {
-    @Input() node: TreeNode<any> | undefined;
+    readonly node = input<TreeNode<any> | undefined>(undefined);
 
-    @Input({ transform: booleanAttribute }) root: boolean | undefined;
+    readonly root = input<boolean | undefined, unknown>(undefined, { transform: booleanAttribute });
 
-    @Input({ transform: booleanAttribute }) first: boolean | undefined;
+    readonly first = input<boolean | undefined, unknown>(undefined, { transform: booleanAttribute });
 
-    @Input({ transform: booleanAttribute }) last: boolean | undefined;
+    readonly last = input<boolean | undefined, unknown>(undefined, { transform: booleanAttribute });
 
-    @Input({ transform: booleanAttribute }) collapsible: boolean | undefined;
+    readonly collapsible = input<boolean | undefined, unknown>(undefined, { transform: booleanAttribute });
 
     chart: OrganizationChart;
 
@@ -130,14 +138,16 @@ export class OrganizationChartNode extends BaseComponent {
     }
 
     get leaf(): boolean | undefined {
-        if (this.node) {
-            return this.node.leaf == false ? false : !(this.node.children && this.node.children.length);
+        const node = this.node();
+        if (node) {
+            return node.leaf == false ? false : !(node.children && node.children.length);
         }
     }
 
     get colspan() {
-        if (this.node) {
-            return this.node.children && this.node.children.length ? this.node.children.length * 2 : null;
+        const node = this.node();
+        if (node) {
+            return node.children && node.children.length ? node.children.length * 2 : null;
         }
     }
 
@@ -148,12 +158,13 @@ export class OrganizationChartNode extends BaseComponent {
     }
 
     getPTOptions(key: string) {
+        const node = this.node();
         return this.ptm(key, {
             context: {
-                expanded: this.node?.expanded,
-                selectable: this.node?.selectable !== false && this.chart.selectionMode,
+                expanded: node?.expanded,
+                selectable: node?.selectable !== false && this.chart.selectionMode(),
                 selected: this.isSelected(),
-                toggleable: this.collapsible && !this.leaf,
+                toggleable: this.collapsible() && !this.leaf,
                 active: this.isSelected()
             }
         });
@@ -173,14 +184,14 @@ export class OrganizationChartNode extends BaseComponent {
 
     toggleNode(event: Event, node: TreeNode) {
         node.expanded = !node.expanded;
-        if (node.expanded) this.chart.onNodeExpand.emit({ originalEvent: event, node: <TreeNode>this.node });
-        else this.chart.onNodeCollapse.emit({ originalEvent: event, node: <TreeNode>this.node });
+        if (node.expanded) this.chart.onNodeExpand.emit({ originalEvent: event, node: <TreeNode>this.node() });
+        else this.chart.onNodeCollapse.emit({ originalEvent: event, node: <TreeNode>this.node() });
 
         event.preventDefault();
     }
 
     isSelected() {
-        return this.chart.isSelected(this.node as TreeNode);
+        return this.chart.isSelected(this.node() as TreeNode);
     }
 
     onDestroy() {
@@ -197,14 +208,14 @@ export class OrganizationChartNode extends BaseComponent {
     imports: [CommonModule, OrganizationChartNode, SharedModule, BindModule],
     template: `
         @if (root) {
-            <table [class]="cx('table')" [collapsible]="collapsible" pOrganizationChartNode [pt]="pt" [unstyled]="unstyled()" [node]="root" [pBind]="ptm('table')"></table>
+            <table [class]="cx('table')" [collapsible]="collapsible()" pOrganizationChartNode [pt]="pt" [unstyled]="unstyled()" [node]="root" [pBind]="ptm('table')"></table>
         }
     `,
     // Eager on purpose: a TreeNode mutated from outside (node.expanded = false) must repaint, and OnPush cannot see it.
     changeDetection: ChangeDetectionStrategy.Eager,
     providers: [OrganizationChartStyle, { provide: ORGANIZATIONCHART_INSTANCE, useExisting: OrganizationChart }, { provide: PARENT_INSTANCE, useExisting: OrganizationChart }],
     host: {
-        '[class]': "cn(cx('root'), styleClass)"
+        '[class]': "cn(cx('root'), styleClass())"
     },
     hostDirectives: [Bind]
 })
@@ -215,47 +226,34 @@ export class OrganizationChart extends BaseComponent<OrganizationChartPassThroug
      * An array of nested TreeNodes.
      * @group Props
      */
-    @Input() value: TreeNode[] | undefined;
+    readonly value = input<TreeNode[] | undefined>(undefined);
     /**
      * Style class of the component.
      * @deprecated since v20.0.0, use `class` instead.
      * @group Props
      */
-    @Input() styleClass: string | undefined;
+    readonly styleClass = input<string | undefined>(undefined);
     /**
      * Defines the selection mode.
      * @group Props
      */
-    @Input() selectionMode: 'single' | 'multiple' | null | undefined;
+    readonly selectionMode = input<'single' | 'multiple' | null | undefined>(undefined);
     /**
      * Whether the nodes can be expanded or toggled.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) collapsible: boolean | undefined;
+    readonly collapsible = input<boolean | undefined, unknown>(undefined, { transform: booleanAttribute });
     /**
      * Whether the space allocated by a node is preserved when hidden.
      * @deprecated since v20.0.0.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) preserveSpace: boolean = true;
+    readonly preserveSpace = input<boolean, unknown>(true, { transform: booleanAttribute });
     /**
      * A single treenode instance or an array to refer to the selections.
      * @group Props
      */
-    @Input() get selection(): any {
-        return this._selection;
-    }
-    set selection(val: any) {
-        this._selection = val;
-
-        if (this.initialized) this.selectionSource.next(null);
-    }
-    /**
-     * Callback to invoke on selection change.
-     * @param {*} any - selected value.
-     * @group Emits
-     */
-    selectionChange = output<any>();
+    readonly selection = model<any>(undefined);
     /**
      * Callback to invoke when a node is selected.
      * @param {OrganizationChartNodeSelectEvent} event - custom node select event.
@@ -281,17 +279,15 @@ export class OrganizationChart extends BaseComponent<OrganizationChartPassThroug
      */
     onNodeCollapse = output<OrganizationChartNodeCollapseEvent>();
 
-    @ContentChildren(PrimeTemplate) templates: Nullable<QueryList<PrimeTemplate>>;
+    readonly templates = contentChildren(PrimeTemplate);
 
-    @ContentChild('togglericon', { descendants: false }) togglerIconTemplate: TemplateRef<any> | undefined;
+    readonly togglerIconTemplate = contentChild<TemplateRef<any>>('togglericon', { descendants: false });
 
     public templateMap: any;
 
     _togglerIconTemplate: Nullable<TemplateRef<any>>;
 
     private selectionSource = new Subject<any>();
-
-    _selection: any;
 
     initialized: Nullable<boolean>;
 
@@ -307,20 +303,29 @@ export class OrganizationChart extends BaseComponent<OrganizationChartPassThroug
 
     cd: ChangeDetectorRef = inject(ChangeDetectorRef);
 
+    constructor() {
+        super();
+        effect(() => {
+            this.selection();
+            if (this.initialized) this.selectionSource.next(null);
+        });
+    }
+
     onAfterViewChecked(): void {
         this.bindDirectiveInstance.setAttrs(this.ptms(['host', 'root']));
     }
 
     get root(): TreeNode<any> | null {
-        return this.value && this.value.length ? this.value[0] : null;
+        const value = this.value();
+        return value && value.length ? value[0] : null;
     }
 
     onAfterContentInit() {
-        if ((this.templates as QueryList<PrimeTemplate>).length) {
+        if (this.templates().length) {
             this.templateMap = {};
         }
 
-        (this.templates as QueryList<PrimeTemplate>).forEach((item) => {
+        this.templates().forEach((item) => {
             if (item.getType() === 'togglericon') {
                 this._togglerIconTemplate = item.template;
             } else {
@@ -339,9 +344,10 @@ export class OrganizationChart extends BaseComponent<OrganizationChartPassThroug
     onNodeClick(event: Event, node: TreeNode) {
         let eventTarget = <Element>event.target;
 
+        const selectionMode = this.selectionMode();
         if (isAttributeEquals(eventTarget, 'data-pc-section', 'nodetogglebutton') || isAttributeEquals(eventTarget, 'data-pc-section', 'nodetogglebuttonicon')) {
             return;
-        } else if (this.selectionMode) {
+        } else if (selectionMode) {
             if (node.selectable === false) {
                 return;
             }
@@ -349,25 +355,24 @@ export class OrganizationChart extends BaseComponent<OrganizationChartPassThroug
             let index = this.findIndexInSelection(node);
             let selected = index >= 0;
 
-            if (this.selectionMode === 'single') {
+            if (selectionMode === 'single') {
                 if (selected) {
-                    this.selection = null;
+                    this.selection.set(null);
                     this.onNodeUnselect.emit({ originalEvent: event, node: node });
                 } else {
-                    this.selection = node;
+                    this.selection.set(node);
                     this.onNodeSelect.emit({ originalEvent: event, node: node });
                 }
-            } else if (this.selectionMode === 'multiple') {
+            } else if (selectionMode === 'multiple') {
                 if (selected) {
-                    this.selection = this.selection.filter((val: any, i: number) => i != index);
+                    this.selection.set(this.selection().filter((val: any, i: number) => i != index));
                     this.onNodeUnselect.emit({ originalEvent: event, node: node });
                 } else {
-                    this.selection = [...(this.selection || []), node];
+                    this.selection.set([...(this.selection() || []), node]);
                     this.onNodeSelect.emit({ originalEvent: event, node: node });
                 }
             }
 
-            this.selectionChange.emit(this.selection);
             this.selectionSource.next(null);
         }
     }
@@ -375,12 +380,13 @@ export class OrganizationChart extends BaseComponent<OrganizationChartPassThroug
     findIndexInSelection(node: TreeNode) {
         let index: number = -1;
 
-        if (this.selectionMode && this.selection) {
-            if (this.selectionMode === 'single') {
-                index = this.selection == node ? 0 : -1;
-            } else if (this.selectionMode === 'multiple') {
-                for (let i = 0; i < this.selection.length; i++) {
-                    if (this.selection[i] == node) {
+        const selectionMode = this.selectionMode();
+        if (selectionMode && this.selection()) {
+            if (selectionMode === 'single') {
+                index = this.selection() == node ? 0 : -1;
+            } else if (selectionMode === 'multiple') {
+                for (let i = 0; i < this.selection().length; i++) {
+                    if (this.selection()[i] == node) {
                         index = i;
                         break;
                     }

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DebugElement, Input, provideZonelessChangeDetection } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DebugElement, provideZonelessChangeDetection, input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
@@ -96,7 +96,7 @@ class TestTemplateStepperComponent {
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false,
     template: `
-        <p-stepper [value]="1" [pt]="pt">
+        <p-stepper [value]="1" [pt]="pt()">
             <p-step-list>
                 <p-step [value]="1">PT Test Step 1</p-step>
                 <p-step [value]="2">PT Test Step 2</p-step>
@@ -113,7 +113,7 @@ class TestTemplateStepperComponent {
     `
 })
 class TestPTStepperComponent {
-    @Input() pt: any;
+    readonly pt = input<any>(undefined);
 }
 
 describe('Stepper', () => {
@@ -678,10 +678,10 @@ describe('Stepper', () => {
         });
 
         it('should apply simple string classes to PT sections', async () => {
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 root: 'ROOT_CLASS',
                 host: 'HOST_CLASS'
-            };
+            });
             ptFixture.detectChanges();
             await new Promise((resolve) => setTimeout(resolve, 100));
             await ptFixture.whenStable();
@@ -695,14 +695,14 @@ describe('Stepper', () => {
         });
 
         it('should apply object-based PT options with class and attributes', async () => {
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 root: {
                     class: 'PT_ROOT_CLASS',
                     'data-test': 'stepper-test',
                     'aria-label': 'PT Stepper Label',
                     'data-role': 'stepper-role'
                 }
-            };
+            });
             ptFixture.detectChanges();
             await new Promise((resolve) => setTimeout(resolve, 100));
             await ptFixture.whenStable();
@@ -717,12 +717,12 @@ describe('Stepper', () => {
         });
 
         it('should apply mixed object and string PT values', async () => {
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 root: {
                     class: 'PT_ROOT_CLASS'
                 },
                 host: 'PT_HOST_CLASS'
-            };
+            });
             ptFixture.detectChanges();
             await new Promise((resolve) => setTimeout(resolve, 100));
             await ptFixture.whenStable();
@@ -736,14 +736,14 @@ describe('Stepper', () => {
         });
 
         it('should use instance variables in PT functions', async () => {
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 root: ({ instance }) => {
                     return {
                         class: instance?.linear() ? 'LINEAR' : 'NON_LINEAR',
                         'data-value': instance?.value()
                     };
                 }
-            };
+            });
             ptFixture.detectChanges();
             await new Promise((resolve) => setTimeout(resolve, 100));
             await ptFixture.whenStable();
@@ -758,13 +758,13 @@ describe('Stepper', () => {
 
         it('should handle event binding in PT options', async () => {
             let clicked = false;
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 root: {
                     onclick: () => {
                         clicked = true;
                     }
                 }
-            };
+            });
             ptFixture.detectChanges();
             await new Promise((resolve) => setTimeout(resolve, 100));
             await ptFixture.whenStable();

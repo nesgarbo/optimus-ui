@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, InjectionToken, Input, NgModule } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, InjectionToken, NgModule, input } from '@angular/core';
 import { SharedModule } from '@openng/optimus-ui/api';
 import { BaseComponent, PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { Bind, BindModule } from '@openng/optimus-ui/bind';
@@ -20,7 +20,7 @@ const INPUTGROUP_INSTANCE = new InjectionToken<InputGroup>('INPUTGROUP_INSTANCE'
     providers: [InputGroupStyle, { provide: INPUTGROUP_INSTANCE, useExisting: InputGroup }, { provide: PARENT_INSTANCE, useExisting: InputGroup }],
     hostDirectives: [Bind],
     host: {
-        '[class]': "cn(cx('root'), styleClass)"
+        '[class]': "cn(cx('root'), styleClass())"
     }
 })
 export class InputGroup extends BaseComponent<InputGroupPassThrough> {
@@ -41,7 +41,7 @@ export class InputGroup extends BaseComponent<InputGroupPassThrough> {
      * @deprecated since v20.0.0, use `class` instead.
      * @group Props
      */
-    @Input() styleClass: string | undefined;
+    readonly styleClass = input<string | undefined>(undefined);
 }
 
 @NgModule({

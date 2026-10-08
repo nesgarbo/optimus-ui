@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, ContentChild, forwardRef, HostListener, inject, InjectionToken, Input, input, InputSignalWithTransform, model, NgModule, output, signal, TemplateRef, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, forwardRef, inject, InjectionToken, input, InputSignalWithTransform, model, NgModule, output, signal, TemplateRef, ViewEncapsulation, contentChild } from '@angular/core';
 import { MotionOptions } from '@openng/optimus-ui-motion';
 import { findSingle, focus, getAttribute, uuid } from '@openng/optimus-ui-utils';
 import { BlockableUI, SharedModule } from '@openng/optimus-ui/api';
@@ -116,22 +116,22 @@ export class AccordionPanel extends BaseComponent<AccordionPanelPassThrough> {
     standalone: true,
     template: `
         <ng-content />
-        @if (toggleicon) {
-            <ng-template *ngTemplateOutlet="toggleicon; context: { active: active() }"></ng-template>
+        @if (toggleicon()) {
+            <ng-template *ngTemplateOutlet="toggleicon(); context: { active: active() }"></ng-template>
         } @else {
             @if (active()) {
-                @if (pcAccordion.collapseIcon) {
-                    <span [class]="cn(cx('toggleicon'), pcAccordion.collapseIcon)" [attr.aria-hidden]="true" [pBind]="ptm('toggleicon')"></span>
+                @if (pcAccordion.collapseIcon()) {
+                    <span [class]="cn(cx('toggleicon'), pcAccordion.collapseIcon())" [attr.aria-hidden]="true" [pBind]="ptm('toggleicon')"></span>
                 }
-                @if (!pcAccordion.collapseIcon) {
+                @if (!pcAccordion.collapseIcon()) {
                     <svg data-p-icon="chevron-up" [class]="cx('toggleicon')" [pBind]="ptm('toggleicon')" [attr.aria-hidden]="true" />
                 }
             }
             @if (!active()) {
-                @if (pcAccordion.expandIcon) {
-                    <span [class]="cn(cx('toggleicon'), pcAccordion.expandIcon)" [attr.aria-hidden]="true" [pBind]="ptm('toggleicon')"></span>
+                @if (pcAccordion.expandIcon()) {
+                    <span [class]="cn(cx('toggleicon'), pcAccordion.expandIcon())" [attr.aria-hidden]="true" [pBind]="ptm('toggleicon')"></span>
                 }
-                @if (!pcAccordion.expandIcon) {
+                @if (!pcAccordion.expandIcon()) {
                     <svg data-p-icon="chevron-down" [attr.aria-hidden]="true" [pBind]="ptm('toggleicon')" />
                 }
             }
@@ -150,7 +150,10 @@ export class AccordionPanel extends BaseComponent<AccordionPanelPassThrough> {
         '[attr.data-p-active]': 'active()',
         '[attr.data-p-disabled]': 'disabled()',
         '[style.user-select]': '"none"',
-        '[attr.data-p]': 'dataP'
+        '[attr.data-p]': 'dataP',
+        '(click)': 'onClick($event)',
+        '(focus)': 'onFocus()',
+        '(keydown)': 'onKeydown($event)'
     },
     hostDirectives: [Ripple, Bind],
     providers: [AccordionStyle, { provide: ACCORDION_HEADER_INSTANCE, useExisting: AccordionHeader }, { provide: PARENT_INSTANCE, useExisting: AccordionHeader }]
@@ -187,9 +190,9 @@ export class AccordionHeader extends BaseComponent<AccordionHeaderPassThrough> {
      * @see {@link AccordionToggleIconTemplateContext}
      * @group Templates
      */
-    @ContentChild('toggleicon') toggleicon: TemplateRef<AccordionToggleIconTemplateContext> | undefined;
+    readonly toggleicon = contentChild<TemplateRef<AccordionToggleIconTemplateContext>>('toggleicon');
 
-    @HostListener('click', ['$event']) onClick(event?: MouseEvent | KeyboardEvent) {
+    onClick(event?: MouseEvent | KeyboardEvent) {
         if (this.disabled()) {
             return;
         }
@@ -208,13 +211,13 @@ export class AccordionHeader extends BaseComponent<AccordionHeaderPassThrough> {
         }
     }
 
-    @HostListener('focus') onFocus() {
+    onFocus() {
         if (!this.disabled() && this.pcAccordion.selectOnFocus()) {
             this.changeActiveValue();
         }
     }
 
-    @HostListener('keydown', ['$event']) onKeydown(event: KeyboardEvent) {
+    onKeydown(event: KeyboardEvent) {
         switch (event.code) {
             case 'ArrowDown':
                 this.arrowDownKey(event);
@@ -385,7 +388,8 @@ export class AccordionContent extends BaseComponent<AccordionContentPassThrough>
     imports: [SharedModule, BindModule],
     template: ` <ng-content />`,
     host: {
-        '[class]': "cn(cx('root'), styleClass)"
+        '[class]': "cn(cx('root'), styleClass())",
+        '(keydown)': 'onKeydown($event)'
     },
     hostDirectives: [Bind],
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -419,17 +423,17 @@ export class Accordion extends BaseComponent<AccordionPassThrough> implements Bl
      * @deprecated since v20.0.0, use `class` instead.
      * @group Props
      */
-    @Input() styleClass: string | undefined;
+    readonly styleClass = input<string | undefined>(undefined);
     /**
      * Icon of a collapsed tab.
      * @group Props
      */
-    @Input() expandIcon: string | undefined;
+    readonly expandIcon = input<string | undefined>(undefined);
     /**
      * Icon of an expanded tab.
      * @group Props
      */
-    @Input() collapseIcon: string | undefined;
+    readonly collapseIcon = input<string | undefined>(undefined);
     /**
      * When enabled, the focused tab is activated.
      * @defaultValue false
@@ -441,7 +445,7 @@ export class Accordion extends BaseComponent<AccordionPassThrough> implements Bl
      * @group Props
      * @deprecated since v21.0.0, use `motionOptions` instead.
      */
-    @Input() transitionOptions: string = '400ms cubic-bezier(0.86, 0, 0.07, 1)';
+    readonly transitionOptions = input<string>('400ms cubic-bezier(0.86, 0, 0.07, 1)');
 
     /**
      * The motion options.
@@ -473,7 +477,6 @@ export class Accordion extends BaseComponent<AccordionPassThrough> implements Bl
 
     _componentStyle = inject(AccordionStyle);
 
-    @HostListener('keydown', ['$event'])
     onKeydown(event) {
         switch (event.code) {
             case 'ArrowDown':

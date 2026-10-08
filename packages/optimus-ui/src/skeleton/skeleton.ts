@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, InjectionToken, Input, NgModule, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, InjectionToken, input, NgModule, ViewEncapsulation } from '@angular/core';
 import { SharedModule } from '@openng/optimus-ui/api';
 import { BaseComponent, PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { Bind } from '@openng/optimus-ui/bind';
@@ -21,7 +21,7 @@ const SKELETON_INSTANCE = new InjectionToken<Skeleton>('SKELETON_INSTANCE');
     providers: [SkeletonStyle, { provide: SKELETON_INSTANCE, useExisting: Skeleton }, { provide: PARENT_INSTANCE, useExisting: Skeleton }],
     host: {
         '[attr.aria-hidden]': 'true',
-        '[class]': "cn(cx('root'), styleClass)",
+        '[class]': "cn(cx('root'), styleClass())",
         '[style]': 'containerStyle',
         '[attr.data-p]': 'dataP'
     },
@@ -42,37 +42,37 @@ export class Skeleton extends BaseComponent<SkeletonPassThrough> {
      * @deprecated since v20.0.0, use `class` instead.
      * @group Props
      */
-    @Input() styleClass: string | undefined;
+    readonly styleClass = input<string | undefined>(undefined);
     /**
      * Shape of the element.
      * @group Props
      */
-    @Input() shape: string = 'rectangle';
+    readonly shape = input<string>('rectangle');
     /**
      * Type of the animation.
      * @gruop Props
      */
-    @Input() animation: string = 'wave';
+    readonly animation = input<string>('wave');
     /**
      * Border radius of the element, defaults to value from theme.
      * @group Props
      */
-    @Input() borderRadius: string | undefined;
+    readonly borderRadius = input<string | undefined>(undefined);
     /**
      * Size of the skeleton.
      * @group Props
      */
-    @Input() size: string | undefined;
+    readonly size = input<string | undefined>(undefined);
     /**
      * Width of the element.
      * @group Props
      */
-    @Input() width: string = '100%';
+    readonly width = input<string>('100%');
     /**
      * Height of the element.
      * @group Props
      */
-    @Input() height: string = '1rem';
+    readonly height = input<string>('1rem');
 
     _componentStyle = inject(SkeletonStyle);
 
@@ -80,8 +80,9 @@ export class Skeleton extends BaseComponent<SkeletonPassThrough> {
         const inlineStyles = this._componentStyle?.inlineStyles['root'];
         let style;
         if (!this.$unstyled()) {
-            if (this.size) style = { ...inlineStyles, width: this.size, height: this.size, borderRadius: this.borderRadius };
-            else style = { ...inlineStyles, width: this.width, height: this.height, borderRadius: this.borderRadius };
+            const size = this.size();
+            if (size) style = { ...inlineStyles, width: size, height: size, borderRadius: this.borderRadius() };
+            else style = { ...inlineStyles, width: this.width(), height: this.height(), borderRadius: this.borderRadius() };
         }
 
         return style;
@@ -89,7 +90,7 @@ export class Skeleton extends BaseComponent<SkeletonPassThrough> {
 
     get dataP() {
         return this.cn({
-            [this.shape]: this.shape
+            [this.shape()]: this.shape()
         });
     }
 }

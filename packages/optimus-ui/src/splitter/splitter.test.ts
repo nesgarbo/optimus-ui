@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DebugElement, Input, provideZonelessChangeDetection } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DebugElement, provideZonelessChangeDetection, input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
@@ -101,7 +101,7 @@ class TestNestedSplitterComponent {}
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false,
     template: `
-        <p-splitter [pt]="pt">
+        <p-splitter [pt]="pt()" [layout]="layout()">
             <ng-template #panel>
                 <div>PT Test Panel 1</div>
             </ng-template>
@@ -112,7 +112,8 @@ class TestNestedSplitterComponent {}
     `
 })
 class TestPTSplitterComponent {
-    @Input() pt: any;
+    readonly pt = input<any>(undefined);
+    readonly layout = input<string>('horizontal');
 }
 
 describe('Splitter', () => {
@@ -154,12 +155,12 @@ describe('Splitter', () => {
             const fixture = TestBed.createComponent(Splitter);
             const splitter = fixture.componentInstance;
 
-            expect(splitter.layout).toBe('horizontal');
-            expect(splitter.gutterSize).toBe(4);
-            expect(splitter.step).toBe(5);
-            expect(splitter.stateStorage).toBe('session');
-            expect(splitter.stateKey).toBeNull();
-            expect(splitter.minSizes).toEqual([]);
+            expect(splitter.layout()).toBe('horizontal');
+            expect(splitter.gutterSize()).toBe(4);
+            expect(splitter.step()).toBe(5);
+            expect(splitter.stateStorage()).toBe('session');
+            expect(splitter.stateKey()).toBeNull();
+            expect(splitter.minSizes()).toEqual([]);
         });
 
         it('should accept custom values', async () => {
@@ -173,12 +174,12 @@ describe('Splitter', () => {
             await testFixture.whenStable();
             testFixture.detectChanges();
 
-            expect(splitterInstance.layout).toBe('vertical');
-            expect(splitterInstance.gutterSize).toBe(8);
-            expect(splitterInstance.step).toBe(10);
-            expect(splitterInstance.minSizes).toEqual([20, 30]);
-            expect(splitterInstance.stateKey).toBe('test-splitter');
-            expect(splitterInstance.stateStorage).toBe('local');
+            expect(splitterInstance.layout()).toBe('vertical');
+            expect(splitterInstance.gutterSize()).toBe(8);
+            expect(splitterInstance.step()).toBe(10);
+            expect(splitterInstance.minSizes()).toEqual([20, 30]);
+            expect(splitterInstance.stateKey()).toBe('test-splitter');
+            expect(splitterInstance.stateStorage()).toBe('local');
         });
     });
 
@@ -581,8 +582,8 @@ describe('Splitter', () => {
             const horizontalSplitter = splitters[0].componentInstance;
             const verticalSplitter = splitters[1].componentInstance;
 
-            expect(horizontalSplitter.layout).toBe('horizontal');
-            expect(verticalSplitter.layout).toBe('vertical');
+            expect(horizontalSplitter.layout()).toBe('horizontal');
+            expect(verticalSplitter.layout()).toBe('vertical');
         });
     });
 
@@ -626,16 +627,17 @@ describe('Splitter', () => {
             const panelElements = testFixture.debugElement.queryAll(By.css('.p-splitterpanel'));
 
             // Check that splitter component received the style input
-            expect(splitterInstance.panelStyle).toEqual({ border: '2px solid red', padding: '10px' });
+            expect(splitterInstance.panelStyle()).toEqual({ border: '2px solid red', padding: '10px' });
 
             // Manually apply styles to test the style binding works as expected
             // This simulates what ngStyle directive would do in a real browser
             const element = panelElements[0].nativeElement;
 
             // In testing environment, we simulate the ngStyle behavior
-            if (splitterInstance.panelStyle) {
-                Object.keys(splitterInstance.panelStyle).forEach((key) => {
-                    element.style[key] = splitterInstance.panelStyle![key];
+            const panelStyle = splitterInstance.panelStyle();
+            if (panelStyle) {
+                Object.keys(panelStyle).forEach((key) => {
+                    element.style[key] = splitterInstance.panelStyle()![key];
                 });
             }
 
@@ -644,9 +646,9 @@ describe('Splitter', () => {
             expect(element.style.padding).toBe('10px');
 
             // Also verify the template binding
-            expect(splitterInstance.panelStyle).toBeTruthy();
-            expect(Object.keys(splitterInstance.panelStyle!)).toContain('border');
-            expect(Object.keys(splitterInstance.panelStyle!)).toContain('padding');
+            expect(panelStyle).toBeTruthy();
+            expect(Object.keys(panelStyle!)).toContain('border');
+            expect(Object.keys(panelStyle!)).toContain('padding');
         });
 
         it('should apply resizing classes during resize', () => {
@@ -801,7 +803,7 @@ describe('Splitter', () => {
             await testFixture.whenStable();
             testFixture.detectChanges();
 
-            expect(splitterInstance.stateStorage).toBe('local');
+            expect(splitterInstance.stateStorage()).toBe('local');
             expect(() => splitterInstance.getStorage()).not.toThrow();
         });
     });
@@ -867,13 +869,13 @@ describe('Splitter', () => {
         });
 
         it('should apply simple string classes to PT sections', async () => {
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 host: 'HOST_CLASS',
                 root: 'ROOT_CLASS',
                 panel: 'PANEL_CLASS',
                 gutter: 'GUTTER_CLASS',
                 gutterHandle: 'GUTTER_HANDLE_CLASS'
-            };
+            });
             ptFixture.changeDetectorRef.markForCheck();
             await ptFixture.whenStable();
             ptFixture.detectChanges();
@@ -894,7 +896,7 @@ describe('Splitter', () => {
         });
 
         it('should apply object-based PT options with class and attributes', async () => {
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 root: {
                     class: 'ROOT_OBJECT_CLASS',
                     'data-test': 'root-test',
@@ -912,7 +914,7 @@ describe('Splitter', () => {
                     class: 'HANDLE_OBJECT_CLASS',
                     'aria-label': 'HANDLE_ARIA_LABEL'
                 }
-            };
+            });
             ptFixture.changeDetectorRef.markForCheck();
             await ptFixture.whenStable();
             ptFixture.detectChanges();
@@ -936,7 +938,7 @@ describe('Splitter', () => {
         });
 
         it('should apply mixed object and string PT values', async () => {
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 root: {
                     class: 'MIXED_ROOT_CLASS'
                 },
@@ -945,7 +947,7 @@ describe('Splitter', () => {
                     class: 'MIXED_GUTTER_CLASS'
                 },
                 gutterHandle: 'MIXED_HANDLE_CLASS'
-            };
+            });
             ptFixture.changeDetectorRef.markForCheck();
             await ptFixture.whenStable();
             ptFixture.detectChanges();
@@ -965,18 +967,18 @@ describe('Splitter', () => {
 
         it('should use instance variables in PT functions', async () => {
             ptSplitter = ptFixture.debugElement.query(By.directive(Splitter)).componentInstance;
-            ptSplitter.layout = 'vertical';
+            ptFixture.componentRef.setInput('layout', 'vertical');
             ptSplitter.dragging = true;
 
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 root: ({ instance }) => ({
                     class: instance?.dragging ? 'DRAGGING' : 'NOT_DRAGGING'
                 }),
                 gutter: ({ instance }) => ({
                     class: 'GUTTER_INSTANCE',
-                    'data-layout': instance?.layout
+                    'data-layout': instance?.layout()
                 })
-            };
+            });
             ptFixture.changeDetectorRef.markForCheck();
             await ptFixture.whenStable();
             ptFixture.detectChanges();
@@ -993,13 +995,13 @@ describe('Splitter', () => {
 
         it('should handle event binding in PT options', async () => {
             let clicked = false;
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 panel: {
                     onclick: () => {
                         clicked = true;
                     }
                 }
-            };
+            });
             ptFixture.changeDetectorRef.markForCheck();
             await ptFixture.whenStable();
             ptFixture.detectChanges();

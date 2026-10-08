@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { booleanAttribute, ChangeDetectionStrategy, Component, ContentChild, ContentChildren, inject, InjectionToken, Input, NgModule, numberAttribute, QueryList, TemplateRef, ViewEncapsulation } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, inject, InjectionToken, NgModule, numberAttribute, TemplateRef, ViewEncapsulation, input, contentChild, contentChildren } from '@angular/core';
 import { PrimeTemplate, SharedModule } from '@openng/optimus-ui/api';
 import { BaseComponent, PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { Bind } from '@openng/optimus-ui/bind';
@@ -17,18 +17,18 @@ const PROGRESSBAR_INSTANCE = new InjectionToken<ProgressBar>('PROGRESSBAR_INSTAN
     standalone: true,
     imports: [NgTemplateOutlet, SharedModule, Bind],
     template: `
-        @if (mode === 'determinate') {
-            <div [class]="cn(cx('value'), valueStyleClass)" [pBind]="ptm('value')" [style.width]="value + '%'" [style.display]="'flex'" [style.background]="color" [attr.data-p]="dataP">
+        @if (mode() === 'determinate') {
+            <div [class]="cn(cx('value'), valueStyleClass())" [pBind]="ptm('value')" [style.width]="value() + '%'" [style.display]="'flex'" [style.background]="color()" [attr.data-p]="dataP">
                 <div [class]="cx('label')" [pBind]="ptm('label')" [attr.data-p]="dataP">
-                    @if (showValue && !contentTemplate && !_contentTemplate) {
-                        <div [style.display]="value != null && value !== 0 ? 'flex' : 'none'">{{ value }}{{ unit }}</div>
+                    @if (showValue() && !contentTemplate() && !_contentTemplate) {
+                        <div [style.display]="value() != null && value() !== 0 ? 'flex' : 'none'">{{ value() }}{{ unit() }}</div>
                     }
-                    <ng-container *ngTemplateOutlet="contentTemplate || _contentTemplate; context: { $implicit: value }"></ng-container>
+                    <ng-container *ngTemplateOutlet="contentTemplate() || _contentTemplate; context: { $implicit: value() }"></ng-container>
                 </div>
             </div>
         }
-        @if (mode === 'indeterminate') {
-            <div [class]="cn(cx('value'), valueStyleClass)" [pBind]="ptm('value')" [style.background]="color" [attr.data-p]="dataP"></div>
+        @if (mode() === 'indeterminate') {
+            <div [class]="cn(cx('value'), valueStyleClass())" [pBind]="ptm('value')" [style.background]="color()" [attr.data-p]="dataP"></div>
         }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -37,10 +37,10 @@ const PROGRESSBAR_INSTANCE = new InjectionToken<ProgressBar>('PROGRESSBAR_INSTAN
     host: {
         role: 'progressbar',
         '[attr.aria-valuemin]': '0',
-        '[attr.aria-valuenow]': 'value',
+        '[attr.aria-valuenow]': 'value()',
         '[attr.aria-valuemax]': '100',
-        '[attr.aria-level]': 'value + unit',
-        '[class]': "cn(cx('root'), styleClass)",
+        '[attr.aria-level]': 'value() + unit()',
+        '[class]': "cn(cx('root'), styleClass())",
         '[attr.data-p]': 'dataP'
     },
     hostDirectives: [Bind]
@@ -56,46 +56,46 @@ export class ProgressBar extends BaseComponent<ProgressBarPassThrough> {
      * Current value of the progress.
      * @group Props
      */
-    @Input({ transform: numberAttribute }) value: number | undefined;
+    readonly value = input<number | undefined, unknown>(undefined, { transform: numberAttribute });
     /**
      * Whether to display the progress bar value.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) showValue: boolean = true;
+    readonly showValue = input<boolean, unknown>(true, { transform: booleanAttribute });
     /**
      * Style class of the element.
      * @deprecated since v20.0.0, use `class` instead.
      * @group Props
      */
-    @Input() styleClass: string | undefined;
+    readonly styleClass = input<string | undefined>(undefined);
     /**
      * Style class of the value element.
      * @group Props
      */
-    @Input() valueStyleClass: string | undefined;
+    readonly valueStyleClass = input<string | undefined>(undefined);
     /**
      * Unit sign appended to the value.
      * @group Props
      */
-    @Input() unit: string = '%';
+    readonly unit = input<string>('%');
     /**
      * Defines the mode of the progress
      * @defaultValue 'determinate'
      * @group Props
      */
-    @Input() mode: 'determinate' | 'indeterminate' = 'determinate';
+    readonly mode = input<'determinate' | 'indeterminate'>('determinate');
     /**
      * Color for the background of the progress.
      * @group Props
      */
-    @Input() color: string | undefined;
+    readonly color = input<string | undefined>(undefined);
     /**
      * Template of the content.
      * @param {ProgressBarContentTemplateContext} context - content context.
      * @see {@link ProgressBarContentTemplateContext}
      * @group Templates
      */
-    @ContentChild('content', { descendants: false }) contentTemplate: TemplateRef<ProgressBarContentTemplateContext> | undefined;
+    readonly contentTemplate = contentChild<TemplateRef<ProgressBarContentTemplateContext>>('content', { descendants: false });
 
     onAfterViewChecked(): void {
         this.bindDirectiveInstance.setAttrs(this.ptms(['host', 'root']));
@@ -103,12 +103,12 @@ export class ProgressBar extends BaseComponent<ProgressBarPassThrough> {
 
     _componentStyle = inject(ProgressBarStyle);
 
-    @ContentChildren(PrimeTemplate) templates: QueryList<PrimeTemplate> | undefined;
+    readonly templates = contentChildren(PrimeTemplate);
 
     _contentTemplate: TemplateRef<ProgressBarContentTemplateContext> | undefined;
 
     onAfterContentInit() {
-        this.templates?.forEach((item) => {
+        this.templates()?.forEach((item) => {
             switch (item.getType()) {
                 case 'content':
                     this._contentTemplate = item.template;
@@ -121,8 +121,8 @@ export class ProgressBar extends BaseComponent<ProgressBarPassThrough> {
 
     get dataP() {
         return this.cn({
-            determinate: this.mode === 'determinate',
-            indeterminate: this.mode === 'indeterminate'
+            determinate: this.mode() === 'determinate',
+            indeterminate: this.mode() === 'indeterminate'
         });
     }
 }

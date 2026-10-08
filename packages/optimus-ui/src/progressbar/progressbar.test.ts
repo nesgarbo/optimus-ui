@@ -100,12 +100,12 @@ describe('ProgressBar', () => {
             freshFixture.detectChanges();
             const freshProgressBar = freshFixture.debugElement.query(By.directive(ProgressBar)).componentInstance;
 
-            expect(freshProgressBar.showValue).toBe(true);
-            expect(freshProgressBar.unit).toBe('%');
-            expect(freshProgressBar.mode).toBe('determinate');
-            expect(freshProgressBar.color).toBeUndefined();
-            expect(freshProgressBar.styleClass).toBeUndefined();
-            expect(freshProgressBar.valueStyleClass).toBeUndefined();
+            expect(freshProgressBar.showValue()).toBe(true);
+            expect(freshProgressBar.unit()).toBe('%');
+            expect(freshProgressBar.mode()).toBe('determinate');
+            expect(freshProgressBar.color()).toBeUndefined();
+            expect(freshProgressBar.styleClass()).toBeUndefined();
+            expect(freshProgressBar.valueStyleClass()).toBeUndefined();
         });
 
         it('should accept custom values', async () => {
@@ -119,13 +119,13 @@ describe('ProgressBar', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
 
-            expect(progressBarInstance.value).toBe(75);
-            expect(progressBarInstance.showValue).toBe(false);
-            expect(progressBarInstance.unit).toBe(' points');
-            expect(progressBarInstance.mode).toBe('indeterminate');
-            expect(progressBarInstance.color).toBe('blue');
-            expect(progressBarInstance.styleClass).toBe('custom-class');
-            expect(progressBarInstance.valueStyleClass).toBe('custom-value-class');
+            expect(progressBarInstance.value()).toBe(75);
+            expect(progressBarInstance.showValue()).toBe(false);
+            expect(progressBarInstance.unit()).toBe(' points');
+            expect(progressBarInstance.mode()).toBe('indeterminate');
+            expect(progressBarInstance.color()).toBe('blue');
+            expect(progressBarInstance.styleClass()).toBe('custom-class');
+            expect(progressBarInstance.valueStyleClass()).toBe('custom-value-class');
         });
     });
 
@@ -134,57 +134,57 @@ describe('ProgressBar', () => {
             component.value = 80;
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
-            expect(progressBarInstance.value).toBe(80);
+            expect(progressBarInstance.value()).toBe(80);
         });
 
         it('should handle value as number through numberAttribute transform', async () => {
             component.value = 45;
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
-            expect(progressBarInstance.value).toBe(45);
-            expect(typeof progressBarInstance.value).toBe('number');
+            expect(progressBarInstance.value()).toBe(45);
+            expect(typeof progressBarInstance.value()).toBe('number');
         });
 
         it('should handle showValue through booleanAttribute transform', async () => {
             component.showValue = false;
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
-            expect(progressBarInstance.showValue).toBe(false);
+            expect(progressBarInstance.showValue()).toBe(false);
         });
 
         it('should update unit input', async () => {
             component.unit = ' MB';
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
-            expect(progressBarInstance.unit).toBe(' MB');
+            expect(progressBarInstance.unit()).toBe(' MB');
         });
 
         it('should update mode input', async () => {
             component.mode = 'indeterminate';
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
-            expect(progressBarInstance.mode).toBe('indeterminate');
+            expect(progressBarInstance.mode()).toBe('indeterminate');
         });
 
         it('should update color input', async () => {
             component.color = '#ff0000';
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
-            expect(progressBarInstance.color).toBe('#ff0000');
+            expect(progressBarInstance.color()).toBe('#ff0000');
         });
 
         it('should update styleClass input', async () => {
             component.styleClass = 'test-class';
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
-            expect(progressBarInstance.styleClass).toBe('test-class');
+            expect(progressBarInstance.styleClass()).toBe('test-class');
         });
 
         it('should update valueStyleClass input', async () => {
             component.valueStyleClass = 'value-test-class';
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
-            expect(progressBarInstance.valueStyleClass).toBe('value-test-class');
+            expect(progressBarInstance.valueStyleClass()).toBe('value-test-class');
         });
     });
 
@@ -272,7 +272,7 @@ describe('ProgressBar', () => {
             const progressBarEl = indeterminateFixture.debugElement.query(By.directive(ProgressBar));
             const valueElement = indeterminateFixture.debugElement.query(By.css('[data-pc-section="value"]'));
 
-            expect(progressBarEl.componentInstance.mode).toBe('indeterminate');
+            expect(progressBarEl.componentInstance.mode()).toBe('indeterminate');
             expect(valueElement).toBeTruthy();
             expect(valueElement.nativeElement.style.width).toBe('' as any);
         });
@@ -500,10 +500,10 @@ describe('ProgressBar', () => {
             await fixture.whenStable();
 
             expect(() => fixture.detectChanges()).not.toThrow();
-            const actualValue = progressBarInstance.value;
+            const actualValue = progressBarInstance.value();
             expect(actualValue === undefined || isNaN(actualValue)).toBe(true);
-            expect(progressBarInstance.color).toBeUndefined();
-            expect(progressBarInstance.styleClass).toBeUndefined();
+            expect(progressBarInstance.color()).toBeUndefined();
+            expect(progressBarInstance.styleClass()).toBeUndefined();
         });
 
         it('should handle zero value correctly', async () => {
@@ -534,8 +534,8 @@ describe('ProgressBar', () => {
             const progressBarInstance = negativeFixture.debugElement.query(By.directive(ProgressBar)).componentInstance;
 
             // Test that the component properly accepts negative values
-            expect(progressBarInstance.mode).toBe('determinate');
-            expect(progressBarInstance.value).toBe(-10);
+            expect(progressBarInstance.mode()).toBe('determinate');
+            expect(progressBarInstance.value()).toBe(-10);
 
             // Test that the value element is rendered in determinate mode
             const valueElement = negativeFixture.debugElement.query(By.css('[data-pc-section="value"]'));
@@ -543,7 +543,7 @@ describe('ProgressBar', () => {
 
             // In test environment, style binding might not work perfectly,
             // so we verify the component state instead
-            expect(progressBarInstance.value < 0).toBe(true);
+            expect(progressBarInstance.value() < 0).toBe(true);
         });
 
         it('should handle values over 100%', async () => {
@@ -566,7 +566,7 @@ describe('ProgressBar', () => {
             await fixture.whenStable();
 
             expect(() => fixture.detectChanges()).not.toThrow();
-            expect(progressBarInstance.unit).toBe('' as any);
+            expect(progressBarInstance.unit()).toBe('' as any);
         });
 
         it('should handle mode changes correctly', async () => {
@@ -790,7 +790,7 @@ describe('ProgressBar', () => {
                 fixture.componentRef.setInput('pt', {
                     root: ({ instance }: any) => {
                         return {
-                            class: instance?.value >= 50 ? 'HIGH_VALUE' : 'LOW_VALUE'
+                            class: instance?.value() >= 50 ? 'HIGH_VALUE' : 'LOW_VALUE'
                         };
                     }
                 });
@@ -806,7 +806,7 @@ describe('ProgressBar', () => {
                 fixture.componentRef.setInput('pt', {
                     value: ({ instance }: any) => {
                         return {
-                            'data-mode': instance?.mode
+                            'data-mode': instance?.mode()
                         };
                     }
                 });
@@ -824,7 +824,7 @@ describe('ProgressBar', () => {
                     label: ({ instance }: any) => {
                         return {
                             style: {
-                                display: instance?.showValue ? 'flex' : 'none'
+                                display: instance?.showValue() ? 'flex' : 'none'
                             }
                         };
                     }

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DebugElement, Input, provideZonelessChangeDetection } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DebugElement, provideZonelessChangeDetection, input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
@@ -72,7 +72,7 @@ class TestNoScrollScrollPanelComponent {}
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false,
     template: `
-        <p-scrollpanel [pt]="pt" style="width: 400px; height: 200px;">
+        <p-scrollpanel [pt]="pt()" style="width: 400px; height: 200px;">
             <div style="width: 800px; height: 600px; padding: 20px;">
                 <h2>PT Test Content</h2>
             </div>
@@ -80,7 +80,7 @@ class TestNoScrollScrollPanelComponent {}
     `
 })
 class TestPTScrollPanelComponent {
-    @Input() pt: any;
+    readonly pt = input<any>(undefined);
 }
 
 describe('ScrollPanel', () => {
@@ -113,7 +113,7 @@ describe('ScrollPanel', () => {
             const fixture = TestBed.createComponent(ScrollPanel);
             const scrollPanelInstance = fixture.componentInstance;
 
-            expect(scrollPanelInstance.step).toBe(5);
+            expect(scrollPanelInstance.step()).toBe(5);
             expect(scrollPanelInstance.initialized).toBe(false);
             expect(scrollPanelInstance.lastScrollLeft).toBe(0);
             expect(scrollPanelInstance.lastScrollTop).toBe(0);
@@ -126,7 +126,7 @@ describe('ScrollPanel', () => {
             await fixture.whenStable();
             fixture.detectChanges();
 
-            expect(scrollPanel.step).toBe(10);
+            expect(scrollPanel.step()).toBe(10);
         });
 
         it('should generate unique content ID', () => {
@@ -294,9 +294,10 @@ describe('ScrollPanel', () => {
 
         it('should programmatically scroll to top position', async () => {
             // Mock scrollTop behavior since test environment doesn't scroll
-            if (scrollPanel.contentViewChild) {
-                Object.defineProperty(scrollPanel.contentViewChild.nativeElement, 'scrollHeight', { value: 600, writable: true });
-                Object.defineProperty(scrollPanel.contentViewChild.nativeElement, 'clientHeight', { value: 200, writable: true });
+            const contentViewChild = scrollPanel.contentViewChild();
+            if (contentViewChild) {
+                Object.defineProperty(contentViewChild.nativeElement, 'scrollHeight', { value: 600, writable: true });
+                Object.defineProperty(contentViewChild.nativeElement, 'clientHeight', { value: 200, writable: true });
             }
 
             scrollPanel.scrollTop(100);
@@ -304,7 +305,7 @@ describe('ScrollPanel', () => {
             await fixture.whenStable();
 
             // Verify the method was called correctly - scroll behavior might not work in test
-            expect(scrollPanel.contentViewChild).toBeTruthy();
+            expect(contentViewChild).toBeTruthy();
         });
 
         it('should constrain scroll position within bounds', async () => {
@@ -312,14 +313,15 @@ describe('ScrollPanel', () => {
             scrollPanel.scrollTop(-50);
             await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
-            expect(scrollPanel.contentViewChild?.nativeElement.scrollTop).toBe(0);
+            const contentViewChild = scrollPanel.contentViewChild();
+            expect(contentViewChild?.nativeElement.scrollTop).toBe(0);
 
             // Test excessive scroll position (should be limited to max scrollable height)
             scrollPanel.scrollTop(99999);
             await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
-            const maxScrollTop = scrollPanel.contentViewChild!.nativeElement.scrollHeight - scrollPanel.contentViewChild!.nativeElement.clientHeight;
-            expect(scrollPanel.contentViewChild!.nativeElement.scrollTop).toBe(maxScrollTop);
+            const maxScrollTop = contentViewChild!.nativeElement.scrollHeight - contentViewChild!.nativeElement.clientHeight;
+            expect(contentViewChild!.nativeElement.scrollTop).toBe(maxScrollTop);
         });
     });
 
@@ -684,19 +686,19 @@ describe('ScrollPanel', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            expect(scrollPanel.step).toBe(0);
+            expect(scrollPanel.step()).toBe(0);
 
             component.step = 1000;
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            expect(scrollPanel.step).toBe(1000);
+            expect(scrollPanel.step()).toBe(1000);
 
             component.step = -5;
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            expect(scrollPanel.step).toBe(-5);
+            expect(scrollPanel.step()).toBe(-5);
         });
 
         it('should handle window resize during scrollbar operations', async () => {
@@ -712,9 +714,9 @@ describe('ScrollPanel', () => {
 
         it('should handle missing ViewChild elements gracefully', () => {
             // Test that ViewChild elements exist after component initialization
-            expect(scrollPanel.contentViewChild).toBeTruthy();
-            expect(scrollPanel.xBarViewChild).toBeTruthy();
-            expect(scrollPanel.yBarViewChild).toBeTruthy();
+            expect(scrollPanel.contentViewChild()).toBeTruthy();
+            expect(scrollPanel.xBarViewChild()).toBeTruthy();
+            expect(scrollPanel.yBarViewChild()).toBeTruthy();
 
             // moveBar should work with valid ViewChild elements
             expect(() => scrollPanel.moveBar()).not.toThrow();
@@ -834,11 +836,12 @@ describe('ScrollPanel', () => {
 
         it('should handle zero dimensions gracefully', async () => {
             // Mock content with zero dimensions
-            if (scrollPanel.contentViewChild) {
-                Object.defineProperty(scrollPanel.contentViewChild.nativeElement, 'scrollWidth', { value: 0, writable: true });
-                Object.defineProperty(scrollPanel.contentViewChild.nativeElement, 'scrollHeight', { value: 0, writable: true });
-                Object.defineProperty(scrollPanel.contentViewChild.nativeElement, 'clientWidth', { value: 0, writable: true });
-                Object.defineProperty(scrollPanel.contentViewChild.nativeElement, 'clientHeight', { value: 0, writable: true });
+            const contentViewChild = scrollPanel.contentViewChild();
+            if (contentViewChild) {
+                Object.defineProperty(contentViewChild.nativeElement, 'scrollWidth', { value: 0, writable: true });
+                Object.defineProperty(contentViewChild.nativeElement, 'scrollHeight', { value: 0, writable: true });
+                Object.defineProperty(contentViewChild.nativeElement, 'clientWidth', { value: 0, writable: true });
+                Object.defineProperty(contentViewChild.nativeElement, 'clientHeight', { value: 0, writable: true });
             }
 
             await expect(async () => {
@@ -860,14 +863,14 @@ describe('ScrollPanel', () => {
         });
 
         it('should apply simple string classes to PT sections', async () => {
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 host: 'HOST_CLASS',
                 root: 'ROOT_CLASS',
                 contentContainer: 'CONTENT_CONTAINER_CLASS',
                 content: 'CONTENT_CLASS',
                 barX: 'BAR_X_CLASS',
                 barY: 'BAR_Y_CLASS'
-            };
+            });
             ptFixture.changeDetectorRef.markForCheck();
             await ptFixture.whenStable();
             ptFixture.detectChanges();
@@ -889,7 +892,7 @@ describe('ScrollPanel', () => {
         });
 
         it('should apply object-based PT options with class, style, and attributes', async () => {
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 root: {
                     class: 'ROOT_OBJECT_CLASS',
                     'data-test': 'root-test',
@@ -903,7 +906,7 @@ describe('ScrollPanel', () => {
                     class: 'BARX_CLASS',
                     'aria-label': 'BARX_ARIA_LABEL'
                 }
-            };
+            });
             ptFixture.changeDetectorRef.markForCheck();
             await ptFixture.whenStable();
             ptFixture.detectChanges();
@@ -924,7 +927,7 @@ describe('ScrollPanel', () => {
         });
 
         it('should apply mixed object and string PT values', async () => {
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 root: {
                     class: 'MIXED_ROOT_CLASS'
                 },
@@ -932,7 +935,7 @@ describe('ScrollPanel', () => {
                 barY: {
                     style: 'opacity: 0.5'
                 }
-            };
+            });
             ptFixture.changeDetectorRef.markForCheck();
             await ptFixture.whenStable();
             ptFixture.detectChanges();
@@ -953,7 +956,7 @@ describe('ScrollPanel', () => {
             ptScrollPanel.initialized = true;
             ptScrollPanel.orientation = 'horizontal';
 
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 root: ({ instance }) => ({
                     class: instance?.initialized ? 'INITIALIZED' : 'NOT_INITIALIZED'
                 }),
@@ -964,7 +967,7 @@ describe('ScrollPanel', () => {
                         'data-orientation': instance?.orientation
                     };
                 }
-            };
+            });
             ptFixture.changeDetectorRef.markForCheck();
             await ptFixture.whenStable();
             ptFixture.detectChanges();
@@ -981,13 +984,13 @@ describe('ScrollPanel', () => {
 
         it('should handle event binding in PT options', async () => {
             let clicked = false;
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 content: {
                     onclick: () => {
                         clicked = true;
                     }
                 }
-            };
+            });
             ptFixture.changeDetectorRef.markForCheck();
             await ptFixture.whenStable();
             ptFixture.detectChanges();

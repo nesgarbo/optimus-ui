@@ -237,14 +237,14 @@ describe('Chip', () => {
         });
 
         it('should have default values', async () => {
-            expect(component.label).toBeUndefined();
-            expect(component.icon).toBeUndefined();
-            expect(component.image).toBeUndefined();
-            expect(component.alt).toBeUndefined();
-            expect(component.removable).toBe(false);
-            expect(component.removeIcon).toBeUndefined();
-            expect(component.styleClass).toBeUndefined();
-            expect(component.visible).toBe(true);
+            expect(component.label()).toBeUndefined();
+            expect(component.icon()).toBeUndefined();
+            expect(component.image()).toBeUndefined();
+            expect(component.alt()).toBeUndefined();
+            expect(component.removable()).toBe(false);
+            expect(component.removeIcon()).toBeUndefined();
+            expect(component.styleClass()).toBeUndefined();
+            expect(component.visible()).toBe(true);
         });
 
         it('should apply base CSS classes', async () => {
@@ -474,12 +474,12 @@ describe('Chip', () => {
         });
 
         it('should remove chip when remove icon is clicked', async () => {
-            expect(chipComponent.visible).toBe(true);
+            expect(chipComponent.visible()).toBe(true);
 
             const removeIconElement = fixture.debugElement.query(By.css('[data-pc-section="removeicon"]'));
             removeIconElement.triggerEventHandler('click', new MouseEvent('click'));
 
-            expect(chipComponent.visible).toBe(false);
+            expect(chipComponent.visible()).toBe(false);
             expect(component.removed).toBe(true);
             expect(component.removeEvent).toBeTruthy();
         });
@@ -669,10 +669,10 @@ describe('Chip', () => {
         });
 
         it('should apply chipProps values', async () => {
-            expect(chipComponent.label).toBe('Props Chip');
-            expect(chipComponent.icon).toBe('pi pi-star');
-            expect(chipComponent.removable).toBe(true);
-            expect(chipComponent.styleClass).toBe('props-chip');
+            expect(chipComponent._label()).toBe('Props Chip');
+            expect(chipComponent._icon()).toBe('pi pi-star');
+            expect(chipComponent._removable()).toBe(true);
+            expect(chipComponent._styleClass()).toBe('props-chip');
         });
 
         it('should update when chipProps changes', async () => {
@@ -685,10 +685,10 @@ describe('Chip', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
 
-            expect(chipComponent.label).toBe('Updated Props');
-            expect(chipComponent.icon).toBe('pi pi-home');
-            expect(chipComponent.removable).toBe(false);
-            expect(chipComponent.styleClass).toBe('updated-props');
+            expect(chipComponent._label()).toBe('Updated Props');
+            expect(chipComponent._icon()).toBe('pi pi-home');
+            expect(chipComponent._removable()).toBe(false);
+            expect(chipComponent._styleClass()).toBe('updated-props');
         });
 
         it('should handle partial chipProps updates', async () => {
@@ -698,7 +698,7 @@ describe('Chip', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
 
-            expect(chipComponent.label).toBe('Partial Update');
+            expect(chipComponent._label()).toBe('Partial Update');
         });
 
         it('should display elements from chipProps', async () => {
@@ -735,8 +735,8 @@ describe('Chip', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
 
-            expect(chipComponent.icon).toBe('pi pi-star');
-            expect(chipComponent.removable).toBe(true);
+            expect(chipComponent._icon()).toBe('pi pi-star');
+            expect(chipComponent.removable()).toBe(true);
             expect(element.classList.contains('dynamic-class')).toBe(true);
         });
 
@@ -793,9 +793,9 @@ describe('Chip', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
 
-            expect(chipComponent.label).toBe('ChipProps Label');
-            expect(chipComponent.icon).toBe('pi pi-star');
-            expect(chipComponent.removable).toBe(true);
+            expect(chipComponent._label()).toBe('ChipProps Label');
+            expect(chipComponent._icon()).toBe('pi pi-star');
+            expect(chipComponent._removable()).toBe(true);
         });
 
         it('should show/hide projected content dynamically', async () => {
@@ -826,12 +826,12 @@ describe('Chip', () => {
         });
 
         it('should be visible by default', async () => {
-            expect(chipComponent.visible).toBe(true);
+            expect(chipComponent.visible()).toBe(true);
             expect(element.style.display).toBe('' as any);
         });
 
         it('should hide when visible is false', async () => {
-            chipComponent.visible = false;
+            chipComponent.visible.set(false);
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
 
@@ -839,16 +839,16 @@ describe('Chip', () => {
         });
 
         it('should show when visible is true', async () => {
-            chipComponent.visible = false;
+            chipComponent.visible.set(false);
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             expect(element.style.display).toBe('none');
 
-            chipComponent.visible = true;
+            chipComponent.visible.set(true);
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             // When visible is true, check if component visible property is set correctly
-            expect(chipComponent.visible).toBe(true);
+            expect(chipComponent.visible()).toBe(true);
         });
     });
 
@@ -872,7 +872,7 @@ describe('Chip', () => {
             chipComponent.close(mockEvent);
 
             expect(chipComponent.onRemove.emit).toHaveBeenCalledWith(mockEvent);
-            expect(chipComponent.visible).toBe(false);
+            expect(chipComponent.visible()).toBe(false);
         });
 
         it('should handle keydown events correctly', async () => {
@@ -968,7 +968,7 @@ describe('Chip', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
 
-            expect(chipComponent.chipProps).toBeUndefined();
+            expect(chipComponent.chipProps()).toBeUndefined();
         });
 
         it('should handle invalid chipProps', async () => {

@@ -1,4 +1,4 @@
-import { booleanAttribute, ChangeDetectionStrategy, Component, inject, InjectionToken, Input, NgModule, ViewEncapsulation } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, inject, InjectionToken, input, NgModule, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { SharedModule } from '@openng/optimus-ui/api';
 import { BadgeModule } from '@openng/optimus-ui/badge';
 import { BaseComponent, PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
@@ -20,7 +20,7 @@ const OVERLAYBADGE_INSTANCE = new InjectionToken<OverlayBadge>('OVERLAYBADGE_INS
     template: `
         <div [class]="cx('root')" [pBind]="ptm('root')">
             <ng-content></ng-content>
-            <p-badge [pt]="ptm('pcBadge')" [styleClass]="styleClass" [style]="style" [badgeSize]="badgeSize" [severity]="severity" [value]="value" [badgeDisabled]="badgeDisabled" />
+            <p-badge [pt]="ptm('pcBadge')" [styleClass]="styleClass()" [style]="style()" [badgeSize]="badgeSize()" [severity]="severity()" [value]="value()" [badgeDisabled]="badgeDisabled()" />
         </div>
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -39,45 +39,50 @@ export class OverlayBadge extends BaseComponent<OverlayBadgePassThrough> {
      * Class of the element.
      * @group Props
      */
-    @Input() styleClass: string | undefined;
+    readonly styleClass = input<string | undefined>(undefined);
     /**
      * Inline style of the element.
      * @group Props
      */
-    @Input() style: { [klass: string]: any } | null | undefined;
+    readonly style = input<
+        | {
+              [klass: string]: any;
+          }
+        | null
+        | undefined
+    >(undefined);
     /**
      * Size of the badge, valid options are "large" and "xlarge".
      * @group Props
      */
-    @Input() badgeSize: 'small' | 'large' | 'xlarge' | null | undefined;
+    readonly badgeSize = input<'small' | 'large' | 'xlarge' | null | undefined>(undefined);
     /**
      * Severity type of the badge.
      * @group Props
      */
-    @Input() severity: BadgeSeverity | null | undefined;
+    readonly severity = input<BadgeSeverity | null | undefined>(undefined);
     /**
      * Value to display inside the badge.
      * @group Props
      */
-    @Input() value: string | number | null | undefined;
+    readonly value = input<string | number | null | undefined>(undefined);
     /**
      * When specified, disables the component.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) badgeDisabled: boolean = false;
+    readonly badgeDisabled = input<boolean, unknown>(false, { transform: booleanAttribute });
     /**
      * Size of the badge, valid options are "large" and "xlarge".
      * @group Props
      * @deprecated use badgeSize instead.
      */
-    @Input() public set size(value: 'large' | 'xlarge' | 'small' | undefined | null) {
-        this._size = value;
-        !this.badgeSize && this.size && console.log('size property is deprecated and will removed in v18, use badgeSize instead.');
+    readonly size = input<'large' | 'xlarge' | 'small' | undefined | null>(undefined);
+
+    onChanges(changes: SimpleChanges) {
+        if (changes['size'] && !this.badgeSize() && this.size()) {
+            console.log('size property is deprecated and will removed in v18, use badgeSize instead.');
+        }
     }
-    get size() {
-        return this._size;
-    }
-    _size: 'large' | 'xlarge' | 'small' | undefined | null;
 
     onAfterViewChecked(): void {
         this.bindDirectiveInstance.setAttrs(this.ptm('host'));

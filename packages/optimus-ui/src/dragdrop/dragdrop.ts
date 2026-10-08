@@ -1,4 +1,4 @@
-import { AfterViewInit, booleanAttribute, Directive, ElementRef, HostListener, inject, Input, NgModule, NgZone, OnDestroy, output, Renderer2 } from '@angular/core';
+import { AfterViewInit, Directive, effect, ElementRef, inject, input, NgModule, NgZone, OnDestroy, output, Renderer2 } from '@angular/core';
 import { addClass, removeClass } from '@openng/optimus-ui-utils';
 import { DomHandler } from '@openng/optimus-ui/dom';
 import { VoidListener } from '@openng/optimus-ui/ts-helpers';
@@ -9,20 +9,24 @@ import { VoidListener } from '@openng/optimus-ui/ts-helpers';
  */
 @Directive({
     selector: '[pDraggable]',
-    standalone: true
+    standalone: true,
+    host: {
+        '(dragstart)': 'dragStart($event)',
+        '(dragend)': 'dragEnd($event)'
+    }
 })
 export class Draggable implements AfterViewInit, OnDestroy {
-    @Input('pDraggable') scope: string | undefined;
+    readonly scope = input<string | undefined>(undefined, { alias: 'pDraggable' });
     /**
      * Defines the cursor style.
      * @group Props
      */
-    @Input() dragEffect: 'none' | 'copy' | 'copyLink' | 'copyMove' | 'link' | 'linkMove' | 'move' | 'all' | 'uninitialized' | undefined;
+    readonly dragEffect = input<'none' | 'copy' | 'copyLink' | 'copyMove' | 'link' | 'linkMove' | 'move' | 'all' | 'uninitialized' | undefined>(undefined);
     /**
      * Selector to define the drag handle, by default anywhere on the target element is a drag handle to start dragging.
      * @group Props
      */
-    @Input() dragHandle: string | undefined;
+    readonly dragHandle = input<string | undefined>(undefined);
     /**
      * Callback to invoke when drag begins.
      * @param {DragEvent} event - Drag event.
@@ -50,30 +54,31 @@ export class Draggable implements AfterViewInit, OnDestroy {
 
     mouseUpListener: VoidListener;
 
-    _pDraggableDisabled: boolean = false;
-
     public el: ElementRef = inject(ElementRef);
 
     public zone: NgZone = inject(NgZone);
 
     private renderer: Renderer2 = inject(Renderer2);
 
-    @Input() get pDraggableDisabled(): boolean {
-        return this._pDraggableDisabled;
-    }
-    set pDraggableDisabled(_pDraggableDisabled: boolean) {
-        this._pDraggableDisabled = _pDraggableDisabled;
+    /**
+     * Whether the element is draggable, useful for conditional cases.
+     * @group Props
+     */
+    readonly pDraggableDisabled = input<boolean>(false);
 
-        if (this._pDraggableDisabled) {
-            this.unbindMouseListeners();
-        } else {
-            this.el.nativeElement.draggable = true;
-            this.bindMouseListeners();
-        }
+    constructor() {
+        effect(() => {
+            if (this.pDraggableDisabled()) {
+                this.unbindMouseListeners();
+            } else {
+                this.el.nativeElement.draggable = true;
+                this.bindMouseListeners();
+            }
+        });
     }
 
     ngAfterViewInit() {
-        if (!this.pDraggableDisabled) {
+        if (!this.pDraggableDisabled()) {
             this.el.nativeElement.draggable = true;
             this.bindMouseListeners();
         }
@@ -120,13 +125,13 @@ export class Draggable implements AfterViewInit, OnDestroy {
         this.onDrag.emit(event);
     }
 
-    @HostListener('dragstart', ['$event'])
     dragStart(event: DragEvent) {
-        if (this.allowDrag() && !this.pDraggableDisabled) {
-            if (this.dragEffect) {
-                (event.dataTransfer as DataTransfer).effectAllowed = this.dragEffect;
+        if (this.allowDrag() && !this.pDraggableDisabled()) {
+            const dragEffect = this.dragEffect();
+            if (dragEffect) {
+                (event.dataTransfer as DataTransfer).effectAllowed = dragEffect;
             }
-            (event.dataTransfer as DataTransfer).setData('text', this.scope!);
+            (event.dataTransfer as DataTransfer).setData('text', this.scope()!);
 
             this.onDragStart.emit(event);
 
@@ -136,7 +141,6 @@ export class Draggable implements AfterViewInit, OnDestroy {
         }
     }
 
-    @HostListener('dragend', ['$event'])
     dragEnd(event: DragEvent) {
         this.onDragEnd.emit(event);
         this.unbindDragListener();
@@ -151,7 +155,8 @@ export class Draggable implements AfterViewInit, OnDestroy {
     }
 
     allowDrag(): boolean {
-        if (this.dragHandle && this.handle) return DomHandler.matches(this.handle, this.dragHandle);
+        const dragHandle = this.dragHandle();
+        if (dragHandle && this.handle) return DomHandler.matches(this.handle, dragHandle);
         else return true;
     }
 
@@ -166,33 +171,25 @@ export class Draggable implements AfterViewInit, OnDestroy {
  */
 @Directive({
     selector: '[pDroppable]',
-    standalone: true
+    standalone: true,
+    host: {
+        '(drop)': 'drop($event)',
+        '(dragenter)': 'dragEnter($event)',
+        '(dragleave)': 'dragLeave($event)'
+    }
 })
 export class Droppable implements AfterViewInit, OnDestroy {
-    @Input('pDroppable') scope: string | string[] | undefined;
+    readonly scope = input<string | string[] | undefined>(undefined, { alias: 'pDroppable' });
     /**
      * Whether the element is droppable, useful for conditional cases.
      * @group Props
      */
-    _pDroppableDisabled: boolean = false;
-
-    @Input() get pDroppableDisabled(): boolean {
-        return this._pDroppableDisabled;
-    }
-    set pDroppableDisabled(_pDroppableDisabled: boolean) {
-        this._pDroppableDisabled = _pDroppableDisabled;
-
-        if (this._pDroppableDisabled) {
-            this.unbindDragOverListener();
-        } else {
-            this.bindDragOverListener();
-        }
-    }
+    readonly pDroppableDisabled = input<boolean>(false);
     /**
      * Defines the cursor style, valid values are none, copy, move, link, copyMove, copyLink, linkMove and all.
      * @group Props
      */
-    @Input() dropEffect: 'none' | 'copy' | 'link' | 'move' | undefined;
+    readonly dropEffect = input<'none' | 'copy' | 'link' | 'move' | undefined>(undefined);
     /**
      * Callback to invoke when a draggable enters drop area.
      * @group Emits
@@ -217,8 +214,18 @@ export class Droppable implements AfterViewInit, OnDestroy {
 
     dragOverListener: VoidListener;
 
+    constructor() {
+        effect(() => {
+            if (this.pDroppableDisabled()) {
+                this.unbindDragOverListener();
+            } else {
+                this.bindDragOverListener();
+            }
+        });
+    }
+
     ngAfterViewInit() {
-        if (!this.pDroppableDisabled) {
+        if (!this.pDroppableDisabled()) {
             this.bindDragOverListener();
         }
     }
@@ -244,7 +251,6 @@ export class Droppable implements AfterViewInit, OnDestroy {
         event.preventDefault();
     }
 
-    @HostListener('drop', ['$event'])
     drop(event: DragEvent) {
         if (this.allowDrop(event)) {
             removeClass(this.el.nativeElement, 'p-draggable-enter');
@@ -253,19 +259,18 @@ export class Droppable implements AfterViewInit, OnDestroy {
         }
     }
 
-    @HostListener('dragenter', ['$event'])
     dragEnter(event: DragEvent) {
         event.preventDefault();
 
-        if (this.dropEffect) {
-            (event.dataTransfer as DataTransfer).dropEffect = this.dropEffect;
+        const dropEffect = this.dropEffect();
+        if (dropEffect) {
+            (event.dataTransfer as DataTransfer).dropEffect = dropEffect;
         }
 
         addClass(this.el.nativeElement, 'p-draggable-enter');
         this.onDragEnter.emit(event);
     }
 
-    @HostListener('dragleave', ['$event'])
     dragLeave(event: DragEvent) {
         event.preventDefault();
 
@@ -277,11 +282,12 @@ export class Droppable implements AfterViewInit, OnDestroy {
 
     allowDrop(event: DragEvent): boolean {
         let dragScope = (event.dataTransfer as DataTransfer).getData('text');
-        if (typeof this.scope == 'string' && dragScope == this.scope) {
+        const scope = this.scope();
+        if (typeof scope == 'string' && dragScope == scope) {
             return true;
-        } else if (Array.isArray(this.scope)) {
-            for (let j = 0; j < this.scope.length; j++) {
-                if (dragScope == this.scope[j]) {
+        } else if (Array.isArray(scope)) {
+            for (let j = 0; j < scope.length; j++) {
+                if (dragScope == scope[j]) {
                     return true;
                 }
             }

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, HostBinding, inject, InjectionToken, Input, NgModule } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, InjectionToken, NgModule, input } from '@angular/core';
 import { SharedModule } from '@openng/optimus-ui/api';
 import { BaseComponent, PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { Bind, BindModule } from '@openng/optimus-ui/bind';
@@ -18,7 +18,8 @@ const INPUTGROUPADDON_INSTANCE = new InjectionToken<InputGroupAddon>('INPUTGROUP
     standalone: true,
     imports: [BindModule],
     host: {
-        '[class]': "cn(cx('root'), styleClass)"
+        '[class]': "cn(cx('root'), styleClass())",
+        '[style]': 'style()'
     },
     providers: [InputGroupAddonStyle, { provide: INPUTGROUPADDON_INSTANCE, useExisting: InputGroupAddon }, { provide: PARENT_INSTANCE, useExisting: InputGroupAddon }],
     hostDirectives: [Bind]
@@ -40,16 +41,18 @@ export class InputGroupAddon extends BaseComponent<InputGroupAddonPassThrough> {
      * Inline style of the element.
      * @group Props
      */
-    @Input() style: { [klass: string]: any } | null | undefined;
+    readonly style = input<
+        | {
+              [klass: string]: any;
+          }
+        | null
+        | undefined
+    >(undefined);
     /**
      * Class of the element.
      * @group Props
      */
-    @Input() styleClass: string | undefined;
-
-    @HostBinding('style') get hostStyle(): { [klass: string]: any } | null | undefined {
-        return this.style;
-    }
+    readonly styleClass = input<string | undefined>(undefined);
 }
 
 @NgModule({

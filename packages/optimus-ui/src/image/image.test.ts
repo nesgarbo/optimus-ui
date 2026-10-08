@@ -175,14 +175,14 @@ describe('Image', () => {
         });
 
         it('should have default values', () => {
-            expect(component.preview).toBe(false);
+            expect(component.preview()).toBe(false);
             expect(component.maskVisible).toBe(false);
             expect(component.previewVisible).toBe(false);
             expect(component.rotate).toBe(0);
             expect(component.scale).toBe(1);
             expect(component.previewClick).toBe(false);
-            expect(component.showTransitionOptions).toBe('150ms cubic-bezier(0, 0, 0.2, 1)');
-            expect(component.hideTransitionOptions).toBe('150ms cubic-bezier(0, 0, 0.2, 1)');
+            expect(component.showTransitionOptions()).toBe('150ms cubic-bezier(0, 0, 0.2, 1)');
+            expect(component.hideTransitionOptions()).toBe('150ms cubic-bezier(0, 0, 0.2, 1)');
         });
 
         it('should accept custom input values', () => {
@@ -198,11 +198,10 @@ describe('Image', () => {
         });
 
         it('should render image element with proper attributes', async () => {
-            component.src = mockImageSrc;
-            component.alt = 'Test Image';
-            component.width = '300';
-            component.height = '200';
-            fixture.changeDetectorRef.markForCheck();
+            fixture.componentRef.setInput('src', mockImageSrc);
+            fixture.componentRef.setInput('alt', 'Test Image');
+            fixture.componentRef.setInput('width', '300');
+            fixture.componentRef.setInput('height', '200');
             await fixture.whenStable();
 
             const imageElement = fixture.debugElement.query(By.css('img'));
@@ -500,7 +499,7 @@ describe('Image', () => {
                 }
             };
 
-            imageInstance.templates = mockQueryList as any;
+            vi.spyOn(imageInstance, 'templates').mockReturnValue(mockQueryList as any);
             imageInstance.ngAfterContentInit();
 
             expect(imageInstance._indicatorTemplate).toBe(mockIndicatorTemplate);

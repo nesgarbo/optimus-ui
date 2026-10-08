@@ -1,4 +1,4 @@
-import { AfterViewChecked, ChangeDetectionStrategy, Component, inject, InjectionToken, Input, NgModule, ViewEncapsulation } from '@angular/core';
+import { AfterViewChecked, ChangeDetectionStrategy, Component, inject, InjectionToken, NgModule, ViewEncapsulation, input } from '@angular/core';
 import { SharedModule } from '@openng/optimus-ui/api';
 import { BaseComponent, PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { Bind, BindModule } from '@openng/optimus-ui/bind';
@@ -41,7 +41,7 @@ export class FloatLabel extends BaseComponent<FloatLabelPassThrough> implements 
      * Defines the positioning of the label relative to the input.
      * @group Props
      */
-    @Input() variant: 'in' | 'over' | 'on' = 'over';
+    readonly variant = input<'in' | 'over' | 'on'>('over');
 }
 
 @NgModule({

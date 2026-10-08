@@ -1,4 +1,4 @@
-import { AfterViewChecked, AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, inject, InjectionToken, Input, NgModule, OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, inject, InjectionToken, input, NgModule, OnDestroy, SimpleChanges, viewChild, ViewEncapsulation } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { find } from '@openng/optimus-ui-utils';
 import { SharedModule } from '@openng/optimus-ui/api';
@@ -20,20 +20,20 @@ const TERMINAL_INSTANCE = new InjectionToken<Terminal>('TERMINAL_INSTANCE');
     standalone: true,
     imports: [FormsModule, SharedModule, Bind],
     template: `
-        @if (welcomeMessage) {
-            <div [class]="cx('welcomeMessage')" [pBind]="ptm('welcomeMessage')">{{ welcomeMessage }}</div>
+        @if (welcomeMessage()) {
+            <div [class]="cx('welcomeMessage')" [pBind]="ptm('welcomeMessage')">{{ welcomeMessage() }}</div>
         }
         <div [class]="cx('commandList')" [pBind]="ptm('commandList')">
             @for (command of commands; track command) {
                 <div [class]="cx('command')" [pBind]="ptm('command')">
-                    <span [class]="cx('promptLabel')" [pBind]="ptm('promptLabel')">{{ prompt }}</span>
+                    <span [class]="cx('promptLabel')" [pBind]="ptm('promptLabel')">{{ prompt() }}</span>
                     <span [class]="cx('commandValue')" [pBind]="ptm('commandValue')">{{ command.text }}</span>
                     <div [class]="cx('commandResponse')" [pBind]="ptm('commandResponse')" [attr.aria-live]="'polite'">{{ command.response }}</div>
                 </div>
             }
         </div>
         <div [class]="cx('prompt')" [pBind]="ptm('prompt')">
-            <span [class]="cx('promptLabel')" [pBind]="ptm('promptLabel')">{{ prompt }}</span>
+            <span [class]="cx('promptLabel')" [pBind]="ptm('promptLabel')">{{ prompt() }}</span>
             <input #in type="text" [(ngModel)]="command" [ngModelOptions]="{ standalone: true }" [class]="cx('promptValue')" [pBind]="ptm('promptValue')" autocomplete="off" (keydown)="handleCommand($event)" autofocus />
         </div>
     `,
@@ -41,7 +41,8 @@ const TERMINAL_INSTANCE = new InjectionToken<Terminal>('TERMINAL_INSTANCE');
     encapsulation: ViewEncapsulation.None,
     providers: [TerminalStyle, { provide: TERMINAL_INSTANCE, useExisting: Terminal }, { provide: PARENT_INSTANCE, useExisting: Terminal }],
     host: {
-        '[class]': "cn(cx('root'), styleClass)"
+        '[class]': "cn(cx('root'), styleClass())",
+        '(click)': 'onHostClick()'
     },
     hostDirectives: [Bind]
 })
@@ -55,18 +56,18 @@ export class Terminal extends BaseComponent<TerminalPassThrough> implements Afte
      * Initial text to display on terminal.
      * @group Props
      */
-    @Input() welcomeMessage: string | undefined;
+    readonly welcomeMessage = input<string | undefined>(undefined);
     /**
      * Prompt text for each command.
      * @group Props
      */
-    @Input() prompt: string | undefined;
+    readonly prompt = input<string | undefined>(undefined);
     /**
      * Style class of the component.
      * @deprecated since v20.0.0, use `class` instead.
      * @group Props
      */
-    @Input() styleClass: string | undefined;
+    readonly styleClass = input<string | undefined>(undefined);
 
     commands: any[] = [];
 
@@ -80,11 +81,10 @@ export class Terminal extends BaseComponent<TerminalPassThrough> implements Afte
 
     _componentStyle = inject(TerminalStyle);
 
-    @ViewChild('in') inputRef!: ElementRef<HTMLInputElement>;
+    readonly inputRef = viewChild.required<ElementRef<HTMLInputElement>>('in');
 
-    @HostListener('click')
     onHostClick() {
-        this.focus(this.inputRef?.nativeElement);
+        this.focus(this.inputRef()?.nativeElement);
     }
 
     public terminalService: TerminalService = inject(TerminalService);
@@ -111,10 +111,17 @@ export class Terminal extends BaseComponent<TerminalPassThrough> implements Afte
         }
     }
 
-    @Input()
-    set response(value: string) {
-        if (value) {
-            this.commands[this.commands.length - 1].response = value;
+    /**
+     * Response of the last command.
+     * @group Props
+     */
+    readonly response = input<string | undefined>(undefined);
+
+    onChanges(changes: SimpleChanges) {
+        const response = this.response();
+
+        if (changes['response'] && response && this.commands.length) {
+            this.commands[this.commands.length - 1].response = response;
             this.commandProcessed = true;
         }
     }

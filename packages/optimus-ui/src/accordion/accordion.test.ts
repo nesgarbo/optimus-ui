@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DebugElement, Input, provideZonelessChangeDetection } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DebugElement, provideZonelessChangeDetection, input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { Accordion, AccordionContent, AccordionHeader, AccordionPanel, AccordionTabCloseEvent, AccordionTabOpenEvent } from './accordion';
@@ -123,7 +123,7 @@ class TestCustomIconAccordionComponent {
     standalone: true,
     imports: [Accordion, AccordionPanel, AccordionHeader, AccordionContent],
     template: `
-        <p-accordion [value]="'tab1'" [pt]="pt">
+        <p-accordion [value]="'tab1'" [pt]="pt()">
             <p-accordion-panel [value]="'tab1'">
                 <p-accordion-header>PT Test Header 1</p-accordion-header>
                 <p-accordion-content>PT Test Content 1</p-accordion-content>
@@ -136,7 +136,7 @@ class TestCustomIconAccordionComponent {
     `
 })
 class TestPTAccordionComponent {
-    @Input() pt: any;
+    readonly pt = input<any>(undefined);
 }
 
 describe('Accordion', () => {
@@ -168,9 +168,9 @@ describe('Accordion', () => {
             expect(accordion.value()).toBeUndefined();
             expect(accordion.multiple()).toBe(false);
             expect(accordion.selectOnFocus()).toBe(false);
-            expect(accordion.transitionOptions).toBe('400ms cubic-bezier(0.86, 0, 0.07, 1)');
-            expect(accordion.expandIcon).toBeUndefined();
-            expect(accordion.collapseIcon).toBeUndefined();
+            expect(accordion.transitionOptions()).toBe('400ms cubic-bezier(0.86, 0, 0.07, 1)');
+            expect(accordion.expandIcon()).toBeUndefined();
+            expect(accordion.collapseIcon()).toBeUndefined();
         });
 
         it('should accept custom values', async () => {
@@ -187,10 +187,10 @@ describe('Accordion', () => {
             expect(accordion.value()).toBe('tab1');
             expect(accordion.multiple()).toBe(true);
             expect(accordion.selectOnFocus()).toBe(true);
-            expect(accordion.expandIcon).toBe('pi pi-plus');
-            expect(accordion.collapseIcon).toBe('pi pi-minus');
-            expect(accordion.transitionOptions).toBe('200ms ease-in');
-            expect(accordion.styleClass).toBe('custom-accordion');
+            expect(accordion.expandIcon()).toBe('pi pi-plus');
+            expect(accordion.collapseIcon()).toBe('pi pi-minus');
+            expect(accordion.transitionOptions()).toBe('200ms ease-in');
+            expect(accordion.styleClass()).toBe('custom-accordion');
         });
 
         it('should render all accordion panels', () => {
@@ -651,8 +651,8 @@ describe('Accordion', () => {
             const headers = fixture.debugElement.queryAll(By.directive(AccordionHeader));
 
             // Check that custom expand icon is referenced (not necessarily displayed)
-            expect(accordion.expandIcon).toBe('pi pi-plus');
-            expect(accordion.collapseIcon).toBe('pi pi-minus');
+            expect(accordion.expandIcon()).toBe('pi pi-plus');
+            expect(accordion.collapseIcon()).toBe('pi pi-minus');
 
             headers[0].nativeElement.click();
             await fixture.whenStable();
@@ -915,18 +915,16 @@ describe('Accordion', () => {
 
     describe('PassThrough', () => {
         let ptFixture: ComponentFixture<TestPTAccordionComponent>;
-        let ptComponent: TestPTAccordionComponent;
 
         beforeEach(async () => {
             ptFixture = TestBed.createComponent(TestPTAccordionComponent);
-            ptComponent = ptFixture.componentInstance;
             await ptFixture.whenStable();
         });
 
         it('should apply simple string classes to PT sections', async () => {
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 root: 'ROOT_CLASS'
-            };
+            });
             ptFixture.changeDetectorRef.markForCheck();
             await ptFixture.whenStable();
 
@@ -937,14 +935,14 @@ describe('Accordion', () => {
         });
 
         it('should apply object-based PT options with class and attributes', async () => {
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 root: {
                     class: 'PT_ROOT_CLASS',
                     'data-test': 'accordion-test',
                     'aria-label': 'PT Accordion Label',
                     'data-role': 'accordion-role'
                 }
-            };
+            });
             ptFixture.changeDetectorRef.markForCheck();
             await ptFixture.whenStable();
 
@@ -957,12 +955,12 @@ describe('Accordion', () => {
         });
 
         it('should apply mixed object and string PT values', async () => {
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 root: {
                     class: 'PT_ROOT_CLASS',
                     'data-custom': 'custom-value'
                 }
-            };
+            });
             ptFixture.changeDetectorRef.markForCheck();
             await ptFixture.whenStable();
 
@@ -973,14 +971,14 @@ describe('Accordion', () => {
         });
 
         it('should use instance variables in PT functions', async () => {
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 root: ({ instance }) => {
                     return {
                         class: instance?.multiple() ? 'MULTIPLE' : 'SINGLE',
                         'data-select-on-focus': instance?.selectOnFocus()
                     };
                 }
-            };
+            });
             ptFixture.changeDetectorRef.markForCheck();
             await ptFixture.whenStable();
 
@@ -992,13 +990,13 @@ describe('Accordion', () => {
 
         it('should handle event binding in PT options', async () => {
             let clicked = false;
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 root: {
                     onclick: () => {
                         clicked = true;
                     }
                 }
-            };
+            });
             ptFixture.changeDetectorRef.markForCheck();
             await ptFixture.whenStable();
 

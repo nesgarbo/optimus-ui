@@ -165,12 +165,12 @@ describe('AnimateOnScroll', () => {
         });
 
         it('should have default values', () => {
-            expect(directive.threshold).toBe(0.5);
-            expect(directive.once).toBe(false);
-            expect(directive.enterClass).toBeUndefined();
-            expect(directive.leaveClass).toBeUndefined();
-            expect(directive.root).toBeUndefined();
-            expect(directive.rootMargin).toBeUndefined();
+            expect(directive.threshold()).toBe(0.5);
+            expect(directive.once()).toBe(false);
+            expect(directive.enterClass()).toBeUndefined();
+            expect(directive.leaveClass()).toBeUndefined();
+            expect(directive.root()).toBeUndefined();
+            expect(directive.rootMargin()).toBeUndefined();
         });
 
         it('should apply host class', () => {
@@ -509,7 +509,7 @@ describe('AnimateOnScroll', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
 
-            expect(directive.enterClass).toBe('new-enter-class');
+            expect(directive.enterClass()).toBe('new-enter-class');
         });
 
         it('should handle dynamic threshold changes', async () => {
@@ -517,7 +517,7 @@ describe('AnimateOnScroll', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
 
-            expect(directive.threshold).toBe(0.9);
+            expect(directive.threshold()).toBe(0.9);
             expect(directive.options.threshold).toBe(0.9);
         });
 
@@ -526,7 +526,7 @@ describe('AnimateOnScroll', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
 
-            expect(directive.once).toBe(true);
+            expect(directive.once()).toBe(true);
         });
     });
 

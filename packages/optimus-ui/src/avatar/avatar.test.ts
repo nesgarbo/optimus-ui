@@ -185,14 +185,14 @@ describe('Avatar', () => {
         });
 
         it('should have default values', () => {
-            expect(component.label).toBeUndefined();
-            expect(component.icon).toBeUndefined();
-            expect(component.image).toBeUndefined();
-            expect(component.size).toBe('normal');
-            expect(component.shape).toBe('square');
-            expect(component.styleClass).toBeUndefined();
-            expect(component.ariaLabel).toBeUndefined();
-            expect(component.ariaLabelledBy).toBeUndefined();
+            expect(component.label()).toBeUndefined();
+            expect(component.icon()).toBeUndefined();
+            expect(component.image()).toBeUndefined();
+            expect(component.size()).toBe('normal');
+            expect(component.shape()).toBe('square');
+            expect(component.styleClass()).toBeUndefined();
+            expect(component.ariaLabel()).toBeUndefined();
+            expect(component.ariaLabelledBy()).toBeUndefined();
         });
 
         it('should apply base CSS classes', () => {
@@ -768,12 +768,12 @@ describe('Avatar', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
 
-            expect(avatarComponent.label).toBeUndefined();
-            expect(avatarComponent.icon).toBeUndefined();
-            expect(avatarComponent.image).toBeUndefined();
-            expect(avatarComponent.size).toBeUndefined();
-            expect(avatarComponent.shape).toBeUndefined();
-            expect(avatarComponent.styleClass).toBeUndefined();
+            expect(avatarComponent.label()).toBeUndefined();
+            expect(avatarComponent.icon()).toBeUndefined();
+            expect(avatarComponent.image()).toBeUndefined();
+            expect(avatarComponent.size()).toBeUndefined();
+            expect(avatarComponent.shape()).toBeUndefined();
+            expect(avatarComponent.styleClass()).toBeUndefined();
         });
     });
 
@@ -1155,7 +1155,7 @@ describe('Avatar', () => {
                 fixture.componentRef.setInput('pt', {
                     root: ({ instance }: any) => {
                         return {
-                            class: instance?.size === 'large' ? 'LARGE_SIZE' : 'NORMAL_SIZE'
+                            class: instance?.size() === 'large' ? 'LARGE_SIZE' : 'NORMAL_SIZE'
                         };
                     }
                 });
@@ -1173,7 +1173,7 @@ describe('Avatar', () => {
                     label: ({ instance }: any) => {
                         return {
                             style: {
-                                'background-color': instance?.shape === 'circle' ? 'yellow' : 'red'
+                                'background-color': instance?.shape() === 'circle' ? 'yellow' : 'red'
                             }
                         };
                     }
@@ -1193,7 +1193,7 @@ describe('Avatar', () => {
                     icon: ({ instance }: any) => {
                         return {
                             class: {
-                                HAS_LABEL: !!instance?.label
+                                HAS_LABEL: !!instance?.label()
                             }
                         };
                     }
@@ -1219,7 +1219,7 @@ describe('Avatar', () => {
                 fixture.componentRef.setInput('pt', {
                     image: ({ instance }: any) => {
                         return {
-                            'data-has-aria': instance?.ariaLabel ? 'true' : 'false'
+                            'data-has-aria': instance?.ariaLabel() ? 'true' : 'false'
                         };
                     }
                 });

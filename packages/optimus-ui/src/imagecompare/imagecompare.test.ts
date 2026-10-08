@@ -143,9 +143,9 @@ describe('ImageCompare', () => {
         });
 
         it('should have default values', () => {
-            expect(component.tabindex).toBeUndefined();
-            expect(component.ariaLabel).toBeUndefined();
-            expect(component.ariaLabelledby).toBeUndefined();
+            expect(component.tabindex()).toBeUndefined();
+            expect(component.ariaLabel()).toBeUndefined();
+            expect(component.ariaLabelledby()).toBeUndefined();
             expect(component.isRTL).toBe(false);
         });
 
@@ -157,8 +157,8 @@ describe('ImageCompare', () => {
             const imageCompareElement = testFixture.debugElement.query(By.directive(ImageCompare));
             const imageCompareInstance = imageCompareElement.componentInstance;
 
-            expect(imageCompareInstance.tabindex).toBe(0);
-            expect(imageCompareInstance.ariaLabel).toBe('Image Compare');
+            expect(imageCompareInstance.tabindex()).toBe(0);
+            expect(imageCompareInstance.ariaLabel()).toBe('Image Compare');
         });
 
         it('should render slider input element', () => {
@@ -390,7 +390,7 @@ describe('ImageCompare', () => {
                 }
             };
 
-            imageCompareInstance.templates = mockTemplates as any;
+            vi.spyOn(imageCompareInstance, 'templates').mockReturnValue(mockTemplates as any);
             imageCompareInstance.ngAfterContentInit();
 
             expect(imageCompareInstance._leftTemplate).toBe(mockLeftTemplate);
@@ -722,7 +722,7 @@ describe('ImageCompare', () => {
                     root: ({ instance }) => {
                         return {
                             onclick: () => {
-                                instanceTabindex = instance?.tabindex;
+                                instanceTabindex = instance?.tabindex();
                             }
                         };
                     }

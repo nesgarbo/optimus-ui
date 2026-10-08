@@ -10,9 +10,10 @@ import { TerminalService } from './terminalservice';
 @Component({
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false,
-    template: ` <p-terminal [welcomeMessage]="welcomeMessage" [prompt]="prompt" [styleClass]="styleClass" [style]="style"> </p-terminal> `
+    template: ` <p-terminal [welcomeMessage]="welcomeMessage" [prompt]="prompt" [styleClass]="styleClass" [style]="style" [response]="response"> </p-terminal> `
 })
 class TestBasicTerminalComponent {
+    response: string | undefined;
     welcomeMessage: string | undefined = 'Welcome to Optimus Terminal';
     prompt: string | undefined = 'prime$ ';
     styleClass: string | undefined;
@@ -102,9 +103,9 @@ describe('Terminal', () => {
 
             const freshTerminal = freshFixture.debugElement.query(By.directive(Terminal)).componentInstance;
 
-            expect(freshTerminal.welcomeMessage).toBeUndefined();
-            expect(freshTerminal.prompt).toBeUndefined();
-            expect(freshTerminal.styleClass).toBeUndefined();
+            expect(freshTerminal.welcomeMessage()).toBeUndefined();
+            expect(freshTerminal.prompt()).toBeUndefined();
+            expect(freshTerminal.styleClass()).toBeUndefined();
             expect(freshTerminal.commands).toEqual([]);
             expect(freshTerminal.command).toBeUndefined();
             expect(freshTerminal.commandProcessed).toBeUndefined();
@@ -119,9 +120,9 @@ describe('Terminal', () => {
             await fixture.whenStable();
             fixture.detectChanges();
 
-            expect(terminalInstance.welcomeMessage).toBe('Custom Welcome');
-            expect(terminalInstance.prompt).toBe('custom$ ');
-            expect(terminalInstance.styleClass).toBe('custom-class');
+            expect(terminalInstance.welcomeMessage()).toBe('Custom Welcome');
+            expect(terminalInstance.prompt()).toBe('custom$ ');
+            expect(terminalInstance.styleClass()).toBe('custom-class');
         });
 
         it('should initialize commands array', () => {
@@ -136,8 +137,8 @@ describe('Terminal', () => {
         });
 
         it('should have input reference after view init', () => {
-            expect(terminalInstance.inputRef).toBeTruthy();
-            expect(terminalInstance.inputRef.nativeElement.tagName.toLowerCase()).toBe('input');
+            expect(terminalInstance.inputRef()).toBeTruthy();
+            expect(terminalInstance.inputRef().nativeElement.tagName.toLowerCase()).toBe('input');
         });
     });
 
@@ -147,7 +148,7 @@ describe('Terminal', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            expect(terminalInstance.welcomeMessage).toBe('Updated Welcome');
+            expect(terminalInstance.welcomeMessage()).toBe('Updated Welcome');
         });
 
         it('should update prompt input', async () => {
@@ -155,7 +156,7 @@ describe('Terminal', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            expect(terminalInstance.prompt).toBe('new> ');
+            expect(terminalInstance.prompt()).toBe('new> ');
         });
 
         it('should update styleClass input', async () => {
@@ -163,7 +164,7 @@ describe('Terminal', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            expect(terminalInstance.styleClass).toBe('test-class');
+            expect(terminalInstance.styleClass()).toBe('test-class');
         });
 
         it('should handle undefined inputs', async () => {
@@ -174,9 +175,9 @@ describe('Terminal', () => {
             await fixture.whenStable();
             fixture.detectChanges();
 
-            expect(terminalInstance.welcomeMessage).toBeUndefined();
-            expect(terminalInstance.prompt).toBeUndefined();
-            expect(terminalInstance.styleClass).toBeUndefined();
+            expect(terminalInstance.welcomeMessage()).toBeUndefined();
+            expect(terminalInstance.prompt()).toBeUndefined();
+            expect(terminalInstance.styleClass()).toBeUndefined();
         });
 
         it('should handle empty string inputs', async () => {
@@ -187,9 +188,9 @@ describe('Terminal', () => {
             await fixture.whenStable();
             fixture.detectChanges();
 
-            expect(terminalInstance.welcomeMessage).toBe('' as any);
-            expect(terminalInstance.prompt).toBe('' as any);
-            expect(terminalInstance.styleClass).toBe('' as any);
+            expect(terminalInstance.welcomeMessage()).toBe('' as any);
+            expect(terminalInstance.prompt()).toBe('' as any);
+            expect(terminalInstance.styleClass()).toBe('' as any);
         });
     });
 
@@ -205,7 +206,7 @@ describe('Terminal', () => {
                 expect(welcomeElement.nativeElement.textContent.trim()).toBe('Test Welcome Message');
             } else {
                 // Fallback: verify component property
-                expect(terminalInstance.welcomeMessage).toBe('Test Welcome Message');
+                expect(terminalInstance.welcomeMessage()).toBe('Test Welcome Message');
             }
         });
 
@@ -225,13 +226,13 @@ describe('Terminal', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            expect(terminalInstance.welcomeMessage).toBe('Initial Message');
+            expect(terminalInstance.welcomeMessage()).toBe('Initial Message');
 
             component.welcomeMessage = 'Updated Message';
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            expect(terminalInstance.welcomeMessage).toBe('Updated Message');
+            expect(terminalInstance.welcomeMessage()).toBe('Updated Message');
         });
 
         it('should handle special characters in welcome message', async () => {
@@ -241,7 +242,7 @@ describe('Terminal', () => {
             await fixture.whenStable();
             fixture.detectChanges();
 
-            expect(terminalInstance.welcomeMessage).toBe(specialMessage);
+            expect(terminalInstance.welcomeMessage()).toBe(specialMessage);
         });
     });
 
@@ -261,7 +262,7 @@ describe('Terminal', () => {
                 expect(text).toBe('test>');
             } else {
                 // Fallback: verify component property
-                expect(terminalInstance.prompt).toBe('test> ');
+                expect(terminalInstance.prompt()).toBe('test> ');
             }
         });
 
@@ -270,7 +271,7 @@ describe('Terminal', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            expect(terminalInstance.prompt).toBe('' as any);
+            expect(terminalInstance.prompt()).toBe('' as any);
         });
 
         it('should handle undefined prompt', async () => {
@@ -278,7 +279,7 @@ describe('Terminal', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            expect(terminalInstance.prompt).toBeUndefined();
+            expect(terminalInstance.prompt()).toBeUndefined();
         });
 
         it('should update prompt when changed', async () => {
@@ -286,13 +287,13 @@ describe('Terminal', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            expect(terminalInstance.prompt).toBe('initial$ ');
+            expect(terminalInstance.prompt()).toBe('initial$ ');
 
             component.prompt = 'updated> ';
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            expect(terminalInstance.prompt).toBe('updated> ');
+            expect(terminalInstance.prompt()).toBe('updated> ');
         });
     });
 
@@ -428,17 +429,21 @@ describe('Terminal', () => {
         it('should set response via property setter', () => {
             terminalInstance.commands.push({ text: 'test' });
 
-            terminalInstance.response = 'Direct response';
+            component.response = 'Direct response';
+            fixture.changeDetectorRef.markForCheck();
+            fixture.detectChanges();
 
             expect(terminalInstance.commands[0].response).toBe('Direct response');
-            expect(terminalInstance.commandProcessed).toBe(true);
+            expect(terminalInstance.commandProcessed).toBe(false); // consumed by the view check that scrolls the terminal;
         });
 
         it('should not set response when value is empty', () => {
             terminalInstance.commands.push({ text: 'test' });
             terminalInstance.commandProcessed = false;
 
-            terminalInstance.response = '';
+            component.response = '';
+            fixture.changeDetectorRef.markForCheck();
+            fixture.detectChanges();
 
             expect(terminalInstance.commands[0].response).toBeUndefined();
             expect(terminalInstance.commandProcessed).toBe(false);
@@ -451,7 +456,7 @@ describe('Terminal', () => {
         });
 
         it('should focus input element', () => {
-            const inputElement = terminalInstance.inputRef.nativeElement;
+            const inputElement = terminalInstance.inputRef().nativeElement;
             vi.spyOn(inputElement, 'focus').mockImplementation(() => {});
 
             terminalInstance.focus(inputElement);
@@ -464,7 +469,7 @@ describe('Terminal', () => {
 
             terminalElement.nativeElement.click();
 
-            expect(terminalInstance.focus).toHaveBeenCalledWith(terminalInstance.inputRef.nativeElement);
+            expect(terminalInstance.focus).toHaveBeenCalledWith(terminalInstance.inputRef().nativeElement);
         });
 
         it('should handle focus when input ref is null', () => {
@@ -721,10 +726,10 @@ describe('Terminal', () => {
             const instance1 = fixture1.debugElement.query(By.directive(Terminal)).componentInstance;
             const instance2 = fixture2.debugElement.query(By.directive(Terminal)).componentInstance;
 
-            expect(instance1.welcomeMessage).toBe('Terminal 1');
-            expect(instance1.prompt).toBe('1> ');
-            expect(instance2.welcomeMessage).toBe('Terminal 2');
-            expect(instance2.prompt).toBe('2> ');
+            expect(instance1.welcomeMessage()).toBe('Terminal 1');
+            expect(instance1.prompt()).toBe('1> ');
+            expect(instance2.welcomeMessage()).toBe('Terminal 2');
+            expect(instance2.prompt()).toBe('2> ');
             expect(instance1).not.toBe(instance2);
         });
 
@@ -743,8 +748,8 @@ describe('Terminal', () => {
 
             const staticTerminal = staticFixture.debugElement.query(By.directive(Terminal)).componentInstance;
 
-            expect(staticTerminal.welcomeMessage).toBe('System Ready');
-            expect(staticTerminal.prompt).toBe('system> ');
+            expect(staticTerminal.welcomeMessage()).toBe('System Ready');
+            expect(staticTerminal.prompt()).toBe('system> ');
         });
 
         it('should work with styled component', () => {
@@ -764,8 +769,8 @@ describe('Terminal', () => {
             await fixture.whenStable();
             fixture.detectChanges();
 
-            expect(terminalInstance.welcomeMessage).toBe('Initial');
-            expect(terminalInstance.prompt).toBe('init> ');
+            expect(terminalInstance.welcomeMessage()).toBe('Initial');
+            expect(terminalInstance.prompt()).toBe('init> ');
 
             component.welcomeMessage = 'Updated';
             component.prompt = 'update> ';
@@ -773,8 +778,8 @@ describe('Terminal', () => {
             await fixture.whenStable();
             fixture.detectChanges();
 
-            expect(terminalInstance.welcomeMessage).toBe('Updated');
-            expect(terminalInstance.prompt).toBe('update> ');
+            expect(terminalInstance.welcomeMessage()).toBe('Updated');
+            expect(terminalInstance.prompt()).toBe('update> ');
         });
 
         it('should work with dynamic properties', async () => {
@@ -784,8 +789,8 @@ describe('Terminal', () => {
 
             const dynamicTerminal = dynamicFixture.debugElement.query(By.directive(Terminal)).componentInstance;
 
-            expect(dynamicTerminal.welcomeMessage).toBe('Dynamic Welcome');
-            expect(dynamicTerminal.prompt).toBe('dynamic$ ');
+            expect(dynamicTerminal.welcomeMessage()).toBe('Dynamic Welcome');
+            expect(dynamicTerminal.prompt()).toBe('dynamic$ ');
 
             // Update properties dynamically
             dynamicComponent.message = 'Changed Welcome';
@@ -794,8 +799,8 @@ describe('Terminal', () => {
             await dynamicFixture.whenStable();
             dynamicFixture.detectChanges();
 
-            expect(dynamicTerminal.welcomeMessage).toBe('Changed Welcome');
-            expect(dynamicTerminal.prompt).toBe('changed> ');
+            expect(dynamicTerminal.welcomeMessage()).toBe('Changed Welcome');
+            expect(dynamicTerminal.prompt()).toBe('changed> ');
         });
 
         it('should handle complete workflow', async () => {
@@ -878,10 +883,12 @@ describe('Terminal', () => {
         it('should handle response setter programmatically', () => {
             terminalInstance.commands.push({ text: 'test' });
 
-            terminalInstance.response = 'Test Response';
+            component.response = 'Test Response';
+            fixture.changeDetectorRef.markForCheck();
+            fixture.detectChanges();
 
             expect(terminalInstance.commands[0].response).toBe('Test Response');
-            expect(terminalInstance.commandProcessed).toBe(true);
+            expect(terminalInstance.commandProcessed).toBe(false); // consumed by the view check that scrolls the terminal;
         });
     });
 
@@ -1064,19 +1071,19 @@ describe('Terminal', () => {
                 pt = {
                     root: ({ instance }: any) => {
                         return {
-                            class: instance?.welcomeMessage ? 'HAS-WELCOME' : 'NO-WELCOME'
+                            class: instance?.welcomeMessage() ? 'HAS-WELCOME' : 'NO-WELCOME'
                         };
                     },
                     welcomeMessage: ({ instance }: any) => {
                         return {
                             style: {
-                                'background-color': instance?.welcomeMessage ? 'yellow' : 'transparent'
+                                'background-color': instance?.welcomeMessage() ? 'yellow' : 'transparent'
                             }
                         };
                     },
                     prompt: ({ instance }: any) => {
                         return {
-                            class: instance?.prompt ? 'HAS_PROMPT_CLASS' : 'NO_PROMPT_CLASS'
+                            class: instance?.prompt() ? 'HAS_PROMPT_CLASS' : 'NO_PROMPT_CLASS'
                         };
                     }
                 };
