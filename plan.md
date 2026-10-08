@@ -17,6 +17,7 @@ Anota aquí lo que se está haciendo (fecha, qué, commit).
   - `nightly.yml` corregido.
   - Catalog `angular22`: core, router, etc. a ^22.2.1 y cdk a ^22.2.2. `pnpm install` hecho y build de la lib OK.
   - Overrides de `source-map-js` y `postcss-selector-parser`.
+- 2026-10-08. Cuarto tramo, P5 a P8 (sin commit al escribir esto): ver "Resultado de P5 a P8" al final de P8. Verificado: formato, 0 errores de lint, 0 vulnerabilidades, builds de la lib, themes y docs (incluido producción con prerender), y 8761 tests (8760 pasan, 1 skip).
 - 2026-10-08. Tercer tramo (sin commit). Estado: prettier limpio, 0 errores de lint, build de la lib y de la docs OK, 8483 de 8484 tests pasan antes de arreglar el test del zoom (ya arreglado).
   - Decisiones: `Eager` devuelto a los componentes que mutan en sitio (submenús, `TreeTable`, `TTBody`, `TTScrollableView`, `DynamicDialog`, `organizationchart`, `Table`, `TableBody`); default de `wheel` en charts vuelve a `true` (Fase B: Ctrl); `SafeHtmlPipe` de `menu` sanitiza (se avisa en las notas de migración).
   - Revisión en Chromium real de `datepicker`, `password`, `inputmask`, `scrolltop`, `multiselect` y `autocomplete`: botones de limpiar y mostrar de `password` e `inputmask` medían 0x0 (arreglado con CSS), `password` perdía el foco al alternar (un solo botón), y `scrolltop`, `autocomplete`, `multiselect`, `datepicker` y `password` vuelven a `[ngStyle]` en los inputs de estilo del usuario para conservar claves con unidad.
@@ -280,62 +281,79 @@ Auditado el 2026-10-08: 4 hechos, 3 parciales y 2 sin hacer de 9 ítems. Queda, 
 
 ## P5 - Config, dependencias y repo
 
-- [ ] `tsconfig.json` raíz. Quita los paths `@primeng/themes` (apuntan a `packages/themes`, que no existe) y `include **/dist/**`. Sube `strict` poco a poco (`noImplicitAny`, `strictTemplates`).
-- [ ] Scripts raíz. `clean` borra `pnpm-lock.yaml` y usa `npx rimraf` sin declararlo. Quita `--no-git-checks` de `release*`.
-- [ ] Dependencias fantasma (`glob`, `fs-extra`, `tsdown`, `cross-env`). Decláralas por paquete y evalúa quitar `shamefullyHoist`.
-- [ ] Mueve a `catalog:` las versiones duplicadas entre docs y la lib (tiptap, prosemirror, univer, pdf-lib, maplibre, pdfjs, cropperjs).
-- [ ] Peers de `packages/optimus-ui`. `rxjs` a `^7.8.1` y añade `quill` como peer opcional.
-- [ ] `engines.node >=12.11.0` en motion, styled y utils. Pon `>=20` o el mínimo de Angular 22.
-- [ ] `optimus-ui-themes/package.json`. Exports `./*` apuntan a `.d.ts` y tsdown genera `.d.mts`. Revisa con `attw`.
-- [ ] `optimus-ui-tailwindcss/package.json`. `main`, `module` y `types` apuntan a `src/*.ts`.
-- [ ] Overrides en `pnpm-workspace.yaml` para `braces`, `source-map-js` y `postcss-selector-parser` (vienen de tailwind 3 en docs).
-- [ ] `apps/docs/package.json`. `autoprefixer` y `postcss` sin uso. Pasa `tailwindcss` a devDependencies. Quita `typedoc` duplicado.
-- [ ] `commitlint.config.ts`. Añade `perf`, `build`, `ci` y `revert`. Quita `references-empty`.
-- [ ] `lefthook.yml`. Añade lint o typecheck a pre-commit cuando el lint funcione.
-- [ ] `.prettierignore` y `format:check`. Cubre `scripts/` y los `.mjs`.
-- [ ] `dependabot.yml`. Agrupa tiptap, prosemirror y univer.
-- [ ] `plan.md` raíz. Decide si vive en el repo o en `docs/`.
-- [ ] Metadatos de `package.json` inconsistentes (`author`, `homepage`, `repository.url`).
-- [ ] `forms-interop/forms-types.probe.ts`. Verifica que no se publica, o bórralo.
+- [~] `tsconfig.json` raíz. Quita los paths `@primeng/themes` (apuntan a `packages/themes`, que no existe) y `include **/dist/**`. Sube `strict` poco a poco (`noImplicitAny`, `strictTemplates`). (Paths e `include` quitados y `fullTemplateTypeCheck` activado. `noImplicitAny` (~1.100 errores) y `strictTemplates` (237 errores) no se activaron.)
+- [x] Scripts raíz. `clean` borra `pnpm-lock.yaml` y usa `npx rimraf` sin declararlo. Quita `--no-git-checks` de `release*`.
+- [x] Dependencias fantasma (`glob`, `fs-extra`, `tsdown`, `cross-env`). Decláralas por paquete y evalúa quitar `shamefullyHoist`.
+- [x] Mueve a `catalog:` las versiones duplicadas entre docs y la lib (tiptap, prosemirror, univer, pdf-lib, maplibre, pdfjs, cropperjs).
+- [x] Peers de `packages/optimus-ui`. `rxjs` a `^7.8.1` y añade `quill` como peer opcional.
+- [x] `engines.node >=12.11.0` en motion, styled y utils. Pon `>=20` o el mínimo de Angular 22.
+- [x] `optimus-ui-themes/package.json`. Exports `./*` apuntan a `.d.ts` y tsdown genera `.d.mts`. Revisa con `attw`.
+- [x] `optimus-ui-tailwindcss/package.json`. `main`, `module` y `types` apuntan a `src/*.ts`.
+- [x] Overrides en `pnpm-workspace.yaml` para `braces`, `source-map-js` y `postcss-selector-parser` (vienen de tailwind 3 en docs).
+- [x] `apps/docs/package.json`. `autoprefixer` y `postcss` sin uso. Pasa `tailwindcss` a devDependencies. Quita `typedoc` duplicado.
+- [x] `commitlint.config.ts`. Añade `perf`, `build`, `ci` y `revert`. Quita `references-empty`.
+- [x] `lefthook.yml`. Añade lint o typecheck a pre-commit cuando el lint funcione.
+- [x] `.prettierignore` y `format:check`. Cubre `scripts/` y los `.mjs`.
+- [x] `dependabot.yml`. Agrupa tiptap, prosemirror y univer.
+- [x] `plan.md` raíz. Decide si vive en el repo o en `docs/`. (Decidido: se queda en el repo.)
+- [x] Metadatos de `package.json` inconsistentes (`author`, `homepage`, `repository.url`).
+- [x] `forms-interop/forms-types.probe.ts`. Verifica que no se publica, o bórralo.
 
 ### Limpieza de archivos
 
-- [ ] Borra `optimus-ui-themes/` de la raíz y revisa qué script lo generó.
-- [ ] `git rm pnpm-publish-summary.json` y añádelo a `.gitignore` (también `*.tsbuildinfo` y `.env`).
-- [ ] Borra `apps/docs/public/demos.json` (1.9 MB, obsoleto). Ahora los demos van a `.demos/` y `public/demos/`.
-- [ ] Quita de `.gitignore` los restos de PrimeNG (`/components`, `/resources`, `.nx`).
+- [x] Borra `optimus-ui-themes/` de la raíz y revisa qué script lo generó.
+- [x] `git rm pnpm-publish-summary.json` y añádelo a `.gitignore` (también `*.tsbuildinfo` y `.env`).
+- [x] Borra `apps/docs/public/demos.json` (1.9 MB, obsoleto). Ahora los demos van a `.demos/` y `public/demos/`.
+- [x] Quita de `.gitignore` los restos de PrimeNG (`/components`, `/resources`, `.nx`).
 
 ## P6 - Docs app
 
-- [ ] `app.config.ts`. Añade `provideClientHydration(withEventReplay())`.
-- [ ] `angular.json`. Budgets `initial` (warning 1MB, error 2MB) y `anyComponentStyle`. Quita `allowedCommonJsDependencies` muertos.
-- [ ] `package.json` de docs. Los scripts `lint` y `e2e` apuntan a targets que no existen.
-- [ ] `components/doc/codeeditor/templates.ts`. Añade las deps de maplibre, univer, tiptap, cropperjs, pdf-lib y pdfjs. Cambia `zone.js` (la app es zoneless). Amplía `TEST_SELECTORS` en `scripts/test-demo-code.mjs`.
-- [ ] `doc/configuration/zindex-doc.ts` y `filtermode-doc.ts`. `OptimusConfig` no existe; reescribe con `provideOptimus({...})` y verifica las claves.
-- [ ] `routes.txt` obsoleto. Faltan 12 rutas nuevas y `/guides/signalforms`. Haz que `ng build` falle si está obsoleto, o documenta `pnpm build`.
-- [ ] `router/app.routes.ts`. Quita el `theming` duplicado. `virtualscroller` carga `pages/scroller`. El wildcard da soft-404.
-- [ ] `index.html`. Comilla suelta en la URL de Roboto, `preconnect`, y el script de kapa fuera del `<body>`.
-- [ ] Quita las referencias a "Syncfusion" en `doc/querybuilder/basic-doc.ts`, `doc/gauges/axes-doc.ts` y los comentarios de `packages/optimus-ui/src`.
-- [ ] Sustituye las URLs de avatares de `primefaces.org` (`doc/texteditor/demo-data.ts`) por assets propios.
-- [ ] Saca `test:stackblitz --all` de `build:docs` a un workflow nocturno.
-- [ ] Verifica que `build:apidoc` genera las claves de los componentes nuevos. Excluye `*.test.ts`. `name: 'PrimeNG'` en `scripts/build-apidoc.mjs`.
-- [ ] `apps/docs/README.md` es un resto genérico de PrimeNG.
+- [x] `app.config.ts`. Añade `provideClientHydration(withEventReplay())`.
+- [x] `angular.json`. Budgets `initial` (warning 1MB, error 2MB) y `anyComponentStyle`. Quita `allowedCommonJsDependencies` muertos.
+- [x] `package.json` de docs. Los scripts `lint` y `e2e` apuntan a targets que no existen.
+- [x] `components/doc/codeeditor/templates.ts`. Añade las deps de maplibre, univer, tiptap, cropperjs, pdf-lib y pdfjs. Cambia `zone.js` (la app es zoneless). Amplía `TEST_SELECTORS` en `scripts/test-demo-code.mjs`.
+- [x] `doc/configuration/zindex-doc.ts` y `filtermode-doc.ts`. `OptimusConfig` no existe; reescribe con `provideOptimus({...})` y verifica las claves.
+- [x] `routes.txt` obsoleto. Faltan 12 rutas nuevas y `/guides/signalforms`. Haz que `ng build` falle si está obsoleto, o documenta `pnpm build`.
+- [~] `router/app.routes.ts`. Quita el `theming` duplicado. `virtualscroller` carga `pages/scroller`. El wildcard da soft-404. (`theming` duplicado y soft-404 resueltos; el nombre `virtualscroller` se dejó con un comentario.)
+- [x] `index.html`. Comilla suelta en la URL de Roboto, `preconnect`, y el script de kapa fuera del `<body>`.
+- [x] Quita las referencias a "Syncfusion" en `doc/querybuilder/basic-doc.ts`, `doc/gauges/axes-doc.ts` y los comentarios de `packages/optimus-ui/src`.
+- [x] Sustituye las URLs de avatares de `primefaces.org` (`doc/texteditor/demo-data.ts`) por assets propios.
+- [ ] Saca `test:stackblitz --all` de `build:docs` a un workflow nocturno. (Pendiente: hay que quitar `&& npm run test:stackblitz` de `build:docs` en `apps/docs/package.json` y crear un workflow nocturno.)
+- [~] Verifica que `build:apidoc` genera las claves de los componentes nuevos. Excluye `*.test.ts`. `name: 'PrimeNG'` en `scripts/build-apidoc.mjs`. (Hecho; quedan dos páginas que piden un nombre inexistente: `TextEditor` es `TextEditorRoot` y `Chart` es `UIChart`.)
+- [x] `apps/docs/README.md` es un resto genérico de PrimeNG.
 
 ## P7 - Themes
 
-- [ ] `material` no tiene 17 directorios de aura: aiassistview, barcode, blockeditor, charts, cropper, dashboardlayout, gantt, gauge, map, mention, pdfeditor, querybuilder, scheduler, signature, spreadsheet, taskboard y texteditor. Añádelos o documenta que no se cubren.
+- [x] `material` no tiene 17 directorios de aura: aiassistview, barcode, blockeditor, charts, cropper, dashboardlayout, gantt, gauge, map, mention, pdfeditor, querybuilder, scheduler, signature, spreadsheet, taskboard y texteditor. Añádelos o documenta que no se cubren.
 
 ## P8 - Tests
 
-- [ ] Charts. Tests de `hit-test`, `build-scene`, `charts-state`, legend, tooltip, scale, ticks, stack, decimate, curve, color y export. Son los archivos modificados ahora.
-- [ ] Regresión para P1: map (style.load), decimate, pdf-render, CSV defuse, parseCsv, querybuilder SQL.
-- [ ] `splitter.test.ts`. 66 tests con `skip`. También card (8), treetable (8), drawer (4), speeddial (2) y panel (1).
-- [ ] Sustituye los 55 `expect(true).toBe(true)` (listbox 18, drawer 10, password 5, ...).
-- [ ] `pdfeditor.test.ts` ('opens a document, draws its page and lists its pages') es flaky bajo carga: comprueba píxeles negros del canvas antes de que termine el render. Espera al render real en vez de un tiempo.
-- [ ] Reduce los `setTimeout` reales (~1256 líneas). Usa `vi.useFakeTimers()` o `whenStable()`.
-- [ ] `texteditor-engine.test.ts` no tiene ningún `expect(`.
-- [ ] Specs que faltan: avatargroup, buttongroup, overlaybadge, steps, chart, motion, dragdrop, dom, config y api. Paquetes `utils`, `motion`, `locale`, `styles`, `tailwindcss` y `themes` con 0 tests.
-- [ ] Cobertura. Añade `coverage.thresholds` y corre `test:unit:coverage` en CI. Con `aot:false` y `strictTemplates:false`, los templates no se type-checkean en test.
+- [x] Charts. Tests de `hit-test`, `build-scene`, `charts-state`, legend, tooltip, scale, ticks, stack, decimate, curve, color y export. Son los archivos modificados ahora.
+- [x] Regresión para P1: map (style.load), decimate, pdf-render, CSV defuse, parseCsv, querybuilder SQL.
+- [x] `splitter.test.ts`. 66 tests con `skip`. También card (8), treetable (8), drawer (4), speeddial (2) y panel (1).
+- [x] Sustituye los 55 `expect(true).toBe(true)` (listbox 18, drawer 10, password 5, ...).
+- [x] `pdfeditor.test.ts` ('opens a document, draws its page and lists its pages') es flaky bajo carga: comprueba píxeles negros del canvas antes de que termine el render. Espera al render real en vez de un tiempo.
+- [~] Reduce los `setTimeout` reales (~1256 líneas). Usa `vi.useFakeTimers()` o `whenStable()`. (Reducidos en unos 30 archivos y la suite pasa de ~32 s a ~18 s; el resto de las ~1256 esperas sigue.)
+- [x] `texteditor-engine.test.ts` no tiene ningún `expect(`.
+- [~] Specs que faltan: avatargroup, buttongroup, overlaybadge, steps, chart, motion, dragdrop, dom, config y api. Paquetes `utils`, `motion`, `locale`, `styles`, `tailwindcss` y `themes` con 0 tests. (Hechos api, dom, dragdrop, motion, steps, avatargroup, buttongroup, overlaybadge; faltan `usestyle`, `ts-helpers` y los tests de los paquetes `utils`, `motion`, `locale`, `styles`, `tailwindcss` y `themes`.)
+- [~] Cobertura. Añade `coverage.thresholds` y corre `test:unit:coverage` en CI. Con `aot:false` y `strictTemplates:false`, los templates no se type-checkean en test. (Umbrales 65/51/65/66 y cobertura en CI. `strictTemplates` de test sigue en `false`: ~7.100 errores.)
+
+
+### Resultado de P5 a P8 (2026-10-08)
+
+- Cobertura medida: statements 67,6 %, branches 53,7 %, functions 68,0 %, lines 68,8 %.
+- Tests: 8761 (8760 pasan, 1 skip) frente a 8575 antes; suite de ~32 s a ~18 s.
+- Material tiene ya los 17 directorios que le faltaban (sin verificar en navegador). Los 108 archivos idénticos en aura, lara y nora se pueden mover a un módulo compartido (ahorra ~210 KB de fuente, 1 a 2 días, fácil de comprobar comparando el JSON resultante). Pendiente de decisión.
+- Build de producción de la docs: 136 rutas prerenderizadas. Había dos fallos de SSR: `ConfirmPopup.onDestroy` llamaba a `cancelAnimationFrame` sin guarda y `pBadge` usaba `document` (este ya existía).
+- Hidratación en la docs: Prism se ejecutaba antes de hidratar (NG0500) y el widget de kapa pisaba `window.Prism`; se arregló con dos scripts (`prism-before.js` y `prism-after.js`).
+
+### Bugs de componentes encontrados y no arreglados
+
+- [ ] `steps`: la plantilla enlaza `[routerLinkActiveOptions]` sin la directiva `routerLinkActive`. Un step con `routerLink` en modo no readonly lanza NG0303 (su test sigue en `it.skip`).
+- [ ] `DomHandler.addMultipleClasses` lanza `DOMTokenList.add` con un token vacío si el texto lleva dos espacios seguidos.
+- [ ] Los hooks de passthrough (`hooks.*`) se resuelven llamando a la función y luego llamando a lo que devolvió: un hook que devuelve un valor truthy lanza "selfHook is not a function".
+- [ ] Los tests de `map` imprimen un NG0953 en dos casos (pasan).
+- [x] `TTScrollableView` no recibía el `pt` del TreeTable (arreglado con `[pt]="pt()"` en las dos vistas).
 
 ## Fase B - API con signals (3.0, el último paso)
 
