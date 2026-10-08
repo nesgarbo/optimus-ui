@@ -13,6 +13,7 @@ import {
     inject,
     input,
     NgModule,
+    NgZone,
     numberAttribute,
     output,
     PLATFORM_ID,
@@ -26,7 +27,7 @@ import { SharedModule } from '@openng/optimus-ui/api';
 import { BaseComponent, PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { Bind } from '@openng/optimus-ui/bind';
 import type { MentionBeforeOpenEvent, MentionFields, MentionFilteringEvent, MentionItemContext, MentionOption, MentionPassThrough, MentionSearchPattern, MentionSelectEvent } from '@openng/optimus-ui/types/mention';
-import { selectionCaret, textFieldCaret, type CaretRect } from './mention-caret';
+import { disposeCaretMirror, selectionCaret, textFieldCaret, type CaretRect } from './mention-caret';
 import { filterItems, findMention, replaceMention, stepActive, toOptions, type MentionMatch } from './mention-engine';
 import { MentionStyle } from './style/mentionstyle';
 
@@ -67,7 +68,7 @@ let nextId = 0;
                 @if (headerTpl(); as header) {
                     <div [class]="cx('header')"><ng-container *ngTemplateOutlet="header" /></div>
                 }
-                <ul #list role="listbox" [class]="cx('list')" [id]="listId" [attr.aria-label]="ariaLabel() || 'Suggestions'">
+                <ul #list role="listbox" [class]="cx('list')" [id]="listId" [attr.aria-label]="ariaLabel() || suggestionsLabel()">
                     @for (option of options(); track option.index) {
                         @if (option.group !== undefined && (option.index === 0 || options()[option.index - 1].group !== option.group)) {
                             <li role="presentation" [class]="cx('group')">{{ option.group }}</li>
@@ -95,7 +96,7 @@ let nextId = 0;
                             @if (noRecordsTpl(); as tpl) {
                                 <ng-container *ngTemplateOutlet="tpl" />
                             } @else {
-                                No records found
+                                {{ noRecordsText() }}
                             }
                         </li>
                     }
@@ -212,6 +213,16 @@ export class Mention extends BaseComponent<MentionPassThrough> {
      * @group Props
      */
     readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
+    /**
+     * Accessible name of the list when `aria-label` is not set.
+     * @group Props
+     */
+    readonly suggestionsLabel = input('Suggestions');
+    /**
+     * Text of the list when nothing matches and there is no `#noRecords` template.
+     * @group Props
+     */
+    readonly noRecordsText = input('No records found');
 
     // ---------------------------------------------------------------------------------------------
     // Events
@@ -269,6 +280,10 @@ export class Mention extends BaseComponent<MentionPassThrough> {
     private targetEl: Target | null = null;
     private context: CaretContext | null = null;
     private chipViews: EmbeddedViewRef<any>[] = [];
+    private readonly zone = inject(NgZone);
+    /** Text and caret the last evaluation read: the same pair again changes nothing. */
+    private lastKey: string | null = null;
+    private placeFrame = 0;
 
     /** `true` while the list is showing. */
     readonly isOpen = this.open.asReadonly();
@@ -323,7 +338,7 @@ export class Mention extends BaseComponent<MentionPassThrough> {
                 const current = this.activeIndex();
 
                 this.activeIndex.set(current >= 0 && current < options.length && !options[current].disabled ? current : stepActive(options, -1, 1));
-                this.place();
+                this.placeSoon();
             });
         });
 
@@ -362,11 +377,49 @@ export class Mention extends BaseComponent<MentionPassThrough> {
         return host.querySelector<HTMLElement>('textarea, input:not([type]), input[type="text"], input[type="search"], [contenteditable=""], [contenteditable="true"]');
     }
 
+    // One keystroke fires `input`, `keyup` and `selectionchange` for the same text and caret: only the first one needs to work.
     private readonly onInput = () => this.evaluate();
     private readonly onKeyup = (e: KeyboardEvent) => !['ArrowDown', 'ArrowUp', 'Enter', 'Tab', 'Escape'].includes(e.key) && this.evaluate();
-    private readonly onClick = () => this.evaluate();
-    private readonly onBlur = () => this.close();
-    private readonly onSelectionChange = () => this.targetEl && this.targetEl.ownerDocument.activeElement === this.targetEl && this.evaluate();
+    private readonly onClick = () => this.evaluate(true);
+    private readonly onBlur = () => {
+        this.lastKey = null;
+        this.stopSelectionWatch();
+        this.close();
+    };
+    private readonly onFocus = () => this.startSelectionWatch();
+
+    /** `selectionchange` is the document's and fires for every selection on the page: it is listened to outside the zone, and only while the target has the focus. */
+    private readonly onSelectionChange = () => {
+        const el = this.targetEl;
+
+        if (!el || el.ownerDocument.activeElement !== el) return;
+
+        const context = this.readContext();
+
+        if (this.keyOf(context) === this.lastKey) return;
+
+        this.zone.run(() => this.evaluate());
+    };
+
+    private selectionWatch: Document | null = null;
+
+    private startSelectionWatch(): void {
+        const doc = this.targetEl?.ownerDocument;
+
+        if (!doc || this.selectionWatch) return;
+
+        this.selectionWatch = doc;
+        this.zone.runOutsideAngular(() => doc.addEventListener('selectionchange', this.onSelectionChange));
+    }
+
+    private stopSelectionWatch(): void {
+        this.selectionWatch?.removeEventListener('selectionchange', this.onSelectionChange);
+        this.selectionWatch = null;
+    }
+
+    private keyOf(context: CaretContext | null): string | null {
+        return context ? `${context.caret}:${context.text}` : null;
+    }
 
     private readonly onKeydown = (event: KeyboardEvent) => {
         if (!this.open()) return;
@@ -411,9 +464,11 @@ export class Mention extends BaseComponent<MentionPassThrough> {
         el.addEventListener('keyup', this.onKeyup);
         el.addEventListener('click', this.onClick);
         el.addEventListener('blur', this.onBlur);
+        el.addEventListener('focus', this.onFocus);
         // Capture, so the list answers the arrows and Enter before an editor's own handlers do.
         el.addEventListener('keydown', this.onKeydown, true);
-        el.ownerDocument.addEventListener('selectionchange', this.onSelectionChange);
+        if (el.ownerDocument.activeElement === el) this.startSelectionWatch();
+
         el.setAttribute('aria-autocomplete', 'list');
         el.setAttribute('aria-controls', this.listId);
         el.setAttribute('aria-haspopup', 'listbox');
@@ -429,8 +484,13 @@ export class Mention extends BaseComponent<MentionPassThrough> {
         el.removeEventListener('keyup', this.onKeyup);
         el.removeEventListener('click', this.onClick);
         el.removeEventListener('blur', this.onBlur);
+        el.removeEventListener('focus', this.onFocus);
         el.removeEventListener('keydown', this.onKeydown, true);
-        el.ownerDocument.removeEventListener('selectionchange', this.onSelectionChange);
+        this.stopSelectionWatch();
+        disposeCaretMirror(el);
+        this.lastKey = null;
+        if (this.browser) cancelAnimationFrame(this.placeFrame);
+        this.placeFrame = 0;
         ['aria-autocomplete', 'aria-controls', 'aria-haspopup', 'aria-expanded', 'aria-activedescendant'].forEach((a) => el.removeAttribute(a));
         this.targetEl = null;
         this.chipViews.forEach((v) => v.destroy());
@@ -456,10 +516,15 @@ export class Mention extends BaseComponent<MentionPassThrough> {
         return { text: (node as Text).data, caret: selection.focusOffset, node: node as Text };
     }
 
-    private evaluate(): void {
+    private evaluate(force = false): void {
         if (this.disabled()) return this.close();
 
         const context = this.readContext();
+        const key = this.keyOf(context);
+
+        if (!force && key === this.lastKey) return;
+
+        this.lastKey = key;
         const match = context ? findMention(context.text, context.caret, { mentionChar: this.mentionChar(), allowSpaces: this.allowSpaces(), minLength: this.minLength(), requireLeadingSpace: this.requireLeadingSpace() }) : null;
 
         this.context = context;
@@ -479,7 +544,7 @@ export class Mention extends BaseComponent<MentionPassThrough> {
         }
 
         if (!this.open()) this.show();
-        else this.place();
+        else this.placeSoon();
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -497,7 +562,17 @@ export class Mention extends BaseComponent<MentionPassThrough> {
         this.open.set(true);
         this.opened.emit();
         this.cd.markForCheck();
-        requestAnimationFrame(() => this.place());
+        this.placeSoon();
+    }
+
+    /** Places the list on the next frame: a keystroke asks for it from several places, and one frame answers them all. */
+    private placeSoon(): void {
+        if (!this.browser || this.placeFrame) return;
+
+        this.placeFrame = requestAnimationFrame(() => {
+            this.placeFrame = 0;
+            this.place();
+        });
     }
 
     private close(): void {
@@ -511,6 +586,9 @@ export class Mention extends BaseComponent<MentionPassThrough> {
         this.match.set(null);
         this.pool.set(null);
         this.activeIndex.set(-1);
+
+        if (this.targetEl) disposeCaretMirror(this.targetEl);
+
         this.closed.emit();
         this.cd.markForCheck();
     }
@@ -605,6 +683,16 @@ export class Mention extends BaseComponent<MentionPassThrough> {
 
             view.detectChanges();
             view.rootNodes.forEach((n) => chip.appendChild(n));
+            // A chip the user deleted took its view with it: the views of those are let go, so that they do not pile up.
+            this.chipViews = this.chipViews.filter((v) => {
+                const root = v.rootNodes[0] as Node | undefined;
+
+                if (root?.isConnected !== false) return true;
+
+                v.destroy();
+
+                return false;
+            });
             this.chipViews.push(view);
         } else {
             chip.textContent = text;
@@ -640,7 +728,7 @@ export class Mention extends BaseComponent<MentionPassThrough> {
 
     /** Opens the list for the mention at the caret, if there is one. Mirrors Syncfusion's `showPopup`. */
     showPopup(): void {
-        this.evaluate();
+        this.evaluate(true);
     }
 
     /** Closes the list. Mirrors Syncfusion's `hidePopup`. */

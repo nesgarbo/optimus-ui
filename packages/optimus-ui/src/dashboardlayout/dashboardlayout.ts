@@ -10,6 +10,7 @@ import {
     effect,
     inject,
     input,
+    NgZone,
     model,
     NgModule,
     numberAttribute,
@@ -80,7 +81,7 @@ let nextId = 0;
     standalone: true,
     imports: [NgTemplateOutlet, SharedModule, Bind],
     template: `
-        <div [class]="cx('grid')" role="group" [attr.aria-label]="ariaLabel() || 'Dashboard'" [attr.aria-describedby]="helpId" [style.height.px]="gridHeight()">
+        <div [class]="cx('grid')" role="group" [attr.aria-label]="ariaLabel() || defaultLabel()" [attr.aria-describedby]="helpId" [style.height.px]="gridHeight()">
             @if (live(); as l) {
                 <div [class]="cx('placeholder')" aria-hidden="true" [style.transform]="'translate(' + target().x + 'px,' + target().y + 'px)'" [style.width.px]="target().w" [style.height.px]="target().h"></div>
             }
@@ -98,7 +99,6 @@ let nextId = 0;
                     [style.height.px]="b.h"
                     [style.z-index]="isActive(panel.id) ? 10 : (panel.zIndex ?? null)"
                     (pointerdown)="onPointerDown($event, panel)"
-                    (pointermove)="onPointerMove($event)"
                     (pointerup)="onPointerUp($event)"
                     (pointercancel)="onPointerCancel($event)"
                     (keydown)="onKeydown($event, panel)"
@@ -127,7 +127,7 @@ let nextId = 0;
                 </div>
             }
         </div>
-        <p [id]="helpId" class="p-dashboardlayout-sr">Alt and the arrow keys move a panel. Shift and the arrow keys resize it.</p>
+        <p [id]="helpId" class="p-dashboardlayout-sr">{{ helpText() }}</p>
         <div class="p-dashboardlayout-sr" role="status" aria-live="polite" aria-atomic="true">{{ announcement() }}</div>
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -213,6 +213,26 @@ export class DashboardLayout extends BaseComponent<DashboardLayoutPassThrough> {
      * @group Props
      */
     readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
+    /**
+     * Accessible name of the dashboard when `aria-label` is not set.
+     * @group Props
+     */
+    readonly defaultLabel = input('Dashboard');
+    /**
+     * Keyboard instructions read to assistive technology.
+     * @group Props
+     */
+    readonly helpText = input('Alt and the arrow keys move a panel. Shift and the arrow keys resize it.');
+    /**
+     * Announcement after a panel moved. `{title}`, `{row}` and `{col}` are replaced.
+     * @group Props
+     */
+    readonly movedText = input('{title} moved to row {row}, column {col}');
+    /**
+     * Announcement after a panel was resized. `{title}`, `{sizeX}` and `{sizeY}` are replaced.
+     * @group Props
+     */
+    readonly resizedText = input('{title} is now {sizeX} by {sizeY}');
 
     // ---------------------------------------------------------------------------------------------
     // Events
@@ -256,11 +276,19 @@ export class DashboardLayout extends BaseComponent<DashboardLayoutPassThrough> {
     /** @internal */
     readonly announcement = signal('');
     private session: Session | null = null;
+    private readonly zone = inject(NgZone);
 
     /** `true` while a drag or a resize runs. @internal */
     readonly busy = computed(() => !!this.live());
 
-    private readonly cols = computed(() => (this.narrow() ? 1 : Math.max(1, Math.round(this.columns()))));
+    /** The columns, kept to a whole number the grid can use: anything else (`NaN`, zero, a negative) falls back to 12. */
+    private readonly cols = computed(() => {
+        if (this.narrow()) return 1;
+
+        const columns = Math.round(this.columns());
+
+        return Number.isFinite(columns) && columns >= 1 ? Math.min(columns, 1000) : 12;
+    });
     private readonly gaps = computed<[number, number]>(() => {
         const s = this.cellSpacing();
 
@@ -299,10 +327,19 @@ export class DashboardLayout extends BaseComponent<DashboardLayoutPassThrough> {
 
         afterNextRender(() => {
             const host = this.el.nativeElement as HTMLElement;
-            const observer = new ResizeObserver(() => this.measure());
+            const move = (event: Event) => this.onPointerMove(event as PointerEvent);
 
-            observer.observe(host);
-            this.destroyRef.onDestroy(() => observer.disconnect());
+            // Measuring and following the pointer are frequent, and only change a signal: no reason to run change detection for them.
+            this.zone.runOutsideAngular(() => {
+                const observer = new ResizeObserver(() => this.measure());
+
+                observer.observe(host);
+                host.addEventListener('pointermove', move);
+                this.destroyRef.onDestroy(() => {
+                    observer.disconnect();
+                    host.removeEventListener('pointermove', move);
+                });
+            });
             this.measure();
             this.created.emit();
         });
@@ -416,7 +453,7 @@ export class DashboardLayout extends BaseComponent<DashboardLayoutPassThrough> {
 
             const start = this.event(s.startPanel, event);
 
-            (s.kind === 'move' ? this.dragStart : this.resizeStart).emit(start);
+            this.zone.run(() => (s.kind === 'move' ? this.dragStart : this.resizeStart).emit(start));
 
             if (start.cancel) return this.end(false);
 
@@ -484,7 +521,7 @@ export class DashboardLayout extends BaseComponent<DashboardLayoutPassThrough> {
         const settledTarget = layout.find((q) => q.id === p.id) ?? target;
 
         this.live.set({ id: p.id, box, layout, target: settledTarget });
-        (s.kind === 'move' ? this.drag : this.resize).emit(this.event(settledTarget, event));
+        this.zone.run(() => (s.kind === 'move' ? this.drag : this.resize).emit(this.event(settledTarget, event)));
     }
 
     /** @internal */
@@ -502,7 +539,7 @@ export class DashboardLayout extends BaseComponent<DashboardLayoutPassThrough> {
             (s.kind === 'move' ? this.dragStop : this.resizeStop).emit(this.event(moved, event));
             this.end(true);
             this.commit(live.layout, s.kind === 'move' ? 'drag' : 'resize', moved, previous);
-            this.say(s.kind === 'move' ? `${this.titleOf(moved)} moved to row ${moved.row + 1}, column ${moved.col + 1}` : `${this.titleOf(moved)} is now ${moved.sizeX} by ${moved.sizeY}`);
+            this.say(s.kind === 'move' ? this.movedMessage(moved) : this.resizedMessage(moved));
         } else {
             this.end(false);
         }
@@ -548,13 +585,13 @@ export class DashboardLayout extends BaseComponent<DashboardLayoutPassThrough> {
 
             const now = next.find((q) => q.id === panel.id)!;
 
-            message = `${this.titleOf(panel)} moved to row ${now.row + 1}, column ${now.col + 1}`;
+            message = this.movedMessage(now);
         } else if (event.shiftKey && this.allowResizing()) {
             next = resizeTo(base, panel.id, { row: panel.row, col: panel.col, sizeX: panel.sizeX + delta[1], sizeY: panel.sizeY + delta[0] }, cols, this.allowFloating());
 
             const now = next.find((q) => q.id === panel.id)!;
 
-            message = `${this.titleOf(panel)} is now ${now.sizeX} by ${now.sizeY}`;
+            message = this.resizedMessage(now);
         } else {
             return;
         }
@@ -572,8 +609,21 @@ export class DashboardLayout extends BaseComponent<DashboardLayoutPassThrough> {
         // The panel keeps the focus: its element is the same one, only moved.
     }
 
+    private movedMessage(panel: GridPanel): string {
+        return this.fill(this.movedText(), { title: this.titleOf(panel), row: panel.row + 1, col: panel.col + 1 });
+    }
+
+    private resizedMessage(panel: GridPanel): string {
+        return this.fill(this.resizedText(), { title: this.titleOf(panel), sizeX: panel.sizeX, sizeY: panel.sizeY });
+    }
+
+    private fill(template: string, values: Record<string, string | number>): string {
+        return template.replace(/\{(\w+)\}/g, (all, key: string) => (key in values ? String(values[key]) : all));
+    }
+
     private say(message: string): void {
-        this.announcement.set(message);
+        // The same words twice change nothing for a live region, and a screen reader stays quiet: a no-break space makes the second one new.
+        this.announcement.set(message === this.announcement() ? `${message}\u00A0` : message);
     }
 
     // ---------------------------------------------------------------------------------------------

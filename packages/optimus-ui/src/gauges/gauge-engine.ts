@@ -28,7 +28,9 @@ export function sweepOf(startAngle: number, endAngle: number): number {
 /** The angle a value sits at. */
 export function valueToAngle(value: number, min: number, max: number, startAngle: number, endAngle: number, clockwise = true): number {
     const span = max - min || 1;
-    const t = Math.min(Math.max((value - min) / span, 0), 1);
+    const raw = (value - min) / span;
+    // A value that is not a number (or an axis that is not) rests at the start instead of making the angle `NaN`.
+    const t = Number.isFinite(raw) ? Math.min(Math.max(raw, 0), 1) : 0;
     const sweep = sweepOf(startAngle, endAngle);
 
     return startAngle + (clockwise ? 1 : -1) * t * sweep;
@@ -159,6 +161,8 @@ export function niceInterval(span: number, count = 10): number {
 
 /** Major ticks every `interval` (a round step when omitted), minor ticks every `minorInterval` (none when omitted). */
 export function axisTicks(min: number, max: number, interval?: number, minorInterval?: number): AxisTicks {
+    if (!Number.isFinite(min) || !Number.isFinite(max)) return { major: [], minor: [] };
+
     const step = interval && interval > 0 ? interval : niceInterval(max - min);
     const fix = Math.max(decimals(step), minorInterval ? decimals(minorInterval) : 0);
     const clean = (v: number) => Number(v.toFixed(Math.min(fix + 1, 12)));
@@ -172,7 +176,10 @@ export function axisTicks(min: number, max: number, interval?: number, minorInte
     const major = walk(step);
     const minorAll = minorInterval && minorInterval > 0 ? walk(minorInterval) : [];
 
-    return { major, minor: minorAll.filter((v) => !major.some((m) => Math.abs(m - v) < step * 1e-6)) };
+    // Both lists are rounded to the same decimals, so a minor tick on a major one is the same number: a set finds it at once.
+    const onMajor = new Set(major);
+
+    return { major, minor: minorAll.filter((v) => !onMajor.has(v)) };
 }
 
 /** The text of a label. */

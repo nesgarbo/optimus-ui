@@ -12,7 +12,7 @@ import { SelectButton } from '@openng/optimus-ui/selectbutton';
 import { ToggleButton } from '@openng/optimus-ui/togglebutton';
 import { ToggleSwitch } from '@openng/optimus-ui/toggleswitch';
 import type { QueryBuilderPath, RuleModel } from '@openng/optimus-ui/types/querybuilder';
-import { isGroup, isListOperator, isRangeOperator, isUnaryOperator } from './querybuilder-engine';
+import { isGroup, isListOperator, nodeKey, isRangeOperator, isUnaryOperator } from './querybuilder-engine';
 import { QUERYBUILDER_HOST } from './querybuilder-context';
 
 /**
@@ -319,7 +319,7 @@ export class QueryBuilderRule {
                     [options]="conditions()"
                     [allowEmpty]="false"
                     [ngModel]="node().condition ?? 'and'"
-                    [ariaLabel]="'AND / OR'"
+                    [ariaLabel]="host.messages().and + ' / ' + host.messages().or"
                     [disabled]="host.locked()"
                     (ngModelChange)="host.changeCondition(path(), $event)"
                 />
@@ -348,7 +348,7 @@ export class QueryBuilderRule {
             }
         </div>
         <div class="p-querybuilder-group-body">
-            @for (child of node().rules ?? []; track $index) {
+            @for (child of node().rules ?? []; track key(child)) {
                 @if (isGroup(child)) {
                     <p-querybuilder-group [node]="child" [path]="childPath($index)" />
                 } @else {
@@ -378,6 +378,7 @@ export class QueryBuilderGroup {
     ]);
 
     protected readonly isGroup = isGroup;
+    protected readonly key = nodeKey;
 
     protected childPath(index: number): QueryBuilderPath {
         return [...this.path(), index];

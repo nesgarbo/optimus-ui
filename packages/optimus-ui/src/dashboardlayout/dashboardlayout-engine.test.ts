@@ -1,6 +1,6 @@
 import type { PanelModel } from '@openng/optimus-ui/types/dashboardlayout';
 import { describe, expect, it } from 'vitest';
-import { clampPanel, findSpot, heightOf, metrics, moveTo, overlaps, resizeTo, resolve, rowsOf, sameLayout, stack, toCell, toPixels, toSpan, type GridPanel } from './dashboardlayout-engine';
+import { clampPanel, findSpot, heightOf, metrics, moveTo, overlaps, resizeTo, resolve, rowsOf, sameLayout, stack, uniqueIds, toCell, toPixels, toSpan, type GridPanel } from './dashboardlayout-engine';
 
 const p = (id: string, row: number, col: number, sizeX = 1, sizeY = 1, extra: Partial<PanelModel> = {}): GridPanel => ({ id, row, col, sizeX, sizeY, ...extra });
 const at = (panels: PanelModel[], id: string) => panels.find((x) => x.id === id)!;
@@ -115,5 +115,23 @@ describe('stacking and pixels', () => {
     it('compares layouts', () => {
         expect(sameLayout([p('a', 0, 0)] as any, [p('a', 0, 0)] as any)).toBe(true);
         expect(sameLayout([p('a', 0, 0)] as any, [p('a', 1, 0)] as any)).toBe(false);
+    });
+});
+
+describe('ids and scale', () => {
+    it('gives a repeated id a name of its own, and places both panels', () => {
+        expect(uniqueIds([p('a', 0, 0), p('a', 0, 1), p('a', 0, 2)]).map((x) => x.id)).toEqual(['a', 'a~2', 'a~3']);
+
+        const out = resolve([p('a', 0, 0, 2), p('a', 0, 0, 2)], 4, false);
+
+        expect(out.map((x) => x.id)).toEqual(['a', 'a~2']);
+        expect(out[1].row).toBe(1);
+    });
+
+    it('settles many panels with the same result as one by one', () => {
+        const panels = Array.from({ length: 400 }, (_, i) => p(`p${i}`, 0, (i % 4) * 3, 3, 1 + (i % 3)));
+        const out = resolve(panels, 12, true);
+
+        for (let i = 0; i < out.length; i++) for (let j = i + 1; j < out.length; j++) expect(overlaps(out[i], out[j])).toBe(false);
     });
 });

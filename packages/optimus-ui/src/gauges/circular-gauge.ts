@@ -1,5 +1,24 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, input, model, NgModule, numberAttribute, output, signal, TemplateRef, untracked, viewChild, ViewEncapsulation, booleanAttribute } from '@angular/core';
+import {
+    afterNextRender,
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    effect,
+    ElementRef,
+    inject,
+    input,
+    model,
+    NgModule,
+    numberAttribute,
+    output,
+    signal,
+    TemplateRef,
+    untracked,
+    viewChild,
+    ViewEncapsulation,
+    booleanAttribute
+} from '@angular/core';
 import { SharedModule } from '@openng/optimus-ui/api';
 import { PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { Bind } from '@openng/optimus-ui/bind';
@@ -103,7 +122,7 @@ const DEFAULT_AXIS: Required<Pick<CircularAxis, 'minimum' | 'maximum' | 'startAn
             [style.height]="svgHeight()"
             preserveAspectRatio="xMidYMid meet"
             [attr.role]="role()"
-            [attr.aria-label]="ariaLabel() || title() || 'Gauge'"
+            [attr.aria-label]="ariaLabel() || title() || defaultLabel()"
             [attr.aria-valuemin]="reading()?.min"
             [attr.aria-valuemax]="reading()?.max"
             [attr.aria-valuenow]="reading()?.now"
@@ -111,7 +130,6 @@ const DEFAULT_AXIS: Required<Pick<CircularAxis, 'minimum' | 'maximum' | 'startAn
             [attr.tabindex]="enablePointerDrag() ? 0 : null"
             [pBind]="ptm('svg')"
             (keydown)="onKeydown($event)"
-            (pointermove)="onPointerMove($event)"
             (pointerup)="onPointerUp($event)"
             (pointercancel)="onPointerUp($event)"
         >
@@ -337,6 +355,8 @@ export class CircularGauge extends GaugeBase {
         super();
 
         this.startAnimation();
+        // A hover over the gauge is not a reason to run change detection: only a drag does.
+        afterNextRender(() => this.followPointer(this.svgRef().nativeElement, (event) => this.onPointerMove(event)));
 
         // New axes are a new gauge: what the user dragged to is forgotten.
         effect(() => {
@@ -387,7 +407,7 @@ export class CircularGauge extends GaugeBase {
             const from = at(Math.max(Math.min(r.start, r.end), min));
             const to = at(Math.min(Math.max(r.start, r.end), max));
 
-            return { d: taperedPath(CENTER, CENTER, outer, sw, ew, from, to), color: r.color, text: r.legendText ?? `${r.start} to ${r.end}` };
+            return { d: taperedPath(CENTER, CENTER, outer, sw, ew, from, to), color: r.color, text: this.rangeLabel(r) };
         });
 
         // Ticks and labels sit beside the ranges, on the side the labels are on.
@@ -590,7 +610,7 @@ export class CircularGauge extends GaugeBase {
             axis.direction !== 'antiClockwise'
         );
 
-        this.setValue(d.axisIndex, d.pointerIndex, value, true);
+        this.zone.run(() => this.setValue(d.axisIndex, d.pointerIndex, value, true));
     }
 
     /** @internal */

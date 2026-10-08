@@ -8,6 +8,7 @@ import {
     DestroyRef,
     effect,
     ElementRef,
+    NgZone,
     forwardRef,
     inject,
     input,
@@ -27,7 +28,7 @@ import { PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { BaseEditableHolder } from '@openng/optimus-ui/baseeditableholder';
 import { Bind } from '@openng/optimus-ui/bind';
 import type { SignatureBeforeSaveEvent, SignatureChangeEvent, SignatureFileType, SignaturePassThrough, SignatureSavedEvent, SignatureStroke } from '@openng/optimus-ui/types/signature';
-import { drawStroke, scaleStrokes, svgToDataUrl, toSvg } from './signature-engine';
+import { drawStroke, escapeAttr, scaleStrokes, svgToDataUrl, toSvg } from './signature-engine';
 import { SignatureStyle } from './style/signaturestyle';
 
 export const SIGNATURE_VALUE_ACCESSOR: any = {
@@ -42,12 +43,26 @@ interface Layer {
     url: string;
 }
 
-const loadImage = (url: string): Promise<HTMLImageElement> =>
+const loadImage = (url: string, signal?: AbortSignal): Promise<HTMLImageElement> =>
     new Promise((resolve, reject) => {
         const image = new Image();
+        const stop = () => {
+            image.onload = image.onerror = null;
+            image.src = '';
+            reject(new DOMException('The image load was cancelled', 'AbortError'));
+        };
 
-        image.onload = () => resolve(image);
-        image.onerror = () => reject(new Error('The image could not be loaded'));
+        if (signal?.aborted) return stop();
+
+        signal?.addEventListener('abort', stop, { once: true });
+        image.onload = () => {
+            signal?.removeEventListener('abort', stop);
+            resolve(image);
+        };
+        image.onerror = () => {
+            signal?.removeEventListener('abort', stop);
+            reject(new Error('The image could not be loaded'));
+        };
         image.src = url;
     });
 
@@ -72,15 +87,14 @@ const loadImage = (url: string): Promise<HTMLImageElement> =>
             [class]="cx('canvas')"
             role="img"
             [attr.tabindex]="$disabled() ? -1 : 0"
-            [attr.aria-label]="ariaLabel() || 'Signature pad'"
-            [attr.aria-description]="isEmpty() ? 'Empty' : 'Signed'"
+            [attr.aria-label]="ariaLabel() || padLabel()"
+            [attr.aria-description]="isEmpty() ? emptyLabel() : signedLabel()"
             [attr.aria-readonly]="locked() ? 'true' : null"
             (pointerdown)="onPointerDown($event)"
-            (pointermove)="onPointerMove($event)"
             (pointerup)="onPointerUp($event)"
             (pointercancel)="onPointerUp($event)"
             (keydown)="onKeydown($event)"
-            (blur)="onModelTouched(); touch.emit()"
+            (blur)="flushValue(); onModelTouched(); touch.emit()"
         ></canvas>
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -163,6 +177,28 @@ export class Signature extends BaseEditableHolder<SignaturePassThrough> {
      * @group Props
      */
     readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
+    /**
+     * Accessible name of the pad when `aria-label` is not set.
+     * @group Props
+     */
+    readonly padLabel = input('Signature pad');
+    /**
+     * Accessible description of a pad that holds nothing.
+     * @group Props
+     */
+    readonly emptyLabel = input('Empty');
+    /**
+     * Accessible description of a pad that holds a signature.
+     * @group Props
+     */
+    readonly signedLabel = input('Signed');
+    /**
+     * Milliseconds to wait after the last stroke before the PNG is written to `value`. Encoding the whole pad after each stroke is
+     * costly on a large pad; with a delay the strokes are joined into one encoding, which also runs when the pad loses focus.
+     * `0` encodes right away.
+     * @group Props
+     */
+    readonly valueDebounce = input(0, { transform: numberAttribute });
 
     // ---------------------------------------------------------------------------------------------
     // Events
@@ -209,6 +245,14 @@ export class Signature extends BaseEditableHolder<SignaturePassThrough> {
     private height = 0;
     private frame = 0;
     private lastEmitted: string | null = null;
+    private dpr = 1;
+    private cache: HTMLCanvasElement | null = null;
+    private cacheDirty = true;
+    private commitTimer: ReturnType<typeof setTimeout> | undefined;
+    private pendingCommit: SignatureChangeEvent['type'] | null = null;
+    private loadToken = 0;
+    private cleared: { strokes: SignatureStroke[]; undone: SignatureStroke[]; layer: Layer | null } | null = null;
+    private readonly zone = inject(NgZone);
 
     /** `true` while a stroke is being drawn. @internal */
     readonly drawing = signal(false);
@@ -222,6 +266,7 @@ export class Signature extends BaseEditableHolder<SignaturePassThrough> {
 
         afterNextRender(() => {
             this.observe();
+            this.listen();
             this.created.emit();
         });
 
@@ -231,18 +276,28 @@ export class Signature extends BaseEditableHolder<SignaturePassThrough> {
             this.strokes();
             this.layer();
             this.bgImage();
-            untracked(() => this.schedule());
+            untracked(() => {
+                this.cacheDirty = true;
+                this.schedule();
+            });
         });
 
-        effect(() => {
+        effect((onCleanup) => {
             const url = this.backgroundImage();
 
             if (!this.browser) return;
             if (!url) return untracked(() => this.bgImage.set(null));
 
-            loadImage(url)
+            // A newer image (or the end of the component) cancels the one that is still loading.
+            const abort = new AbortController();
+
+            onCleanup(() => abort.abort());
+
+            loadImage(url, abort.signal)
                 .then((image) => this.bgImage.set(image))
-                .catch(() => this.bgImage.set(null));
+                .catch((error) => {
+                    if (!abort.signal.aborted && error?.name !== 'AbortError') this.bgImage.set(null);
+                });
         });
 
         // A value that arrives from outside (a form, a binding) replaces what is on the pad.
@@ -259,7 +314,16 @@ export class Signature extends BaseEditableHolder<SignaturePassThrough> {
             });
         });
 
-        this.destroyRef.onDestroy(() => this.browser && cancelAnimationFrame(this.frame));
+        this.destroyRef.onDestroy(() => {
+            this.loadToken++;
+
+            // Nothing is written from here: the outputs are already gone by now, so a write would
+            // only raise NG0953. The pending timer is simply dropped.
+            this.pendingCommit = null;
+            clearTimeout(this.commitTimer);
+
+            if (this.browser) cancelAnimationFrame(this.frame);
+        });
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -272,7 +336,32 @@ export class Signature extends BaseEditableHolder<SignaturePassThrough> {
 
         observer.observe(host);
         this.destroyRef.onDestroy(() => observer.disconnect());
+        this.watchDpr();
         this.resize();
+    }
+
+    /** The pixel ratio changes when the page is zoomed or moved to another screen: the canvas has to follow. */
+    private watchDpr(): void {
+        if (typeof matchMedia !== 'function') return;
+
+        const query = matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`);
+        const changed = () => {
+            query.removeEventListener('change', changed);
+            this.resize();
+            this.watchDpr();
+        };
+
+        query.addEventListener('change', changed, { once: true });
+        this.destroyRef.onDestroy(() => query.removeEventListener('change', changed));
+    }
+
+    /** Moving the pen fires for every sample: it listens outside the zone and only a finished stroke goes back in. */
+    private listen(): void {
+        const canvas = this.canvasRef().nativeElement;
+        const move = (event: PointerEvent) => this.onPointerMove(event);
+
+        this.zone.runOutsideAngular(() => canvas.addEventListener('pointermove', move));
+        this.destroyRef.onDestroy(() => canvas.removeEventListener('pointermove', move));
     }
 
     private resize(): void {
@@ -281,9 +370,9 @@ export class Signature extends BaseEditableHolder<SignaturePassThrough> {
         const width = Math.max(1, Math.round(rect.width));
         const height = Math.max(1, Math.round(rect.height));
 
-        if (width === this.width && height === this.height) return;
-
         const dpr = window.devicePixelRatio || 1;
+
+        if (width === this.width && height === this.height && dpr === this.dpr) return;
 
         // The strokes live in CSS pixels, so a resized pad keeps the signature where it was, relatively.
         if (this.width && this.height) {
@@ -293,6 +382,8 @@ export class Signature extends BaseEditableHolder<SignaturePassThrough> {
 
         this.width = width;
         this.height = height;
+        this.dpr = dpr;
+        this.cacheDirty = true;
         canvas.width = Math.round(width * dpr);
         canvas.height = Math.round(height * dpr);
         canvas.style.width = `${width}px`;
@@ -315,11 +406,53 @@ export class Signature extends BaseEditableHolder<SignaturePassThrough> {
 
         if (!ctx || !this.width) return;
 
-        const dpr = window.devicePixelRatio || 1;
+        const dpr = this.dpr;
+        const cache = this.committed(canvas.width, canvas.height, dpr);
 
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.clearRect(0, 0, this.width, this.height);
-        this.render(ctx, this.width, this.height, true);
+
+        // What is drawn already is kept as an image, so a frame of a stroke in progress costs the stroke and not the whole pad.
+        if (cache) {
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.drawImage(cache, 0, 0);
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            if (this.current) drawStroke(ctx, this.current);
+        } else {
+            this.render(ctx, this.width, this.height, true);
+        }
+    }
+
+    /** The pad without the stroke in progress, as an image of the canvas. `null` when it cannot be made. */
+    private committed(pixelWidth: number, pixelHeight: number, dpr: number): HTMLCanvasElement | null {
+        if (!this.current) return null;
+
+        if (!this.cache) this.cache = document.createElement('canvas');
+
+        const cache = this.cache;
+
+        if (cache.width !== pixelWidth || cache.height !== pixelHeight) {
+            cache.width = pixelWidth;
+            cache.height = pixelHeight;
+            this.cacheDirty = true;
+        }
+
+        if (this.cacheDirty) {
+            const ctx = cache.getContext('2d');
+
+            if (!ctx) return null;
+
+            const current = this.current;
+
+            this.current = null;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            ctx.clearRect(0, 0, this.width, this.height);
+            this.render(ctx, this.width, this.height, true);
+            this.current = current;
+            this.cacheDirty = false;
+        }
+
+        return cache;
     }
 
     /** Paints the pad onto any 2D context. `withBackground` adds the background color and image. */
@@ -352,6 +485,10 @@ export class Signature extends BaseEditableHolder<SignaturePassThrough> {
         const rect = this.canvasRef().nativeElement.getBoundingClientRect();
 
         return { x: event.clientX - rect.left, y: event.clientY - rect.top, t: Math.round(event.timeStamp - this.startTime) };
+    }
+
+    protected flushValue(): void {
+        this.flush();
     }
 
     protected onPointerDown(event: PointerEvent): void {
@@ -407,7 +544,8 @@ export class Signature extends BaseEditableHolder<SignaturePassThrough> {
 
         if (mod && key === 'z' && !event.shiftKey) this.undo();
         else if ((mod && key === 'z' && event.shiftKey) || (mod && key === 'y')) this.redo();
-        else if (key === 'delete' || key === 'backspace') this.clear();
+        else if (key === 'delete' || key === 'backspace')
+            this.clear(); // `undo` brings it back
         else return;
 
         event.preventDefault();
@@ -418,19 +556,49 @@ export class Signature extends BaseEditableHolder<SignaturePassThrough> {
     // ---------------------------------------------------------------------------------------------
 
     private commit(type: SignatureChangeEvent['type']): void {
-        const empty = this.isEmpty();
-        const next = empty ? null : this.toDataUrl('png', false);
+        // Anything but a clear drops what a clear took away: it can only be taken back right after it.
+        if (type !== 'clear') this.cleared = null;
+
+        const delay = this.valueDebounce();
+
+        if (delay > 0 && type === 'draw' && this.browser) {
+            // The strokes are joined into one encoding. The event goes out now; the value follows.
+            this.pendingCommit = type;
+            clearTimeout(this.commitTimer);
+            this.commitTimer = setTimeout(() => this.flush(), delay);
+            this.changed.emit({ type, empty: this.isEmpty() });
+
+            return;
+        }
+
+        this.flush(type);
+        this.changed.emit({ type, empty: this.isEmpty() });
+    }
+
+    /** Writes the value now, with what is on the pad. */
+    private flush(type?: SignatureChangeEvent['type']): void {
+        clearTimeout(this.commitTimer);
+
+        if (!type && !this.pendingCommit) return;
+
+        this.pendingCommit = null;
+
+        const next = this.isEmpty() || !this.browser ? null : this.toDataUrl('png', false);
 
         this.lastEmitted = next;
         this.value.set(next);
         this.onModelChange(next);
-        this.changed.emit({ type, empty });
     }
 
     private async showValue(url: string): Promise<void> {
+        const token = ++this.loadToken;
+
         try {
             const image = await loadImage(url);
 
+            if (token !== this.loadToken) return;
+
+            this.cleared = null;
             this.strokes.set([]);
             this.undone.set([]);
             this.layer.set({ source: image, url });
@@ -440,6 +608,8 @@ export class Signature extends BaseEditableHolder<SignaturePassThrough> {
     }
 
     private wipe(): void {
+        this.loadToken++;
+        this.cleared = null;
         this.strokes.set([]);
         this.undone.set([]);
         this.layer.set(null);
@@ -451,6 +621,8 @@ export class Signature extends BaseEditableHolder<SignaturePassThrough> {
     }
 
     private toDataUrl(type: SignatureFileType, withBackground: boolean): string {
+        if (!this.browser) return '';
+
         const dpr = window.devicePixelRatio || 1;
 
         if (type === 'svg') {
@@ -459,7 +631,7 @@ export class Signature extends BaseEditableHolder<SignaturePassThrough> {
             const bgUrl = withBackground ? this.backgroundImage() : '';
             const svg = toSvg(this.strokes(), { width: this.width, height: this.height, background, image });
             // The pad's background image goes under everything else.
-            const withBgImage = bgUrl ? svg.replace(/(<svg[^>]*>)(<rect[^>]*\/>)?/, `$1$2<image href="${bgUrl.replace(/"/g, '&quot;')}" width="${this.width}" height="${this.height}"/>`) : svg;
+            const withBgImage = bgUrl ? svg.replace(/(<svg[^>]*>)(<rect[^>]*\/>)?/, (_all, open: string, rect = '') => `${open}${rect}<image href="${escapeAttr(bgUrl)}" width="${this.width}" height="${this.height}"/>`) : svg;
 
             return svgToDataUrl(withBgImage);
         }
@@ -492,15 +664,33 @@ export class Signature extends BaseEditableHolder<SignaturePassThrough> {
     clear(): void {
         if (this.isEmpty() || this.locked()) return;
 
+        // What was on the pad is kept, so that an `undo` right after brings it back.
+        const taken = { strokes: this.strokes(), undone: this.undone(), layer: this.layer() };
+
         this.wipe();
         this.commit('clear');
+        this.cleared = taken;
     }
 
     /** Takes the last stroke back. Mirrors Syncfusion's `undo`. */
     undo(): void {
         const strokes = this.strokes();
 
-        if (!strokes.length || this.locked()) return;
+        if (this.locked()) return;
+
+        if (!strokes.length && this.cleared && this.isEmpty()) {
+            const { strokes: back, undone, layer } = this.cleared;
+
+            this.cleared = null;
+            this.strokes.set(back);
+            this.undone.set(undone);
+            this.layer.set(layer);
+            this.commit('undo');
+
+            return;
+        }
+
+        if (!strokes.length) return;
 
         this.undone.update((u) => [...u, strokes[strokes.length - 1]]);
         this.strokes.set(strokes.slice(0, -1));
@@ -520,7 +710,7 @@ export class Signature extends BaseEditableHolder<SignaturePassThrough> {
 
     /** `true` when there is a stroke to take back. Mirrors Syncfusion's `canUndo`. */
     canUndo(): boolean {
-        return this.strokes().length > 0;
+        return this.strokes().length > 0 || (!!this.cleared && this.isEmpty());
     }
 
     /** `true` when there is a stroke to put back. Mirrors Syncfusion's `canRedo`. */
@@ -540,6 +730,8 @@ export class Signature extends BaseEditableHolder<SignaturePassThrough> {
 
     /** Downloads the signature. Mirrors Syncfusion's `save`. Returns the data URL, or `null` when cancelled. */
     save(type: SignatureFileType = 'png', fileName = 'Signature'): string | null {
+        if (!this.browser) return null;
+
         const event: SignatureBeforeSaveEvent = { type, fileName, cancel: false };
 
         this.beforeSave.emit(event);
@@ -559,7 +751,11 @@ export class Signature extends BaseEditableHolder<SignaturePassThrough> {
 
     /** Draws an image over the pad, replacing what was on it. Mirrors Syncfusion's `loadSignature`. */
     async loadSignature(url: string): Promise<void> {
+        const token = ++this.loadToken;
         const image = await loadImage(url);
+
+        // A newer load, a wipe or the end of the component cancels this one.
+        if (token !== this.loadToken) return;
 
         this.strokes.set([]);
         this.undone.set([]);
@@ -569,7 +765,7 @@ export class Signature extends BaseEditableHolder<SignaturePassThrough> {
 
     /** Writes `text` as a typed signature, replacing what was on the pad. Mirrors Syncfusion's `draw`. */
     draw(text: string, fontFamily = 'Brush Script MT, cursive', fontSize = 36): void {
-        if (!text || !this.width) return;
+        if (!text || !this.width || !this.browser) return;
 
         const dpr = window.devicePixelRatio || 1;
         const canvas = document.createElement('canvas');

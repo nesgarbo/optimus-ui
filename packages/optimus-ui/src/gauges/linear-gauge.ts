@@ -1,4 +1,4 @@
-import { booleanAttribute, ChangeDetectionStrategy, Component, computed, effect, ElementRef, input, model, NgModule, numberAttribute, output, signal, untracked, viewChild, ViewEncapsulation } from '@angular/core';
+import { afterNextRender, booleanAttribute, ChangeDetectionStrategy, Component, computed, effect, ElementRef, input, model, NgModule, numberAttribute, output, signal, untracked, viewChild, ViewEncapsulation } from '@angular/core';
 import { SharedModule } from '@openng/optimus-ui/api';
 import { PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { Bind } from '@openng/optimus-ui/bind';
@@ -87,7 +87,7 @@ const round = (n: number) => Math.round(n * 100) / 100;
             [style.height]="svgHeight()"
             preserveAspectRatio="xMidYMid meet"
             [attr.role]="role()"
-            [attr.aria-label]="ariaLabel() || title() || 'Gauge'"
+            [attr.aria-label]="ariaLabel() || title() || defaultLabel()"
             [attr.aria-orientation]="orientation()"
             [attr.aria-valuemin]="reading()?.min"
             [attr.aria-valuemax]="reading()?.max"
@@ -96,7 +96,6 @@ const round = (n: number) => Math.round(n * 100) / 100;
             [attr.tabindex]="enablePointerDrag() ? 0 : null"
             [pBind]="ptm('svg')"
             (keydown)="onKeydown($event)"
-            (pointermove)="onPointerMove($event)"
             (pointerup)="onPointerUp($event)"
             (pointercancel)="onPointerUp($event)"
         >
@@ -296,6 +295,8 @@ export class LinearGauge extends GaugeBase {
         super();
 
         this.startAnimation();
+        // A hover over the gauge is not a reason to run change detection: only a drag does.
+        afterNextRender(() => this.followPointer(this.svgRef().nativeElement, (event) => this.onPointerMove(event)));
 
         effect(() => {
             this.axes();
@@ -382,7 +383,7 @@ export class LinearGauge extends GaugeBase {
             const a2 = pt(from, base + dir * sw);
             const b2 = pt(to, base + dir * ew);
 
-            return { d: `M${round(a.x)} ${round(a.y)}L${round(b.x)} ${round(b.y)}L${round(b2.x)} ${round(b2.y)}L${round(a2.x)} ${round(a2.y)}Z`, color: r.color, title: r.legendText ?? `${r.start} to ${r.end}` };
+            return { d: `M${round(a.x)} ${round(a.y)}L${round(b.x)} ${round(b.y)}L${round(b2.x)} ${round(b2.y)}L${round(a2.x)} ${round(a2.y)}Z`, color: r.color, title: this.rangeLabel(r) };
         });
 
         // Ticks and labels, on the side opposite the container.
@@ -523,7 +524,7 @@ export class LinearGauge extends GaugeBase {
         const min = axis.minimum ?? 0;
         const max = axis.maximum ?? 100;
 
-        this.setValue(d.axisIndex, d.pointerIndex, axis.isInversed ? max - t * (max - min) : min + t * (max - min), true);
+        this.zone.run(() => this.setValue(d.axisIndex, d.pointerIndex, axis.isInversed ? max - t * (max - min) : min + t * (max - min), true));
     }
 
     /** @internal */

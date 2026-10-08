@@ -70,6 +70,9 @@ const FOLLOW_MS = 5000;
 /** Univer keeps the data its formulas work on by the id of the workbook, in the page and not in the instance. Two workbooks with the same id would share it, and one of them would be calculated with the other's cells. */
 let unitCounter = 0;
 
+/** Commands that move the view or read the sheet and leave the workbook as it was: no reason to read it out again. */
+const NOT_A_CHANGE = /^sheet\.command\.(scroll|set-scroll|copy|select|set-selection(?!-frozen))/;
+
 /** How long to wait after the last change before the value is read out of the engine, in milliseconds. */
 const SETTLE_MS = 350;
 
@@ -93,7 +96,7 @@ const SETTLE_MS = 350;
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
     providers: [SpreadsheetStyle, SPREADSHEET_VALUE_ACCESSOR, { provide: PARENT_INSTANCE, useExisting: Spreadsheet }],
-    host: { '[class]': 'cx("root")', 'data-scope': 'spreadsheet', 'data-part': 'root' },
+    host: { '[class]': 'cx("root")', '[attr.aria-label]': 'ariaLabel() ?? null', 'data-scope': 'spreadsheet', 'data-part': 'root' },
     hostDirectives: [Bind]
 })
 export class Spreadsheet extends BaseEditableHolder<SpreadsheetPassThrough> {
@@ -185,6 +188,11 @@ export class Spreadsheet extends BaseEditableHolder<SpreadsheetPassThrough> {
      * @group Emits
      */
     readonly touch = output<void>();
+    /**
+     * Text of the `failed` event when the error has no message of its own.
+     * @group Props
+     */
+    readonly startErrorMessage = input('The spreadsheet could not be started');
 
     /** `true` when the spreadsheet is ready. */
     readonly ready = signal(false);
@@ -198,6 +206,9 @@ export class Spreadsheet extends BaseEditableHolder<SpreadsheetPassThrough> {
     private timer: ReturnType<typeof setTimeout> | undefined;
     private generation = 0;
     private loading = false;
+    private loadingTimer: ReturnType<typeof setTimeout> | undefined;
+    private startedLocale: SpreadsheetLocale | undefined;
+    private focusOutBound = false;
     private editedAt = 0;
     /** The id the data had before the engine was given its own. */
     private dataId: string | undefined;
@@ -214,6 +225,16 @@ export class Spreadsheet extends BaseEditableHolder<SpreadsheetPassThrough> {
                     const next = this.value();
 
                     untracked(() => this.replace(next));
+                },
+                { injector: this.injector }
+            );
+            effect(
+                () => {
+                    const locale = this.locale();
+
+                    untracked(() => {
+                        if (this.api && locale !== this.startedLocale) this.restart();
+                    });
                 },
                 { injector: this.injector }
             );
@@ -237,6 +258,7 @@ export class Spreadsheet extends BaseEditableHolder<SpreadsheetPassThrough> {
 
         this.destroyRef.onDestroy(() => {
             clearTimeout(this.timer);
+            clearTimeout(this.loadingTimer);
             this.generation++;
             this.api?.dispose?.();
             this.univer = null;
@@ -261,7 +283,8 @@ export class Spreadsheet extends BaseEditableHolder<SpreadsheetPassThrough> {
         const generation = ++this.generation;
 
         try {
-            const locale = LOCALES[this.locale()] ?? LOCALES['en-US'];
+            const requested = this.locale();
+            const locale = LOCALES[requested] ?? LOCALES['en-US'];
             const [presets, core, strings] = await Promise.all([import('@univerjs/presets'), import('@univerjs/preset-sheets-core'), locale.load()]);
 
             if (generation !== this.generation) return;
@@ -285,20 +308,42 @@ export class Spreadsheet extends BaseEditableHolder<SpreadsheetPassThrough> {
 
             this.api = univerAPI;
             this.univer = univer;
+            this.startedLocale = requested;
             this.open(this.value());
 
             (univerAPI as UniverApi).addEvent(univerAPI.Event.CommandExecuted, (command: { type?: number; id?: string }) => this.onCommand(command));
-            this.container().nativeElement.addEventListener('focusout', (e) => {
-                if (!this.container().nativeElement.contains(e.relatedTarget as Node | null)) {
-                    this.onModelTouched();
-                    this.touch.emit();
-                }
-            });
+            if (!this.focusOutBound) {
+                this.focusOutBound = true;
+                this.container().nativeElement.addEventListener('focusout', (e) => {
+                    if (!this.container().nativeElement.contains(e.relatedTarget as Node | null)) {
+                        this.onModelTouched();
+                        this.touch.emit();
+                    }
+                });
+            }
+
             this.ready.set(true);
             this.created.emit(univerAPI);
         } catch (error) {
-            this.failed.emit(error instanceof Error ? error.message : 'The spreadsheet could not be started');
+            this.failed.emit(error instanceof Error ? error.message : this.startErrorMessage());
         }
+    }
+
+    /** Starts the engine again, for a language that changed after it started. What is open is kept. */
+    private restart(): void {
+        if (this.timer !== undefined) {
+            clearTimeout(this.timer);
+            this.publish();
+        }
+
+        this.generation++;
+        this.api?.dispose?.();
+        this.api = null;
+        this.univer = null;
+        this.workbook = null;
+        this.ready.set(false);
+        this.container().nativeElement.replaceChildren();
+        void this.start();
     }
 
     /** Opens a workbook in the engine, in place of the one that is there. */
@@ -308,6 +353,7 @@ export class Spreadsheet extends BaseEditableHolder<SpreadsheetPassThrough> {
         if (!api) return;
 
         this.loading = true;
+        clearTimeout(this.loadingTimer);
 
         try {
             const previous = api.getActiveWorkbook?.();
@@ -322,7 +368,8 @@ export class Spreadsheet extends BaseEditableHolder<SpreadsheetPassThrough> {
             this.lastEmitted = data;
         } finally {
             // The commands that opened it are done by the time the engine is idle.
-            setTimeout(() => (this.loading = false), 0);
+            // Only the last open may end the loading: an earlier one must not cut a later one short.
+            this.loadingTimer = setTimeout(() => (this.loading = false), 0);
         }
     }
 
@@ -336,7 +383,7 @@ export class Spreadsheet extends BaseEditableHolder<SpreadsheetPassThrough> {
 
         const id = command.id ?? '';
 
-        if (command.type === COMMAND && (id.startsWith('sheet.command.') || id === 'univer.command.undo' || id === 'univer.command.redo')) {
+        if (command.type === COMMAND && !NOT_A_CHANGE.test(id) && (id.startsWith('sheet.command.') || id === 'univer.command.undo' || id === 'univer.command.redo')) {
             this.editedAt = Date.now();
             this.schedule();
         } else if (command.type === MUTATION && id === 'formula.mutation.set-formula-calculation-result' && Date.now() - this.editedAt < FOLLOW_MS) {
@@ -356,6 +403,9 @@ export class Spreadsheet extends BaseEditableHolder<SpreadsheetPassThrough> {
     }
 
     private publish(): void {
+        clearTimeout(this.timer);
+        this.timer = undefined;
+
         const snapshot = this.getSnapshot();
 
         if (!snapshot) return;
@@ -456,7 +506,8 @@ export class Spreadsheet extends BaseEditableHolder<SpreadsheetPassThrough> {
 
     /** The CSV as a `Blob`. */
     toCsvBlob(sheet?: number | string): Blob {
-        return new Blob([this.toCsv(sheet)], { type: 'text/csv;charset=utf-8' });
+        // The byte order mark makes Excel read the file as UTF-8.
+        return new Blob(['\uFEFF', this.toCsv(sheet)], { type: 'text/csv;charset=utf-8' });
     }
 
     /** Moves the focus into the sheet. A signal form calls it to focus the field. */

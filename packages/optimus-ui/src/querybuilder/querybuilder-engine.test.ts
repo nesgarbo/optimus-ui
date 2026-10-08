@@ -12,6 +12,7 @@ import {
     getAt,
     getValidRules,
     insertNode,
+    nodeKey,
     operatorsFor,
     removeNode,
     toFeathers,
@@ -235,5 +236,81 @@ describe('Feathers', () => {
         };
 
         expect(toFeathers(not)).toEqual({ a: { $ne: 1 }, b: { $notilike: '%x%' } });
+    });
+});
+
+describe('SQL hardening', () => {
+    const rule = (field: string, operator: string, value?: any): RuleModel => createGroup('and', [{ field, operator, value }]);
+
+    it('refuses a field that is not an identifier', () => {
+        expect(() => toSql(rule('name; DROP TABLE users', 'equal', 1))).toThrow(QueryBuilderParseError);
+        expect(() => toParameterizedSql(rule("a' OR '1'='1", 'equal', 1))).toThrow(QueryBuilderParseError);
+        expect(toSql(rule('user.name', 'equal', 1))).toBe('(user.name = 1)');
+        expect(toSql(rule('año', 'equal', 1))).toBe('(año = 1)');
+    });
+
+    it('lets a declared column through', () => {
+        expect(toSql(rule('my col', 'equal', 1), { columns: [{ field: 'my col' }], quote: (f) => `"${f}"` })).toBe('("my col" = 1)');
+        expect(() => toSql(rule('other col', 'equal', 1), { columns: [{ field: 'my col' }] })).toThrow(QueryBuilderParseError);
+    });
+
+    it('escapes the wildcards of a LIKE value', () => {
+        expect(toSql(rule('n', 'contains', '50%_'))).toBe("(n LIKE '%50!%!_%' ESCAPE '!')");
+        expect(toParameterizedSql(rule('n', 'startswith', 'a_b'))).toEqual({ sql: "(n LIKE ? ESCAPE '!')", params: ['a!_b%'] });
+        expect(toSql(rule('n', 'contains', 'plain'))).toBe("(n LIKE '%plain%')");
+    });
+
+    it('reads back an escaped LIKE', () => {
+        const back = fromSql(toSql(rule('n', 'contains', '50%_!')));
+
+        expect(back.rules![0]).toMatchObject({ operator: 'contains', value: '50%_!' });
+        expect(() => fromSql("n LIKE '%a_b%'")).toThrow(QueryBuilderParseError);
+    });
+
+    it('writes an empty list as a constant', () => {
+        expect(toSql(rule('n', 'in', []))).toBe('(1=0)');
+        expect(toSql(rule('n', 'notin', []))).toBe('(1=1)');
+        expect(toSql(rule('n', 'in', 5))).toBe('(n IN (5))');
+    });
+
+    it('writes isempty like evaluate reads it', () => {
+        expect(toSql(rule('n', 'isempty'))).toBe("((n IS NULL OR n = ''))");
+        expect(toSql(rule('n', 'isnotempty'))).toBe("((n IS NOT NULL AND n <> ''))");
+    });
+
+    it('evaluates a list operator with a value that is not an array', () => {
+        expect(evaluate({ n: 1 }, rule('n', 'in', 1))).toBe(true);
+        expect(evaluate({ n: 1 }, rule('n', 'in', null))).toBe(false);
+        expect(evaluate({ n: 1 }, rule('n', 'notin', undefined))).toBe(true);
+    });
+
+    it('reads identifiers beyond ASCII', () => {
+        expect(fromSql("año = 1 AND ñandú = 'x'").rules!.map((r) => r.field)).toEqual(['año', 'ñandú']);
+    });
+
+    it('stops a query nested too deeply', () => {
+        const deep = `${'('.repeat(5000)}a = 1${')'.repeat(5000)}`;
+
+        expect(() => fromSql(deep)).toThrow(QueryBuilderParseError);
+
+        let mongo: Record<string, any> = { a: 1 };
+
+        for (let i = 0; i < 5000; i++) mongo = { $and: [mongo] };
+
+        expect(() => fromMongo(mongo)).toThrow(QueryBuilderParseError);
+    });
+
+    it('keeps the key of a node through an edit', () => {
+        const root = createGroup('and', [
+            { field: 'a', operator: 'equal', value: 1 },
+            { field: 'b', operator: 'equal', value: 2 }
+        ]);
+        const keyB = nodeKey(root.rules![1]);
+        const edited = updateNode(root, [1], { value: 3 });
+        const removed = removeNode(root, [0]);
+
+        expect(nodeKey(edited.rules![1])).toBe(keyB);
+        expect(nodeKey(removed.rules![0])).toBe(keyB);
+        expect(nodeKey(edited.rules![0])).not.toBe(keyB);
     });
 });

@@ -112,9 +112,34 @@ export function getAt(root: RuleModel, path: QueryBuilderPath): RuleModel | unde
     return node;
 }
 
+const NODE_KEYS = new WeakMap<object, number>();
+let nextNodeKey = 0;
+
+/**
+ * A key that follows a node through the edits that rebuild it, so a list of nodes can be tracked
+ * by it: an edit keeps the editor of the node, a removal does not hand it to the next sibling.
+ */
+export function nodeKey(node: RuleModel): number {
+    let key = NODE_KEYS.get(node);
+
+    if (key === undefined) NODE_KEYS.set(node, (key = nextNodeKey++));
+
+    return key;
+}
+
+function inheritKey(from: RuleModel, to: RuleModel): RuleModel {
+    if (from !== to) NODE_KEYS.set(to, nodeKey(from));
+
+    return to;
+}
+
 /** Rebuilds the branch down `path`, replacing the node there with `update(node)`. `undefined` removes it. */
 function replaceAt(root: RuleModel, path: QueryBuilderPath, update: (node: RuleModel) => RuleModel | undefined): RuleModel {
-    if (!path.length) return update(root) ?? createGroup(root.condition ?? 'and');
+    if (!path.length) {
+        const updated = update(root);
+
+        return updated ? inheritKey(root, updated) : createGroup(root.condition ?? 'and');
+    }
 
     const [index, ...rest] = path;
     const rules = root.rules ?? [];
@@ -123,12 +148,14 @@ function replaceAt(root: RuleModel, path: QueryBuilderPath, update: (node: RuleM
     if (!child) return root;
 
     const next = rest.length ? replaceAt(child, rest, update) : update(child);
+
+    if (next) inheritKey(child, next);
     const copy = rules.slice();
 
     if (next) copy[index] = next;
     else copy.splice(index, 1);
 
-    return { ...root, rules: copy };
+    return inheritKey(root, { ...root, rules: copy });
 }
 
 /** Appends `node` (or inserts it at `index`) in the group at `groupPath`. */
@@ -166,11 +193,8 @@ export function countRules(root: RuleModel): number {
 
 /** `true` when `a` and `b` are the same tree by value. */
 export function equalRules(a: RuleModel | undefined, b: RuleModel | undefined): boolean {
-    return JSON.stringify(a ?? null, replacer) === JSON.stringify(b ?? null, replacer);
-}
-
-function replacer(_key: string, value: any): any {
-    return value instanceof Date ? value.toISOString() : value;
+    // `JSON.stringify` already writes a Date through its `toJSON`, so no replacer is needed.
+    return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -265,6 +289,11 @@ function sameKind(a: any, b: any, ignoreCase: boolean): [any, any] {
     return [comparable(a, ignoreCase), comparable(b, ignoreCase)];
 }
 
+/** The value of a list operator as an array: a scalar is a list of one, nothing is an empty list. */
+function toList(value: any): any[] {
+    return Array.isArray(value) ? value : value === null || value === undefined ? [] : [value];
+}
+
 function evaluateRule(row: any, rule: RuleModel, ignoreCase: boolean): boolean {
     const actual = read(row, rule.field ?? '');
     const operator = rule.operator ?? '';
@@ -315,9 +344,9 @@ function evaluateRule(row: any, rule: RuleModel, ignoreCase: boolean): boolean {
         case 'notcontains':
             return !text(actual).includes(text(rule.value));
         case 'in':
-            return (rule.value ?? []).some((v: any) => eq(actual, v));
+            return toList(rule.value).some((v: any) => eq(actual, v));
         case 'notin':
-            return !(rule.value ?? []).some((v: any) => eq(actual, v));
+            return !toList(rule.value).some((v: any) => eq(actual, v));
         case 'between':
             return !empty && cmp(actual, rule.value?.[0]) >= 0 && cmp(actual, rule.value?.[1]) <= 0;
         case 'notbetween':
@@ -354,6 +383,25 @@ export const toPredicate = (root: RuleModel, options?: EvaluateOptions) => (row:
 export interface ToSqlOptions {
     /** Wraps a field name, for example in double quotes. */
     quote?: (field: string) => string;
+    /**
+     * The columns the tree may refer to. A field that is not one of them must still look like an
+     * identifier (`name`, `user.name`), otherwise the conversion throws.
+     */
+    columns?: QueryBuilderColumn[];
+}
+
+/** What a field name may look like when it is not a known column: letters, digits, `_`, `$`, dotted. */
+const IDENTIFIER = /^[\p{L}_][\p{L}\p{N}_$]*(\.[\p{L}_][\p{L}\p{N}_$]*)*$/u;
+
+/** The escape character of the `LIKE` patterns `toSql` writes. */
+const LIKE_ESCAPE = '!';
+
+const escapeLike = (text: string): string => text.replace(/[!%_]/g, (c) => LIKE_ESCAPE + c);
+
+function checkField(field: string, columns: QueryBuilderColumn[] | undefined): string {
+    if (columns?.some((c) => c.field === field) || IDENTIFIER.test(field)) return field;
+
+    throw new QueryBuilderParseError(`Invalid field name "${field}"`);
 }
 
 const SQL_COMPARE: Record<string, string> = {
@@ -376,10 +424,17 @@ function sqlLiteral(value: any): string {
 
 function buildSql(root: RuleModel, options: ToSqlOptions, bind?: (value: any) => string): string {
     const quote = options.quote ?? ((field: string) => field);
+    // `ESCAPE` is written only when the text holds a wildcard, so the common pattern stays plain.
+    const like = (value: any, lead: string, trail: string) => {
+        const text = String(value ?? '');
+        const escaped = escapeLike(text);
+
+        return `${lit(`${lead}${escaped}${trail}`)}${escaped === text ? '' : ` ESCAPE '${LIKE_ESCAPE}'`}`;
+    };
     const lit = (value: any) => (bind ? bind(value) : sqlLiteral(value));
 
     const leaf = (rule: RuleModel): string => {
-        const field = quote(rule.field ?? '');
+        const field = quote(checkField(rule.field ?? '', options.columns));
         const op = rule.operator ?? '';
         const value = rule.value;
 
@@ -387,16 +442,22 @@ function buildSql(root: RuleModel, options: ToSqlOptions, bind?: (value: any) =>
 
         switch (op) {
             case 'startswith':
-                return `${field} LIKE ${lit(`${value}%`)}`;
+                return `${field} LIKE ${like(value, '', '%')}`;
             case 'endswith':
-                return `${field} LIKE ${lit(`%${value}`)}`;
+                return `${field} LIKE ${like(value, '%', '')}`;
             case 'contains':
-                return `${field} LIKE ${lit(`%${value}%`)}`;
+                return `${field} LIKE ${like(value, '%', '%')}`;
             case 'notcontains':
-                return `${field} NOT LIKE ${lit(`%${value}%`)}`;
+                return `${field} NOT LIKE ${like(value, '%', '%')}`;
             case 'in':
-            case 'notin':
-                return `${field} ${op === 'in' ? 'IN' : 'NOT IN'} (${(value ?? []).map(lit).join(', ')})`;
+            case 'notin': {
+                const list = toList(value);
+
+                // `IN ()` is a syntax error: an empty list matches nothing, and `NOT IN` of it everything.
+                if (!list.length) return op === 'in' ? '1=0' : '1=1';
+
+                return `${field} ${op === 'in' ? 'IN' : 'NOT IN'} (${list.map(lit).join(', ')})`;
+            }
             case 'between':
             case 'notbetween':
                 return `${field} ${op === 'between' ? 'BETWEEN' : 'NOT BETWEEN'} ${lit(value?.[0])} AND ${lit(value?.[1])}`;
@@ -405,9 +466,9 @@ function buildSql(root: RuleModel, options: ToSqlOptions, bind?: (value: any) =>
             case 'isnotnull':
                 return `${field} IS NOT NULL`;
             case 'isempty':
-                return `${field} = ''`;
+                return `(${field} IS NULL OR ${field} = '')`;
             case 'isnotempty':
-                return `${field} <> ''`;
+                return `(${field} IS NOT NULL AND ${field} <> '')`;
             default:
                 return '';
         }
@@ -457,7 +518,13 @@ export class QueryBuilderParseError extends Error {
 
 type Token = { t: 'id' | 'str' | 'num' | 'op' | 'lp' | 'rp' | 'comma' | 'kw'; v: string };
 
-const KEYWORDS = new Set(['AND', 'OR', 'NOT', 'LIKE', 'IN', 'BETWEEN', 'IS', 'NULL', 'TRUE', 'FALSE']);
+const KEYWORDS = new Set(['AND', 'OR', 'NOT', 'LIKE', 'ESCAPE', 'IN', 'BETWEEN', 'IS', 'NULL', 'TRUE', 'FALSE']);
+
+/** How deep parentheses (SQL) or nested groups (Mongo) may go before the reader gives up. */
+const MAX_DEPTH = 64;
+
+const NUMBER = /-?\d+(\.\d+)?([eE][+-]?\d+)?/y;
+const WORD = /[\p{L}_$][\p{L}\p{N}_$.]*/uy;
 
 function tokenize(sql: string): Token[] {
     const tokens: Token[] = [];
@@ -513,12 +580,16 @@ function tokenize(sql: string): Token[] {
             tokens.push({ t: 'op', v: op });
             i += op.length;
         } else if (/[0-9]/.test(c) || (c === '-' && /[0-9]/.test(sql[i + 1] ?? ''))) {
-            const m = /^-?\d+(\.\d+)?([eE][+-]?\d+)?/.exec(sql.slice(i))!;
+            NUMBER.lastIndex = i;
+
+            const m = NUMBER.exec(sql)!;
 
             tokens.push({ t: 'num', v: m[0] });
             i += m[0].length;
-        } else if (/[A-Za-z_$]/.test(c)) {
-            const m = /^[A-Za-z_$][\w$.]*/.exec(sql.slice(i))!;
+        } else if (/[\p{L}_$]/u.test(c)) {
+            WORD.lastIndex = i;
+
+            const m = WORD.exec(sql)!;
             const upper = m[0].toUpperCase();
 
             tokens.push(KEYWORDS.has(upper) ? { t: 'kw', v: upper } : { t: 'id', v: m[0] });
@@ -598,11 +669,32 @@ export function fromSql(sql: string, columns: QueryBuilderColumn[] = []): RuleMo
             if (eatKw('LIKE')) {
                 const lit = literal();
                 const pattern = String(lit.value);
-                const lead = pattern.startsWith('%');
-                const trail = pattern.endsWith('%') && pattern.length > (lead ? 1 : 0);
-                const core = pattern.slice(lead ? 1 : 0, trail ? -1 : undefined);
+                let escape: string | undefined;
 
-                if (/[%_]/.test(core)) throw new QueryBuilderParseError(`Unsupported LIKE pattern "${pattern}"`);
+                if (eatKw('ESCAPE')) {
+                    const e = literal();
+
+                    escape = String(e.value);
+
+                    if (escape.length !== 1) throw new QueryBuilderParseError('ESCAPE takes a single character');
+                }
+
+                // Each character of the pattern, flagged when the escape character protects it.
+                const chars: { ch: string; esc: boolean }[] = [];
+
+                for (let k = 0; k < pattern.length; k++) {
+                    if (escape && pattern[k] === escape && k + 1 < pattern.length) chars.push({ ch: pattern[++k], esc: true });
+                    else chars.push({ ch: pattern[k], esc: false });
+                }
+
+                const wild = (c: { ch: string; esc: boolean } | undefined) => !!c && !c.esc && c.ch === '%';
+                const lead = wild(chars[0]);
+                const trail = chars.length > (lead ? 1 : 0) && wild(chars[chars.length - 1]);
+                const body = chars.slice(lead ? 1 : 0, trail ? -1 : undefined);
+
+                if (body.some((c) => !c.esc && (c.ch === '%' || c.ch === '_'))) throw new QueryBuilderParseError(`Unsupported LIKE pattern "${pattern}"`);
+
+                const core = body.map((c) => c.ch).join('');
 
                 operator = lead && trail ? 'contains' : trail ? 'startswith' : lead ? 'endswith' : 'equal';
                 if (negated && operator !== 'contains') throw new QueryBuilderParseError('NOT LIKE is only supported for contains');
@@ -651,12 +743,17 @@ export function fromSql(sql: string, columns: QueryBuilderColumn[] = []): RuleMo
         return { field: id, label: column?.label ?? id, type: typeOf(id, type), operator, value };
     };
 
+    let depth = 0;
+
     const primary = (): Parsed => {
         if (peek()?.t === 'lp') {
             next();
 
+            if (++depth > MAX_DEPTH) throw new QueryBuilderParseError('The query is nested too deeply');
+
             const inner = orExpr();
 
+            depth--;
             expect('rp', '")"');
 
             const node = isGroup(inner.node) && !inner.node.not ? inner.node : createGroup('and', [inner.node]);
@@ -827,6 +924,8 @@ export function fromMongo(query: Record<string, any>, columns: QueryBuilderColum
         return leaf(field, lead ? 'startswith' : trail ? 'endswith' : 'contains', core);
     };
 
+    let depth = 0;
+
     const group = (doc: Record<string, any>): RuleModel => {
         const keys = Object.keys(doc);
 
@@ -850,6 +949,16 @@ export function fromMongo(query: Record<string, any>, columns: QueryBuilderColum
     };
 
     const node = (doc: Record<string, any>): RuleModel => {
+        if (++depth > MAX_DEPTH) throw new QueryBuilderParseError('The query is nested too deeply');
+
+        try {
+            return readNode(doc);
+        } finally {
+            depth--;
+        }
+    };
+
+    const readNode = (doc: Record<string, any>): RuleModel => {
         const keys = Object.keys(doc);
 
         // `{ $or: [a, b] }` with the same field on both sides is how `notbetween` is written.

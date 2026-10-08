@@ -389,12 +389,12 @@ export class QueryBuilder extends BaseEditableHolder<QueryBuilderPassThrough> im
 
     /** The tree as SQL. Mirrors Syncfusion's `getSqlFromRules`. */
     getSqlFromRules(rule: RuleModel = this.value(), options?: ToSqlOptions): string {
-        return toSql(rule, options);
+        return toSql(rule, { columns: this.columns(), ...options });
     }
 
     /** The tree as SQL with `?` placeholders. Mirrors Syncfusion's `getParameterizedSql`. */
     getParameterizedSql(rule: RuleModel = this.value(), options?: ToSqlOptions): QueryBuilderParameterizedSql {
-        return toParameterizedSql(rule, options);
+        return toParameterizedSql(rule, { columns: this.columns(), ...options });
     }
 
     /** Reads SQL into the tree. Mirrors Syncfusion's `setRulesFromSql`. Throws a `QueryBuilderParseError`. */

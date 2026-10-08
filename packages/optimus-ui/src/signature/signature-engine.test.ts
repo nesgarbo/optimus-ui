@@ -1,6 +1,6 @@
 import type { SignatureStroke } from '@openng/optimus-ui/types/signature';
 import { describe, expect, it } from 'vitest';
-import { drawStroke, scaleStrokes, strokeSegments, strokeWidths, toSvg } from './signature-engine';
+import { drawStroke, escapeAttr, scaleStrokes, strokeSegments, strokeWidths, toSvg } from './signature-engine';
 
 const stroke = (points: [number, number, number][]): SignatureStroke => ({ points: points.map(([x, y, t]) => ({ x, y, t })), color: '#111', minWidth: 0.5, maxWidth: 2.5, velocity: 0.7 });
 
@@ -114,5 +114,11 @@ describe('signature engine', () => {
 
         expect(s.points[1]).toMatchObject({ x: 40, y: 40 });
         expect(s.maxWidth).toBe(5);
+    });
+});
+
+describe('escapeAttr', () => {
+    it('escapes every character that can leave an attribute', () => {
+        expect(escapeAttr(`a&b"c'd<e>f`)).toBe('a&amp;b&quot;c&apos;d&lt;e&gt;f');
     });
 });

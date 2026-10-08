@@ -113,7 +113,8 @@ export function drawStroke(ctx: SignatureContext, stroke: SignatureStroke): void
 }
 
 const round = (n: number) => Math.round(n * 100) / 100;
-const escapeAttr = (text: string) => text.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+/** Escapes text for an XML attribute written between double quotes. */
+export const escapeAttr = (text: string): string => text.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 /** Options of {@link toSvg}. */
 export interface ToSvgOptions {

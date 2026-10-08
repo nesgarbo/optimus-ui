@@ -360,4 +360,39 @@ describe('Gantt', () => {
         await fixture.whenStable();
         expect(root().querySelector<HTMLElement>('.p-gantt-grid')!.getBoundingClientRect().width).toBe(370);
     });
+
+    it('draws only the rows in view from a long list, and keeps them all in the count', async () => {
+        host.data.set(Array.from({ length: 400 }, (_, i) => ({ id: i + 1, name: `T${i + 1}`, start: '2026-10-05', days: 2 })));
+        await fixture.whenStable();
+
+        expect(rows().length).toBeLessThan(80);
+        expect(root().querySelector('[role="treegrid"]')!.getAttribute('aria-rowcount')).toBe('400');
+        expect(rows()[0]).toBe('T1');
+
+        const scroller = root().querySelector<HTMLElement>('.p-gantt-scroll')!;
+
+        scroller.scrollTop = 30 * 300;
+        scroller.dispatchEvent(new Event('scroll'));
+        await fixture.whenStable();
+
+        expect(rows()).toContain('T301');
+        expect(rows()).not.toContain('T1');
+        expect(root().querySelectorAll('.p-gantt-taskbar').length).toBe(rows().length);
+    });
+
+    it('does not tell a problem again after an edit that leaves it', async () => {
+        host.data.set([
+            { id: 1, name: 'A', start: '2026-10-05', days: 2, after: '9' },
+            { id: 2, name: 'B', start: '2026-10-05', days: 2 }
+        ]);
+        await fixture.whenStable();
+
+        const told = host.problems.length;
+
+        expect(told).toBeGreaterThan(0);
+
+        host.g().updateRecordByID({ id: 2, name: 'B2' });
+        await fixture.whenStable();
+        expect(host.problems.length).toBe(told);
+    });
 });

@@ -130,7 +130,11 @@ export function rowsToWorkbook(rows: readonly (readonly unknown[])[], options: {
 export function csvField(value: unknown, separator = ','): string {
     if (value === null || value === undefined) return '';
 
-    const text = String(value);
+    let text = String(value);
+
+    // A text that starts like a formula would run when the file is opened in a spreadsheet: a leading quote defuses it.
+    // A number is not text, and a string that is only a number is left as it is.
+    if (typeof value === 'string' && /^[=+\-@\t\r]/.test(text) && !/^-?\d+(\.\d+)?$/.test(text)) text = `'${text}`;
 
     return text.includes(separator) || /["\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 }
@@ -140,9 +144,22 @@ export function toCsv(rows: readonly (readonly unknown[])[], separator = ','): s
     return rows.map((row) => row.map((v) => csvField(v, separator)).join(separator)).join('\n');
 }
 
+/** `true` for text that is a number and would read back as the same text: no leading zeros (`00123`), no digits a double would lose. */
+function isPlainNumber(text: string): boolean {
+    if (!/^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?$/.test(text)) return false;
+
+    const n = Number(text);
+
+    return Number.isFinite(n) && (!/^-?\d+$/.test(text) || Number.isSafeInteger(n));
+}
+
 /** CSV as a table of rows. Numbers and the words `true` and `false` become what they say; the rest stays text. */
 export function parseCsv(text: string, separator = ','): (string | number | boolean | null)[][] {
     const rows: (string | number | boolean | null)[][] = [];
+
+    // A byte order mark is not part of the first field.
+    if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
+
     let row: (string | number | boolean | null)[] = [];
     let field = '';
     let quoted = false;
@@ -152,7 +169,7 @@ export function parseCsv(text: string, separator = ','): (string | number | bool
 
         if (!wasQuoted) {
             if (field === '') value = null;
-            else if (/^-?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(field.trim())) value = Number(field);
+            else if (isPlainNumber(field.trim())) value = Number(field);
             else if (/^(true|false)$/i.test(field.trim())) value = field.trim().toLowerCase() === 'true';
         }
 

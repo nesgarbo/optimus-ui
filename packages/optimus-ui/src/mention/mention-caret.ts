@@ -48,38 +48,72 @@ const COPIED = [
     'tabSize'
 ] as const;
 
+interface Mirror {
+    element: HTMLDivElement;
+    marker: HTMLSpanElement;
+    /** The size of the field when its styles were copied: a change means they may be stale. */
+    key: string;
+    lineHeight: number;
+    borderLeft: number;
+    borderTop: number;
+}
+
+/** One mirror per field, kept between keystrokes: building it is the costly part, and the text is all that changes. */
+const MIRRORS = new WeakMap<Element, Mirror>();
+
+/** Takes away the mirror of a field, once the list is closed. */
+export function disposeCaretMirror(field: Element): void {
+    MIRRORS.get(field)?.element.remove();
+    MIRRORS.delete(field);
+}
+
 /** The caret of a text field, at character offset `position`. */
 export function textFieldCaret(field: HTMLInputElement | HTMLTextAreaElement, position: number): CaretRect {
     const doc = field.ownerDocument;
-    const style = getComputedStyle(field);
-    const mirror = doc.createElement('div');
     const isInput = field.nodeName === 'INPUT';
+    const key = `${field.offsetWidth}x${field.offsetHeight}`;
+    let mirror = MIRRORS.get(field);
 
-    for (const prop of COPIED) (mirror.style as any)[prop] = (style as any)[prop];
+    if (!mirror || mirror.key !== key || !mirror.element.isConnected) {
+        mirror?.element.remove();
+        const style = getComputedStyle(field);
 
-    mirror.style.position = 'absolute';
-    mirror.style.visibility = 'hidden';
-    mirror.style.top = '0';
-    mirror.style.left = '-9999px';
-    mirror.style.whiteSpace = isInput ? 'nowrap' : 'pre-wrap';
-    mirror.style.wordWrap = 'break-word';
-    mirror.textContent = field.value.slice(0, position);
+        const element = doc.createElement('div');
 
-    const marker = doc.createElement('span');
+        for (const prop of COPIED) (element.style as any)[prop] = (style as any)[prop];
 
-    // A zero-width space keeps the marker on the line the text ends on.
-    marker.textContent = field.value.slice(position) || '.';
-    mirror.appendChild(marker);
-    doc.body.appendChild(mirror);
+        element.style.position = 'absolute';
+        element.style.visibility = 'hidden';
+        element.style.top = '0';
+        element.style.left = '-9999px';
+        element.style.whiteSpace = isInput ? 'nowrap' : 'pre-wrap';
+        element.style.wordWrap = 'break-word';
+        element.setAttribute('aria-hidden', 'true');
+
+        mirror = {
+            element,
+            marker: doc.createElement('span'),
+            key,
+            lineHeight: parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.2 || 16,
+            borderLeft: parseFloat(style.borderLeftWidth) || 0,
+            borderTop: parseFloat(style.borderTopWidth) || 0
+        };
+        element.appendChild(doc.createTextNode(''));
+        element.appendChild(mirror.marker);
+        doc.body.appendChild(element);
+        MIRRORS.set(field, mirror);
+    }
+
+    // The text before the caret, and the marker that holds the rest and sits where the caret does.
+    (mirror.element.firstChild as Text).data = field.value.slice(0, position);
+    // A dot keeps the marker on the line the text ends on.
+    mirror.marker.textContent = field.value.slice(position) || '.';
 
     const rect = field.getBoundingClientRect();
-    const lineHeight = parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.2 || 16;
-    const left = rect.left + marker.offsetLeft + parseFloat(style.borderLeftWidth) - field.scrollLeft;
-    const top = rect.top + marker.offsetTop + parseFloat(style.borderTopWidth) - field.scrollTop;
+    const left = rect.left + mirror.marker.offsetLeft + mirror.borderLeft - field.scrollLeft;
+    const top = rect.top + mirror.marker.offsetTop + mirror.borderTop - field.scrollTop;
 
-    doc.body.removeChild(mirror);
-
-    return { left: Math.min(Math.max(left, rect.left), rect.right), top, bottom: top + lineHeight };
+    return { left: Math.min(Math.max(left, rect.left), rect.right), top, bottom: top + mirror.lineHeight };
 }
 
 /** The caret of a `contenteditable` host, from its current selection. */

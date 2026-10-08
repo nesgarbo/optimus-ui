@@ -448,8 +448,11 @@ export function markCritical(project: Project, calendar: WorkCalendar): void {
 }
 
 /** Reads, schedules and marks, in one call. */
-export function buildProject(data: readonly any[], fields: GanttTaskFields, calendar: WorkCalendar, defaultStart: Day): Project {
+export function buildProject(data: readonly any[], fields: GanttTaskFields, calendar: WorkCalendar, defaultStart: Day, onRead?: (unscheduled: Project) => void): Project {
     const project = readProject(data, fields, calendar, defaultStart);
+
+    // The project as the data states it, before the schedule moves anything: for the caller that wants to know what the schedule changed.
+    onRead?.(project);
 
     for (const cycle of findCycles(project)) {
         project.problems.push({ kind: 'cycle', ids: cycle, message: `Tasks wait on each other in a loop: ${cycle.join(' → ')}` });

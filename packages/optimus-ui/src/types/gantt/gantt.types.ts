@@ -269,6 +269,48 @@ export interface GanttInvalidEvent {
 }
 
 /**
+ * The text the Gantt draws and announces. Every entry can be replaced through the `messages` input. `{name}`, `{unit}`, `{value}`, `{start}`, `{end}`,
+ * `{column}` and `{count}` are replaced where an entry lists them.
+ * @group Types
+ */
+export interface GanttMessages {
+    /** Name of the task grid for assistive technology. */
+    tasks: string;
+    /** Name of a task that has none, in the dialog title. */
+    task: string;
+    /** Label of the button of a collapsed parent, followed by the name. `{name}` is replaced. */
+    expand: string;
+    /** Label of the button of an open parent. `{name}` is replaced. */
+    collapse: string;
+    /** Name of the splitter. */
+    resizeTaskList: string;
+    /** What a row sounds like: `{start}`, `{end}` and `{value}` (the progress) are replaced. */
+    rowSummary: string;
+    milestone: string;
+    critical: string;
+    overAllocated: string;
+    /** Added to the tooltip of a bar that differs from its plan: `{value}` and `{unit}` are replaced. */
+    varianceVsPlan: string;
+    /** Announced after a cell was edited: `{name}` and `{column}` are replaced. */
+    cellChanged: string;
+    /** Announced after a bar's progress changed: `{name}` and `{value}` are replaced. */
+    progressChanged: string;
+    /** Announced after a bar moved or resized: `{name}`, `{start}` and `{end}` are replaced. */
+    taskRescheduled: string;
+    name: string;
+    start: string;
+    /** Label of the duration field of the dialog. `{unit}` is replaced. */
+    duration: string;
+    progress: string;
+    predecessors: string;
+    resources: string;
+    notes: string;
+    delete: string;
+    cancel: string;
+    save: string;
+}
+
+/**
  * Pass-through options.
  * @group Interface
  */

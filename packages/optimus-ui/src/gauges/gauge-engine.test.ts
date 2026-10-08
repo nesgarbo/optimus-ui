@@ -123,3 +123,19 @@ describe('ticks, labels and lengths', () => {
         expect(rangeColorAt(150, [{ start: 0, end: 50, color: 'g' }], 'x')).toBe('x');
     });
 });
+
+describe('bad numbers', () => {
+    it('rests at the start for a value that is not a number', () => {
+        expect(valueToAngle(NaN, 0, 100, -90, 90)).toBe(-90);
+        expect(valueToAngle(5, NaN, 100, -90, 90)).toBe(-90);
+    });
+
+    it('has no ticks for an axis that is not a number, and no minor tick on a major one', () => {
+        expect(axisTicks(NaN, 10)).toEqual({ major: [], minor: [] });
+
+        const ticks = axisTicks(0, 1, 0.5, 0.25);
+
+        expect(ticks.major).toEqual([0, 0.5, 1]);
+        expect(ticks.minor).toEqual([0.25, 0.75]);
+    });
+});

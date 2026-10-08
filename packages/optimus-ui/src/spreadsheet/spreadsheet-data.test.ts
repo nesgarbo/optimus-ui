@@ -114,3 +114,17 @@ describe('csv', () => {
         expect(parseCsv(toCsv(rows))).toEqual(rows);
     });
 });
+
+describe('csv safety', () => {
+    it('defuses a text that would run as a formula, and leaves numbers alone', () => {
+        expect(toCsv([['=SUM(A1)', '+1', '-x', '@a', 'ok', -5, '-5']])).toBe("'=SUM(A1),'+1,'-x,'@a,ok,-5,-5");
+    });
+
+    it('keeps the leading zeros of text that looks like a number', () => {
+        expect(parseCsv('00123,0.5,12,9007199254740993')).toEqual([['00123', 0.5, 12, '9007199254740993']]);
+    });
+
+    it('drops a byte order mark', () => {
+        expect(parseCsv('\uFEFFa,b')).toEqual([['a', 'b']]);
+    });
+});

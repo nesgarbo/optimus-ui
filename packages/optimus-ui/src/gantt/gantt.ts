@@ -12,6 +12,7 @@ import {
     input,
     model,
     NgModule,
+    NgZone,
     numberAttribute,
     output,
     PLATFORM_ID,
@@ -34,6 +35,7 @@ import type {
     GanttHoliday,
     GanttInvalidEvent,
     GanttLabelSettings,
+    GanttMessages,
     GanttPassThrough,
     GanttResource,
     GanttSelectEvent,
@@ -59,6 +61,40 @@ const DEFAULT_COLUMNS: GanttColumn[] = [
     { field: 'duration', headerText: 'Days', width: 64, textAlign: 'right' },
     { field: 'progress', headerText: '%', width: 56, textAlign: 'right' }
 ];
+
+/** The default English text. */
+const MESSAGES: GanttMessages = {
+    tasks: 'Tasks',
+    task: 'Task',
+    expand: 'Expand {name}',
+    collapse: 'Collapse {name}',
+    resizeTaskList: 'Resize the task list',
+    rowSummary: '{start} to {end}, {value}% complete',
+    milestone: 'milestone',
+    critical: 'critical',
+    overAllocated: 'Over-allocated',
+    varianceVsPlan: '{value} {unit} vs plan',
+    cellChanged: '{name}: {column} changed',
+    progressChanged: '{name} is {value}% complete',
+    taskRescheduled: '{name} now runs {start} to {end}',
+    name: 'Name',
+    start: 'Start',
+    duration: 'Duration ({unit}s)',
+    progress: 'Progress (%)',
+    predecessors: 'Predecessors',
+    resources: 'Resources',
+    notes: 'Notes',
+    delete: 'Delete',
+    cancel: 'Cancel',
+    save: 'Save'
+};
+
+/** Rows from which the grid and the chart draw only the rows in view. Below it every row is drawn: there is nothing to save. */
+const WINDOW_FROM = 150;
+/** Rows drawn above and below the ones in view. */
+const OVERSCAN = 12;
+/** Rows by which the window moves: the scroll writes a signal only when it crosses one. */
+const BAND = 8;
 
 /** What one bar looks like. */
 interface Bar {
@@ -161,8 +197,19 @@ let nextId = 0;
                     </div>
                 </div>
                 <div class="p-gantt-body" [style.height.px]="bodyHeight()">
-                    <div [class]="cx('grid')" role="treegrid" [attr.aria-label]="ariaLabel() || 'Tasks'" [attr.aria-rowcount]="rows().length" [style.width.px]="gridWidth()" (keydown)="onGridKeydown($event)">
-                        @for (row of rows(); track row.task.id) {
+                    <div
+                        [class]="cx('grid')"
+                        role="treegrid"
+                        [attr.aria-label]="ariaLabel() || text().tasks"
+                        [attr.aria-rowcount]="rows().length"
+                        [style.width.px]="gridWidth()"
+                        [style.height.px]="windowed() ? bodyHeight() : null"
+                        (keydown)="onGridKeydown($event)"
+                    >
+                        @if (rowOffset() > 0) {
+                            <div aria-hidden="true" [style.height.px]="rowOffset()"></div>
+                        }
+                        @for (row of shownRows(); track row.task.id) {
                             <div
                                 [class]="cx('row', { row })"
                                 role="row"
@@ -170,6 +217,7 @@ let nextId = 0;
                                 [attr.aria-expanded]="row.task.isParent ? row.task.expanded : null"
                                 [attr.aria-selected]="row.selected"
                                 [attr.aria-description]="describe(row.task)"
+                                [attr.aria-rowindex]="windowed() ? row.index + 1 : null"
                                 [attr.data-row]="row.index"
                                 [attr.tabindex]="row.selected || (selectedRowIndex() < 0 && row.index === 0) ? 0 : -1"
                                 [style.height.px]="rowHeight()"
@@ -181,7 +229,7 @@ let nextId = 0;
                                         @if (ci === treeColumn()) {
                                             <span class="p-gantt-indent" [style.width.px]="row.task.level * 16"></span>
                                             @if (row.task.isParent) {
-                                                <button type="button" [class]="cx('toggle')" tabindex="-1" [attr.aria-label]="(row.task.expanded ? 'Collapse ' : 'Expand ') + row.task.name" (click)="toggle(row.task.id, $event)">
+                                                <button type="button" [class]="cx('toggle')" tabindex="-1" [attr.aria-label]="fill(row.task.expanded ? text().collapse : text().expand, { name: row.task.name })" (click)="toggle(row.task.id, $event)">
                                                     <span class="p-gantt-chevron" [class.p-gantt-chevron-open]="row.task.expanded" aria-hidden="true"></span>
                                                 </button>
                                             } @else {
@@ -218,25 +266,15 @@ let nextId = 0;
                         role="separator"
                         aria-orientation="vertical"
                         tabindex="0"
-                        aria-label="Resize the task list"
+                        [attr.aria-label]="text().resizeTaskList"
                         [attr.aria-valuenow]="gridWidth()"
                         [style.left.px]="gridWidth()"
                         (pointerdown)="onSplitterDown($event)"
-                        (pointermove)="onSplitterMove($event)"
                         (pointerup)="onSplitterUp($event)"
                         (pointercancel)="onSplitterUp($event)"
                         (keydown)="onSplitterKey($event)"
                     ></div>
-                    <div
-                        [class]="cx('chart')"
-                        aria-hidden="true"
-                        [style.width.px]="chartWidth()"
-                        [style.height.px]="bodyHeight()"
-                        [style.--p-gantt-row-height]="rowHeight() + 'px'"
-                        (pointermove)="onBarMove($event)"
-                        (pointerup)="onBarUp($event)"
-                        (pointercancel)="onBarCancel($event)"
-                    >
+                    <div [class]="cx('chart')" aria-hidden="true" [style.width.px]="chartWidth()" [style.height.px]="bodyHeight()" [style.--p-gantt-row-height]="rowHeight() + 'px'" (pointerup)="onBarUp($event)" (pointercancel)="onBarCancel($event)">
                         @for (s of shades(); track $index) {
                             <div [class]="cx('shade')" [style.left.px]="s.x" [style.width.px]="s.width"></div>
                         }
@@ -300,32 +338,32 @@ let nextId = 0;
         <dialog #dialog class="p-gantt-dialog" [attr.aria-labelledby]="'p-gantt-dlg-title-' + uid" (close)="onDialogClosed()">
             @if (dialogTask(); as t) {
                 <form class="p-gantt-form" (submit)="saveDialog($event, t)">
-                    <h3 [id]="'p-gantt-dlg-title-' + uid" class="p-gantt-form-title">{{ t.name || 'Task' }}</h3>
-                    <label>Name<input name="name" required [value]="t.name" /></label>
+                    <h3 [id]="'p-gantt-dlg-title-' + uid" class="p-gantt-form-title">{{ t.name || text().task }}</h3>
+                    <label>{{ text().name }}<input name="name" required [value]="t.name" /></label>
                     <div class="p-gantt-form-row">
-                        <label>Start<input [type]="calendar().slots > 1 ? 'datetime-local' : 'date'" name="startDate" [disabled]="t.isParent" [value]="isoOf(t.startDate)" /></label>
-                        <label>Duration ({{ durationUnit() }}s)<input type="number" name="duration" min="0" step="any" [disabled]="t.isParent" [value]="t.duration" /></label>
-                        <label>Progress (%)<input type="number" name="progress" min="0" max="100" [disabled]="t.isParent" [value]="Math.round(t.progress)" /></label>
+                        <label>{{ text().start }}<input [type]="calendar().slots > 1 ? 'datetime-local' : 'date'" name="startDate" [disabled]="t.isParent" [value]="isoOf(t.startDate)" /></label>
+                        <label>{{ fill(text().duration, { unit: durationUnit() }) }}<input type="number" name="duration" min="0" step="any" [disabled]="t.isParent" [value]="t.duration" /></label>
+                        <label>{{ text().progress }}<input type="number" name="progress" min="0" max="100" [disabled]="t.isParent" [value]="Math.round(t.progress)" /></label>
                     </div>
-                    <label>Predecessors<input name="dependency" [value]="dependencyText(t)" placeholder="2FS+1d, 3SS" /></label>
+                    <label>{{ text().predecessors }}<input name="dependency" [value]="dependencyText(t)" placeholder="2FS+1d, 3SS" /></label>
                     @if (resources().length) {
                         <fieldset class="p-gantt-form-resources">
-                            <legend>Resources</legend>
+                            <legend>{{ text().resources }}</legend>
                             @for (r of resources(); track r.id) {
                                 <label class="p-gantt-check"><input type="checkbox" name="resource" [value]="r.id" [checked]="hasResource(t, r)" />{{ r.name }}</label>
                             }
                         </fieldset>
                     }
                     @if (taskFields().notes) {
-                        <label>Notes<textarea name="notes" rows="3" [value]="t.notes ?? ''"></textarea></label>
+                        <label>{{ text().notes }}<textarea name="notes" rows="3" [value]="t.notes ?? ''"></textarea></label>
                     }
                     <div class="p-gantt-form-actions">
                         @if (editSettings().allowDeleting) {
-                            <button type="button" class="p-gantt-btn p-gantt-btn-danger" (click)="deleteFromDialog(t)">Delete</button>
+                            <button type="button" class="p-gantt-btn p-gantt-btn-danger" (click)="deleteFromDialog(t)">{{ text().delete }}</button>
                         }
                         <span class="p-gantt-spacer"></span>
-                        <button type="button" class="p-gantt-btn" (click)="closeDialog()">Cancel</button>
-                        <button type="submit" class="p-gantt-btn p-gantt-btn-primary">Save</button>
+                        <button type="button" class="p-gantt-btn" (click)="closeDialog()">{{ text().cancel }}</button>
+                        <button type="submit" class="p-gantt-btn p-gantt-btn-primary">{{ text().save }}</button>
                     </div>
                 </form>
             }
@@ -496,6 +534,11 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
      * @group Props
      */
     readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
+    /**
+     * Replaces any of the built-in text.
+     * @group Props
+     */
+    readonly messages = input<Partial<GanttMessages>>({});
 
     // ---------------------------------------------------------------------------------------------
     // Events
@@ -530,6 +573,14 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
     // State
     // ---------------------------------------------------------------------------------------------
 
+    /** The text, with the replacements the `messages` input makes. @internal */
+    readonly text = computed<GanttMessages>(() => ({ ...MESSAGES, ...this.messages() }));
+    private readonly zone = inject(NgZone);
+    /** How many rows the scroll has moved the window past, in bands. */
+    private readonly scrollBand = signal(0);
+    private readonly viewportHeight = signal(450);
+    /** The `invalid` events already sent: a problem is told once while it lasts. */
+    private told = new Set<string>();
     private readonly collapsedIds = signal<ReadonlySet<string>>(new Set());
     private readonly dayWidthOverride = signal<number | null>(null);
     private readonly gridWidthOverride = signal<number | null>(null);
@@ -592,7 +643,20 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
     });
 
     /** The project, scheduled. @internal */
-    readonly project = computed<Project>(() => buildProject(this.dataSource(), this.taskFields(), this.calendar(), this.firstDay()));
+    readonly project = computed<Project>(() => {
+        const data = this.dataSource();
+        const fields = this.taskFields();
+        const calendar = this.calendar();
+        const start = this.firstDay();
+        const done = this.settled;
+
+        this.settled = null;
+
+        // The data an edit just settled: its schedule is already there, if nothing it was made with has changed since.
+        if (done && done.data === data && done.fields === fields && done.calendar === calendar && done.start === start) return done.project;
+
+        return buildProject(data, fields, calendar, start);
+    });
 
     private readonly overallocated = computed(() => findOverallocated(this.project(), this.resources()));
 
@@ -609,6 +673,31 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
 
         return this.visible().map((node, index) => ({ node, index, selected: index === selected, task: this.mk(node, !collapsed.has(node.id)) }));
     });
+
+    /** `true` when only the rows in view are drawn. @internal */
+    readonly windowed = computed(() => this.rows().length > WINDOW_FROM);
+
+    /** The rows that are drawn: all of them, or the ones in view and a margin. @internal */
+    readonly rowWindow = computed(() => {
+        const n = this.rows().length;
+
+        if (n <= WINDOW_FROM) return { first: 0, last: n };
+
+        const first = Math.max(this.scrollBand() * BAND - OVERSCAN, 0);
+        const last = Math.min(this.scrollBand() * BAND + Math.ceil(this.viewportHeight() / this.rowHeight()) + BAND + OVERSCAN, n);
+
+        return { first: Math.min(first, Math.max(n - 1, 0)), last };
+    });
+
+    /** @internal */
+    readonly shownRows = computed<Row[]>(() => {
+        const { first, last } = this.rowWindow();
+
+        return this.windowed() ? this.rows().slice(first, last) : this.rows();
+    });
+
+    /** The height of the rows above the first one drawn. @internal */
+    readonly rowOffset = computed(() => (this.windowed() ? this.rowWindow().first * this.rowHeight() : 0));
 
     /** @internal */
     readonly columnList = computed<GanttColumn[]>(() => this.columns().map((c) => ({ width: 100, ...c })));
@@ -759,8 +848,11 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
         return v === undefined || v === null ? '' : String(v);
     }
 
-    /** The bars. @internal */
-    readonly bars = computed<Bar[]>(() => {
+    /** The bars of the rows that are drawn. @internal */
+    readonly bars = computed<Bar[]>(() => this.barsOf(this.shownRows()));
+
+    /** The bars of a set of rows. */
+    private barsOf(rows: Row[]): Bar[] {
         const preview = this.preview();
         const rh = this.rowHeight();
         const bh = this.taskbarHeight() ?? Math.round(rh * 0.6);
@@ -768,7 +860,7 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
         const editable = this.canEditBars();
         const critical = this.enableCriticalPath();
 
-        return this.rows().map((r) => {
+        return rows.map((r) => {
             const g = this.geometry(r.node, preview);
             const p = preview && preview.id === r.node.id ? preview : null;
             const progress = p?.progress ?? r.node.progress;
@@ -795,21 +887,52 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
                 taskLabel: this.label(task, labels.taskLabel ?? ((t: GanttTask) => `${Math.round(t.progress)}%`)),
                 leftLabel: this.label(task, labels.leftLabel),
                 rightLabel: this.label(task, labels.rightLabel),
-                title: `${task.name}\n${this.fmtDate(task.startDate)} – ${this.fmtDate(task.endDate)}\n${task.duration} ${this.unitLabel()} · ${Math.round(task.progress)}%${r.task.variance ? ` · ${r.task.variance > 0 ? '+' : ''}${r.task.variance} ${this.unitLabel()} vs plan` : ''}${r.task.resources.length ? `\n${r.task.resources.map((x) => x.name).join(', ')}` : ''}${r.task.isOverallocated ? '\nOver-allocated' : ''}`
+                title: `${task.name}\n${this.fmtDate(task.startDate)} – ${this.fmtDate(task.endDate)}\n${task.duration} ${this.unitLabel()} · ${Math.round(task.progress)}%${r.task.variance ? ` · ${this.fill(this.text().varianceVsPlan, { value: `${r.task.variance > 0 ? '+' : ''}${r.task.variance}`, unit: this.unitLabel() })}` : ''}${r.task.resources.length ? `\n${r.task.resources.map((x) => x.name).join(', ')}` : ''}${r.task.isOverallocated ? `\n${this.text().overAllocated}` : ''}`
             };
         });
+    }
+
+    private readonly rowById = computed(() => new Map(this.rows().map((r) => [r.task.id, r])));
+
+    /** For each task, the rows that wait on it: a line can leave a row in view and end below it. */
+    private readonly dependents = computed(() => {
+        const map = new Map<string, Row[]>();
+
+        if (!this.windowed()) return map;
+
+        for (const r of this.rows()) for (const dep of r.node.deps) (map.get(dep.id) ?? map.set(dep.id, []).get(dep.id)!).push(r);
+
+        return map;
     });
 
-    /** The dependency lines. @internal */
-    readonly links = computed<Link[]>(() => {
+    /** The dependency lines of the rows that are drawn. @internal */
+    readonly links = computed<Link[]>(() => this.linksOf(this.shownRows()));
+
+    /** The dependency lines of a set of rows, and with them those of the rows that wait on them. */
+    private linksOf(rows: Row[]): Link[] {
         const preview = this.preview();
         const rh = this.rowHeight();
-        const rowOf = new Map(this.rows().map((r) => [r.task.id, r]));
+        const rowOf = this.rowById();
         const out: Link[] = [];
         const critical = this.enableCriticalPath();
+        const pairs: [Row, Row['node']['deps'][number]][] = [];
 
-        for (const r of this.rows()) {
-            for (const dep of r.node.deps) {
+        for (const r of rows) for (const dep of r.node.deps) pairs.push([r, dep]);
+
+        if (this.windowed()) {
+            const shown = new Set(rows);
+            const dependents = this.dependents();
+
+            // A row in view also draws the lines to the rows below or above it that wait on it.
+            for (const r of rows) {
+                for (const waiting of dependents.get(r.task.id) ?? []) {
+                    if (!shown.has(waiting)) for (const dep of waiting.node.deps) if (dep.id === r.task.id) pairs.push([waiting, dep]);
+                }
+            }
+        }
+
+        for (const [r, dep] of pairs) {
+            {
                 const pred = rowOf.get(dep.id);
 
                 if (!pred) continue;
@@ -826,26 +949,63 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
         }
 
         return out;
-    });
+    }
 
     constructor() {
         super();
 
         afterNextRender(() => {
             const el = this.scroller().nativeElement;
-            const observer = new ResizeObserver(() => this.viewportWidth.set(Math.max(el.clientWidth, 320)));
+            const host = this.el.nativeElement as HTMLElement;
+            const measure = () => {
+                this.viewportWidth.set(Math.max(el.clientWidth, 320));
+                this.viewportHeight.set(Math.max(el.clientHeight, 1));
+            };
+            const scrolled = () => {
+                // The rows in view change by bands: a scroll inside one band writes nothing.
+                const band = Math.floor(el.scrollTop / (this.rowHeight() * BAND));
 
-            observer.observe(el);
-            this.destroyRef.onDestroy(() => observer.disconnect());
-            this.viewportWidth.set(Math.max(el.clientWidth, 320));
+                if (band !== this.scrollBand()) this.scrollBand.set(band);
+            };
+            // The pointer moving over the gantt (a bar being dragged, the splitter) and the scrolling only write signals: no reason to run change detection for each event.
+            const move = (event: Event) => {
+                if (this.session) this.onBarMove(event as PointerEvent);
+                else if (this.splitter) this.onSplitterMove(event as PointerEvent);
+            };
+
+            this.zone.runOutsideAngular(() => {
+                const observer = new ResizeObserver(measure);
+
+                observer.observe(el);
+                host.addEventListener('pointermove', move);
+                el.addEventListener('scroll', scrolled, { passive: true });
+                this.destroyRef.onDestroy(() => {
+                    observer.disconnect();
+                    host.removeEventListener('pointermove', move);
+                    el.removeEventListener('scroll', scrolled);
+                });
+            });
+            measure();
             this.created.emit();
         });
 
-        // Problems found in the data.
+        // Problems found in the data. One that is still there after an edit is not told again.
         effect(() => {
             const problems = this.project().problems;
 
-            untracked(() => problems.forEach((p) => this.invalid.emit(p)));
+            untracked(() => {
+                const now = new Set<string>();
+
+                for (const p of problems) {
+                    const key = `${p.kind}|${p.ids?.join(',') ?? ''}|${p.message}`;
+
+                    now.add(key);
+
+                    if (!this.told.has(key)) this.invalid.emit(p);
+                }
+
+                this.told = now;
+            });
         });
 
         // The dialog is a native modal: it traps the focus and closes on Escape by itself.
@@ -917,11 +1077,17 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
         return v === undefined || v === null ? '' : String(v);
     }
 
+    /** Puts values into the `{name}` marks of a text. @internal */
+    fill(template: string, values: Record<string, string | number>): string {
+        return template.replace(/\{(\w+)\}/g, (all, key: string) => (key in values ? String(values[key]) : all));
+    }
+
     /** What a screen reader hears for a row beyond its cells. @internal */
     describe(task: GanttTask): string {
-        const when = `${this.fmtDate(task.startDate)} to ${this.fmtDate(task.endDate)}`;
+        const t = this.text();
+        const summary = this.fill(t.rowSummary, { start: this.fmtDate(task.startDate), end: this.fmtDate(task.endDate), value: Math.round(task.progress) });
 
-        return `${when}, ${Math.round(task.progress)}% complete${task.isMilestone ? ', milestone' : ''}${this.enableCriticalPath() && task.isCritical ? ', critical' : ''}`;
+        return `${summary}${task.isMilestone ? `, ${t.milestone}` : ''}${this.enableCriticalPath() && task.isCritical ? `, ${t.critical}` : ''}`;
     }
 
     /** @internal */
@@ -933,7 +1099,30 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
         this.selectedRowIndex.set(index);
         this.rowSelected.emit({ task: row.task, rowIndex: index });
 
-        if (focus) queueMicrotask(() => (this.el.nativeElement as HTMLElement).querySelector<HTMLElement>(`[data-row="${index}"]`)?.focus({ preventScroll: false }));
+        if (focus) this.focusRow(index, false);
+    }
+
+    /** Puts the focus on a row. A row that is outside the window is brought in first, and focused once it is drawn. */
+    private focusRow(index: number, preventScroll: boolean): void {
+        const host = this.el.nativeElement as HTMLElement;
+        const find = () => host.querySelector<HTMLElement>(`[data-row="${index}"]`);
+
+        if (this.windowed() && this.browser) {
+            const { first, last } = this.rowWindow();
+
+            if (index < first || index >= last) {
+                const el = this.scroller().nativeElement;
+                const top = Math.max(index * this.rowHeight() - el.clientHeight / 2, 0);
+
+                el.scrollTop = top;
+                this.scrollBand.set(Math.floor(top / (this.rowHeight() * BAND)));
+                afterNextRender(() => find()?.focus({ preventScroll }), { injector: this.injector });
+
+                return;
+            }
+        }
+
+        queueMicrotask(() => find()?.focus({ preventScroll }));
     }
 
     /** @internal */
@@ -1127,7 +1316,7 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
     private stopEdit(row: number): void {
         this.editingCell.set(null);
         this.editInvalid.set(false);
-        queueMicrotask(() => (this.el.nativeElement as HTMLElement).querySelector<HTMLElement>(`[data-row="${row}"]`)?.focus({ preventScroll: true }));
+        this.focusRow(row, true);
     }
 
     /** Reads the text of an editor into the type of its field. `undefined` when it cannot be read. */
@@ -1242,7 +1431,7 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
 
         this.dataSource.set(this.settle(updateData(this.dataSource(), this.taskFields(), node.data, patch)));
         this.actionComplete.emit({ requestType: 'save', data: node.data, cancel: false });
-        this.announcement.set(`${node.name}: ${col.headerText ?? col.field} changed`);
+        this.announcement.set(this.fill(this.text().cellChanged, { name: node.name, column: col.headerText ?? col.field }));
 
         return true;
     }
@@ -1414,7 +1603,7 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
             tiers: { top: this.topCells().map((c) => ({ x: c.x, width: c.width, label: c.label })), bottom: this.bottomCells().map((c) => ({ x: c.x, width: c.width, label: c.label })), height: this.tierHeight() },
             shades: this.shades(),
             lines: this.lineXs(),
-            bars: this.bars().map((b) => ({
+            bars: this.barsOf(visible).map((b) => ({
                 left: b.left,
                 top: b.top,
                 width: b.width,
@@ -1426,7 +1615,7 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
                 baseline: b.baseline,
                 label: b.rightLabel
             })),
-            links: this.links().map((l) => ({ d: l.d, critical: l.critical })),
+            links: this.linksOf(visible).map((l) => ({ d: l.d, critical: l.critical })),
             todayX: this.todayX()
         };
     }
@@ -1541,7 +1730,9 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
 
         const handle = (event.target as HTMLElement).closest<HTMLElement>('[data-handle]')?.dataset['handle'];
         const action = (handle as Session['action'] | undefined) ?? 'move';
-        const node = this.project().byId.get(bar.id)!;
+        const node = this.project().byId.get(bar.id);
+
+        if (!node) return;
 
         event.preventDefault();
         this.session = {
@@ -1606,12 +1797,21 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
                 break;
         }
 
-        const node = this.project().byId.get(s.id)!;
+        const node = this.project().byId.get(s.id);
+
+        // The task went away under the pointer (the data changed): there is nothing left to edit.
+        if (!node) {
+            this.session = null;
+            this.preview.set(null);
+
+            return;
+        }
+
         const next: Preview = { id: s.id, start, end, duration, progress };
         const task = { ...this.mk(node, true), startDate: cal.toDate(start, 'start'), endDate: cal.toDate(end, 'end'), duration: duration / cal.unitsPer(), progress };
         const e: GanttTaskbarEvent = { task, action: s.action, previousData: node.data, cancel: false };
 
-        this.taskbarEditing.emit(e);
+        this.zone.run(() => this.taskbarEditing.emit(e));
 
         if (e.cancel) {
             this.session = null;
@@ -1636,7 +1836,10 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
 
         if (!s.started || !p) return;
 
-        const node = this.project().byId.get(s.id)!;
+        const node = this.project().byId.get(s.id);
+
+        if (!node) return;
+
         const begin: GanttActionEvent = { requestType: 'taskbarEdit', data: node.data, cancel: false };
 
         this.actionBegin.emit(begin);
@@ -1648,7 +1851,9 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
         this.commitTaskEdit(node, { start: p.start, end: p.end, duration: p.duration, progress: s.action === 'progress' ? p.progress : undefined });
         this.taskbarEdited.emit({ task, action: s.action, previousData: node.data, cancel: false });
         this.actionComplete.emit({ requestType: 'taskbarEdit', data: node.data, cancel: false });
-        this.announcement.set(s.action === 'progress' ? `${node.name} is ${p.progress}% complete` : `${node.name} now runs ${this.fmtDate(task.startDate)} to ${this.fmtDate(task.endDate)}`);
+        this.announcement.set(
+            s.action === 'progress' ? this.fill(this.text().progressChanged, { name: node.name, value: p.progress }) : this.fill(this.text().taskRescheduled, { name: node.name, start: this.fmtDate(task.startDate), end: this.fmtDate(task.endDate) })
+        );
     }
 
     /** @internal */
@@ -1676,20 +1881,31 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
         const f = this.taskFields();
         const cal = this.calendar();
         const start = this.firstDay();
-        const raw = readProject(data, f, cal, start);
-        const scheduled = buildProject(data, f, cal, start);
+        // What the data says, as the schedule found it: one read serves both the comparison and the schedule.
+        const before = new Map<string, { start: number; end: number; duration: number }>();
+        const scheduled = buildProject(data, f, cal, start, (raw) => raw.nodes.forEach((n) => before.set(n.id, { start: n.start, end: n.end, duration: n.duration })));
         const patches = new Map<any, Record<string, any>>();
 
         for (const n of scheduled.nodes) {
-            const before = raw.byId.get(n.id);
+            const was = before.get(n.id);
 
-            if (!before || (before.start === n.start && before.end === n.end && before.duration === n.duration)) continue;
+            if (!was || (was.start === n.start && was.end === n.end && was.duration === n.duration)) continue;
 
             patches.set(n.data, patchFor(n.data, f, { start: n.start, end: n.end, duration: n.duration }, cal));
         }
 
-        return patches.size ? updateManyData(data, f, patches) : data;
+        if (!patches.size) {
+            // Nothing moved: this is the project the data will have, so it is not scheduled a second time.
+            this.settled = { data, fields: f, calendar: cal, start, project: scheduled };
+
+            return data;
+        }
+
+        return updateManyData(data, f, patches);
     }
+
+    /** The project `settle` scheduled from the data it handed back. */
+    private settled: { data: any[]; fields: GanttTaskFields; calendar: WorkCalendar; start: Day; project: Project } | null = null;
 
     // ---------------------------------------------------------------------------------------------
     // Methods
@@ -1776,7 +1992,7 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
         if (!node) return;
 
         const siblings = node.parentId
-            ? this.project().byId.get(node.parentId)!.childIds
+            ? (this.project().byId.get(node.parentId)?.childIds ?? [])
             : this.project()
                   .nodes.filter((n) => !n.parentId)
                   .map((n) => n.id);
@@ -1790,7 +2006,11 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
 
         if (begin.cancel) return;
 
-        this.dataSource.set(this.settle(indentData(this.dataSource(), this.taskFields(), node.data, this.project().byId.get(above)!.data)));
+        const target = this.project().byId.get(above);
+
+        if (!target) return;
+
+        this.dataSource.set(this.settle(indentData(this.dataSource(), this.taskFields(), node.data, target.data)));
         this.collapsedIds.update((s) => {
             const next = new Set(s);
 
@@ -1813,7 +2033,11 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
 
         if (begin.cancel) return;
 
-        this.dataSource.set(this.settle(outdentData(this.dataSource(), this.taskFields(), node.data, this.project().byId.get(node.parentId)!.data)));
+        const parent = this.project().byId.get(node.parentId);
+
+        if (!parent) return;
+
+        this.dataSource.set(this.settle(outdentData(this.dataSource(), this.taskFields(), node.data, parent.data)));
         this.actionComplete.emit({ requestType: 'outdent', data: node.data, cancel: false });
     }
 

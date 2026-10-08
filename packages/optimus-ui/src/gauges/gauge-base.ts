@@ -1,5 +1,5 @@
 import { isPlatformBrowser } from '@angular/common';
-import { booleanAttribute, DestroyRef, Directive, effect, inject, input, PLATFORM_ID, signal, untracked } from '@angular/core';
+import { booleanAttribute, DestroyRef, Directive, effect, inject, input, NgZone, PLATFORM_ID, signal, untracked } from '@angular/core';
 import { BaseComponent } from '@openng/optimus-ui/basecomponent';
 import { Bind } from '@openng/optimus-ui/bind';
 import type { GaugePassThrough } from '@openng/optimus-ui/types/gauges';
@@ -27,6 +27,7 @@ export abstract class GaugeBase extends BaseComponent<GaugePassThrough> {
 
     protected readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
     protected readonly destroyRef = inject(DestroyRef);
+    protected readonly zone = inject(NgZone);
     private readonly bindDirectiveInstance = inject(Bind, { self: true });
 
     /** `circular` or `linear`. @internal */
@@ -63,6 +64,32 @@ export abstract class GaugeBase extends BaseComponent<GaugePassThrough> {
      * @group Props
      */
     readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
+    /**
+     * Accessible name when neither `aria-label` nor `title` is set.
+     * @group Props
+     */
+    readonly defaultLabel = input('Gauge');
+    /**
+     * Text of a range with no `legendText`. `{start}` and `{end}` are replaced.
+     * @group Props
+     */
+    readonly rangeText = input('{start} to {end}');
+
+    /** The text of a range. @internal */
+    protected rangeLabel(r: { start: number; end: number; legendText?: string }): string {
+        return r.legendText ?? this.rangeText().replace('{start}', String(r.start)).replace('{end}', String(r.end));
+    }
+
+    /**
+     * Listens to the pointer moving over `el` outside the zone: it fires for every hover, and only a drag has work to do.
+     * @internal
+     */
+    protected followPointer(el: Element, handler: (event: PointerEvent) => void): void {
+        const listener = (event: Event) => handler(event as PointerEvent);
+
+        this.zone.runOutsideAngular(() => el.addEventListener('pointermove', listener));
+        this.destroyRef.onDestroy(() => el.removeEventListener('pointermove', listener));
+    }
 
     /** @internal */
     protected hostWidth(): string {
@@ -136,6 +163,11 @@ export abstract class GaugeBase extends BaseComponent<GaugePassThrough> {
         cancelAnimationFrame(this.frame);
         this.started = performance.now();
 
+        // The frames only write a signal; the zone is entered once, when the pointers have arrived.
+        this.zone.runOutsideAngular(() => this.runFrames());
+    }
+
+    private runFrames(): void {
         const step = (now: number) => {
             const elapsed = now - this.started;
             const next = { ...untracked(this.shownValues) };
@@ -153,7 +185,7 @@ export abstract class GaugeBase extends BaseComponent<GaugePassThrough> {
             this.shownValues.set(next);
 
             if (running) this.frame = requestAnimationFrame(step);
-            else this.onAnimationDone();
+            else this.zone.run(() => this.onAnimationDone());
         };
 
         this.frame = requestAnimationFrame(step);

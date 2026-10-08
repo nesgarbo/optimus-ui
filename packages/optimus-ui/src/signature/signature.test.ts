@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { form, FormField } from '@angular/forms/signals';
 import type { SignatureChangeEvent } from '@openng/optimus-ui/types/signature';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Signature, SignatureModule } from './signature';
 
 @Component({
@@ -16,6 +16,17 @@ class Host {
     readonly pad = viewChild.required<Signature>('pad');
     readonly value = signal<string | null>(null);
     readonly locked = signal(false);
+    readonly events: SignatureChangeEvent[] = [];
+}
+
+@Component({
+    standalone: true,
+    imports: [SignatureModule],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    template: `<p-signature [(value)]="value" [valueDebounce]="40" (changed)="events.push($event)" style="width: 300px; height: 150px" />`
+})
+class DebouncedHost {
+    readonly value = signal<string | null>(null);
     readonly events: SignatureChangeEvent[] = [];
 }
 
@@ -56,7 +67,7 @@ describe('Signature', () => {
     const canvas = () => fixture.nativeElement.querySelector('canvas') as HTMLCanvasElement;
 
     beforeEach(async () => {
-        await TestBed.configureTestingModule({ imports: [Host, SignalFormHost, ReactiveHost], providers: [provideZonelessChangeDetection()] }).compileComponents();
+        await TestBed.configureTestingModule({ imports: [Host, DebouncedHost, SignalFormHost, ReactiveHost], providers: [provideZonelessChangeDetection()] }).compileComponents();
 
         fixture = TestBed.createComponent(Host);
         host = fixture.componentInstance;
@@ -221,5 +232,66 @@ describe('Signature', () => {
             [60, 40]
         ]);
         expect(r.componentInstance.control.value).toMatch(/^data:image\/png/);
+    });
+
+    it('brings a cleared signature back with undo', () => {
+        stroke(canvas(), [
+            [10, 10],
+            [40, 30]
+        ]);
+
+        const pad = host.pad();
+
+        canvas().dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true, cancelable: true }));
+        expect(pad.isEmpty()).toBe(true);
+        expect(pad.canUndo()).toBe(true);
+        pad.undo();
+        expect(pad.isEmpty()).toBe(false);
+    });
+
+    it('joins the strokes into one encoding when valueDebounce is set', async () => {
+        const debounced = TestBed.createComponent(DebouncedHost);
+
+        await debounced.whenStable();
+
+        const pad = debounced.nativeElement.querySelector('canvas') as HTMLCanvasElement;
+
+        stroke(pad, [
+            [10, 10],
+            [40, 30]
+        ]);
+        stroke(pad, [
+            [50, 50],
+            [80, 60]
+        ]);
+
+        // The events go out right away; the PNG waits for the pause.
+        expect(debounced.componentInstance.events.filter((event) => event.type === 'draw').length).toBe(2);
+        expect(debounced.componentInstance.value()).toBeNull();
+
+        await new Promise((resolve) => setTimeout(resolve, 120));
+        await debounced.whenStable();
+
+        expect(debounced.componentInstance.value()).toMatch(/^data:image\/png/);
+    });
+
+    it('drops the pending write when the pad is destroyed before the pause ends', async () => {
+        const debounced = TestBed.createComponent(DebouncedHost);
+
+        await debounced.whenStable();
+        stroke(debounced.nativeElement.querySelector('canvas'), [
+            [10, 10],
+            [40, 30]
+        ]);
+
+        const component = debounced.componentInstance;
+        const errors = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+        debounced.destroy();
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        expect(component.value()).toBeNull();
+        expect(errors).not.toHaveBeenCalled();
+        errors.mockRestore();
     });
 });

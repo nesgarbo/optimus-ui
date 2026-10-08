@@ -37,6 +37,30 @@ export function clampPanel(panel: PanelModel, columns: number): GridPanel {
     return { ...panel, col, row, sizeX, sizeY };
 }
 
+/**
+ * Gives every panel an id of its own. A later panel that repeats an id is renamed `id~2`, `id~3`... so that it still has a place on the
+ * grid and can be told from the first one. The same array when there is nothing to rename.
+ */
+export function uniqueIds<T extends { id: string }>(panels: T[]): T[] {
+    const seen = new Set<string>();
+    let renamed: T[] | null = null;
+
+    panels.forEach((p, index) => {
+        let id = p.id;
+
+        for (let n = 2; seen.has(id); n++) id = `${p.id}~${n}`;
+
+        seen.add(id);
+
+        if (id !== p.id) {
+            renamed ??= panels.slice();
+            renamed[index] = { ...p, id };
+        }
+    });
+
+    return renamed ?? panels;
+}
+
 /** How many rows the panels take. */
 export const rowsOf = (panels: GridRect[]): number => panels.reduce((max, p) => Math.max(max, p.row + p.sizeY), 0);
 
@@ -48,13 +72,27 @@ export const rowsOf = (panels: GridRect[]): number => panels.reduce((max, p) => 
  * that keeps its place and makes the others give way, which is what a drag needs.
  */
 export function resolve(panels: PanelModel[], columns: number, floating = true, priority?: string): GridPanel[] {
-    const clamped = panels.map((p, index) => ({ panel: clampPanel(p, columns), index }));
+    const input = uniqueIds(panels);
+    const clamped = input.map((p, index) => ({ panel: clampPanel(p, columns), index }));
     const first = priority ? clamped.filter((c) => c.panel.id === priority) : [];
     const rest = clamped.filter((c) => c.panel.id !== priority).sort((a, b) => a.panel.row - b.panel.row || a.panel.col - b.panel.col || a.index - b.index);
-    const placed: GridPanel[] = [];
-    const hits = (p: GridRect) => placed.filter((q) => overlaps(p, q));
+    // The placed panels by column: a panel is only compared with those that share one of its columns.
+    const lanes: GridPanel[][] = Array.from({ length: columns }, () => []);
+    const out = new Array<GridPanel>(input.length);
+    const hits = (p: GridRect): GridPanel[] => {
+        const found: GridPanel[] = [];
 
-    for (const { panel } of [...first, ...rest]) {
+        for (let c = Math.max(p.col, 0); c < Math.min(p.col + p.sizeX, columns); c++) {
+            for (const q of lanes[c]) {
+                // A panel spanning several of the columns is met in each: it counts once.
+                if (overlaps(p, q) && !found.includes(q)) found.push(q);
+            }
+        }
+
+        return found;
+    };
+
+    for (const { panel, index } of [...first, ...rest]) {
         const next = { ...panel };
 
         if (floating && next.id !== priority) while (next.row > 0 && !hits({ ...next, row: next.row - 1 }).length) next.row--;
@@ -62,11 +100,13 @@ export function resolve(panels: PanelModel[], columns: number, floating = true, 
         // Pushed below whatever is in the way, repeating because the new row can meet something else.
         for (let found = hits(next); found.length; found = hits(next)) next.row = Math.max(...found.map((q) => q.row + q.sizeY));
 
-        placed.push(next);
+        for (let c = next.col; c < next.col + next.sizeX; c++) lanes[c]?.push(next);
+
+        out[index] = next;
     }
 
     // The caller's order is kept, so that the result lines up with the input.
-    return panels.map((p) => placed.find((q) => q.id === p.id)!);
+    return out;
 }
 
 /** The layout with `id` moved to `row` and `col`, the others making way. */
@@ -101,7 +141,8 @@ export function findSpot(panels: GridRect[], sizeX: number, sizeY: number, colum
 }
 
 /** The layout as a single column: reading order, full width, original heights. For a narrow screen. */
-export function stack(panels: PanelModel[]): GridPanel[] {
+export function stack(source: PanelModel[]): GridPanel[] {
+    const panels = uniqueIds(source);
     const order = panels.map((p, index) => ({ p, index })).sort((a, b) => (a.p.row ?? 0) - (b.p.row ?? 0) || (a.p.col ?? 0) - (b.p.col ?? 0) || a.index - b.index);
     let row = 0;
     const out = new Map<string, GridPanel>();
