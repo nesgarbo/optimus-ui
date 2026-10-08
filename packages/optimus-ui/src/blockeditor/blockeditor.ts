@@ -25,7 +25,7 @@ import { SharedModule } from '@openng/optimus-ui/api';
 import { PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { BaseEditableHolder } from '@openng/optimus-ui/baseeditableholder';
 import { Bind } from '@openng/optimus-ui/bind';
-import type { BlockChangeEvent, BlockCommand, BlockContent, BlockEditorPassThrough, BlockFormat, BlockImageRequest } from '@openng/optimus-ui/types/blockeditor';
+import type { BlockChangeEvent, BlockCommand, BlockContent, BlockEditorMessages, BlockEditorPassThrough, BlockFormat, BlockImageRequest } from '@openng/optimus-ui/types/blockeditor';
 import type { Editor, Range } from '@tiptap/core';
 import { DEFAULT_BLOCK_COMMANDS, filterCommands, normalizeUrl, stepIndex } from './block-commands';
 import { BlockEditorStyle } from './style/blockeditorstyle';
@@ -54,6 +54,28 @@ interface BubbleState {
 /** A value the editor can hold. */
 export type BlockValue = BlockContent | string | null;
 
+let nextSlashId = 0;
+
+const MESSAGES: BlockEditorMessages = {
+    editor: 'Editor',
+    dragHandle: 'Drag to move the block',
+    format: 'Format',
+    bold: 'Bold',
+    italic: 'Italic',
+    strikethrough: 'Strikethrough',
+    code: 'Code',
+    link: 'Link',
+    linkPlaceholder: 'Paste a link',
+    linkAddress: 'Link address',
+    apply: 'Apply',
+    remove: 'Remove',
+    blocks: 'Blocks',
+    noBlocks: 'No blocks match',
+    startFailed: 'The editor could not be started',
+    pictureAddFailed: 'The picture could not be added',
+    pictureUnreadable: 'The picture could not be read'
+};
+
 const EMPTY_DOC: BlockContent = { type: 'doc', content: [{ type: 'paragraph' }] };
 
 /**
@@ -73,13 +95,13 @@ const EMPTY_DOC: BlockContent = { type: 'doc', content: [{ type: 'paragraph' }] 
     standalone: true,
     imports: [SharedModule],
     template: `
-        <div #content [class]="cx('content')" [attr.aria-label]="ariaLabel() || 'Editor'" role="textbox" aria-multiline="true"></div>
+        <div #content [class]="cx('content')"></div>
         @if (handle(); as h) {
             <button
                 type="button"
                 class="p-blockeditor-handle"
-                aria-label="Drag to move the block"
-                title="Drag to move the block"
+                [attr.aria-label]="text().dragHandle"
+                [attr.title]="text().dragHandle"
                 [style.top.px]="h.y"
                 (pointerdown)="onHandleDown($event)"
                 (pointermove)="onHandleMove($event)"
@@ -94,26 +116,35 @@ const EMPTY_DOC: BlockContent = { type: 'doc', content: [{ type: 'paragraph' }] 
             <div class="p-blockeditor-drop" [style.top.px]="dropLine()"></div>
         }
         @if (bubble(); as b) {
-            <div [class]="cx('bubble')" role="toolbar" aria-label="Format" [style.left.px]="b.x" [style.top.px]="b.y" (mousedown)="$event.preventDefault()">
+            <div [class]="cx('bubble')" role="toolbar" [attr.aria-label]="text().format" [style.left.px]="b.x" [style.top.px]="b.y" (mousedown)="$event.preventDefault()">
                 @if (linking()) {
-                    <input #linkInput type="url" placeholder="Paste a link" aria-label="Link address" [value]="linkValue()" (input)="linkValue.set($any($event.target).value)" (keydown)="onLinkKey($event)" />
-                    <button type="button" [class]="cx('bubbleButton', { active: false })" (click)="applyLink()">Apply</button>
+                    <input #linkInput type="url" [attr.placeholder]="text().linkPlaceholder" [attr.aria-label]="text().linkAddress" [value]="linkValue()" (input)="linkValue.set($any($event.target).value)" (keydown)="onLinkKey($event)" />
+                    <button type="button" [class]="cx('bubbleButton', { active: false })" (click)="applyLink()">{{ text().apply }}</button>
                     @if (activeMarks().link) {
-                        <button type="button" [class]="cx('bubbleButton', { active: false })" (click)="removeLink()">Remove</button>
+                        <button type="button" [class]="cx('bubbleButton', { active: false })" (click)="removeLink()">{{ text().remove }}</button>
                     }
                 } @else {
-                    <button type="button" [class]="cx('bubbleButton', { active: activeMarks().bold })" aria-label="Bold" [attr.aria-pressed]="activeMarks().bold" (click)="toggle('bold')"><b>B</b></button>
-                    <button type="button" [class]="cx('bubbleButton', { active: activeMarks().italic })" aria-label="Italic" [attr.aria-pressed]="activeMarks().italic" (click)="toggle('italic')"><i>I</i></button>
-                    <button type="button" [class]="cx('bubbleButton', { active: activeMarks().strike })" aria-label="Strikethrough" [attr.aria-pressed]="activeMarks().strike" (click)="toggle('strike')"><s>S</s></button>
-                    <button type="button" [class]="cx('bubbleButton', { active: activeMarks().code })" aria-label="Code" [attr.aria-pressed]="activeMarks().code" (click)="toggle('code')">&lt;/&gt;</button>
-                    <button type="button" [class]="cx('bubbleButton', { active: activeMarks().link })" aria-label="Link" [attr.aria-pressed]="activeMarks().link" (click)="startLink()">🔗</button>
+                    <button type="button" [class]="cx('bubbleButton', { active: activeMarks().bold })" [attr.aria-label]="text().bold" [attr.aria-pressed]="activeMarks().bold" (click)="toggle('bold')"><b>B</b></button>
+                    <button type="button" [class]="cx('bubbleButton', { active: activeMarks().italic })" [attr.aria-label]="text().italic" [attr.aria-pressed]="activeMarks().italic" (click)="toggle('italic')"><i>I</i></button>
+                    <button type="button" [class]="cx('bubbleButton', { active: activeMarks().strike })" [attr.aria-label]="text().strikethrough" [attr.aria-pressed]="activeMarks().strike" (click)="toggle('strike')"><s>S</s></button>
+                    <button type="button" [class]="cx('bubbleButton', { active: activeMarks().code })" [attr.aria-label]="text().code" [attr.aria-pressed]="activeMarks().code" (click)="toggle('code')">&lt;/&gt;</button>
+                    <button type="button" [class]="cx('bubbleButton', { active: activeMarks().link })" [attr.aria-label]="text().link" [attr.aria-pressed]="activeMarks().link" (click)="startLink()">🔗</button>
                 }
             </div>
         }
         @if (slash(); as s) {
-            <div [class]="cx('slash')" role="listbox" aria-label="Blocks" [style.left.px]="s.x" [style.top.px]="s.y" (mousedown)="$event.preventDefault()">
+            <div [class]="cx('slash')" role="listbox" [attr.aria-label]="text().blocks" [attr.id]="slashId" [style.left.px]="s.x" [style.top.px]="s.y" (mousedown)="$event.preventDefault()">
                 @for (item of s.items; track item.id; let i = $index) {
-                    <button type="button" role="option" [class]="cx('slashItem', { active: i === s.index })" [attr.aria-selected]="i === s.index" (mouseenter)="hoverSlash(i)" (click)="runSlash(item, s.range)">
+                    <button
+                        type="button"
+                        role="option"
+                        tabindex="-1"
+                        [attr.id]="slashId + '-' + i"
+                        [class]="cx('slashItem', { active: i === s.index })"
+                        [attr.aria-selected]="i === s.index"
+                        (mouseenter)="hoverSlash(i)"
+                        (click)="runSlash(item, s.range)"
+                    >
                         <span class="p-blockeditor-slash-icon" aria-hidden="true">{{ item.icon }}</span>
                         <span class="p-blockeditor-slash-text">
                             {{ item.label }}
@@ -123,7 +154,7 @@ const EMPTY_DOC: BlockContent = { type: 'doc', content: [{ type: 'paragraph' }] 
                         </span>
                     </button>
                 } @empty {
-                    <div class="p-blockeditor-slash-empty">No blocks match</div>
+                    <div class="p-blockeditor-slash-empty">{{ text().noBlocks }}</div>
                 }
             </div>
         }
@@ -171,6 +202,13 @@ export class BlockEditor extends BaseEditableHolder<BlockEditorPassThrough> {
      * @group Props
      */
     readonly placeholder = input("Type '/' for blocks");
+    /**
+     * Replaces the texts the editor shows and announces. Entries left out keep the English default.
+     * @group Props
+     */
+    readonly messages = input<Partial<BlockEditorMessages>>({});
+    /** The text, with the replacements the `messages` input makes. @internal */
+    readonly text = computed<BlockEditorMessages>(() => ({ ...MESSAGES, ...this.messages() }));
     /**
      * The entries of the slash menu. Defaults to text, three headings, three lists, a quote, code, a divider and an image.
      * @group Props
@@ -251,6 +289,9 @@ export class BlockEditor extends BaseEditableHolder<BlockEditorPassThrough> {
     /** What was last put into `value` by the editor, so that it is not put back into the editor. */
     private lastEmitted: BlockValue | undefined = undefined;
     private drag: { from: number; to: number } | null = null;
+    protected readonly slashId = `p-blockeditor-slash-${nextSlashId++}`;
+    private destroyed = false;
+    private blurTimer: ReturnType<typeof setTimeout> | null = null;
     private slashCommand: ((item: BlockCommand) => void) | null = null;
 
     constructor() {
@@ -276,6 +317,17 @@ export class BlockEditor extends BaseEditableHolder<BlockEditorPassThrough> {
                 },
                 { injector: this.injector }
             );
+            // The editable element is the textbox, so its name and the menu it controls are set there.
+            effect(
+                () => {
+                    const label = this.ariaLabel() || this.text().editor;
+                    const locked = this.locked();
+                    const item = this.slash();
+
+                    untracked(() => this.describe(label, locked, item));
+                },
+                { injector: this.injector }
+            );
             effect(
                 () => {
                     // The link box takes the focus when it opens.
@@ -288,6 +340,11 @@ export class BlockEditor extends BaseEditableHolder<BlockEditorPassThrough> {
         });
 
         this.destroyRef.onDestroy(() => {
+            this.destroyed = true;
+
+            if (this.blurTimer) clearTimeout(this.blurTimer);
+
+            this.blurTimer = null;
             this.editor?.destroy();
             this.editor = null;
         });
@@ -316,7 +373,8 @@ export class BlockEditor extends BaseEditableHolder<BlockEditorPassThrough> {
                 import('@tiptap/suggestion')
             ]);
 
-            if (!this.contentRef()) return;
+            // The component can be gone by the time Tiptap arrives; there is nothing to create or to destroy then.
+            if (this.destroyed) return;
 
             const self = this;
             const Slash = core.Extension.create({
@@ -363,10 +421,14 @@ export class BlockEditor extends BaseEditableHolder<BlockEditorPassThrough> {
                 ],
                 content: this.toContent(this.value()),
                 editable: !this.locked(),
+                editorProps: { attributes: { role: 'textbox', 'aria-multiline': 'true', 'aria-label': this.ariaLabel() || this.text().editor } },
                 autofocus: this.autofocus() ? 'end' : false,
                 onUpdate: ({ editor }) => this.afterUpdate(editor),
                 onSelectionUpdate: ({ editor }) => this.afterSelection(editor),
                 onFocus: ({ editor }) => {
+                    if (this.blurTimer) clearTimeout(this.blurTimer);
+
+                    this.blurTimer = null;
                     this.focused.set(true);
                     // A selection made before the focus arrived has its toolbar now.
                     this.afterSelection(editor);
@@ -377,15 +439,40 @@ export class BlockEditor extends BaseEditableHolder<BlockEditorPassThrough> {
                     this.touch.emit();
 
                     // A click on the toolbar keeps the focus in the editor; anything else closes it.
-                    setTimeout(() => {
+                    if (this.blurTimer) clearTimeout(this.blurTimer);
+
+                    this.blurTimer = setTimeout(() => {
+                        this.blurTimer = null;
+
                         if (!this.focused() && !this.linking()) this.bubble.set(null);
                     }, 150);
                 }
             });
             this.isEmpty.set(this.editor.isEmpty);
+            this.describe(this.ariaLabel() || this.text().editor, this.locked(), this.slash());
             this.ready.emit(this.editor);
         } catch (error) {
-            this.failed.emit(error instanceof Error ? error.message : 'The editor could not be started');
+            if (this.destroyed) return;
+
+            this.failed.emit(error instanceof Error ? error.message : this.text().startFailed);
+        }
+    }
+
+    /** Sets what assistive technology reads on the editable element: its name, and the open menu with its highlighted entry. */
+    private describe(label: string, locked: boolean, slash: SlashState | null): void {
+        const dom = this.editor?.view.dom;
+
+        if (!dom) return;
+
+        dom.setAttribute('aria-label', label);
+        dom.setAttribute('aria-readonly', String(locked));
+
+        if (slash) {
+            dom.setAttribute('aria-controls', this.slashId);
+            dom.setAttribute('aria-activedescendant', `${this.slashId}-${slash.index}`);
+        } else {
+            dom.removeAttribute('aria-controls');
+            dom.removeAttribute('aria-activedescendant');
         }
     }
 
@@ -630,7 +717,7 @@ export class BlockEditor extends BaseEditableHolder<BlockEditorPassThrough> {
 
             url = supplied ?? (uploader ? await uploader(file) : await this.readAsDataUrl(file));
         } catch (error) {
-            this.failed.emit(error instanceof Error ? error.message : 'The picture could not be added');
+            this.failed.emit(error instanceof Error ? error.message : this.text().pictureAddFailed);
 
             return;
         }
@@ -648,7 +735,7 @@ export class BlockEditor extends BaseEditableHolder<BlockEditorPassThrough> {
             const reader = new FileReader();
 
             reader.onload = () => resolve(String(reader.result));
-            reader.onerror = () => reject(new Error('The picture could not be read'));
+            reader.onerror = () => reject(new Error(this.text().pictureUnreadable));
             reader.readAsDataURL(file);
         });
     }
@@ -679,13 +766,22 @@ export class BlockEditor extends BaseEditableHolder<BlockEditorPassThrough> {
         const a = doc.child(first);
         const b = doc.child(first + 1);
         const end = start + a.nodeSize + b.nodeSize;
-        // The cursor goes with its block: its offset inside the block is kept.
-        const offset = $from.pos - $from.start(1) + 1;
         const tr = state.tr.replaceWith(start, end, [b, a]);
         const moved = by === 1 ? start + b.nodeSize : start;
-        const selectionClass = state.selection.constructor as unknown as { near: (pos: ReturnType<typeof tr.doc.resolve>) => typeof state.selection };
+        const selectionClass = state.selection.constructor as unknown as {
+            near: (pos: ReturnType<typeof tr.doc.resolve>) => typeof state.selection;
+            create?: (doc: typeof tr.doc, from: number) => typeof state.selection;
+        };
 
-        tr.setSelection(selectionClass.near(tr.doc.resolve(Math.min(moved + offset, tr.doc.content.size))));
+        if ($from.depth === 0) {
+            // A node selected as a whole (a picture block, a divider) has no cursor offset: the selection follows the block.
+            tr.setSelection(selectionClass.create ? selectionClass.create(tr.doc, moved) : selectionClass.near(tr.doc.resolve(Math.min(moved + 1, tr.doc.content.size))));
+        } else {
+            // The cursor goes with its block: its offset inside the block is kept.
+            const offset = $from.pos - $from.start(1) + 1;
+
+            tr.setSelection(selectionClass.near(tr.doc.resolve(Math.min(moved + offset, tr.doc.content.size))));
+        }
         view.dispatch(tr.scrollIntoView());
 
         return true;

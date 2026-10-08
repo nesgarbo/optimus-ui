@@ -207,6 +207,21 @@ describe('Data Matrix, PDF417, logos and the other symbologies', () => {
         expect(root().querySelectorAll('p-qrcode svg rect').length).toBeGreaterThanOrEqual(2);
     });
 
+    it('exports a QR Code with a logo, and keeps the last logo asked for', async () => {
+        const red = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10" fill="red"/></svg>';
+        const blue = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10" fill="blue"/></svg>';
+
+        host.logo.set({ imageSource: red, width: 50, height: 50 });
+        await fixture.whenStable();
+        host.logo.set({ imageSource: blue, width: 50, height: 50 });
+        await fixture.whenStable();
+        await new Promise((r) => setTimeout(r, 300));
+
+        // `crossOrigin` is set on the logo, so the canvas of the export can be read back.
+        expect(host.qr().exportAsBase64('png')).toMatch(/^data:image\/png/);
+        expect(root().querySelector('p-qrcode svg image')!.getAttribute('href')).toBe(blue);
+    });
+
     it('draws Codabar, Code 11 and Code 39 Extended, and says why a value does not fit', async () => {
         expect(root().querySelector('p-barcode svg path')!.getAttribute('d')!.length).toBeGreaterThan(50);
 

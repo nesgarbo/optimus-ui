@@ -53,6 +53,17 @@ export interface MapLayerClickEvent extends MapPointerEvent {
 export type MapLayerType = 'fill' | 'line' | 'circle' | 'symbol' | 'heatmap' | 'fill-extrusion';
 
 /**
+ * The text the map shows when it fails. Every entry can be replaced through the `messages` input.
+ * @group Types
+ */
+export interface MapMessages {
+    /** Message when the map could not be loaded and the error carries none. */
+    loadFailed: string;
+    /** Message when the map could not be started and the error carries none. */
+    startFailed: string;
+}
+
+/**
  * Pass-through options.
  * @group Interface
  */

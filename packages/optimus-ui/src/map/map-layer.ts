@@ -1,6 +1,6 @@
-import { booleanAttribute, ChangeDetectionStrategy, Component, DestroyRef, effect, inject, input, numberAttribute, output, untracked, ViewEncapsulation } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, effect, inject, input, NgZone, numberAttribute, output, untracked, ViewEncapsulation } from '@angular/core';
 import type { MapLayerClickEvent, MapLayerType } from '@openng/optimus-ui/types/map';
-import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
+import type { GeoJSONSource, Map as MaplibreMap, MapLayerMouseEvent } from 'maplibre-gl';
 import { MAP_CONTEXT } from './map-context';
 
 let nextId = 0;
@@ -23,7 +23,7 @@ let nextId = 0;
 })
 export class MapLayer {
     private readonly context = inject(MAP_CONTEXT);
-    private readonly destroyRef = inject(DestroyRef);
+    private readonly zone = inject(NgZone);
 
     /**
      * Identifies the layer. Made up when it is left out.
@@ -87,27 +87,40 @@ export class MapLayer {
      */
     readonly layerClick = output<MapLayerClickEvent>();
 
+    private placedBefore: string | undefined;
+
     private readonly sourceId = () => `${this.id()}-source`;
 
     constructor() {
-        effect(() => {
+        // The layer is made again when what cannot be changed in place (id, type, cluster) changes, and when a new style has replaced
+        // the one it was in.
+        effect((onCleanup) => {
             const map = this.context.map();
+
+            this.context.styleVersion();
 
             if (!map) return;
 
-            const id = untracked(() => this.id());
+            const id = this.id();
+            const type = this.type();
+            const cluster = this.cluster();
             const source = `${id}-source`;
-            const type = untracked(() => this.type());
             const onClick = (e: MapLayerMouseEvent) => {
                 const f = e.features?.[0];
 
                 if (!f) return;
 
-                this.layerClick.emit({ lngLat: [e.lngLat.lng, e.lngLat.lat], point: [e.point.x, e.point.y], originalEvent: e.originalEvent, feature: { id: f.id, properties: f.properties, geometry: f.geometry } });
+                this.zone.run(() => this.layerClick.emit({ lngLat: [e.lngLat.lng, e.lngLat.lat], point: [e.point.x, e.point.y], originalEvent: e.originalEvent, feature: { id: f.id, properties: f.properties, geometry: f.geometry } }));
             };
+            const onEnter = () => (map.getCanvas().style.cursor = 'pointer');
+            const onLeave = () => (map.getCanvas().style.cursor = '');
 
             untracked(() => {
-                map.addSource(source, { type: 'geojson', data: (this.data() ?? { type: 'FeatureCollection', features: [] }) as never, cluster: this.cluster() });
+                // A style that is still loading cannot take sources.
+                if (map.getSource(source) || map.getLayer(id)) this.remove(map, id, source);
+
+                map.addSource(source, { type: 'geojson', data: (this.data() ?? { type: 'FeatureCollection', features: [] }) as never, cluster });
+                this.placedBefore = this.beforeId();
                 map.addLayer(
                     {
                         id,
@@ -122,28 +135,62 @@ export class MapLayer {
                     this.beforeId()
                 );
                 map.on('click', id, onClick);
-                map.on('mouseenter', id, () => (map.getCanvas().style.cursor = 'pointer'));
-                map.on('mouseleave', id, () => (map.getCanvas().style.cursor = ''));
+                map.on('mouseenter', id, onEnter);
+                map.on('mouseleave', id, onLeave);
             });
 
-            return () => {
+            // `effect` runs what is given to `onCleanup` before it runs again and when the layer goes; a function that is returned does not.
+            onCleanup(() => {
                 // The map may already be gone, or its style replaced, when the layer is.
                 try {
                     map.off('click', id, onClick);
-
-                    if (map.getLayer(id)) map.removeLayer(id);
-                    if (map.getSource(source)) map.removeSource(source);
+                    map.off('mouseenter', id, onEnter);
+                    map.off('mouseleave', id, onLeave);
+                    onLeave();
+                    this.remove(map, id, source);
                 } catch {
                     // Nothing to remove.
                 }
-            };
+            });
         });
 
         effect(() => {
             const data = this.data() ?? { type: 'FeatureCollection', features: [] };
             const map = this.context.map();
 
+            this.context.styleVersion();
+
             untracked(() => (map?.getSource(this.sourceId()) as GeoJSONSource | undefined)?.setData(data as never));
+        });
+
+        effect(() => {
+            const min = this.minZoom();
+            const max = this.maxZoom();
+            const map = this.context.map();
+
+            this.context.styleVersion();
+
+            untracked(() => {
+                const id = this.id();
+
+                if (map?.getLayer(id)) map.setLayerZoomRange(id, min, max);
+            });
+        });
+
+        effect(() => {
+            const before = this.beforeId();
+            const map = this.context.map();
+
+            untracked(() => {
+                const id = this.id();
+
+                // Only a change of `beforeId` moves the layer; its place is kept when it is made again.
+                if (before === this.placedBefore) return;
+
+                this.placedBefore = before;
+
+                if (map?.getLayer(id)) map.moveLayer(id, before);
+            });
         });
 
         effect(() => {
@@ -152,6 +199,8 @@ export class MapLayer {
             const visible = this.visible();
             const filter = this.filter();
             const map = this.context.map();
+
+            this.context.styleVersion();
 
             untracked(() => {
                 const id = this.id();
@@ -165,5 +214,10 @@ export class MapLayer {
                 map.setFilter(id, (filter as never) ?? null);
             });
         });
+    }
+
+    private remove(map: MaplibreMap, id: string, source: string): void {
+        if (map.getLayer(id)) map.removeLayer(id);
+        if (map.getSource(source)) map.removeSource(source);
     }
 }

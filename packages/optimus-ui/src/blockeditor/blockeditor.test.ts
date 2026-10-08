@@ -14,13 +14,23 @@ const p = (text: string): BlockContent => ({ type: 'paragraph', content: [{ type
     standalone: true,
     imports: [BlockEditor],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    template: `<p-blockeditor [(value)]="value" [format]="format()" [readonly]="locked()" [uploadImage]="upload" (changed)="changes.push($event.html)" (imageRequested)="requests = requests + 1" (touch)="touched = touched + 1" />`
+    template: `<p-blockeditor
+        [(value)]="value"
+        [format]="format()"
+        [readonly]="locked()"
+        [uploadImage]="upload"
+        [messages]="messages()"
+        (changed)="changes.push($event.html)"
+        (imageRequested)="requests = requests + 1"
+        (touch)="touched = touched + 1"
+    />`
 })
 class Host {
     readonly editor = viewChild.required(BlockEditor);
     value = signal<BlockValue>(doc(p('Hello'), p('World')));
     format = signal<'json' | 'html'>('json');
     locked = signal(false);
+    messages = signal<Record<string, string>>({});
     changes: string[] = [];
     requests = 0;
     touched = 0;
@@ -259,6 +269,56 @@ describe('BlockEditor', () => {
         ed().moveBlockDown();
         await settle();
         expect(ed().getText()).toBe('Hello\n\nWorld');
+    });
+
+    it('puts the textbox role on the editable element, and the open menu on it', async () => {
+        const dom = tip().view.dom;
+
+        expect(dom.getAttribute('role')).toBe('textbox');
+        expect(dom.getAttribute('aria-label')).toBeTruthy();
+        expect(root().querySelectorAll('[role="textbox"]')).toHaveLength(1);
+
+        await type('/');
+
+        const list = root().querySelector('[role="listbox"]')!;
+
+        expect(dom.getAttribute('aria-controls')).toBe(list.id);
+        expect(
+            root()
+                .querySelector(`#${dom.getAttribute('aria-activedescendant')}`)
+                ?.getAttribute('role')
+        ).toBe('option');
+    });
+
+    it('names the menu and the editor in English, and from `messages` when given', async () => {
+        await type('/');
+        expect(root().querySelector('[role="listbox"]')!.getAttribute('aria-label')).toBe('Blocks');
+
+        host.messages.set({ blocks: 'Bloques', editor: 'Editor de texto' });
+        await settle();
+
+        expect(root().querySelector('[role="listbox"]')!.getAttribute('aria-label')).toBe('Bloques');
+        expect(tip().view.dom.getAttribute('aria-label')).toBe('Editor de texto');
+    });
+
+    it('moves a block that is selected as a whole', async () => {
+        tip().commands.focus('end');
+        tip().chain().focus().setHorizontalRule().run();
+        await settle();
+
+        const before = ed()
+            .getJSON()
+            .content!.map((b) => b.type);
+
+        tip().commands.setNodeSelection(tip().state.doc.content.size - tip().state.doc.lastChild!.nodeSize);
+        tip().view.dom.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', altKey: true, bubbles: true }));
+        await settle();
+
+        expect(
+            ed()
+                .getJSON()
+                .content!.map((b) => b.type)
+        ).not.toEqual(before);
     });
 
     describe('drag handle', () => {

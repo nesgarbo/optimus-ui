@@ -10,6 +10,8 @@ export interface MapContext {
     readonly map: Signal<MapLibreMap | null>;
     /** The MapLibre module, once it is loaded. */
     readonly lib: Signal<typeof import('maplibre-gl') | null>;
+    /** Counts the styles that have loaded. A layer reads it to put itself back after `setStyle`. */
+    readonly styleVersion: Signal<number>;
 }
 
 export const MAP_CONTEXT = new InjectionToken<MapContext>('MAP_CONTEXT');

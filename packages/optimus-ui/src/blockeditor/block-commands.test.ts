@@ -55,5 +55,7 @@ describe('link addresses', () => {
         expect(normalizeUrl('just words')).toBeNull();
         expect(normalizeUrl('javascript:alert(1)')).toBeNull();
         expect(normalizeUrl('data:text/html,<script>')).toBeNull();
+        expect(normalizeUrl('//evil.com')).toBeNull();
+        expect(normalizeUrl('/\\evil.com')).toBeNull();
     });
 });

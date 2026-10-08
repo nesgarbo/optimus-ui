@@ -56,7 +56,8 @@ export function normalizeUrl(input: string): string | null {
     if (!text) return null;
     if (/^(https?:|mailto:|tel:)/i.test(text)) return text;
     if (/^[\w.+-]+@[\w-]+(\.[\w-]+)+$/.test(text)) return `mailto:${text}`;
-    if (/^(\/|#|\.\/)/.test(text)) return text;
+    // A path starts with one slash: `//host` and `/\host` are addresses of another site that borrow the scheme of the page.
+    if (/^(\/(?![\/\\])|#|\.\/)/.test(text)) return text;
     // A bare address such as `example.com/page` gets a scheme.
     if (/^[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(text)) return `https://${text}`;
 

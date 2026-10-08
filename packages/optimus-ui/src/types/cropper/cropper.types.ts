@@ -48,6 +48,17 @@ export interface CropperChangeEvent {
 }
 
 /**
+ * The text the cropper announces. Every entry can be replaced through the `messages` input.
+ * @group Types
+ */
+export interface CropperMessages {
+    /** Name of the crop area for assistive technology when the image has no `alt`. */
+    imageToCrop: string;
+    /** Error of the `failed` event when the image cannot be loaded. */
+    imageLoadFailed: string;
+}
+
+/**
  * Pass-through options.
  * @group Interface
  */

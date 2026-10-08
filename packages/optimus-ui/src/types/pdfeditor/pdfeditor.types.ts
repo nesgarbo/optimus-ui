@@ -1,6 +1,99 @@
 import type { PassThrough, PassThroughOption } from '@openng/optimus-ui/api';
 
 /**
+ * The text the PDF editor shows and announces. Every entry can be replaced through the `messages` input.
+ * @group Types
+ */
+export interface PdfEditorMessages {
+    /** Name of the toolbar. */
+    toolbar: string;
+    /** Button that shows or hides the page thumbnails. */
+    thumbnails: string;
+    /** Button to the previous page. */
+    previousPage: string;
+    /** Button to the next page. */
+    nextPage: string;
+    /** Button that zooms out. */
+    zoomOut: string;
+    /** Button that zooms in. */
+    zoomIn: string;
+    /** Button that fits the page to the width. */
+    fitWidth: string;
+    /** Name of the group of drawing tools. */
+    tool: string;
+    /** Select tool. */
+    toolSelect: string;
+    /** Text tool. Also names the text box while editing. */
+    toolText: string;
+    /** Highlight tool. */
+    toolHighlight: string;
+    /** Rectangle tool. */
+    toolRectangle: string;
+    /** Ellipse tool. */
+    toolEllipse: string;
+    /** Line tool. */
+    toolLine: string;
+    /** Arrow tool. */
+    toolArrow: string;
+    /** Freehand tool. */
+    toolDraw: string;
+    /** Image tool. */
+    toolImage: string;
+    /** Signature tool. */
+    toolSignature: string;
+    /** Colour picker. */
+    colour: string;
+    /** Line width select. */
+    lineWidth: string;
+    /** Font size select. */
+    fontSize: string;
+    /** Font select. */
+    font: string;
+    /** Undo button. */
+    undo: string;
+    /** Redo button. */
+    redo: string;
+    /** Button that deletes the selected annotation. */
+    deleteSelected: string;
+    /** Button that rotates the page. */
+    rotatePage: string;
+    /** Button that adds a blank page. */
+    addBlankPage: string;
+    /** Button that merges another PDF. */
+    mergePdf: string;
+    /** Button that deletes the page. */
+    deletePage: string;
+    /** Button that saves the file. */
+    save: string;
+    /** Name of the thumbnail list. */
+    pages: string;
+    /** Name of a thumbnail. `{page}` is replaced. */
+    page: string;
+    /** Name of the page canvas. `{page}` and `{count}` are replaced. */
+    pageOf: string;
+    /** Shown while the document loads. */
+    loading: string;
+    /** Shown when there is no document. */
+    noDocument: string;
+    /** Error when the document cannot be opened and the cause gives no message. */
+    openFailed: string;
+    /** Error when the request fails. `{status}` is replaced. */
+    loadFailed: string;
+    /** Error when the bytes are not a PDF. */
+    notPdf: string;
+    /** Error when a picture is too big. */
+    pictureTooBig: string;
+    /** Error when a picture cannot be read. */
+    pictureUnreadable: string;
+    /** Error when a picture cannot be placed. */
+    picturePlaceFailed: string;
+    /** Error when a page change fails and the cause gives no message. */
+    changeFailed: string;
+    /** Error of `save` when there is no document. */
+    noDocumentError: string;
+}
+
+/**
  * What the pointer does on the page.
  * @group Types
  */

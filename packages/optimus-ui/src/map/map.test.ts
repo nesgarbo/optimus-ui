@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, provideZonelessChangeDetection, signal, viewChild } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { Map } from './map';
+import type { StyleSpecification } from 'maplibre-gl';
+import { EMPTY_MAP_STYLE, Map } from './map';
 import { MapLayer } from './map-layer';
 import { MapMarker } from './map-marker';
 
@@ -35,6 +36,7 @@ const polygon = {
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
         <p-map
+            [mapStyle]="mapStyle()"
             [(center)]="center"
             [(zoom)]="zoom"
             [(bearing)]="bearing"
@@ -46,7 +48,7 @@ const polygon = {
             [scaleControl]="true"
         >
             @for (m of markers(); track m.id) {
-                <p-map-marker [lngLat]="m.at" [popupText]="m.text" [draggable]="true" (pinClick)="pins = pins + 1" />
+                <p-map-marker [lngLat]="m.at" [popupText]="m.text" [defaultLabel]="markerName()" [anchor]="anchor()" [draggable]="true" (pinClick)="pins = pins + 1" />
             }
             <p-map-layer id="box" type="fill" [data]="data()" [paint]="{ 'fill-color': '#f43f5e', 'fill-opacity': 0.5 }" [visible]="visible()" (layerClick)="features.push($event.feature.properties)" />
         </p-map>
@@ -62,6 +64,9 @@ class Host {
     markers = signal([{ id: 1, at: [0, 0] as [number, number], text: 'Null Island' }]);
     data = signal<object>(polygon);
     visible = signal(true);
+    markerName = signal('Marker');
+    anchor = signal<'bottom' | 'top'>('bottom');
+    mapStyle = signal<StyleSpecification>(EMPTY_MAP_STYLE);
     loadedCount = 0;
     moves: number[] = [];
     clicks: [number, number][] = [];
@@ -144,6 +149,16 @@ describe('Map', () => {
         expect(root().querySelector('.maplibregl-popup-content')?.textContent).toContain('Null Island');
     });
 
+    it('names a pin with neither label nor text from `defaultLabel`', async () => {
+        host.markers.set([{ id: 7, at: [0, 0], text: '' }]);
+        await settle();
+        expect((root().querySelector('.maplibregl-marker') as HTMLElement).getAttribute('aria-label')).toBe('Marker');
+
+        host.markerName.set('Marcador');
+        await settle();
+        expect((root().querySelector('.maplibregl-marker') as HTMLElement).getAttribute('aria-label')).toBe('Marcador');
+    });
+
     it('adds and removes markers as the list changes', async () => {
         host.markers.set([
             { id: 1, at: [0, 0], text: 'a' },
@@ -207,5 +222,51 @@ describe('Map', () => {
     it('has the controls it was asked for', () => {
         expect(root().querySelector('.maplibregl-ctrl-zoom-in')).not.toBeNull();
         expect(root().querySelector('.maplibregl-ctrl-scale')).not.toBeNull();
+    });
+
+    it('keeps its layers after the style is replaced', async () => {
+        expect(map().getLayer('box')).toBeTruthy();
+
+        host.mapStyle.set({ ...EMPTY_MAP_STYLE, layers: [{ id: 'background', type: 'background', paint: { 'background-color': '#abcdef' } }] });
+        await settle();
+        for (let i = 0; i < 30 && !map().getLayer('box'); i++) await wait(100);
+        await settle();
+
+        expect(map().getLayer('box')).toBeTruthy();
+        expect(map().getSource('box-source')).toBeTruthy();
+        expect(host.map().styleVersion()).toBeGreaterThan(1);
+    });
+
+    it('makes the pin a focusable button that opens with the keyboard', async () => {
+        const marker = root().querySelector('.maplibregl-marker') as HTMLElement;
+
+        expect(marker.getAttribute('role')).toBe('button');
+        expect(marker.getAttribute('tabindex')).toBe('0');
+
+        marker.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+        await settle();
+
+        expect(host.pins).toBe(1);
+    });
+
+    it('makes the pin again when its anchor changes', async () => {
+        host.anchor.set('top');
+        await settle();
+
+        expect(root().querySelectorAll('.maplibregl-marker')).toHaveLength(1);
+        expect(root().querySelector('.maplibregl-marker')?.className).toContain('maplibregl-marker-anchor-top');
+    });
+
+    it('does not start a map that is destroyed while the library loads', async () => {
+        const other = TestBed.createComponent(Host);
+
+        document.body.appendChild(other.nativeElement);
+        await other.whenStable();
+        const element = other.nativeElement as HTMLElement;
+
+        other.destroy();
+        await wait(300);
+
+        expect(element.querySelector('canvas')).toBeNull();
     });
 });

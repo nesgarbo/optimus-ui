@@ -1,4 +1,4 @@
-import { booleanAttribute, ChangeDetectionStrategy, Component, DestroyRef, effect, ElementRef, inject, input, model, numberAttribute, output, untracked, viewChild, ViewEncapsulation } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, DestroyRef, effect, ElementRef, inject, input, model, NgZone, numberAttribute, output, untracked, viewChild, ViewEncapsulation } from '@angular/core';
 import type { MapLngLat } from '@openng/optimus-ui/types/map';
 import type { Marker, Popup } from 'maplibre-gl';
 import { MAP_CONTEXT } from './map-context';
@@ -22,6 +22,7 @@ import { MAP_CONTEXT } from './map-context';
 export class MapMarker {
     private readonly context = inject(MAP_CONTEXT);
     private readonly destroyRef = inject(DestroyRef);
+    private readonly zone = inject(NgZone);
     private readonly content = viewChild.required<ElementRef<HTMLElement>>('content');
 
     /**
@@ -64,6 +65,11 @@ export class MapMarker {
      * @group Props
      */
     readonly label = input('');
+    /**
+     * Name for assistive technology when the pin has neither `label` nor `popupText`.
+     * @group Props
+     */
+    readonly defaultLabel = input('Marker');
 
     /**
      * Emitted when the pin is clicked.
@@ -78,38 +84,52 @@ export class MapMarker {
 
     private marker: Marker | null = null;
     private popup: Popup | null = null;
+    private popupDom = false;
 
     constructor() {
-        effect(() => {
+        effect((onCleanup) => {
             const map = this.context.map();
             const lib = this.context.lib();
+
+            // `anchor` cannot change in a MapLibre marker, so the pin is made again when it does.
+            const anchor = this.anchor();
 
             if (!map || !lib) return;
 
             untracked(() => {
-                const marker = new lib.Marker({ color: this.color(), draggable: this.draggable(), anchor: this.anchor(), rotation: this.rotation() }).setLngLat(this.lngLat()).addTo(map);
+                const marker = new lib.Marker({ color: this.color(), draggable: this.draggable(), anchor, rotation: this.rotation() }).setLngLat(this.lngLat()).addTo(map);
                 const element = marker.getElement();
 
-                element.setAttribute('role', 'img');
-                element.setAttribute('aria-label', this.label() || this.popupText() || 'Marker');
-                element.addEventListener('click', (event) => this.pinClick.emit(event));
+                // The pin takes the click and the keyboard, so it is a button: an image role would hide that from assistive technology.
+                element.setAttribute('role', 'button');
+                element.setAttribute('tabindex', '0');
+                element.setAttribute('aria-label', this.label() || this.popupText() || this.defaultLabel());
+                element.addEventListener('click', (event) => this.zone.run(() => this.pinClick.emit(event)));
+                element.addEventListener('keydown', (event) => {
+                    if (event.target !== element || (event.key !== 'Enter' && event.key !== ' ')) return;
+
+                    event.preventDefault();
+                    element.click();
+                });
                 marker.on('dragend', () => {
                     const p = marker.getLngLat();
 
-                    this.lngLat.set([p.lng, p.lat]);
-                    this.dragEnd.emit([p.lng, p.lat]);
+                    this.zone.run(() => {
+                        this.lngLat.set([p.lng, p.lat]);
+                        this.dragEnd.emit([p.lng, p.lat]);
+                    });
                 });
 
                 this.marker = marker;
                 this.syncPopup(lib);
             });
 
-            return () => {
+            onCleanup(() => {
                 this.marker?.remove();
                 this.popup?.remove();
                 this.marker = null;
                 this.popup = null;
-            };
+            });
         });
 
         // What can change while the pin is there.
@@ -118,11 +138,17 @@ export class MapMarker {
             const color = this.color();
             const draggable = this.draggable();
             const rotation = this.rotation();
+            const name = this.label() || this.popupText() || this.defaultLabel();
+
+            // The pin is made inside the first effect, so this one runs again when it is there.
+            this.context.map();
 
             untracked(() => {
                 const marker = this.marker;
 
                 if (!marker) return;
+
+                marker.getElement().setAttribute('aria-label', name);
 
                 const now = marker.getLngLat();
 
@@ -173,13 +199,20 @@ export class MapMarker {
 
         if (!this.popup) {
             this.popup = new lib.Popup({ offset: 24 });
+            this.popupDom = false;
             this.popup.on('open', () => this.popupOpen.set(true));
             this.popup.on('close', () => this.popupOpen.set(false));
             marker.setPopup(this.popup);
         }
 
-        if (text) this.popup.setText(text);
-        else this.popup.setDOMContent(content.cloneNode(true) as HTMLElement);
+        if (text) {
+            this.popup.setText(text);
+            this.popupDom = false;
+        } else if (!this.popupDom) {
+            // The element itself goes in, not a copy: what is written inside the tag keeps its bindings.
+            this.popup.setDOMContent(content);
+            this.popupDom = true;
+        }
 
         if (this.popupOpen() !== this.popup.isOpen()) marker.togglePopup();
     }

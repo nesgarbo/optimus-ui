@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PDFDocument, StandardFonts } from 'pdf-lib';
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { PdfAnnotation, PdfFormValues, PdfTextAnnotation } from '@openng/optimus-ui/types/pdfeditor';
-import { openDocument, renderPage } from './pdf-render';
+import { MAX_CANVAS_PIXELS, openDocument, renderPage } from './pdf-render';
 import { PdfEditor } from './pdfeditor';
 import { createTextMeasurer, exportPdf, loadPdf, needsUnicode, readForm, rotatePage } from './pdf-writer';
 
@@ -132,13 +132,52 @@ describe('PdfEditor', () => {
         expect(root().textContent).toContain('1 / 3');
 
         const canvas = root().querySelector('canvas.p-pdfeditor-canvas') as HTMLCanvasElement;
-        const data = canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height).data;
-        let dark = 0;
+        const darkPixels = () => {
+            const data = canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height).data;
+            let dark = 0;
 
-        for (let i = 0; i < data.length; i += 4) if (data[i] < 100) dark++;
+            for (let i = 0; i < data.length; i += 4) if (data[i] < 100) dark++;
+
+            return dark;
+        };
+
+        // The page is drawn after the document opens: wait for the drawing, not for a guessed time.
+        for (let i = 0; i < 100 && darkPixels() <= 50; i++) await wait(100);
 
         // The title of the page is black on white.
-        expect(dark).toBeGreaterThan(50);
+        expect(darkPixels()).toBeGreaterThan(50);
+    });
+
+    it('keeps the last document when two are opened at once', async () => {
+        const internal = editor() as unknown as { open(bytes: Uint8Array): Promise<void> };
+        const first = await makePdf(2);
+        const second = await makePdf(5);
+
+        // The first has not finished when the second starts: it must not land after it.
+        await Promise.all([internal.open(first), internal.open(second)]);
+        await wait(300);
+
+        expect(editor().pages()).toHaveLength(5);
+        expect(host.loadedCount).toBe(1);
+    });
+
+    it('does not draw a canvas bigger than a browser can take', async () => {
+        const doc = await openDocument(await makePdf(1));
+        const canvas = document.createElement('canvas');
+
+        await renderPage(doc, 0, canvas, 40, 1).promise;
+
+        expect(canvas.width * canvas.height).toBeLessThanOrEqual(MAX_CANVAS_PIXELS);
+        expect(canvas.style.width).toBe(`${300 * 40}px`);
+
+        await doc.loadingTask.destroy();
+    });
+
+    it('reports a picture it cannot place, without an unhandled rejection', async () => {
+        await open(await makePdf());
+        host.failures.length = 0;
+
+        await expect(editor().placePicture('data:image/png;base64,AAAA')).rejects.toThrow('The picture could not be read');
     });
 
     it('draws a thumbnail for each page', async () => {
@@ -595,3 +634,30 @@ class HostWithFont {
     annotations = signal<PdfAnnotation[]>([]);
     font = new URL('../../node_modules/pdfjs-dist/standard_fonts/LiberationSans-Regular.ttf', import.meta.url).href;
 }
+
+describe('PdfEditor messages', () => {
+    it('shows English by default and the replaced texts from `messages`', async () => {
+        await TestBed.configureTestingModule({ imports: [PdfEditor], providers: [provideZonelessChangeDetection()] }).compileComponents();
+
+        const fixture = TestBed.createComponent(PdfEditor);
+
+        await fixture.whenStable();
+
+        const toolbar = () => fixture.nativeElement.querySelector('[role="toolbar"]') as HTMLElement;
+        const save = () => fixture.nativeElement.querySelector('button[title="Save"], button[title="Guardar"]') as HTMLButtonElement;
+
+        expect(toolbar().getAttribute('aria-label')).toBe('PDF tools');
+        expect(save().getAttribute('aria-label')).toBe('Save');
+        expect(fixture.nativeElement.querySelector('.p-pdfeditor-empty-message').textContent).toContain('No document');
+
+        fixture.componentRef.setInput('messages', { toolbar: 'Herramientas PDF', save: 'Guardar', noDocument: 'Sin documento', toolRectangle: 'Rectángulo' });
+        await fixture.whenStable();
+
+        expect(toolbar().getAttribute('aria-label')).toBe('Herramientas PDF');
+        expect(save().getAttribute('aria-label')).toBe('Guardar');
+        expect(save().title).toBe('Guardar');
+        expect(fixture.nativeElement.querySelector('.p-pdfeditor-empty-message').textContent).toContain('Sin documento');
+        expect(fixture.nativeElement.querySelector('[role="radio"][aria-label="Rectángulo"]')).not.toBeNull();
+        expect(fixture.nativeElement.querySelector('[role="radio"][aria-label="Ellipse"]')).not.toBeNull();
+    });
+});

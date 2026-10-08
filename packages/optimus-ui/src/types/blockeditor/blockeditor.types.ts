@@ -60,6 +60,47 @@ export interface BlockImageRequest {
 }
 
 /**
+ * The text the block editor shows and announces. Every entry can be replaced through the `messages` input. The names of the blocks come from `commands`.
+ * @group Types
+ */
+export interface BlockEditorMessages {
+    /** Name of the editable area when `aria-label` is not set. */
+    editor: string;
+    /** Name and tooltip of the drag handle. */
+    dragHandle: string;
+    /** Name of the formatting toolbar. */
+    format: string;
+    /** Bold button. */
+    bold: string;
+    /** Italic button. */
+    italic: string;
+    /** Strikethrough button. */
+    strikethrough: string;
+    /** Code button. */
+    code: string;
+    /** Link button. */
+    link: string;
+    /** Placeholder of the link field. */
+    linkPlaceholder: string;
+    /** Name of the link field. */
+    linkAddress: string;
+    /** Button that applies the link. */
+    apply: string;
+    /** Button that removes the link. */
+    remove: string;
+    /** Name of the slash menu. */
+    blocks: string;
+    /** Shown when no block matches what was typed. */
+    noBlocks: string;
+    /** Error when the editor cannot start and the cause gives no message. */
+    startFailed: string;
+    /** Error when a picture cannot be added and the cause gives no message. */
+    pictureAddFailed: string;
+    /** Error when a picture cannot be read. */
+    pictureUnreadable: string;
+}
+
+/**
  * Pass-through options.
  * @group Interface
  */

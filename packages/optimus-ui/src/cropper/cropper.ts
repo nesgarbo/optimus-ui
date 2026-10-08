@@ -26,8 +26,10 @@ import { SharedModule } from '@openng/optimus-ui/api';
 import { PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { BaseEditableHolder } from '@openng/optimus-ui/baseeditableholder';
 import { Bind } from '@openng/optimus-ui/bind';
-import type { CropperChangeEvent, CropperExportOptions, CropperOutputType, CropperPassThrough, CropperSelectionRect } from '@openng/optimus-ui/types/cropper';
+import type { CropperChangeEvent, CropperExportOptions, CropperMessages, CropperOutputType, CropperPassThrough, CropperSelectionRect } from '@openng/optimus-ui/types/cropper';
 import { CropperStyle } from './style/cropperstyle';
+
+const CROPPER_MESSAGES: CropperMessages = { imageToCrop: 'Image to crop', imageLoadFailed: 'The image could not be loaded' };
 
 export const CROPPER_VALUE_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
@@ -60,7 +62,7 @@ const handles = ['n', 'e', 's', 'w', 'ne', 'nw', 'se', 'sw'];
     selector: 'p-cropper',
     standalone: true,
     imports: [SharedModule],
-    template: `<div #stage [class]="cx('stage')" role="img" [attr.aria-label]="alt() || 'Image to crop'"></div>`,
+    template: `<div #stage [class]="cx('stage')" role="group" [attr.aria-label]="alt() || text().imageToCrop"></div>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
     providers: [CropperStyle, CROPPER_VALUE_ACCESSOR, { provide: PARENT_INSTANCE, useExisting: Cropper }],
@@ -101,6 +103,13 @@ export class Cropper extends BaseEditableHolder<CropperPassThrough> {
      * @group Props
      */
     readonly alt = input<string>('');
+    /**
+     * Replaces the texts the cropper announces. Entries left out keep the English default.
+     * @group Props
+     */
+    readonly messages = input<Partial<CropperMessages>>({});
+    /** The text, with the replacements the `messages` input makes. @internal */
+    readonly text = computed<CropperMessages>(() => ({ ...CROPPER_MESSAGES, ...this.messages() }));
     /**
      * `crossorigin` of the image. Set it to `anonymous` for an image from another origin, or the crop cannot be read back.
      * @group Props
@@ -224,6 +233,7 @@ export class Cropper extends BaseEditableHolder<CropperPassThrough> {
 
     private instance: CropperJs | null = null;
     private token = 0;
+    private destroyed = false;
     private lastEmitted: string | null = null;
     private timer: ReturnType<typeof setTimeout> | undefined;
 
@@ -250,6 +260,9 @@ export class Cropper extends BaseEditableHolder<CropperPassThrough> {
         });
 
         this.destroyRef.onDestroy(() => {
+            // An image or the library that is still on its way finds the token changed and goes no further.
+            this.destroyed = true;
+            this.token++;
             clearTimeout(this.timer);
             this.teardown();
         });
@@ -278,7 +291,9 @@ export class Cropper extends BaseEditableHolder<CropperPassThrough> {
     private template(): string {
         const keyboard = this.keyboard() ? ' keyboard' : '';
         // The colour of the crop box comes from the `cropper.selection.color` token, which the theme writes as a variable.
-        const color = this.browser ? getComputedStyle(this.el.nativeElement).getPropertyValue('--p-cropper-selection-color').trim() : '';
+        const read = this.browser ? getComputedStyle(this.el.nativeElement).getPropertyValue('--p-cropper-selection-color').trim() : '';
+        // It goes into markup: only what a colour is made of passes (`#fff`, `rgb(0 0 0 / 50%)`, a name).
+        const color = /^[\w#(),.%/\s-]+$/.test(read) ? read : '';
 
         return (
             `<cropper-canvas${color ? ` theme-color="${color}"` : ''}${this.background() ? ' background' : ''}${this.readonly() || this.$disabled() ? ' disabled' : ''}>` +
@@ -297,11 +312,15 @@ export class Cropper extends BaseEditableHolder<CropperPassThrough> {
     private async mount(src: string): Promise<void> {
         const token = ++this.token;
 
+        if (this.destroyed) return;
+
         this.teardown();
         this.loaded.set(false);
         this.selection.set(null);
 
-        if (!this.browser || !src) return this.publish(null);
+        // With nothing to crop, a crop that was published is no longer true. If the control never had one, it is left alone: the
+        // control would be marked as changed by an image that was never there.
+        if (!this.browser || !src) return this.lastEmitted === null ? undefined : this.publish(null);
 
         let Lib: (typeof import('cropperjs'))['default'];
         let image: HTMLImageElement;
@@ -314,7 +333,7 @@ export class Cropper extends BaseEditableHolder<CropperPassThrough> {
             return;
         }
 
-        if (token !== this.token) return;
+        if (token !== this.token || this.destroyed) return;
 
         const stage = this.stageRef().nativeElement;
 
@@ -334,7 +353,11 @@ export class Cropper extends BaseEditableHolder<CropperPassThrough> {
             ?.$ready?.()
             .catch(() => null);
 
-        if (token !== this.token) return;
+        if (token !== this.token || this.destroyed) {
+            if (this.instance === instance) this.teardown();
+
+            return;
+        }
 
         this.loaded.set(true);
         this.applySettings();
@@ -357,7 +380,7 @@ export class Cropper extends BaseEditableHolder<CropperPassThrough> {
 
             image.alt = this.alt();
             image.onload = () => resolve(image);
-            image.onerror = () => reject(new Error('The image could not be loaded'));
+            image.onerror = () => reject(new Error(this.text().imageLoadFailed));
             image.src = src;
         });
     }
@@ -366,7 +389,7 @@ export class Cropper extends BaseEditableHolder<CropperPassThrough> {
         this.instance?.destroy();
         this.instance = null;
 
-        if (this.browser) this.stageRef().nativeElement.replaceChildren();
+        if (this.browser && !this.destroyed) this.stageRef().nativeElement.replaceChildren();
     }
 
     /** Settings that can change while an image is shown. */
@@ -437,16 +460,24 @@ export class Cropper extends BaseEditableHolder<CropperPassThrough> {
     private notify(type: CropperChangeEvent['type']): void {
         clearTimeout(this.timer);
 
-        // The crop is drawn after the elements have settled.
-        this.timer = setTimeout(async () => {
-            this.afterTransform();
+        // The crop is drawn after the elements have settled. Drawing and encoding the whole crop is the costly part, so a run of
+        // gestures (a wheel zoom, a drag of keys) makes one value, after the last of them.
+        this.timer = setTimeout(
+            async () => {
+                if (this.destroyed) return;
 
-            const value = this.autoValue() ? await this.toDataURL().catch(() => null) : this.value();
+                this.afterTransform();
 
-            if (this.autoValue()) this.publish(value);
+                const value = this.autoValue() ? await this.toDataURL().catch(() => null) : this.value();
 
-            this.changed.emit({ type, selection: this.selection(), value });
-        }, 0);
+                if (this.destroyed) return;
+
+                if (this.autoValue()) this.publish(value);
+
+                this.changed.emit({ type, selection: this.selection(), value });
+            },
+            this.autoValue() ? 100 : 0
+        );
     }
 
     private publish(value: string | null): void {

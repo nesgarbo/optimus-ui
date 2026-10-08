@@ -20,6 +20,13 @@ export interface RenderAssets {
 
 let library: Promise<PdfJs> | null = null;
 let configured = '';
+/** The library once it has loaded: a page is drawn with the one that opened its document, whatever the worker of the next call. */
+let loaded: PdfJs | null = null;
+
+/** The most device pixels a canvas gets. Past it, a browser may refuse the canvas or draw nothing (about 16 million on iOS). */
+export const MAX_CANVAS_PIXELS = 16_777_216;
+/** The most device pixels a canvas gets along one side. */
+export const MAX_CANVAS_SIDE = 16_384;
 
 /** Loads pdf.js once, and points it at its worker. */
 export function loadPdfJs(options: RenderAssets = {}): Promise<PdfJs> {
@@ -37,6 +44,8 @@ export function loadPdfJs(options: RenderAssets = {}): Promise<PdfJs> {
                 // @ts-ignore -- the worker has no types
                 await import('pdfjs-dist/build/pdf.worker.mjs');
             }
+
+            loaded = lib;
 
             return lib;
         })();
@@ -75,14 +84,20 @@ export function renderPage(doc: PDFDocumentProxy, index: number, canvas: HTMLCan
 
         if (cancelled) return;
 
-        const viewport = page.getViewport({ scale: scale * pixelRatio });
+        const wanted = page.getViewport({ scale: scale * pixelRatio });
+        // A page that asks for more pixels than a canvas can have is drawn with fewer, and the browser stretches it.
+        const limit = Math.min(1, Math.sqrt(MAX_CANVAS_PIXELS / Math.max(wanted.width * wanted.height, 1)), MAX_CANVAS_SIDE / Math.max(wanted.width, wanted.height, 1));
+        const viewport = limit < 1 ? page.getViewport({ scale: scale * pixelRatio * limit }) : wanted;
+
+        // The library that opened the document is already here. Asking again without options would set up another worker.
+        const lib = loaded ?? (await loadPdfJs());
+
+        if (cancelled) return;
 
         canvas.width = Math.max(Math.floor(viewport.width), 1);
         canvas.height = Math.max(Math.floor(viewport.height), 1);
-        canvas.style.width = `${viewport.width / pixelRatio}px`;
-        canvas.style.height = `${viewport.height / pixelRatio}px`;
-
-        const lib = await loadPdfJs();
+        canvas.style.width = `${wanted.width / pixelRatio}px`;
+        canvas.style.height = `${wanted.height / pixelRatio}px`;
 
         // ENABLE_FORMS draws every annotation but the form widgets, which the editor draws as real inputs.
         task = page.render({ canvas, viewport, annotationMode: lib.AnnotationMode.ENABLE_FORMS });

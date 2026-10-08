@@ -23,7 +23,21 @@ import {
 import { SharedModule } from '@openng/optimus-ui/api';
 import { BaseComponent, PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { Bind } from '@openng/optimus-ui/bind';
-import type { PdfAnnotation, PdfAnnotationInput, PdfChangeEvent, PdfFailedEvent, PdfFontFamily, PdfFormField, PdfFormValues, PdfImageAnnotation, PdfLoadedEvent, PdfPageInfo, PdfEditorPassThrough, PdfTool } from '@openng/optimus-ui/types/pdfeditor';
+import type {
+    PdfEditorMessages,
+    PdfAnnotation,
+    PdfAnnotationInput,
+    PdfChangeEvent,
+    PdfFailedEvent,
+    PdfFontFamily,
+    PdfFormField,
+    PdfFormValues,
+    PdfImageAnnotation,
+    PdfLoadedEvent,
+    PdfPageInfo,
+    PdfEditorPassThrough,
+    PdfTool
+} from '@openng/optimus-ui/types/pdfeditor';
 import type { PDFDocument } from 'pdf-lib';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { ASCENT, boundsOf, isBoxed, moveAnnotation, nextAnnotationId, pickAnnotation, resizeAnnotation, type Box } from './pdf-model';
@@ -97,6 +111,57 @@ const CSS_FONTS: Record<PdfFontFamily, string> = {
 
 const HANDLES = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'] as const;
 const HISTORY_LIMIT = 50;
+const MESSAGES: PdfEditorMessages = {
+    toolbar: 'PDF tools',
+    thumbnails: 'Thumbnails',
+    previousPage: 'Previous page',
+    nextPage: 'Next page',
+    zoomOut: 'Zoom out',
+    zoomIn: 'Zoom in',
+    fitWidth: 'Fit width',
+    tool: 'Tool',
+    toolSelect: 'Select',
+    toolText: 'Text',
+    toolHighlight: 'Highlight',
+    toolRectangle: 'Rectangle',
+    toolEllipse: 'Ellipse',
+    toolLine: 'Line',
+    toolArrow: 'Arrow',
+    toolDraw: 'Draw',
+    toolImage: 'Image',
+    toolSignature: 'Signature',
+    colour: 'Colour',
+    lineWidth: 'Line width',
+    fontSize: 'Font size',
+    font: 'Font',
+    undo: 'Undo',
+    redo: 'Redo',
+    deleteSelected: 'Delete selected',
+    rotatePage: 'Rotate page',
+    addBlankPage: 'Add a blank page',
+    mergePdf: 'Merge another PDF',
+    deletePage: 'Delete page',
+    save: 'Save',
+    pages: 'Pages',
+    page: 'Page {page}',
+    pageOf: 'Page {page} of {count}',
+    loading: 'Loading…',
+    noDocument: 'No document',
+    openFailed: 'The document could not be opened',
+    loadFailed: 'The document could not be loaded ({status})',
+    notPdf: 'This is not a PDF',
+    pictureTooBig: 'The picture is too big',
+    pictureUnreadable: 'The picture could not be read',
+    picturePlaceFailed: 'The picture could not be placed',
+    changeFailed: 'The change could not be made',
+    noDocumentError: 'There is no document'
+};
+
+/** The most bytes of different files the undo history keeps. Each page operation keeps a whole file, and a big one adds up fast. */
+const HISTORY_BYTES = 96 * 1024 * 1024;
+/** The biggest picture a user can put on a page, as a data URL (characters) and in pixels. */
+const MAX_PICTURE_CHARS = 28 * 1024 * 1024;
+const MAX_PICTURE_PIXELS = 40_000_000;
 
 /**
  * PdfEditor edits PDF documents: it draws annotations on pages, fills in forms, and turns, deletes, moves, adds and merges pages.
@@ -116,85 +181,93 @@ const HISTORY_LIMIT = 50;
     imports: [SharedModule, Bind],
     template: `
         @if (toolbar()) {
-            <div [class]="cx('toolbar')" role="toolbar" aria-label="PDF tools" [pBind]="ptm('toolbar')">
+            <div [class]="cx('toolbar')" role="toolbar" [attr.aria-label]="text().toolbar" [pBind]="ptm('toolbar')">
                 <div [class]="cx('toolbarGroup')">
-                    <button type="button" [class]="cx('button', { pressed: sidebarOpen() })" title="Thumbnails" aria-label="Thumbnails" [attr.aria-pressed]="sidebarOpen()" (click)="sidebarOpen.set(!sidebarOpen())">
+                    <button type="button" [class]="cx('button', { pressed: sidebarOpen() })" [title]="text().thumbnails" [attr.aria-label]="text().thumbnails" [attr.aria-pressed]="sidebarOpen()" (click)="sidebarOpen.set(!sidebarOpen())">
                         <svg class="p-pdfeditor-icon" viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="icons['sidebar']" /></svg>
                     </button>
-                    <button type="button" [class]="cx('button')" title="Previous page" aria-label="Previous page" [disabled]="pageIndex() <= 0" (click)="goTo(pageIndex() - 1)">
+                    <button type="button" [class]="cx('button')" [title]="text().previousPage" [attr.aria-label]="text().previousPage" [disabled]="pageIndex() <= 0" (click)="goTo(pageIndex() - 1)">
                         <svg class="p-pdfeditor-icon" viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="icons['prev']" /></svg>
                     </button>
                     <span class="p-pdfeditor-status" aria-live="polite">{{ pages().length ? pageIndex() + 1 : 0 }} / {{ pages().length }}</span>
-                    <button type="button" [class]="cx('button')" title="Next page" aria-label="Next page" [disabled]="pageIndex() >= pages().length - 1" (click)="goTo(pageIndex() + 1)">
+                    <button type="button" [class]="cx('button')" [title]="text().nextPage" [attr.aria-label]="text().nextPage" [disabled]="pageIndex() >= pages().length - 1" (click)="goTo(pageIndex() + 1)">
                         <svg class="p-pdfeditor-icon" viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="icons['next']" /></svg>
                     </button>
                 </div>
                 <div [class]="cx('toolbarGroup')">
-                    <button type="button" [class]="cx('button')" title="Zoom out" aria-label="Zoom out" (click)="zoomOut()">
+                    <button type="button" [class]="cx('button')" [title]="text().zoomOut" [attr.aria-label]="text().zoomOut" (click)="zoomOut()">
                         <svg class="p-pdfeditor-icon" viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="icons['zoomOut']" /></svg>
                     </button>
                     <span class="p-pdfeditor-status">{{ (scale() * 100).toFixed(0) }}%</span>
-                    <button type="button" [class]="cx('button')" title="Zoom in" aria-label="Zoom in" (click)="zoomIn()">
+                    <button type="button" [class]="cx('button')" [title]="text().zoomIn" [attr.aria-label]="text().zoomIn" (click)="zoomIn()">
                         <svg class="p-pdfeditor-icon" viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="icons['zoomIn']" /></svg>
                     </button>
-                    <button type="button" [class]="cx('button')" title="Fit width" aria-label="Fit width" (click)="fitWidth()">
+                    <button type="button" [class]="cx('button')" [title]="text().fitWidth" [attr.aria-label]="text().fitWidth" (click)="fitWidth()">
                         <svg class="p-pdfeditor-icon" viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="icons['fit']" /></svg>
                     </button>
                 </div>
                 @if (!readonly()) {
-                    <div [class]="cx('toolbarGroup')" role="radiogroup" aria-label="Tool">
+                    <div [class]="cx('toolbarGroup')" role="radiogroup" [attr.aria-label]="text().tool">
                         @for (item of tools; track item.tool) {
-                            <button type="button" [class]="cx('button', { pressed: tool() === item.tool })" role="radio" [title]="item.label" [attr.aria-label]="item.label" [attr.aria-checked]="tool() === item.tool" (click)="setTool(item.tool)">
+                            <button
+                                type="button"
+                                [class]="cx('button', { pressed: tool() === item.tool })"
+                                role="radio"
+                                [title]="toolLabel(item.tool)"
+                                [attr.aria-label]="toolLabel(item.tool)"
+                                [attr.aria-checked]="tool() === item.tool"
+                                (click)="setTool(item.tool)"
+                            >
                                 <svg class="p-pdfeditor-icon" viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="icons[item.tool]" /></svg>
                             </button>
                         }
                     </div>
                     <div [class]="cx('toolbarGroup')">
-                        <input type="color" title="Colour" aria-label="Colour" [value]="color()" (input)="setColor($any($event.target).value)" />
-                        <select title="Line width" aria-label="Line width" [value]="strokeWidth()" (change)="strokeWidth.set(+$any($event.target).value)">
+                        <input type="color" [title]="text().colour" [attr.aria-label]="text().colour" [value]="color()" (input)="setColor($any($event.target).value)" />
+                        <select [title]="text().lineWidth" [attr.aria-label]="text().lineWidth" [value]="strokeWidth()" (change)="strokeWidth.set(+$any($event.target).value)">
                             @for (w of widths; track w) {
                                 <option [value]="w" [selected]="w === strokeWidth()">{{ w }} pt</option>
                             }
                         </select>
-                        <select title="Font size" aria-label="Font size" (change)="setFontSize(+$any($event.target).value)">
+                        <select [title]="text().fontSize" [attr.aria-label]="text().fontSize" (change)="setFontSize(+$any($event.target).value)">
                             @for (s of sizes; track s) {
                                 <option [value]="s" [selected]="s === fontSize()">{{ s }}</option>
                             }
                         </select>
-                        <select title="Font" aria-label="Font" (change)="setFontFamily($any($event.target).value)">
+                        <select [title]="text().font" [attr.aria-label]="text().font" (change)="setFontFamily($any($event.target).value)">
                             <option value="helvetica" [selected]="fontFamily() === 'helvetica'">Helvetica</option>
                             <option value="times" [selected]="fontFamily() === 'times'">Times</option>
                             <option value="courier" [selected]="fontFamily() === 'courier'">Courier</option>
                         </select>
                     </div>
                     <div [class]="cx('toolbarGroup')">
-                        <button type="button" [class]="cx('button')" title="Undo" aria-label="Undo" [disabled]="!canUndo()" (click)="undo()">
+                        <button type="button" [class]="cx('button')" [title]="text().undo" [attr.aria-label]="text().undo" [disabled]="!canUndo()" (click)="undo()">
                             <svg class="p-pdfeditor-icon" viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="icons['undo']" /></svg>
                         </button>
-                        <button type="button" [class]="cx('button')" title="Redo" aria-label="Redo" [disabled]="!canRedo()" (click)="redo()">
+                        <button type="button" [class]="cx('button')" [title]="text().redo" [attr.aria-label]="text().redo" [disabled]="!canRedo()" (click)="redo()">
                             <svg class="p-pdfeditor-icon" viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="icons['redo']" /></svg>
                         </button>
-                        <button type="button" [class]="cx('button')" title="Delete selected" aria-label="Delete selected" [disabled]="!selectedId()" (click)="removeSelected()">
+                        <button type="button" [class]="cx('button')" [title]="text().deleteSelected" [attr.aria-label]="text().deleteSelected" [disabled]="!selectedId()" (click)="removeSelected()">
                             <svg class="p-pdfeditor-icon" viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="icons['remove']" /></svg>
                         </button>
                     </div>
                     <div [class]="cx('toolbarGroup')">
-                        <button type="button" [class]="cx('button')" title="Rotate page" aria-label="Rotate page" [disabled]="!pages().length" (click)="rotateCurrentPage(90)">
+                        <button type="button" [class]="cx('button')" [title]="text().rotatePage" [attr.aria-label]="text().rotatePage" [disabled]="!pages().length" (click)="rotateCurrentPage(90)">
                             <svg class="p-pdfeditor-icon" viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="icons['rotate']" /></svg>
                         </button>
-                        <button type="button" [class]="cx('button')" title="Add a blank page" aria-label="Add a blank page" [disabled]="!pages().length" (click)="addBlankPage()">
+                        <button type="button" [class]="cx('button')" [title]="text().addBlankPage" [attr.aria-label]="text().addBlankPage" [disabled]="!pages().length" (click)="addBlankPage()">
                             <svg class="p-pdfeditor-icon" viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="icons['pageAdd']" /></svg>
                         </button>
-                        <button type="button" [class]="cx('button')" title="Merge another PDF" aria-label="Merge another PDF" [disabled]="!pages().length" (click)="mergeInput().nativeElement.click()">
+                        <button type="button" [class]="cx('button')" [title]="text().mergePdf" [attr.aria-label]="text().mergePdf" [disabled]="!pages().length" (click)="mergeInput().nativeElement.click()">
                             <svg class="p-pdfeditor-icon" viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="icons['merge']" /></svg>
                         </button>
-                        <button type="button" [class]="cx('button')" title="Delete page" aria-label="Delete page" [disabled]="pages().length < 2" (click)="deleteCurrentPage()">
+                        <button type="button" [class]="cx('button')" [title]="text().deletePage" [attr.aria-label]="text().deletePage" [disabled]="pages().length < 2" (click)="deleteCurrentPage()">
                             <svg class="p-pdfeditor-icon" viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="icons['trash']" /></svg>
                         </button>
                     </div>
                 }
                 <div [class]="cx('toolbarGroup')">
-                    <button type="button" [class]="cx('button')" title="Save" aria-label="Save" [disabled]="!pages().length" (click)="download()">
+                    <button type="button" [class]="cx('button')" [title]="text().save" [attr.aria-label]="text().save" [disabled]="!pages().length" (click)="download()">
                         <svg class="p-pdfeditor-icon" viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="icons['save']" /></svg>
                     </button>
                 </div>
@@ -202,13 +275,13 @@ const HISTORY_LIMIT = 50;
         }
         <div [class]="cx('body')">
             @if (sidebar() && sidebarOpen()) {
-                <nav [class]="cx('sidebar')" aria-label="Pages" [pBind]="ptm('sidebar')">
+                <nav [class]="cx('sidebar')" [attr.aria-label]="text().pages" [pBind]="ptm('sidebar')">
                     @for (p of pages(); track p.index) {
                         <button
                             type="button"
                             [class]="cx('thumbnail', { active: p.index === pageIndex() })"
                             [class.p-pdfeditor-thumbnail-over]="dropTarget() === p.index"
-                            [attr.aria-label]="'Page ' + (p.index + 1)"
+                            [attr.aria-label]="fill(text().page, { page: p.index + 1 })"
                             [attr.aria-current]="p.index === pageIndex() ? 'page' : null"
                             [draggable]="!readonly()"
                             (click)="goTo(p.index)"
@@ -226,10 +299,10 @@ const HISTORY_LIMIT = 50;
             }
             <div #stage [class]="cx('stage')" [pBind]="ptm('stage')" (keydown)="onKeydown($event)" tabindex="-1">
                 @if (!pages().length) {
-                    <div class="p-pdfeditor-empty-message">{{ loading() ? 'Loading…' : failure() || 'No document' }}</div>
+                    <div class="p-pdfeditor-empty-message">{{ loading() ? text().loading : failure() || text().noDocument }}</div>
                 }
                 <div [class]="cx('page')" [hidden]="!pages().length" [style.width.px]="pixelWidth()" [style.height.px]="pixelHeight()">
-                    <canvas #canvas [class]="cx('canvas')" role="img" [attr.aria-label]="'Page ' + (pageIndex() + 1) + ' of ' + pages().length"></canvas>
+                    <canvas #canvas [class]="cx('canvas')" role="img" [attr.aria-label]="fill(text().pageOf, { page: pageIndex() + 1, count: pages().length })"></canvas>
                     @if (current(); as page) {
                         <svg
                             #overlay
@@ -334,7 +407,7 @@ const HISTORY_LIMIT = 50;
                                 [style.font-family]="cssFont(e.fontFamily)"
                                 [style.color]="e.color"
                                 [value]="e.text"
-                                aria-label="Text"
+                                [attr.aria-label]="text().toolText"
                                 (blur)="commitText($any($event.target).value)"
                                 (keydown)="onEditorKeydown($event)"
                             ></textarea>
@@ -446,6 +519,13 @@ export class PdfEditor extends BaseComponent<PdfEditorPassThrough> {
      * @group Props
      */
     readonly src = input<PdfSource>(null);
+    /**
+     * Replaces the texts the editor shows and announces. Entries left out keep the English default. `{page}`, `{count}` and `{status}` are replaced where an entry lists them.
+     * @group Props
+     */
+    readonly messages = input<Partial<PdfEditorMessages>>({});
+    /** The text, with the replacements the `messages` input makes. @internal */
+    readonly text = computed<PdfEditorMessages>(() => ({ ...MESSAGES, ...this.messages() }));
     /**
      * What is drawn on the pages. Supports `[(annotations)]`.
      * @group Props
@@ -619,6 +699,18 @@ export class PdfEditor extends BaseComponent<PdfEditorPassThrough> {
 
     protected readonly icons = ICONS;
     protected readonly tools = TOOLS;
+
+    /** Name of a tool, from the `messages` input. */
+    protected toolLabel(tool: PdfTool): string {
+        const key = ('tool' + tool.charAt(0).toUpperCase() + tool.slice(1)) as keyof PdfEditorMessages;
+
+        return this.text()[key];
+    }
+
+    /** Puts values in the `{name}` holes of a message. */
+    protected fill(message: string, values: Record<string, string | number>): string {
+        return message.replace(/\{(\w+)\}/g, (hole, name) => (name in values ? String(values[name]) : hole));
+    }
     protected readonly widths = [1, 2, 3, 4, 6, 8];
     protected readonly sizes = [8, 10, 12, 14, 16, 18, 24, 32, 48];
     protected readonly textPadding = TEXT_PADDING;
@@ -690,6 +782,11 @@ export class PdfEditor extends BaseComponent<PdfEditorPassThrough> {
     private undoStack: Snapshot[] = [];
     private redoStack: Snapshot[] = [];
     private sourceToken = 0;
+    private openToken = 0;
+    private destroyed = false;
+    private observer: IntersectionObserver | null = null;
+    private thumbnailQueue: Promise<void> = Promise.resolve();
+    private readonly drawnThumbnails = new WeakMap<HTMLCanvasElement, PDFDocumentProxy>();
     private pendingImagePoint: [number, number] = [20, 20];
     private dragFrom = -1;
 
@@ -750,7 +847,10 @@ export class PdfEditor extends BaseComponent<PdfEditorPassThrough> {
         });
 
         this.destroyRef.onDestroy(() => {
+            this.destroyed = true;
             this.render?.cancel();
+            this.observer?.disconnect();
+            this.observer = null;
             this.thumbnails++;
             void this.viewDoc()?.loadingTask.destroy();
         });
@@ -762,6 +862,8 @@ export class PdfEditor extends BaseComponent<PdfEditorPassThrough> {
 
     private async openSource(src: PdfSource): Promise<void> {
         const token = ++this.sourceToken;
+
+        if (this.destroyed) return;
 
         if (src == null || src === '') {
             this.bytes = null;
@@ -788,7 +890,7 @@ export class PdfEditor extends BaseComponent<PdfEditorPassThrough> {
             this.pageIndex.set(0);
             await this.open(bytes);
 
-            if (token !== this.sourceToken) return;
+            if (token !== this.sourceToken || this.destroyed) return;
 
             if (this.fitOnLoad()) this.fitWidth();
 
@@ -796,7 +898,9 @@ export class PdfEditor extends BaseComponent<PdfEditorPassThrough> {
         } catch (error) {
             if (token !== this.sourceToken) return;
 
-            const message = error instanceof Error ? error.message : 'The document could not be opened';
+            const message = error instanceof Error ? error.message : this.text().openFailed;
+
+            if (this.destroyed) return;
 
             this.failure.set(message);
             this.pages.set([]);
@@ -812,22 +916,35 @@ export class PdfEditor extends BaseComponent<PdfEditorPassThrough> {
         if (typeof src === 'string' || src instanceof URL) {
             const response = await fetch(src);
 
-            if (!response.ok) throw new Error(`The document could not be loaded (${response.status})`);
+            if (!response.ok) throw new Error(this.fill(this.text().loadFailed, { status: response.status }));
 
             bytes = new Uint8Array(await response.arrayBuffer());
         } else if (src instanceof Blob) bytes = new Uint8Array(await src.arrayBuffer());
         else if (src instanceof Uint8Array) bytes = src.slice();
         else bytes = new Uint8Array(src.slice(0));
 
-        if (!looksLikePdf(bytes)) throw new Error('This is not a PDF');
+        if (!looksLikePdf(bytes)) throw new Error(this.text().notPdf);
 
         return bytes;
     }
 
     /** Takes bytes as the document: parses them for editing and for drawing. */
     private async open(bytes: Uint8Array): Promise<void> {
+        // A later open, or the end of the editor, makes this one stale at every await.
+        const token = ++this.openToken;
+        const stale = () => token !== this.openToken || this.destroyed;
         const doc = await loadPdf(bytes);
+
+        if (stale()) return;
+
         const view = await openDocument(bytes, { workerSrc: this.workerSrc() || undefined, assetsUrl: this.assetsUrl() || undefined });
+
+        if (stale()) {
+            void view.loadingTask.destroy();
+
+            return;
+        }
+
         const previous = this.viewDoc();
 
         this.bytes = bytes;
@@ -852,39 +969,91 @@ export class PdfEditor extends BaseComponent<PdfEditorPassThrough> {
 
     private drawPage(doc: PDFDocumentProxy | null, index: number, scale: number): void {
         const canvas = this.canvasRef()?.nativeElement;
+        const previous = this.render;
 
-        this.render?.cancel();
+        previous?.cancel();
+        this.render = null;
 
         if (!doc || !canvas || !this.browser || index < 0 || index >= doc.numPages) return;
 
-        this.render = renderPage(doc, index, canvas, scale, window.devicePixelRatio || 1);
-        this.render.promise.catch((error) => this.failed.emit({ message: String(error?.message ?? error) }));
+        // The canvas is resized by the drawing, and pdf.js refuses two drawings on one canvas: the new one waits for the old to stop.
+        let cancelled = false;
+        let inner: PageRender | null = null;
+        const render: PageRender = {
+            promise: (async () => {
+                await previous?.promise.catch(() => undefined);
+
+                if (cancelled || this.destroyed) return;
+
+                inner = renderPage(doc, index, canvas, scale, window.devicePixelRatio || 1);
+
+                await inner.promise;
+            })(),
+            cancel: () => {
+                cancelled = true;
+                inner?.cancel();
+            }
+        };
+
+        this.render = render;
+        render.promise.catch((error) => !this.destroyed && !cancelled && this.failed.emit({ message: String(error?.message ?? error) }));
     }
 
+    /** Draws the thumbnails that are in view, and the others as they come into it. */
     private async drawThumbnails(doc: PDFDocumentProxy | null): Promise<void> {
         const token = ++this.thumbnails;
+
+        this.observer?.disconnect();
+        this.observer = null;
 
         if (!doc || !this.browser || !this.sidebar()) return;
 
         // The thumbnails are in the DOM once the sidebar has rendered.
         await new Promise((resolve) => setTimeout(resolve, 0));
 
-        const host = this.el.nativeElement as HTMLElement;
+        if (token !== this.thumbnails || this.destroyed) return;
 
-        for (const canvas of Array.from(host.querySelectorAll<HTMLCanvasElement>('canvas[data-thumbnail]'))) {
-            if (token !== this.thumbnails) return;
+        const canvases = Array.from((this.el.nativeElement as HTMLElement).querySelectorAll<HTMLCanvasElement>('canvas[data-thumbnail]'));
+        const draw = (canvas: HTMLCanvasElement) => {
+            if (this.drawnThumbnails.get(canvas) === doc) return;
 
-            const index = Number(canvas.dataset['index']);
-            const info = this.pages()[index];
+            // One at a time: pdf.js draws pages in sequence on its worker anyway, and a long file does not flood it.
+            this.thumbnailQueue = this.thumbnailQueue.then(async () => {
+                const index = Number(canvas.dataset['index']);
+                const info = this.pages()[index];
 
-            if (!info) continue;
+                if (token !== this.thumbnails || this.destroyed || !info || this.drawnThumbnails.get(canvas) === doc) return;
 
-            try {
-                await renderPage(doc, index, canvas, Math.min(112 / info.width, 0.4), 1).promise;
-            } catch {
-                // A thumbnail that fails is left empty.
-            }
+                this.drawnThumbnails.set(canvas, doc);
+
+                try {
+                    await renderPage(doc, index, canvas, Math.min(112 / info.width, 0.4), 1).promise;
+                } catch {
+                    // A thumbnail that fails is left empty.
+                }
+            });
+        };
+
+        if (typeof IntersectionObserver === 'undefined') {
+            canvases.forEach(draw);
+
+            return;
         }
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                for (const entry of entries) {
+                    if (!entry.isIntersecting) continue;
+
+                    observer.unobserve(entry.target);
+                    draw(entry.target as HTMLCanvasElement);
+                }
+            },
+            { root: null, rootMargin: '200px' }
+        );
+
+        this.observer = observer;
+        canvases.forEach((canvas) => observer.observe(canvas));
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -904,8 +1073,19 @@ export class PdfEditor extends BaseComponent<PdfEditorPassThrough> {
 
         if (this.undoStack.length > HISTORY_LIMIT) this.undoStack.shift();
 
+        // Snapshots of one file share its bytes, so each file counts once.
+        while (this.undoStack.length > 1 && this.historyBytes() > HISTORY_BYTES) this.undoStack.shift();
+
         this.redoStack = [];
         this.syncHistory();
+    }
+
+    private historyBytes(): number {
+        let total = 0;
+
+        for (const buffer of new Set(this.undoStack.map((s) => s.bytes))) total += buffer.byteLength;
+
+        return total;
     }
 
     private syncHistory(): void {
@@ -1217,7 +1397,7 @@ export class PdfEditor extends BaseComponent<PdfEditorPassThrough> {
 
                 if (!url) return void this.signatureRequested.emit();
 
-                void this.placePicture(url, x, y, 'signature');
+                this.placePictureSafely(url, x, y, 'signature');
                 break;
             }
             case 'draw':
@@ -1471,19 +1651,35 @@ export class PdfEditor extends BaseComponent<PdfEditorPassThrough> {
 
         const reader = new FileReader();
 
-        reader.onload = () => void this.placePicture(String(reader.result), this.pendingImagePoint[0], this.pendingImagePoint[1], 'image');
+        if (file.size > MAX_PICTURE_CHARS * 0.75) {
+            this.failed.emit({ message: this.text().pictureTooBig });
+
+            return;
+        }
+
+        reader.onload = () => this.placePictureSafely(String(reader.result), this.pendingImagePoint[0], this.pendingImagePoint[1], 'image');
+        reader.onerror = () => this.failed.emit({ message: this.text().pictureUnreadable });
         reader.readAsDataURL(file);
+    }
+
+    /** `placePicture` for what the user does: a picture that cannot be placed is reported, not thrown. */
+    private placePictureSafely(dataUrl: string, x: number, y: number, type: 'image' | 'signature'): void {
+        this.placePicture(dataUrl, x, y, type).catch((error) => !this.destroyed && this.failed.emit({ message: error instanceof Error ? error.message : this.text().picturePlaceFailed }));
     }
 
     /** Puts a picture on the page that is shown, with its top left at a point, scaled to fit a reasonable size. */
     async placePicture(dataUrl: string, x = 40, y = 40, type: 'image' | 'signature' = 'image'): Promise<PdfImageAnnotation> {
+        if (dataUrl.length > MAX_PICTURE_CHARS) throw new Error(this.text().pictureTooBig);
+
         const image = await new Promise<HTMLImageElement>((resolve, reject) => {
             const el = new Image();
 
             el.onload = () => resolve(el);
-            el.onerror = () => reject(new Error('The picture could not be read'));
+            el.onerror = () => reject(new Error(this.text().pictureUnreadable));
             el.src = dataUrl;
         });
+        if (image.naturalWidth * image.naturalHeight > MAX_PICTURE_PIXELS) throw new Error(this.text().pictureTooBig);
+
         const page = this.current();
         const maxWidth = Math.min(type === 'signature' ? 160 : 240, (page?.width ?? 240) - 8);
         const ratio = image.naturalHeight / Math.max(image.naturalWidth, 1);
@@ -1561,7 +1757,7 @@ export class PdfEditor extends BaseComponent<PdfEditorPassThrough> {
 
             if (this.bytes) await this.open(this.bytes);
 
-            this.failed.emit({ message: error instanceof Error ? error.message : 'The change could not be made' });
+            this.failed.emit({ message: error instanceof Error ? error.message : this.text().changeFailed });
         }
     }
 
@@ -1708,7 +1904,7 @@ export class PdfEditor extends BaseComponent<PdfEditorPassThrough> {
 
     /** Makes the new file: the pages, the form filled in and the annotations written into the pages. */
     async save(): Promise<Uint8Array> {
-        if (!this.bytes) throw new Error('There is no document');
+        if (!this.bytes) throw new Error(this.text().noDocumentError);
 
         // Only the values that were set are written: a field the user did not touch keeps what the file has.
         const out = await exportPdf(this.bytes, { annotations: this.annotations(), formValues: this.formValues(), flatten: this.flatten(), unicodeFont: this.unicodeBytes });

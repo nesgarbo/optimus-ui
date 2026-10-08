@@ -133,6 +133,9 @@ export abstract class BarcodeBase extends BaseComponent<BarcodePassThrough> {
 
     private readonly measured = signal<{ w: number; h: number } | null>(null);
     private readonly logoImage = signal<HTMLImageElement | null>(null);
+    /** `true` when the logo had to be loaded without `crossOrigin`: it shows, but a canvas that holds it cannot be read back. */
+    private logoTainted = false;
+    private logoToken = 0;
 
     /** The box in pixels: what was measured, else what the inputs say. */
     private readonly box = computed(() => this.measured() ?? { w: px(this.width(), 300), h: px(this.height(), 100) });
@@ -143,9 +146,9 @@ export abstract class BarcodeBase extends BaseComponent<BarcodePassThrough> {
         try {
             return { data: this.encode() };
         } catch (error) {
-            if (error instanceof BarcodeError) return { error: error.message };
-
-            throw error;
+            // An encoder that fails in a way of its own (a value it did not foresee) is an invalid value too: the computed must not
+            // throw, or every reader of `layout` throws with it and the symbol takes the view down.
+            return { error: error instanceof BarcodeError ? error.message : error instanceof Error && error.message ? error.message : 'The value cannot be encoded' };
         }
     });
 
@@ -215,13 +218,36 @@ export abstract class BarcodeBase extends BaseComponent<BarcodePassThrough> {
             const src = this.logoSource();
 
             untracked(() => {
+                // A logo that arrives after a newer one was asked for is not the one to show.
+                const token = ++this.logoToken;
+
+                this.logoTainted = false;
+
                 if (!src || !this.browser) return this.logoImage.set(null);
 
-                const image = new Image();
+                const load = (cors: boolean) => {
+                    const image = new Image();
 
-                image.onload = () => this.logoImage.set(image);
-                image.onerror = () => this.logoImage.set(null);
-                image.src = src;
+                    // Without `crossOrigin` the canvas is tainted and `toDataURL` throws, so it is asked for first.
+                    if (cors) image.crossOrigin = 'anonymous';
+
+                    image.onload = () => {
+                        if (token !== this.logoToken) return;
+
+                        this.logoTainted = !cors;
+                        this.logoImage.set(image);
+                    };
+                    image.onerror = () => {
+                        if (token !== this.logoToken) return;
+
+                        // A server that does not allow it: the logo still shows, and the export leaves it out.
+                        if (cors) load(false);
+                        else this.logoImage.set(null);
+                    };
+                    image.src = src;
+                };
+
+                load(true);
             });
         });
 
@@ -276,6 +302,8 @@ export abstract class BarcodeBase extends BaseComponent<BarcodePassThrough> {
         const layout = this.layout();
 
         if (!layout) return '';
+        // The canvas of the export does not exist on the server.
+        if (format !== 'svg' && !this.browser) return '';
         if (format === 'svg') return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(this.toSvg())}`;
 
         const canvas = document.createElement('canvas');
@@ -287,13 +315,19 @@ export abstract class BarcodeBase extends BaseComponent<BarcodePassThrough> {
 
         ctx.scale(scale, scale);
         // A JPEG has no alpha: without a fill it would come out black.
-        paintLayout(ctx, layout, this.foreColor(), this.backgroundColor() || (format === 'jpeg' ? '#ffffff' : ''), this.textColor(), this.logoImage());
+        paintLayout(ctx, layout, this.foreColor(), this.backgroundColor() || (format === 'jpeg' ? '#ffffff' : ''), this.textColor(), this.logoTainted ? null : this.logoImage());
 
-        return canvas.toDataURL(`image/${format}`);
+        try {
+            return canvas.toDataURL(`image/${format}`);
+        } catch {
+            return '';
+        }
     }
 
     /** Downloads the symbol. Mirrors Syncfusion's `exportImage`. Returns the data URL. */
     exportImage(fileName = 'barcode', format: BarcodeExportFormat = 'png'): string {
+        if (!this.browser) return '';
+
         const dataUrl = this.exportAsBase64(format);
 
         if (!dataUrl) return '';

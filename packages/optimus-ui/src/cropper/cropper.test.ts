@@ -24,7 +24,16 @@ const picture = (() => {
     standalone: true,
     imports: [Cropper],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    template: `<p-cropper [src]="src()" [aspectRatio]="ratio()" [(value)]="value" [readonly]="locked()" (changed)="events.push($event.type)" (ready)="readyCount = readyCount + 1" style="width: 400px; display: block" />`
+    template: `<p-cropper
+        [src]="src()"
+        [aspectRatio]="ratio()"
+        [value]="value"
+        (valueChange)="value = $event; valueWrites = valueWrites + 1"
+        [readonly]="locked()"
+        (changed)="events.push($event.type)"
+        (ready)="readyCount = readyCount + 1"
+        style="width: 400px; display: block"
+    />`
 })
 class Host {
     readonly cropper = viewChild.required(Cropper);
@@ -34,6 +43,7 @@ class Host {
     value: string | null = null;
     events: string[] = [];
     readyCount = 0;
+    valueWrites = 0;
 }
 
 const wait = (ms = 150) => new Promise((r) => setTimeout(r, ms));
@@ -217,5 +227,62 @@ describe('Cropper', () => {
 
         expect(failed).toBe(1);
         expect(await cropper().toDataURL()).toBeNull();
+    });
+
+    it('does not mark a control as changed when it starts with no image', async () => {
+        const other = TestBed.createComponent(Host);
+
+        other.componentInstance.src.set('');
+        document.body.appendChild(other.nativeElement);
+        await other.whenStable();
+        await wait(300);
+
+        // A `null` that nobody asked for would have reached `[(value)]` and the form as a change.
+        expect(other.componentInstance.valueWrites).toBe(0);
+        other.destroy();
+    });
+
+    it('keeps the stage out of the image role, because it holds the controls', () => {
+        expect(fixture.nativeElement.querySelector('[role="img"]')).toBeNull();
+        expect(fixture.nativeElement.querySelector('[role="group"]')).not.toBeNull();
+    });
+
+    it('makes one value for a run of gestures', async () => {
+        host.events.length = 0;
+
+        cropper().zoom(0.1);
+        cropper().zoom(0.1);
+        cropper().zoom(0.1);
+        await wait(400);
+
+        expect(host.events.filter((e) => e === 'zoom')).toHaveLength(1);
+    });
+
+    it('does not build the cropper when it is destroyed while the image loads', async () => {
+        const other = TestBed.createComponent(Host);
+        const element = other.nativeElement as HTMLElement;
+
+        document.body.appendChild(element);
+        await other.whenStable();
+        other.destroy();
+        await wait(600);
+
+        expect(element.querySelector('cropper-canvas')).toBeNull();
+        expect(other.componentInstance.readyCount).toBe(0);
+    });
+
+    it('names the crop area in English by default and from `messages` when given', async () => {
+        const bare = TestBed.createComponent(Cropper);
+
+        await bare.whenStable();
+        expect(bare.nativeElement.querySelector('[role="group"]').getAttribute('aria-label')).toBe('Image to crop');
+
+        bare.componentRef.setInput('messages', { imageToCrop: 'Imagen a recortar' });
+        await bare.whenStable();
+        expect(bare.nativeElement.querySelector('[role="group"]').getAttribute('aria-label')).toBe('Imagen a recortar');
+
+        bare.componentRef.setInput('alt', 'Foto');
+        await bare.whenStable();
+        expect(bare.nativeElement.querySelector('[role="group"]').getAttribute('aria-label')).toBe('Foto');
     });
 });

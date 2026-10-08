@@ -11,6 +11,7 @@ import {
     input,
     model,
     NgModule,
+    NgZone,
     numberAttribute,
     output,
     PLATFORM_ID,
@@ -22,7 +23,7 @@ import {
 import { SharedModule } from '@openng/optimus-ui/api';
 import { BaseComponent, PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { Bind } from '@openng/optimus-ui/bind';
-import type { MapBounds, MapLngLat, MapMoveEvent, MapPassThrough, MapPointerEvent } from '@openng/optimus-ui/types/map';
+import type { MapBounds, MapLngLat, MapMessages, MapMoveEvent, MapPassThrough, MapPointerEvent } from '@openng/optimus-ui/types/map';
 import type { Map as MapLibreMap, StyleSpecification } from 'maplibre-gl';
 import { MAP_CONTEXT, type MapContext } from './map-context';
 import { MapStyle } from './style/mapstyle';
@@ -77,6 +78,7 @@ export class Map extends BaseComponent<MapPassThrough> implements MapContext {
     private readonly bindDirectiveInstance = inject(Bind, { self: true });
     private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
     private readonly destroyRef = inject(DestroyRef);
+    private readonly zone = inject(NgZone);
     private readonly container = viewChild.required<ElementRef<HTMLElement>>('container');
 
     onAfterViewChecked(): void {
@@ -107,6 +109,11 @@ export class Map extends BaseComponent<MapPassThrough> implements MapContext {
      * @group Props
      */
     readonly pitch = model(0);
+    /**
+     * Replaces the texts shown when the map fails. Entries left out keep the English default.
+     * @group Props
+     */
+    readonly messages = input<Partial<MapMessages>>({});
     /**
      * The look of the map: the URL of a style, or the style itself. Defaults to one with no tiles in it.
      * @group Props
@@ -217,6 +224,11 @@ export class Map extends BaseComponent<MapPassThrough> implements MapContext {
     readonly map = signal<MapLibreMap | null>(null);
     /** The MapLibre module, once it is loaded. */
     readonly lib = signal<typeof import('maplibre-gl') | null>(null);
+    /**
+     * Counts the styles that have loaded. A new style drops the sources and layers of the old one, so what lives in the style
+     * (the layers) reads this signal to put itself back.
+     */
+    readonly styleVersion = signal(0);
     /** `true` when the map is ready. */
     readonly ready = signal(false);
     /** Why the map could not start. */
@@ -227,6 +239,7 @@ export class Map extends BaseComponent<MapPassThrough> implements MapContext {
     private instance: MapLibreMap | null = null;
     private resizer: ResizeObserver | null = null;
     private applying = false;
+    private destroyed = false;
 
     constructor() {
         super();
@@ -304,7 +317,9 @@ export class Map extends BaseComponent<MapPassThrough> implements MapContext {
         });
 
         this.destroyRef.onDestroy(() => {
+            this.destroyed = true;
             this.resizer?.disconnect();
+            this.resizer = null;
             this.instance?.remove();
             this.instance = null;
         });
@@ -316,39 +331,46 @@ export class Map extends BaseComponent<MapPassThrough> implements MapContext {
         try {
             const lib = await import('maplibre-gl');
 
+            // The component can be gone by the time the module arrives.
+            if (this.destroyed) return;
+
             if (this.workerUrl()) lib.setWorkerUrl(this.workerUrl());
 
             this.lib.set(lib);
 
             const box = this.bounds();
-            const map = new lib.Map({
-                container: this.container().nativeElement,
-                style: this.mapStyle() as never,
-                center: this.center(),
-                zoom: this.zoom(),
-                bearing: this.bearing(),
-                pitch: this.pitch(),
-                minZoom: this.minZoom(),
-                maxZoom: this.maxZoom(),
-                maxBounds: this.maxBounds()
-                    ? ([
-                          [this.maxBounds()![0], this.maxBounds()![1]],
-                          [this.maxBounds()![2], this.maxBounds()![3]]
-                      ] as never)
-                    : undefined,
-                interactive: this.interactive(),
-                attributionControl: this.attributionControl() ? undefined : false,
-                canvasContextAttributes: { preserveDrawingBuffer: this.preserveDrawingBuffer() },
-                ...(box
-                    ? {
-                          bounds: [
-                              [box[0], box[1]],
-                              [box[2], box[3]]
-                          ] as never,
-                          fitBoundsOptions: { padding: this.boundsPadding() }
-                      }
-                    : {})
-            });
+            // The map listens to the pointer and the frame clock all the time, so it lives outside the zone.
+            const map = this.zone.runOutsideAngular(
+                () =>
+                    new lib.Map({
+                        container: this.container().nativeElement,
+                        style: this.mapStyle() as never,
+                        center: this.center(),
+                        zoom: this.zoom(),
+                        bearing: this.bearing(),
+                        pitch: this.pitch(),
+                        minZoom: this.minZoom(),
+                        maxZoom: this.maxZoom(),
+                        maxBounds: this.maxBounds()
+                            ? ([
+                                  [this.maxBounds()![0], this.maxBounds()![1]],
+                                  [this.maxBounds()![2], this.maxBounds()![3]]
+                              ] as never)
+                            : undefined,
+                        interactive: this.interactive(),
+                        attributionControl: this.attributionControl() ? undefined : false,
+                        canvasContextAttributes: { preserveDrawingBuffer: this.preserveDrawingBuffer() },
+                        ...(box
+                            ? {
+                                  bounds: [
+                                      [box[0], box[1]],
+                                      [box[2], box[3]]
+                                  ] as never,
+                                  fitBoundsOptions: { padding: this.boundsPadding() }
+                              }
+                            : {})
+                    })
+            );
 
             this.instance = map;
 
@@ -357,28 +379,35 @@ export class Map extends BaseComponent<MapPassThrough> implements MapContext {
             if (this.fullscreenControl()) map.addControl(new lib.FullscreenControl(), 'top-right');
             if (this.geolocateControl()) map.addControl(new lib.GeolocateControl({}), 'top-right');
 
-            map.on('moveend', () => this.afterMove(map));
-            map.on('click', (e) => this.mapClick.emit(this.pointer(e)));
-            map.on('dblclick', (e) => this.mapDoubleClick.emit(this.pointer(e)));
-            map.on('contextmenu', (e) => this.mapContextMenu.emit(this.pointer(e)));
+            map.on('moveend', () => this.zone.run(() => this.afterMove(map)));
+            map.on('click', (e) => this.zone.run(() => this.mapClick.emit(this.pointer(e))));
+            map.on('dblclick', (e) => this.zone.run(() => this.mapDoubleClick.emit(this.pointer(e))));
+            map.on('contextmenu', (e) => this.zone.run(() => this.mapContextMenu.emit(this.pointer(e))));
             map.on('error', (e) => {
                 // A tile that does not come is not a reason to stop the map; one that stops the style from loading is.
                 if (!this.ready()) {
-                    this.failure.set(String((e as unknown as { error?: Error }).error?.message ?? 'The map could not be loaded'));
-                    this.failedToLoad.emit(this.failure());
+                    this.zone.run(() => {
+                        this.failure.set(String((e as unknown as { error?: Error }).error?.message ?? this.messages().loadFailed ?? 'The map could not be loaded'));
+                        this.failedToLoad.emit(this.failure());
+                    });
                 }
             });
             map.on('style.load', () => {
-                this.ready.set(true);
-                this.map.set(map);
+                this.zone.run(() => {
+                    this.ready.set(true);
+                    this.map.set(map);
+                    this.styleVersion.update((v) => v + 1);
+                });
             });
-            map.once('load', () => this.loaded.emit(map));
+            map.once('load', () => this.zone.run(() => this.loaded.emit(map)));
 
             // The map has to know when its box changes size, which the window resize event does not say.
             this.resizer = new ResizeObserver(() => map.resize());
             this.resizer.observe(this.container().nativeElement);
         } catch (error) {
-            this.failure.set(error instanceof Error ? error.message : 'The map could not be started');
+            if (this.destroyed) return;
+
+            this.failure.set(error instanceof Error ? error.message : (this.messages().startFailed ?? 'The map could not be started'));
             this.failedToLoad.emit(this.failure());
         }
     }
