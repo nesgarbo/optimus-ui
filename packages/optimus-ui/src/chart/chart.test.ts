@@ -38,7 +38,8 @@ describe('UIChart (chart.js)', () => {
         const chart = fixture.componentInstance;
         const first = chart.chart;
 
-        chart.data = { labels: ['A'], datasets: [{ label: 'Sales', data: [1] }] };
+        fixture.componentRef.setInput('data', { labels: ['A'], datasets: [{ label: 'Sales', data: [1] }] });
+        fixture.detectChanges();
 
         expect(chart.chart).not.toBe(first);
         expect(chart.chart.data.labels).toEqual(['A']);
