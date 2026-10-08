@@ -1115,9 +1115,11 @@ describe('Password', () => {
     });
 
     describe('Input Properties', () => {
-        it('should handle maxLength property', () => {
-            component.maxLength = 20;
-            expect(component.maxLength).toBe(20);
+        it('should render maxLength, the name a signal form binds, as the maxlength attribute', () => {
+            fixture.componentRef.setInput('maxLength', 20);
+            fixture.detectChanges();
+
+            expect(component.$maxlength()).toBe(20);
         });
 
         it('should handle transition options', () => {

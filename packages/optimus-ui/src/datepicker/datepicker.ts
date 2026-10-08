@@ -98,7 +98,7 @@ const DATEPICKER_INSTANCE = new InjectionToken<DatePicker>('DATEPICKER_INSTANCE'
                 (click)="onInputClick()"
                 (blur)="onInputBlur($event)"
                 [attr.required]="required() ? '' : undefined"
-                [attr.readonly]="readonlyInput ? '' : undefined"
+                [attr.readonly]="readonlyInput || readonly() ? '' : undefined"
                 [attr.disabled]="$disabled() ? '' : undefined"
                 (input)="onUserInput($event)"
                 [ngStyle]="inputStyle"
@@ -110,7 +110,7 @@ const DATEPICKER_INSTANCE = new InjectionToken<DatePicker>('DATEPICKER_INSTANCE'
                 [pAutoFocus]="autofocus"
                 [variant]="$variant()"
                 [fluid]="hasFluid"
-                [invalid]="invalid()"
+                [invalid]="$invalid()"
                 [pt]="ptm('pcInputText')"
                 [unstyled]="unstyled()"
             />
@@ -649,6 +649,12 @@ export class DatePicker extends BaseInput<DatePickerPassThrough> {
      * @group Props
      */
     @Input({ transform: booleanAttribute }) readonlyInput: boolean | undefined;
+    /**
+     * When present, the value is visible but cannot be edited, neither by typing nor from the calendar. A signal form (`[formField]`) sets it from the field state.
+     * @defaultValue false
+     * @group Props
+     */
+    readonly = input(false, { transform: booleanAttribute });
     /**
      * The cutoff year for determining the century for a date.
      * @group Props
@@ -1674,7 +1680,7 @@ export class DatePicker extends BaseInput<DatePickerPassThrough> {
     }
 
     onDateSelect(event: Event, dateMeta: any) {
-        if (this.$disabled() || !dateMeta.selectable) {
+        if (this.$disabled() || this.readonly() || !dateMeta.selectable) {
             event.preventDefault();
             return;
         }
@@ -3149,7 +3155,7 @@ export class DatePicker extends BaseInput<DatePickerPassThrough> {
     }
 
     showOverlay() {
-        if (!this.overlayVisible) {
+        if (!this.overlayVisible && !this.readonly()) {
             this.updateUI();
 
             if (!this.touchUI) {

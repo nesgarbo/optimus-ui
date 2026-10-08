@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { AccessibilityDemoComponent } from './accessibility/accessibilitydemo';
 import { PrimeFlexDemoComponent } from './primeflex/primeflexdemo';
 import { RTLDemoComponent } from './rtl/rtldemo';
+import { SignalFormsDemoComponent } from './signalforms/signalformsdemo';
 import { AnimationsDemoComponent } from './animations/animationsdemo';
 
 export default [
@@ -9,5 +10,6 @@ export default [
     { path: 'accessibility', component: AccessibilityDemoComponent },
     { path: 'animations', component: AnimationsDemoComponent },
     { path: 'primeflex', component: PrimeFlexDemoComponent },
-    { path: 'rtl', component: RTLDemoComponent }
+    { path: 'rtl', component: RTLDemoComponent },
+    { path: 'signalforms', component: SignalFormsDemoComponent }
 ] satisfies Routes;

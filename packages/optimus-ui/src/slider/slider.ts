@@ -75,6 +75,7 @@ export const SLIDER_VALUE_ACCESSOR: any = {
                 (touchend)="onDragEnd($event)"
                 (mousedown)="onMouseDown($event)"
                 (keydown)="onKeyDown($event)"
+                (blur)="onModelTouched()"
                 [attr.tabindex]="$disabled() ? null : tabindex"
                 role="slider"
                 [attr.aria-valuemin]="min"
@@ -97,6 +98,7 @@ export const SLIDER_VALUE_ACCESSOR: any = {
                 [style]="sx('handle')"
                 [ngStyle]="{ 'inset-inline-start': rangeStartLeft, bottom: rangeStartBottom }"
                 (keydown)="onKeyDown($event, 0)"
+                (blur)="onModelTouched()"
                 (mousedown)="onMouseDown($event, 0)"
                 (touchstart)="onDragStart($event, 0)"
                 (touchmove)="onDrag($event)"
@@ -104,7 +106,7 @@ export const SLIDER_VALUE_ACCESSOR: any = {
                 [attr.tabindex]="$disabled() ? null : tabindex"
                 role="slider"
                 [attr.aria-valuemin]="min"
-                [attr.aria-valuenow]="value ? value[0] : null"
+                [attr.aria-valuenow]="values ? values[0] : null"
                 [attr.aria-valuemax]="max"
                 [attr.aria-labelledby]="ariaLabelledBy"
                 [attr.aria-label]="ariaLabel"
@@ -123,6 +125,7 @@ export const SLIDER_VALUE_ACCESSOR: any = {
                 [ngStyle]="{ 'inset-inline-start': rangeEndLeft, bottom: rangeEndBottom }"
                 [style]="sx('handle')"
                 (keydown)="onKeyDown($event, 1)"
+                (blur)="onModelTouched()"
                 (mousedown)="onMouseDown($event, 1)"
                 (touchstart)="onDragStart($event, 1)"
                 (touchmove)="onDrag($event)"
@@ -130,7 +133,7 @@ export const SLIDER_VALUE_ACCESSOR: any = {
                 [attr.tabindex]="$disabled() ? null : tabindex"
                 role="slider"
                 [attr.aria-valuemin]="min"
-                [attr.aria-valuenow]="value ? value[1] : null"
+                [attr.aria-valuenow]="values ? values[1] : null"
                 [attr.aria-valuemax]="max"
                 [attr.aria-labelledby]="ariaLabelledBy"
                 [attr.aria-label]="ariaLabel"
@@ -717,7 +720,8 @@ export class Slider extends BaseEditableHolder<SliderPassThrough> {
      * Writes the value to the control.
      */
     writeControlValue(value: any): void {
-        if (this.range) this.values = value || [0, 0];
+        // A copy: the handles edit `values` in place, which must not reach the array of a signal form model.
+        if (this.range) this.values = value ? [...value] : [0, 0];
         else this.value = value || 0;
 
         this.updateHandleValue();

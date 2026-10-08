@@ -271,7 +271,7 @@ export class RadioButton extends BaseEditableHolder<RadioButtonPassThrough> {
 
     get dataP() {
         return this.cn({
-            invalid: this.invalid(),
+            invalid: this.$invalid(),
             checked: this.checked,
             disabled: this.$disabled(),
             filled: this.$variant() === 'filled',

@@ -232,7 +232,7 @@ export class ToggleSwitch extends BaseEditableHolder<ToggleSwitchPassThrough> {
         return this.cn({
             checked: this.checked(),
             disabled: this.$disabled(),
-            invalid: this.invalid()
+            invalid: this.$invalid()
         });
     }
 }

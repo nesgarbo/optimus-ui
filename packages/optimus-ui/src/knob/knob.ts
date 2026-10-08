@@ -33,6 +33,7 @@ export const KNOB_VALUE_ACCESSOR: any = {
             [style.height]="size + 'px'"
             (click)="onClick($event)"
             (keydown)="onKeyDown($event)"
+            (blur)="onModelTouched()"
             (mousedown)="onMouseDown($event)"
             (mouseup)="onMouseUp($event)"
             (touchstart)="onTouchStart($event)"

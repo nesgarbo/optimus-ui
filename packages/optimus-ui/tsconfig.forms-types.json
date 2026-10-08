@@ -1,0 +1,7 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": { "noEmit": true, "types": [] },
+    "files": ["src/forms-interop/forms-types.probe.ts"],
+    "include": [],
+    "angularCompilerOptions": { "strictTemplates": true, "strictInputTypes": true, "strictNullInputTypes": true }
+}

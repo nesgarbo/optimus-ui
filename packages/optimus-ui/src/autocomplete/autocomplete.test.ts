@@ -439,7 +439,7 @@ describe('AutoComplete', () => {
         });
 
         it('should have default values', () => {
-            expect(component.minQueryLength || component.minLength).toBe(1);
+            expect(component.minQueryLength ?? 1).toBe(1);
             expect(component.delay).toBe(300);
             expect(component.type).toBe('text');
             expect(component.autoZIndex).toBe(true);

@@ -1872,6 +1872,7 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
                 },
                 blur: () => {
                     this.focused.set(false);
+                    this.onModelTouched();
                     this.editorBlur.emit();
 
                     return false;
@@ -2039,7 +2040,6 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
         const emit = () => {
             this.value.set(value);
             this.onModelChange(value);
-            this.onModelTouched();
         };
 
         if (this.valueChangeTimer) clearTimeout(this.valueChangeTimer);
