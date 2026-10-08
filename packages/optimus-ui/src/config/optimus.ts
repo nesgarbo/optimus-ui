@@ -106,6 +106,18 @@ export class Optimus extends ThemeProvider {
         emptyFilterMessage: 'No results found',
         fileChosenMessage: 'Files',
         noFileChosenMessage: 'No file chosen',
+        validation: {
+            required: 'This field is required',
+            email: 'Enter a valid email address',
+            min: 'The minimum value is {0}',
+            max: 'The maximum value is {0}',
+            minLength: 'At least {0} characters are required',
+            maxLength: 'At most {0} characters are allowed',
+            pattern: 'The format is not valid',
+            minDate: 'The earliest date is {0}',
+            maxDate: 'The latest date is {0}',
+            invalid: 'The value is not valid'
+        },
         aria: {
             trueLabel: 'True',
             falseLabel: 'False',

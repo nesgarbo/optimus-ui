@@ -75,6 +75,24 @@ export interface Translation {
     emptySelectionMessage?: string;
     emptySearchMessage?: string;
     aria?: Aria;
+    validation?: ValidationMessages;
+}
+/**
+ * Default messages of the signal form errors shown by `p-fielderror`, by error kind. `{0}` is replaced with the limit of the rule.
+ * @group Interface
+ */
+export interface ValidationMessages {
+    required?: string;
+    email?: string;
+    min?: string;
+    max?: string;
+    minLength?: string;
+    maxLength?: string;
+    pattern?: string;
+    minDate?: string;
+    maxDate?: string;
+    /** Used when the error kind has no message. */
+    invalid?: string;
 }
 /**
  * Represents a set of translated HTML attributes used in a component or application.

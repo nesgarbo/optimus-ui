@@ -6,6 +6,7 @@ import { CascadeSelectModule } from '@openng/optimus-ui/cascadeselect';
 import { ColorPickerModule } from '@openng/optimus-ui/colorpicker';
 import { DatePickerModule } from '@openng/optimus-ui/datepicker';
 import { EditorModule } from '@openng/optimus-ui/editor';
+import { FieldErrorModule } from '@openng/optimus-ui/fielderror';
 import { InputMaskModule } from '@openng/optimus-ui/inputmask';
 import { InputNumberModule } from '@openng/optimus-ui/inputnumber';
 import { InputTextModule } from '@openng/optimus-ui/inputtext';
@@ -53,6 +54,7 @@ import { ToggleSwitchModule } from '@openng/optimus-ui/toggleswitch';
         TreeSelectModule,
         ColorPickerModule,
         EditorModule,
+        FieldErrorModule,
         InputMaskModule,
         TextEditorModule
     ],
@@ -79,6 +81,9 @@ import { ToggleSwitchModule } from '@openng/optimus-ui/toggleswitch';
         <p-datepicker selectionMode="range" [formField]="f.range" />
         <p-colorpicker [formField]="f.text" />
         <p-editor [formField]="f.text" />
+        <input pInputText [formField]="f.text" pFieldError />
+        <p-select [options]="cities" optionLabel="name" [formField]="f.city" pFieldError />
+        <p-fielderror [field]="f.num" />
         <input pInputMask="99-99" [formField]="f.text" />
         <p-inputmask mask="99-99" [formField]="f.text" />
         <p-text-editor-root [formField]="f.text"><p-text-editor-content /></p-text-editor-root>
