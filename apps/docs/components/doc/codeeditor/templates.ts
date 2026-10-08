@@ -29,8 +29,46 @@ const dependencies = {
     rxjs: '~7.8.0',
     tailwindcss: '^3.4.10',
     '@openng/optimus-ui-tailwindcss': `${version}`,
-    tslib: '^2.3.0',
-    'zone.js': '~0.15.0'
+    tslib: '^2.3.0'
+    // No zone.js: the generated app bootstraps zoneless (the Angular 22 default), like the docs app.
+};
+
+/**
+ * Heavy optional libraries, added to the StackBlitz project only when the demo imports the
+ * component that needs them. Versions mirror the `libs` catalog in pnpm-workspace.yaml.
+ * `styles` are extra stylesheets the component expects the host page to load.
+ */
+const componentDependencies: Record<string, { dependencies: Record<string, string>; styles?: string[] }> = {
+    map: {
+        dependencies: { 'maplibre-gl': '6.13.0' },
+        styles: ['https://unpkg.com/maplibre-gl@6.13.0/dist/maplibre-gl.css']
+    },
+    spreadsheet: {
+        dependencies: { '@univerjs/preset-sheets-core': '1.0.3', '@univerjs/presets': '1.0.3' },
+        styles: ['https://unpkg.com/@univerjs/preset-sheets-core@1.0.3/lib/index.css']
+    },
+    blockeditor: {
+        dependencies: {
+            '@tiptap/core': '3.31.4',
+            '@tiptap/extension-image': '3.31.4',
+            '@tiptap/extension-list': '3.31.4',
+            '@tiptap/extensions': '3.31.4',
+            '@tiptap/pm': '3.31.4',
+            '@tiptap/starter-kit': '3.31.4',
+            '@tiptap/suggestion': '3.31.4'
+        }
+    },
+    cropper: { dependencies: { cropperjs: '2.3.0' } },
+    pdfeditor: { dependencies: { 'pdf-lib': '1.17.1', 'pdfjs-dist': '6.4.299', '@pdf-lib/fontkit': '1.1.1' } }
+};
+
+const getComponentDependencies = (typescript = '') => {
+    const found = Object.entries(componentDependencies).filter(([name]) => typescript.includes(`@openng/optimus-ui/${name}'`));
+
+    return {
+        dependencies: Object.assign({}, ...found.map(([, value]) => value.dependencies)) as Record<string, string>,
+        styles: found.flatMap(([, value]) => value.styles ?? [])
+    };
 };
 
 const devDependencies = {
@@ -922,6 +960,9 @@ const getAngularApp = (props: Props = {}) => {
     const externalFiles = getExternalFiles(extFiles);
     const _routeFiles = getExternalFiles(routeFiles);
 
+    const extra = getComponentDependencies(code?.typescript);
+    const extraStyles = extra.styles.map((href) => `        <link href="${href}" rel="stylesheet" />\n`).join('');
+
     const index_html = `
 <!doctype html>
 <html lang="en">
@@ -933,7 +974,7 @@ const getAngularApp = (props: Props = {}) => {
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link href="https://unpkg.com/@openng/icons/openng-icons.css" rel="stylesheet" />
         <link href="https://unpkg.com/quill@1.3.7/dist/quill.snow.css" rel="stylesheet" />
-        <link rel="icon" type="image/svg+xml" href="https://optimus.openng.org/logo-icon.svg">
+${extraStyles}        <link rel="icon" type="image/svg+xml" href="https://optimus.openng.org/logo-icon.svg">
     </head>
     <body>
         <${selector}></${selector}>
@@ -988,7 +1029,8 @@ import Aura from '@openng/optimus-ui-themes/aura';
                     test: 'ng test'
                 },
                 dependencies: {
-                    ...dependencies
+                    ...dependencies,
+                    ...extra.dependencies
                 },
                 devDependencies: {
                     ...devDependencies

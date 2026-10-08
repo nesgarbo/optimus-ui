@@ -11,7 +11,7 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
     template: `
         <app-docsectiontext>
             <p>
-                <i>axes</i> is Syncfusion's model. An axis has its own scale, <i>majorTicks</i>, <i>minorTicks</i>, <i>labelStyle</i> (with <i>position</i>, <i>format</i> and <i>useRangeColor</i>), <i>ranges</i> (which can taper with
+                <i>axes</i> is the multi-axis model. An axis has its own scale, <i>majorTicks</i>, <i>minorTicks</i>, <i>labelStyle</i> (with <i>position</i>, <i>format</i> and <i>useRangeColor</i>), <i>ranges</i> (which can taper with
                 <i>startWidth</i> and <i>endWidth</i>), <i>pointers</i> and <i>annotations</i>. A pointer is a <i>needle</i> (with a <i>cap</i> and a <i>needleTail</i>), a <i>marker</i> (<i>circle</i>, <i>rectangle</i>, <i>triangle</i>,
                 <i>diamond</i> or <i>invertedTriangle</i>) or a <i>rangeBar</i>. An annotation is text or a template, placed by <i>angle</i> and <i>radius</i>.
             </p>

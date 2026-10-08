@@ -36,7 +36,7 @@ const staticMessages = {
 async function main() {
     const app = await TypeDoc.Application.bootstrapWithPlugins({
         // typedoc options here
-        name: 'PrimeNG',
+        name: 'Optimus UI',
         entryPointStrategy: 'expand',
         entryPoints: ['../../packages/optimus-ui/'],
         hideGenerator: true,
@@ -46,7 +46,7 @@ async function main() {
         disableSources: true,
         logLevel: 'Error',
         sort: ['source-order'],
-        exclude: ['node_modules', 'src/**/*spec.ts']
+        exclude: ['node_modules', 'src/**/*spec.ts', 'src/**/*.test.ts']
     });
 
     const project = await app.convert();

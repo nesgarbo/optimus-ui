@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, RESPONSE_INIT } from '@angular/core';
 import { ButtonModule } from '@openng/optimus-ui/button';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -20,7 +20,14 @@ export class NotFoundDemo implements OnInit {
 
     private metaService = inject(Meta);
 
+    // Only provided during SSR; lets the server answer with a real 404 status.
+    private responseInit = inject(RESPONSE_INIT, { optional: true });
+
     ngOnInit() {
+        if (this.responseInit) {
+            this.responseInit.status = 404;
+        }
+
         this.titleService.setTitle('Page Not Found - Optimus UI');
         this.metaService.updateTag({ name: 'robots', content: 'noindex' });
     }

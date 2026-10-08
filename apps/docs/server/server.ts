@@ -1,4 +1,5 @@
 import { APP_BASE_HREF } from '@angular/common';
+import { RESPONSE_INIT } from '@angular/core';
 import { CommonEngine } from '@angular/ssr/node';
 import express from 'express';
 import { existsSync, readFileSync } from 'node:fs';
@@ -184,6 +185,8 @@ export function app(): express.Express {
     // All regular routes use the Angular engine
     server.get(/.*/, (req, res, next) => {
         const { protocol, originalUrl, baseUrl, headers } = req;
+        // Pages can mutate this (e.g. the not-found page sets status 404) to control the HTTP response.
+        const responseInit: ResponseInit = {};
 
         commonEngine
             .render({
@@ -191,9 +194,12 @@ export function app(): express.Express {
                 documentFilePath: indexHtml,
                 url: `${protocol}://${headers.host}${originalUrl}`,
                 publicPath: browserDistFolder,
-                providers: [{ provide: APP_BASE_HREF, useValue: baseUrl }]
+                providers: [
+                    { provide: APP_BASE_HREF, useValue: baseUrl },
+                    { provide: RESPONSE_INIT, useValue: responseInit }
+                ]
             })
-            .then((html) => res.send(html))
+            .then((html) => res.status(responseInit.status ?? 200).send(html))
             .catch((err) => next(err));
     });
 

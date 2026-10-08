@@ -20,7 +20,6 @@ export const routes: Routes = [
             { path: 'pdfeditor', loadChildren: () => import('@/pages/pdfeditor/routes') },
             { path: 'signature', loadChildren: () => import('@/pages/signature/routes') },
             { path: 'spreadsheet', loadChildren: () => import('@/pages/spreadsheet/routes') },
-            { path: 'theming', redirectTo: 'theming/styled', pathMatch: 'full' },
             { path: 'autocomplete', loadChildren: () => import('@/pages/autocomplete/routes') },
             {
                 path: 'installation',
@@ -308,6 +307,8 @@ export const routes: Routes = [
                 path: 'treetable',
                 loadChildren: () => import('@/pages/treetable/routes')
             },
+            // Public URL is /virtualscroller but the page folder is pages/scroller (legacy name).
+            // Kept as is to avoid breaking inbound links; do not rename the route.
             {
                 path: 'virtualscroller',
                 loadChildren: () => import('@/pages/scroller/routes')
@@ -335,5 +336,7 @@ export const routes: Routes = [
         ]
     },
     { path: 'notfound', loadChildren: () => import('@/pages/notfound/routes') },
-    { path: '**', redirectTo: '/notfound' }
+    // Unknown URLs render the not-found page in place (no redirect, so no soft-404).
+    // NotFoundDemo sets the SSR response status to 404 through RESPONSE_INIT.
+    { path: '**', loadChildren: () => import('@/pages/notfound/routes') }
 ];

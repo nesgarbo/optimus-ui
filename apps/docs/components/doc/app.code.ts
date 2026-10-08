@@ -174,8 +174,11 @@ export class AppCode {
 
     private highlightCode() {
         if (isPlatformBrowser(this.platformId)) {
-            if (window['Prism'] && this.codeElement && !this.codeElement.nativeElement.classList.contains('prism')) {
-                window['Prism'].highlightElement(this.codeElement.nativeElement);
+            // See assets/js/prism-after.js: window.Prism may have been replaced by a third-party script.
+            const prism = window['__optimusPrism'] ?? window['Prism'];
+
+            if (prism?.highlightElement && this.codeElement && !this.codeElement.nativeElement.classList.contains('prism')) {
+                prism.highlightElement(this.codeElement.nativeElement);
                 this.codeElement.nativeElement.classList.add('prism');
                 this.codeElement.nativeElement.setAttribute('tabindex', '-1');
                 this.codeElement.nativeElement.parentElement?.setAttribute('tabindex', '-1');

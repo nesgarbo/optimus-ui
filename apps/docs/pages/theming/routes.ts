@@ -1,7 +1,9 @@
+import { Routes } from '@angular/router';
 import { ThemingStyledDemo } from './styled';
 import { ThemingUnstyledDemo } from './unstyled';
 
-export default [
+const routes: Routes = [
+    { path: '', redirectTo: 'styled', pathMatch: 'full' },
     {
         path: 'styled',
         component: ThemingStyledDemo
@@ -11,3 +13,5 @@ export default [
         component: ThemingUnstyledDemo
     }
 ];
+
+export default routes;

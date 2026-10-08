@@ -20,24 +20,20 @@ import { AppCode } from '@/components/doc/app.code';
 })
 export class ZIndexDoc {
     code: Code = {
-        typescript: `import { OptimusConfig } from '@openng/optimus-ui/api';
+        typescript: `import { ApplicationConfig } from '@angular/core';
+import { provideOptimus } from '@openng/optimus-ui/config';
 
-@Component({
-    selector: 'app-root',
-    templateUrl: './app.component.html'
-})
-export class AppComponent implements OnInit {
-
-    constructor(private optimusConfig: OptimusConfig) {}
-
-    ngOnInit() {
-        this.optimusConfig.zIndex = {
-            modal: 1100,    // dialog, sidebar
-            overlay: 1000,  // dropdown, overlaypanel
-            menu: 1000,     // overlay menus
-            tooltip: 1100   // tooltip
-        };
-    }
-}`
+export const appConfig: ApplicationConfig = {
+    providers: [
+        provideOptimus({
+            zIndex: {
+                modal: 1100,    // dialog, drawer
+                overlay: 1000,  // select, popover
+                menu: 1000,     // overlay menus
+                tooltip: 1100   // tooltip
+            }
+        })
+    ]
+};`
     };
 }

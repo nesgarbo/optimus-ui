@@ -63,23 +63,34 @@
                             { "input": "node_modules/@univerjs/preset-sheets-core/lib/index.css", "bundleName": "univer", "inject": false }
                         ],
                         "scripts": [
+                            "assets/js/prism-before.js",
                             "./node_modules/prismjs/prism.js",
                             "./node_modules/prismjs/components/prism-typescript.js",
                             "./node_modules/prismjs/components/prism-scss.js",
-                            "./node_modules/prismjs/components/prism-bash.js"
+                            "./node_modules/prismjs/components/prism-bash.js",
+                            "assets/js/prism-after.js"
                         ],
                         "allowedCommonJsDependencies": [
                             "chart.js",
                             "quill",
                             "quill-delta",
-                            "core-js",
-                            "raf",
-                            "rgbcolor"
+                            "react",
+                            "react/jsx-runtime",
+                            "react-dom",
+                            "react-dom/client",
+                            "pako",
+                            "ot-json1",
+                            "fast-diff",
+                            "async-lock"
                         ]
                     },
                     "configurations": {
                         "production": {
                             "outputHashing": "all",
+                            "budgets": [
+                                { "type": "initial", "maximumWarning": "3.5MB", "maximumError": "5MB" },
+                                { "type": "anyComponentStyle", "maximumWarning": "4kB", "maximumError": "8kB" }
+                            ],
                             "server": "server/main.server.ts",
                             "prerender": {
                                 "discoverRoutes": false,

@@ -25,19 +25,19 @@ export const DEMO_OUTLINE =
     '<h3>Theming</h3><p>Customize the editor appearance with CSS variables.</p>';
 
 export const MENTION_USERS = [
-    { id: 1, name: 'Amy Elsner', image: 'https://primefaces.org/cdn/primeng/images/demo/avatar/amyelsner.png' },
-    { id: 2, name: 'Anna Fali', image: 'https://primefaces.org/cdn/primeng/images/demo/avatar/annafali.png' },
-    { id: 3, name: 'Asiya Javayant', image: 'https://primefaces.org/cdn/primeng/images/demo/avatar/asiyajavayant.png' },
-    { id: 4, name: 'Bernardo Dominic', image: 'https://primefaces.org/cdn/primeng/images/demo/avatar/bernardodominic.png' },
-    { id: 5, name: 'Elwin Sharvill', image: 'https://primefaces.org/cdn/primeng/images/demo/avatar/elwinsharvill.png' },
-    { id: 6, name: 'Ioni Bowcher', image: 'https://primefaces.org/cdn/primeng/images/demo/avatar/ionibowcher.png' },
-    { id: 7, name: 'Ivan Magalhaes', image: 'https://primefaces.org/cdn/primeng/images/demo/avatar/ivanmagalhaes.png' },
-    { id: 8, name: 'Onyama Limba', image: 'https://primefaces.org/cdn/primeng/images/demo/avatar/onyamalimba.png' },
-    { id: 9, name: 'Stephen Shaw', image: 'https://primefaces.org/cdn/primeng/images/demo/avatar/stephenshaw.png' },
-    { id: 10, name: 'Xuxue Feng', image: 'https://primefaces.org/cdn/primeng/images/demo/avatar/xuxuefeng.png' }
+    { id: 1, name: 'Amy Elsner', image: 'https://optimus.openng.org/demo/avatar/amyelsner.png' },
+    { id: 2, name: 'Anna Fali', image: 'https://optimus.openng.org/demo/avatar/annafali.png' },
+    { id: 3, name: 'Asiya Javayant', image: 'https://optimus.openng.org/demo/avatar/asiyajavayant.png' },
+    { id: 4, name: 'Bernardo Dominic', image: 'https://optimus.openng.org/demo/avatar/bernardodominic.png' },
+    { id: 5, name: 'Elwin Sharvill', image: 'https://optimus.openng.org/demo/avatar/elwinsharvill.png' },
+    { id: 6, name: 'Ioni Bowcher', image: 'https://optimus.openng.org/demo/avatar/ionibowcher.png' },
+    { id: 7, name: 'Ivan Magalhaes', image: 'https://optimus.openng.org/demo/avatar/ivanmagalhaes.png' },
+    { id: 8, name: 'Onyama Limba', image: 'https://optimus.openng.org/demo/avatar/onyamalimba.png' },
+    { id: 9, name: 'Stephen Shaw', image: 'https://optimus.openng.org/demo/avatar/stephenshaw.png' },
+    { id: 10, name: 'Xuxue Feng', image: 'https://optimus.openng.org/demo/avatar/xuxuefeng.png' }
 ];
 
-export const DEMO_IMAGE_URL = 'https://primefaces.org/cdn/primeng/images/demo/product/blue-band.jpg';
+export const DEMO_IMAGE_URL = 'https://optimus.openng.org/demo/product/blue-band.jpg';
 
 /**
  * A handler that walks progress to 100% and resolves with a placeholder URL. A real one forwards
