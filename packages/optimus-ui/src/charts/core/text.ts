@@ -16,6 +16,8 @@ import type { ChartText } from '@openng/optimus-ui/types/charts';
 /** The built-in English catalogue, and the fallback for every missing key. */
 export const EN_CHART_TEXT: ChartText = {
     chart: 'Chart',
+    singleSeriesSummary: '{type} chart with {count} data points.',
+    multiSeriesSummary: 'Combination chart with {count} data series.',
     exportMenu: 'Export chart',
     downloadPNG: 'Download PNG',
     downloadJPEG: 'Download JPEG',

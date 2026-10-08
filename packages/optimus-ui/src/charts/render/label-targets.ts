@@ -39,6 +39,7 @@ import { radiusFor, type RadialAxis } from './series-radial';
 import { projectScatter } from './series-scatter';
 import { projectFunnel } from './series-funnel';
 import { projectTreemap } from './series-treemap';
+import { dataIndexMap, indexMap, pushAll } from '../core/lookup';
 
 /** What build-scene hands over for one series, once it knows the geometry that series was drawn with. */
 export type LabelSource =
@@ -60,34 +61,34 @@ export function collectLabels(ctx: DrawContext, props: ChartDataLabelsProps, sou
     for (const source of sources) {
         switch (source.kind) {
             case 'bar':
-                labels.push(...barLabels(ctx, props, source.series, source.slot, source.horizontal, source.stacked));
+                pushAll(labels, barLabels(ctx, props, source.series, source.slot, source.horizontal, source.stacked));
                 break;
             case 'line':
-                labels.push(...lineLabels(ctx, props, source.series));
+                pushAll(labels, lineLabels(ctx, props, source.series));
                 break;
             case 'scatter':
-                labels.push(...scatterLabels(ctx, props, source.series));
+                pushAll(labels, scatterLabels(ctx, props, source.series));
                 break;
             case 'pie':
-                labels.push(...sliceLabels(ctx, props, source.series, source.frame));
+                pushAll(labels, sliceLabels(ctx, props, source.series, source.frame));
                 break;
             case 'radar':
-                labels.push(...radarLabels(ctx, props, source.series, source.axis, source.frame));
+                pushAll(labels, radarLabels(ctx, props, source.series, source.axis, source.frame));
                 break;
             case 'polar':
-                labels.push(...polarLabels(ctx, props, source.series, source.axis, source.frame, source.sectorCount, source.sectorIndex));
+                pushAll(labels, polarLabels(ctx, props, source.series, source.axis, source.frame, source.sectorCount, source.sectorIndex));
                 break;
             case 'heatmap':
-                labels.push(...heatmapLabels(ctx, props, source.series));
+                pushAll(labels, heatmapLabels(ctx, props, source.series));
                 break;
             case 'treemap':
-                labels.push(...treemapLabels(ctx, props, source.series));
+                pushAll(labels, treemapLabels(ctx, props, source.series));
                 break;
             case 'funnel':
-                labels.push(...funnelLabels(ctx, props, source.series));
+                pushAll(labels, funnelLabels(ctx, props, source.series));
                 break;
             case 'candlestick':
-                labels.push(...candleLabels(ctx, props, source.series));
+                pushAll(labels, candleLabels(ctx, props, source.series));
                 break;
         }
     }
@@ -216,9 +217,10 @@ function scatterLabels(ctx: DrawContext, props: ChartDataLabelsProps, series: Re
     const data = (seriesProps.data as unknown[] | undefined) ?? [];
     const total = magnitudeTotal(points.map((point) => point.yValue));
     const labels: LabelInput[] = [];
+    const positions = dataIndexMap(series.points);
 
     for (const point of points) {
-        const category = series.points.find((entry) => entry.dataIndex === point.dataIndex)?.category ?? String(point.dataIndex);
+        const category = series.points[positions.get(point.dataIndex) ?? -1]?.category ?? String(point.dataIndex);
         const context = labelContext(data[point.dataIndex], point.dataIndex, series.seriesIndex, series.id, point.yValue, category);
         const percentage = shareOf(point.yValue, total);
         const style = labelStyle(ctx, props, context);
@@ -328,10 +330,12 @@ function radarLabels(ctx: DrawContext, props: ChartDataLabelsProps, series: Reso
     const minPercentage = props.minPercentage ?? 0;
     const labels: LabelInput[] = [];
 
+    const categoryIndex = indexMap(axis.categories);
+
     for (const point of series.points) {
         if (point.value == null || !ctx.isItemVisible(series.id, point.dataIndex)) continue;
 
-        const index = axis.categories.indexOf(point.category);
+        const index = categoryIndex.get(point.category) ?? -1;
 
         if (index < 0) continue;
 
@@ -380,10 +384,12 @@ function polarLabels(ctx: DrawContext, props: ChartDataLabelsProps, series: Reso
     const minPercentage = props.minPercentage ?? 0;
     const labels: LabelInput[] = [];
 
+    const categoryIndex = indexMap(axis.categories);
+
     for (const point of series.points) {
         if (point.value == null || !ctx.isItemVisible(series.id, point.dataIndex)) continue;
 
-        const index = axis.categories.indexOf(point.category);
+        const index = categoryIndex.get(point.category) ?? -1;
 
         if (index < 0) continue;
 

@@ -14,6 +14,7 @@ import { isMarkerShapeName, markerPath } from '../core/geometry';
 import { seriesColorClass } from '../core/palette';
 import type { ResolvedSeries } from '../charts-state';
 import { baselineOn, isHovered, markOpacity, scaleFor, slotGroup, type DrawContext } from './scene';
+import { dataIndexMap } from '../core/lookup';
 
 /** A line series projected into pixels. */
 export interface LineGeometry {
@@ -90,6 +91,8 @@ export function paintLineSeries(ctx: DrawContext, series: ResolvedSeries, props:
 
     const dash = resolveDashPattern(props.lineDash ?? props.lineStyle);
 
+    const positions = fillOpacity > 0 ? dataIndexMap(geometry.points) : null;
+
     for (const [runIndex, run] of runs.entries()) {
         if (run.length === 0) continue;
 
@@ -97,8 +100,7 @@ export function paintLineSeries(ctx: DrawContext, series: ResolvedSeries, props:
 
         if (fillOpacity > 0) {
             const lowerRun = run.map((point) => {
-                const index = geometry.points.findIndex((candidate) => candidate.dataIndex === point.dataIndex);
-                const target = geometry.lower[index] ?? { x: point.x, y: baseline };
+                const target = geometry.lower[positions!.get(point.dataIndex) ?? -1] ?? { x: point.x, y: baseline };
 
                 return { x: target.x, y: Number.isFinite(target.y) ? baseline + (target.y - baseline) * progress : baseline };
             });

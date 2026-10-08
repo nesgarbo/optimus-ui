@@ -93,17 +93,6 @@ export class ChartCanvas extends ChartRootBase {
 
     private ctx: CanvasRenderingContext2D | null = null;
 
-    /** The figure's accessible name, generated from the series when none was given. */
-    readonly $ariaLabel = computed(() => {
-        const series = this.chartState.resolvedSeries();
-
-        if (series.length === 0) return 'Chart';
-
-        const points = series.reduce((count, entry) => count + entry.points.length, 0);
-
-        return series.length === 1 ? `${series[0].type} chart with ${points} data points.` : `Combination chart with ${series.length} data series.`;
-    });
-
     constructor() {
         super();
 
@@ -181,7 +170,7 @@ export class ChartCanvas extends ChartRootBase {
 
         // Stamped as real SVG over the canvas, which is the only way a projected template can
         // carry bindings under a renderer that has no element tree of its own.
-        this.$stamps.set(scene.stamps);
+        this.setStamps(scene.stamps);
 
         ctx.clearRect(0, 0, width, height);
 

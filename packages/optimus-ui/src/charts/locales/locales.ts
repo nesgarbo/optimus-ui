@@ -42,6 +42,8 @@ export const ar: Partial<ChartText> = {
 /** German. */
 export const de: Partial<ChartText> = {
     chart: 'Diagramm',
+    singleSeriesSummary: '{type}-Diagramm mit {count} Datenpunkten.',
+    multiSeriesSummary: 'Kombinationsdiagramm mit {count} Datenreihen.',
     exportMenu: 'Diagramm exportieren',
     downloadPNG: 'PNG herunterladen',
     downloadJPEG: 'JPEG herunterladen',
@@ -67,6 +69,8 @@ export const de: Partial<ChartText> = {
 /** Spanish. */
 export const es: Partial<ChartText> = {
     chart: 'Gráfico',
+    singleSeriesSummary: 'Gráfico de {type} con {count} puntos de datos.',
+    multiSeriesSummary: 'Gráfico combinado con {count} series de datos.',
     exportMenu: 'Exportar gráfico',
     downloadPNG: 'Descargar PNG',
     downloadJPEG: 'Descargar JPEG',
@@ -92,6 +96,8 @@ export const es: Partial<ChartText> = {
 /** French. */
 export const fr: Partial<ChartText> = {
     chart: 'Graphique',
+    singleSeriesSummary: 'Graphique {type} avec {count} points de données.',
+    multiSeriesSummary: 'Graphique combiné avec {count} séries de données.',
     exportMenu: 'Exporter le graphique',
     downloadPNG: 'Télécharger PNG',
     downloadJPEG: 'Télécharger JPEG',
@@ -142,6 +148,8 @@ export const he: Partial<ChartText> = {
 /** Italian. Exported as `it`, which collides with the `it` of Vitest, Jest and Mocha. */
 export const it: Partial<ChartText> = {
     chart: 'Grafico',
+    singleSeriesSummary: 'Grafico {type} con {count} punti dati.',
+    multiSeriesSummary: 'Grafico combinato con {count} serie di dati.',
     exportMenu: 'Esporta grafico',
     downloadPNG: 'Scarica PNG',
     downloadJPEG: 'Scarica JPEG',
@@ -267,6 +275,8 @@ export const pl: Partial<ChartText> = {
 /** Portuguese. */
 export const pt: Partial<ChartText> = {
     chart: 'Gráfico',
+    singleSeriesSummary: 'Gráfico de {type} com {count} pontos de dados.',
+    multiSeriesSummary: 'Gráfico combinado com {count} séries de dados.',
     exportMenu: 'Exportar gráfico',
     downloadPNG: 'Baixar PNG',
     downloadJPEG: 'Baixar JPEG',

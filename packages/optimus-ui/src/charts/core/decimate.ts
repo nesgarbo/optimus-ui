@@ -216,6 +216,15 @@ export function decimate(samples: readonly Sample[], algorithm: DecimationAlgori
     }
 }
 
+/** Min or max of a list without spreading it, which overflows the call stack on a large array. */
+function extreme(values: readonly number[], pick: (a: number, b: number) => number, seed: number): number {
+    let result = seed;
+
+    for (const value of values) result = pick(result, value);
+
+    return result;
+}
+
 /** Combines a group of values by the named method. */
 export function aggregate(values: readonly number[], method: AggregationMethod): number {
     if (values.length === 0) return 0;
@@ -224,9 +233,9 @@ export function aggregate(values: readonly number[], method: AggregationMethod):
         case 'sum':
             return values.reduce((total, value) => total + value, 0);
         case 'min':
-            return Math.min(...values);
+            return extreme(values, Math.min, Infinity);
         case 'max':
-            return Math.max(...values);
+            return extreme(values, Math.max, -Infinity);
         case 'first':
             return values[0];
         case 'last':
@@ -246,8 +255,48 @@ export function aggregateOhlc(values: readonly { open: number; high: number; low
 
     return {
         open: values[0].open,
-        high: Math.max(...values.map((v) => v.high)),
-        low: Math.min(...values.map((v) => v.low)),
+        high: values.reduce((top, v) => Math.max(top, v.high), -Infinity),
+        low: values.reduce((bottom, v) => Math.min(bottom, v.low), Infinity),
         close: values[values.length - 1].close
     };
+}
+
+/** The part of a resolved point that decimation reads. */
+interface DecimablePoint {
+    value: number | null;
+    xValue?: number | null;
+    dataIndex: number;
+}
+
+/** The series types whose points are a summary of their own and must not be thinned. */
+const UNDECIMATED_TYPES: readonly string[] = ['heatmap', 'boxplot', 'candlestick'];
+
+/**
+ * Thins a series' points when it is over the threshold.
+ *
+ * A continuous-x series (a scatter) is placed by its own x value; a category series by its position,
+ * which is what keeps the line's shape under the algorithm's distance measure. A point with a null
+ * value is a gap in the line, so it is kept rather than dropped: removing it would silently draw a
+ * line through the hole.
+ */
+export function decimateSeriesPoints<P extends DecimablePoint>(points: P[], settings: { algorithm: DecimationAlgorithm; samples: number; threshold: number }, continuousX: boolean, type: string): P[] {
+    if (UNDECIMATED_TYPES.includes(type) || points.length <= settings.threshold) return points;
+
+    const samples: Sample[] = [];
+
+    for (const point of points) {
+        if (point.value == null) continue;
+
+        const x = continuousX ? point.xValue : point.dataIndex;
+
+        if (x == null || !Number.isFinite(x)) continue;
+
+        samples.push({ x, y: point.value, index: point.dataIndex });
+    }
+
+    if (samples.length === 0) return points;
+
+    const keep = new Set(decimate(samples, settings.algorithm, settings.samples).map((sample) => sample.index));
+
+    return points.filter((point) => point.value == null || keep.has(point.dataIndex));
 }

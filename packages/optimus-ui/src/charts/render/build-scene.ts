@@ -43,6 +43,7 @@ import { paintAxisGroups } from './axis-groups';
 import { formatNumberTick } from '../core/format';
 import { polarToCartesian } from '../core/geometry';
 import { responsiveTier } from '../core/layout';
+import { dataIndexMap, pushAll } from '../core/lookup';
 import { responsiveContext } from '../core/responsive';
 import { bandSlotFor, groupedBars, paintBarSeries, shouldGroup } from './series-bar';
 import { paintLineSeries, projectLine } from './series-line';
@@ -149,6 +150,79 @@ export function buildDrawContext(context: ChartContext, chartId: string, measure
     };
 }
 
+/**
+ * What a series painted last time, kept so a pointer move that does not touch the series does not
+ * repaint it.
+ *
+ * A hover changes the scene for the hovered series, and for every series only when a dimming
+ * treatment is on. Everything else comes out identical, and on a chart with many series that is most
+ * of the work of a frame.
+ */
+interface SeriesCacheEntry {
+    deps: readonly unknown[];
+    marks: SvgNode[];
+    labels: LabelSource[];
+    stamps: SceneStamp[];
+}
+
+const SERIES_CACHES = new WeakMap<ChartContext, Map<string, SeriesCacheEntry>>();
+
+function seriesCacheFor(context: ChartContext): Map<string, SeriesCacheEntry> {
+    let cache = SERIES_CACHES.get(context);
+
+    if (!cache) {
+        cache = new Map();
+        SERIES_CACHES.set(context, cache);
+    }
+
+    return cache;
+}
+
+/** Whether the hover can change what this series paints. */
+function seriesDependsOnHover(ctx: DrawContext, entry: ResolvedSeries): boolean {
+    if (!ctx.hover) return false;
+    if (ctx.hover.datasetId === entry.id) return true;
+
+    // Dimming fades every mark but the hovered one, so every series depends on it.
+    return ctx.hoverEffect != null && ctx.hoverEffect.dimOpacity < 1;
+}
+
+/** Everything a series' paint reads other than the hover. Compared element by element. */
+function cacheDeps(context: ChartContext, series: readonly ResolvedSeries[], ctx: DrawContext, entry: ResolvedSeries, labelled: boolean): unknown[] {
+    const effect = ctx.hoverEffect;
+
+    return [
+        entry,
+        series,
+        entry.registration.props(),
+        entry.registration.templates?.(),
+        ctx.area,
+        ctx.scales,
+        ctx.theme,
+        ctx.isDark,
+        ctx.fontFamily,
+        ctx.fontSize,
+        ctx.direction,
+        ctx.locale,
+        ctx.progress,
+        ctx.chartId,
+        context.hiddenItems(),
+        context.hiddenDatasets(),
+        labelled,
+        effect ? `${effect.brightness}|${effect.dimOpacity}|${effect.offset}|${effect.scale}|${effect.radiusMultiplier}|${effect.backgroundColor ?? ''}` : null
+    ];
+}
+
+function cacheStamp(context: ChartContext, series: readonly ResolvedSeries[], ctx: DrawContext, entry: ResolvedSeries, labelled: boolean): { deps: unknown[] } {
+    return { deps: cacheDeps(context, series, ctx, entry, labelled) };
+}
+
+function cacheValid(cached: SeriesCacheEntry, context: ChartContext, series: readonly ResolvedSeries[], ctx: DrawContext, entry: ResolvedSeries, labelled: boolean): boolean {
+    const next = cacheDeps(context, series, ctx, entry, labelled);
+
+    return next.length === cached.deps.length && next.every((value, i) => value === cached.deps[i]);
+}
+
 /** Builds the whole scene. */
 export function buildScene(context: ChartContext, series: readonly ResolvedSeries[], drawContext: DrawContext): BuiltScene {
     const scene = createScene();
@@ -163,6 +237,7 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
     const labelSources: LabelSource[] = [];
 
     const stamps: SceneStamp[] = [];
+    const cache = seriesCacheFor(context);
 
     if (drawContext.area.width <= 0 || drawContext.area.height <= 0) {
         return { layers: [], defs, axisRenders, stamps };
@@ -191,11 +266,11 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
 
         // The grid belongs to the axis that generated it but draws under the marks, so the two are
         // painted into different layers from one resolution pass.
-        scene.add('grid', ...paintGrid(drawContext, render, props, position, registration.id, type));
-        scene.add('axes', ...paintAxis(drawContext, render, props, position, registration.id));
+        scene.addAll('grid', paintGrid(drawContext, render, props, position, registration.id, type));
+        scene.addAll('axes', paintAxis(drawContext, render, props, position, registration.id));
         // The group rows sit outside the tick row, so they need to know how far out that already
         // reaches -- which is exactly what the axis reserved for itself.
-        scene.add('axes', ...paintAxisGroups(drawContext, scale, (props as { axisGroups?: { props: Record<string, unknown>; depth: number }[] }).axisGroups, position, render.reservation));
+        scene.addAll('axes', paintAxisGroups(drawContext, scale, (props as { axisGroups?: { props: Record<string, unknown>; depth: number }[] }).axisGroups, position, render.reservation));
     }
 
     /* --- References --------------------------------------------------------------------------- */
@@ -209,7 +284,7 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
         if (registration.type.startsWith('referenceBand')) {
             const props = registration.props() as ChartReferenceBandProps;
 
-            scene.add(props.placement === 'afterData' ? 'bandsAbove' : 'bandsBelow', ...paintReferenceBand(drawContext, props));
+            scene.addAll(props.placement === 'afterData' ? 'bandsAbove' : 'bandsBelow', paintReferenceBand(drawContext, props));
             continue;
         }
 
@@ -217,7 +292,7 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
 
         const props = registration.props() as ChartReferenceLineProps;
 
-        scene.add(props.placement === 'beforeData' ? 'bandsBelow' : 'references', ...paintReferenceLine(drawContext, props));
+        scene.addAll(props.placement === 'beforeData' ? 'bandsBelow' : 'references', paintReferenceLine(drawContext, props));
     }
 
     /* --- Range bands ------------------------------------------------------------------------- */
@@ -237,7 +312,7 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
         // fill, so the documented answer is the first two.
         if (pair.length < 2) continue;
 
-        scene.add('marks', ...paintRangeBand(drawContext, [pair[0], pair[1]], props));
+        scene.addAll('marks', paintRangeBand(drawContext, [pair[0], pair[1]], props));
     }
 
     /* --- Marks -------------------------------------------------------------------------------- */
@@ -260,11 +335,11 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
         // to reserve against.
         const spokeFrame = radialFrame(drawContext, radialAxis.categories);
 
-        scene.add('grid', ...paintRadialGrid(drawContext, radialAxis, axisProps, spokeFrame, spoked.some((entry) => entry.type === 'radar') ? 'polygon' : 'circle'));
+        scene.addAll('grid', paintRadialGrid(drawContext, radialAxis, axisProps, spokeFrame, spoked.some((entry) => entry.type === 'radar') ? 'polygon' : 'circle'));
 
         for (const entry of spoked) {
             if (entry.type === 'radar') {
-                scene.add('marks', ...paintRadarSeries(drawContext, entry, entry.registration.props() as RadarSeriesProps, radialAxis, spokeFrame));
+                scene.addAll('marks', paintRadarSeries(drawContext, entry, entry.registration.props() as RadarSeriesProps, radialAxis, spokeFrame));
 
                 if (labelsFeature) labelSources.push({ kind: 'radar', series: entry, axis: radialAxis, frame: spokeFrame });
 
@@ -274,7 +349,7 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
             const position = polarMembers.indexOf(entry);
             const sectorIndex = position < 0 ? 0 : position;
 
-            scene.add('marks', ...paintPolarSeries(drawContext, entry, entry.registration.props() as PolarSeriesProps, radialAxis, spokeFrame, polarMembers.length || 1, sectorIndex));
+            scene.addAll('marks', paintPolarSeries(drawContext, entry, entry.registration.props() as PolarSeriesProps, radialAxis, spokeFrame, polarMembers.length || 1, sectorIndex));
 
             if (labelsFeature) labelSources.push({ kind: 'polar', series: entry, axis: radialAxis, frame: spokeFrame, sectorCount: polarMembers.length || 1, sectorIndex });
         }
@@ -283,13 +358,32 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
     for (const entry of series) {
         if (!entry.visible || entry.points.length === 0) continue;
 
+        const dependsOnHover = seriesDependsOnHover(drawContext, entry);
+        const cached = dependsOnHover ? null : cache.get(entry.id);
+
+        if (cached && cacheValid(cached, context, series, drawContext, entry, labelsFeature != null)) {
+            scene.addAll('marks', cached.marks);
+            pushAll(labelSources, cached.labels);
+            pushAll(stamps, cached.stamps);
+
+            const cachedGradient = gradientDefFor(entry);
+
+            if (cachedGradient) defs.push(cachedGradient);
+
+            continue;
+        }
+
+        const marks: SvgNode[] = [];
+        const entryLabels: LabelSource[] = [];
+        const entryStamps: SceneStamp[] = [];
+
         switch (entry.type) {
             case 'line':
-                scene.add('marks', ...paintLineSeries(drawContext, entry, entry.registration.props() as LineSeriesProps));
+                pushAll(marks, paintLineSeries(drawContext, entry, entry.registration.props() as LineSeriesProps));
 
-                if (labelsFeature) labelSources.push({ kind: 'line', series: entry });
+                if (labelsFeature) entryLabels.push({ kind: 'line', series: entry });
 
-                collectLineStamps(drawContext, entry, entry.registration.props() as LineSeriesProps, stamps);
+                collectLineStamps(drawContext, entry, entry.registration.props() as LineSeriesProps, entryStamps);
 
                 break;
             case 'bar': {
@@ -300,27 +394,27 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
                 const position = groupMembers.indexOf(entry);
                 const slot = bandSlotFor(bandwidth, groupMembers.length || 1, position < 0 ? 0 : position, props, grouped && position >= 0);
 
-                scene.add('marks', ...paintBarSeries(drawContext, entry, props, slot, horizontal));
+                pushAll(marks, paintBarSeries(drawContext, entry, props, slot, horizontal));
 
                 // A stacked segment has a neighbour immediately past its end, so its label goes
                 // inside rather than beside it -- which is why the stack id has to reach the
                 // collector.
-                if (labelsFeature) labelSources.push({ kind: 'bar', series: entry, slot, horizontal, stacked: entry.registration.stackId != null });
+                if (labelsFeature) entryLabels.push({ kind: 'bar', series: entry, slot, horizontal, stacked: entry.registration.stackId != null });
 
                 break;
             }
             case 'scatter':
-                scene.add('marks', ...paintScatterSeries(drawContext, entry, entry.registration.props() as ScatterSeriesProps));
+                pushAll(marks, paintScatterSeries(drawContext, entry, entry.registration.props() as ScatterSeriesProps));
 
-                if (labelsFeature) labelSources.push({ kind: 'scatter', series: entry });
+                if (labelsFeature) entryLabels.push({ kind: 'scatter', series: entry });
 
-                collectScatterStamps(drawContext, entry, entry.registration.props() as ScatterSeriesProps, stamps);
+                collectScatterStamps(drawContext, entry, entry.registration.props() as ScatterSeriesProps, entryStamps);
 
                 break;
             case 'candlestick':
-                scene.add('marks', ...paintCandlestickSeries(drawContext, entry, entry.registration.props() as CandlestickSeriesProps));
+                pushAll(marks, paintCandlestickSeries(drawContext, entry, entry.registration.props() as CandlestickSeriesProps));
 
-                if (labelsFeature) labelSources.push({ kind: 'candlestick', series: entry });
+                if (labelsFeature) entryLabels.push({ kind: 'candlestick', series: entry });
 
                 break;
             case 'heatmap': {
@@ -328,39 +422,39 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
 
                 const heatScale = resolveHeatmapScale(entry, props);
 
-                scene.add('marks', ...paintHeatmapSeries(drawContext, entry, props, heatScale));
+                pushAll(marks, paintHeatmapSeries(drawContext, entry, props, heatScale));
 
-                if (labelsFeature) labelSources.push({ kind: 'heatmap', series: entry });
+                if (labelsFeature) entryLabels.push({ kind: 'heatmap', series: entry });
 
-                collectHeatmapStamps(drawContext, entry, props, heatScale, stamps);
+                collectHeatmapStamps(drawContext, entry, props, heatScale, entryStamps);
 
                 break;
             }
             case 'treemap':
-                scene.add('marks', ...paintTreemapSeries(drawContext, entry, entry.registration.props() as TreemapSeriesProps));
+                pushAll(marks, paintTreemapSeries(drawContext, entry, entry.registration.props() as TreemapSeriesProps));
 
-                if (labelsFeature) labelSources.push({ kind: 'treemap', series: entry });
+                if (labelsFeature) entryLabels.push({ kind: 'treemap', series: entry });
 
-                collectTreemapStamps(drawContext, entry, entry.registration.props() as TreemapSeriesProps, stamps);
+                collectTreemapStamps(drawContext, entry, entry.registration.props() as TreemapSeriesProps, entryStamps);
 
                 break;
             case 'sunburst':
-                scene.add('marks', ...paintSunburstSeries(drawContext, entry, entry.registration.props() as SunburstSeriesProps));
+                pushAll(marks, paintSunburstSeries(drawContext, entry, entry.registration.props() as SunburstSeriesProps));
 
                 break;
             case 'sankey':
-                scene.add('marks', ...paintSankeySeries(drawContext, entry, entry.registration.props() as SankeySeriesProps));
+                pushAll(marks, paintSankeySeries(drawContext, entry, entry.registration.props() as SankeySeriesProps));
 
                 break;
             case 'boxplot':
-                scene.add('marks', ...paintBoxplotSeries(drawContext, entry, entry.registration.props() as BoxplotSeriesProps));
+                pushAll(marks, paintBoxplotSeries(drawContext, entry, entry.registration.props() as BoxplotSeriesProps));
 
                 break;
             case 'funnel':
             case 'pyramid':
-                scene.add('marks', ...paintFunnelSeries(drawContext, entry, entry.registration.props() as FunnelSeriesProps));
+                pushAll(marks, paintFunnelSeries(drawContext, entry, entry.registration.props() as FunnelSeriesProps));
 
-                if (labelsFeature) labelSources.push({ kind: 'funnel', series: entry });
+                if (labelsFeature) entryLabels.push({ kind: 'funnel', series: entry });
 
                 break;
             case 'radar':
@@ -373,11 +467,11 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
                 const props = entry.registration.props() as PieSeriesProps;
                 const ringFrame = ringFrameFor(frame, entry, rings, props);
 
-                scene.add('marks', ...paintPieSeries(drawContext, entry, props, ringFrame));
+                pushAll(marks, paintPieSeries(drawContext, entry, props, ringFrame));
 
-                if (labelsFeature) labelSources.push({ kind: 'pie', series: entry, frame: ringFrame });
+                if (labelsFeature) entryLabels.push({ kind: 'pie', series: entry, frame: ringFrame });
 
-                collectSliceStamps(drawContext, entry, props, ringFrame, stamps);
+                collectSliceStamps(drawContext, entry, props, ringFrame, entryStamps);
 
                 break;
             }
@@ -386,6 +480,14 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
                 // type keeps a chart with one unsupported series rendering the rest of itself.
                 break;
         }
+
+        scene.addAll('marks', marks);
+        pushAll(labelSources, entryLabels);
+        pushAll(stamps, entryStamps);
+
+        // Remembered only when hover played no part, so the copy is the same one a hover-free
+        // paint would make and can stand in for it on the next pointer move.
+        if (!dependsOnHover) cache.set(entry.id, { ...cacheStamp(context, series, drawContext, entry, labelsFeature != null), marks, labels: entryLabels, stamps: entryStamps });
 
         const gradient = gradientDefFor(entry);
 
@@ -399,7 +501,7 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
     if (labelsFeature) {
         const props = labelsFeature.props();
 
-        scene.add('dataLabels', ...paintDataLabels(drawContext, props, collectLabels(drawContext, props, labelSources)));
+        scene.addAll('dataLabels', paintDataLabels(drawContext, props, collectLabels(drawContext, props, labelSources)));
     }
 
     /* --- Crosshair ---------------------------------------------------------------------------- */
@@ -407,7 +509,7 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
     const tooltip = context.feature<ChartTooltipProps>('tooltip')()?.props();
 
     if (tooltip?.crosshair && drawContext.hover) {
-        scene.add('crosshair', ...paintCrosshair(drawContext, tooltip.crosshair));
+        scene.addAll('crosshair', paintCrosshair(drawContext, tooltip.crosshair));
     }
 
     return { layers: scene.toLayers(), defs, axisRenders, stamps };
@@ -635,6 +737,7 @@ function collectScatterStamps(ctx: DrawContext, series: ResolvedSeries, props: S
     if (!template) return;
 
     const data = (props.data as unknown[] | undefined) ?? [];
+    const positions = dataIndexMap(series.points);
 
     for (const point of projectScatter(ctx, series, props)) {
         out.push({
@@ -645,7 +748,7 @@ function collectScatterStamps(ctx: DrawContext, series: ResolvedSeries, props: S
                 data: data[point.dataIndex],
                 index: point.dataIndex,
                 value: point.yValue,
-                label: series.points.find((entry) => entry.dataIndex === point.dataIndex)?.category ?? String(point.dataIndex),
+                label: series.points[positions.get(point.dataIndex) ?? -1]?.category ?? String(point.dataIndex),
                 color: ctx.seriesColor(series.seriesIndex),
                 x: point.x,
                 y: point.y,

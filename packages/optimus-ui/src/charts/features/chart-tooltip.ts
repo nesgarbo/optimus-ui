@@ -11,6 +11,7 @@ import type { BoxStats } from '../core/boxplot';
 import { formatNumberTick } from '../core/format';
 import { boxStatsOf } from '../render/series-boxplot';
 import { seriesColorAt } from '../core/palette';
+import { categoryOf, indexOfCategory, valueOf } from '../core/tooltip-read';
 import { CHART_CONTEXT, type ChartContext } from '../charts-registry';
 import { ChartTooltipDef } from './chart-defs';
 
@@ -176,7 +177,7 @@ export class ChartTooltip {
         const category =
             primary.type === 'sankey'
                 ? `${primaryData[hover.index]?.[String(primaryProps['sourceField'] ?? 'source')] ?? ''} → ${primaryData[hover.index]?.[String(primaryProps['targetField'] ?? 'target')] ?? ''}`
-                : String(primaryData[hover.index]?.[categoryFieldOf(primaryProps)] ?? hover.index);
+                : categoryOf(primaryProps, primaryData[hover.index], hover.index, primary.seriesIndex(), primary.id);
         const shared = this.mode() === 'shared';
 
         // In shared mode every series contributes its value at the same category, which is what
@@ -189,14 +190,13 @@ export class ChartTooltip {
 
             const props = entry.props() as Record<string, unknown>;
             const data = (props['data'] as Record<string, unknown>[] | undefined) ?? [];
-            const index: number = shared ? data.findIndex((datum) => String(datum?.[categoryFieldOf(props)] ?? '') === category) : hover.index;
+            const index: number = shared ? indexOfCategory(props, data, category, entry.seriesIndex(), entry.id) : hover.index;
             const resolvedIndex = index >= 0 ? index : hover.index;
             // A box plot has five numbers to say, and the median stands for it where one is needed.
             const box = entry.type === 'boxplot' ? boxStatsOf(props as BoxplotSeriesProps, data[resolvedIndex]) : null;
-            const raw = box ? box.median : data[resolvedIndex]?.[valueFieldOf(props)];
-            const value = typeof raw === 'number' ? raw : Number(raw);
+            const value = box ? box.median : valueOf(props, data[resolvedIndex], resolvedIndex, entry.seriesIndex(), entry.id);
 
-            if (!Number.isFinite(value)) continue;
+            if (value == null || !Number.isFinite(value)) continue;
 
             const color = typeof props['color'] === 'string' ? (props['color'] as string) : seriesColorAt(palette, entry.seriesIndex());
             const formatter = this.valueFormatter();
@@ -320,20 +320,6 @@ export class ChartTooltip {
             stop();
         });
     }
-}
-
-/** Reads the category field a series binds to, falling back to the documented default. */
-function categoryFieldOf(props: Record<string, unknown>): string {
-    const field = props['categoryXField'] ?? props['categoryYField'] ?? props['categoryField'];
-
-    return typeof field === 'string' ? field : 'category';
-}
-
-/** Reads the value field a series binds to, falling back to the documented default. */
-function valueFieldOf(props: Record<string, unknown>): string {
-    const field = props['valueYField'] ?? props['valueXField'] ?? props['valueField'];
-
-    return typeof field === 'string' ? field : 'value';
 }
 
 /** Accepts a numeric input while letting `undefined` stay `undefined`. */

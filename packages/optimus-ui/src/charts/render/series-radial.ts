@@ -20,6 +20,7 @@ import type { ResolvedSeries } from '../charts-state';
 import { isHovered, markOpacity, slotGroup, type DrawContext } from './scene';
 import { dashAttr } from './series-line';
 import type { PieFrame } from './series-pie';
+import { indexMap } from '../core/lookup';
 
 /** The radial value axis, resolved into rings. */
 export interface RadialAxis {
@@ -254,10 +255,12 @@ export function paintRadarSeries(ctx: DrawContext, series: ResolvedSeries, props
     const data = (props.data as unknown[] | undefined) ?? [];
     const vertices: { x: number; y: number; dataIndex: number; value: number }[] = [];
 
+    const categoryIndex = indexMap(axis.categories);
+
     for (const point of series.points) {
         if (point.value == null || !ctx.isItemVisible(series.id, point.dataIndex)) continue;
 
-        const index = axis.categories.indexOf(point.category);
+        const index = categoryIndex.get(point.category) ?? -1;
 
         if (index < 0) continue;
 
@@ -339,10 +342,12 @@ export function paintPolarSeries(ctx: DrawContext, series: ResolvedSeries, props
     const data = (props.data as unknown[] | undefined) ?? [];
     const nodes: SvgNode[] = [];
 
+    const categoryIndex = indexMap(axis.categories);
+
     for (const point of series.points) {
         if (point.value == null || !ctx.isItemVisible(series.id, point.dataIndex)) continue;
 
-        const index = axis.categories.indexOf(point.category);
+        const index = categoryIndex.get(point.category) ?? -1;
 
         if (index < 0) continue;
 

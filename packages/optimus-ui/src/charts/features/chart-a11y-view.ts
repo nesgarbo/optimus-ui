@@ -94,22 +94,43 @@ export class ChartA11yView {
      * publish rows a decimated or stacked chart never drew.
      */
     private readonly tableData = computed(() => {
-        const csv = this.context?.toCsv() ?? '';
+        const empty = { series: [] as { name: string; values: (number | null)[] }[], categories: [] as string[], headings: [] as string[] };
+        const maxRows = this.props().dataTableMaxRows ?? 100;
+        let headings: string[];
+        let body: (string | number | null)[][];
 
-        if (csv === '') return { series: [] as { name: string; values: (number | null)[] }[], categories: [] as string[], headings: [] as string[] };
+        if (this.context?.table) {
+            // The state's own table, already built and cached: nothing is serialised and parsed back.
+            const table = this.context.table();
 
-        const [header, ...body] = csv.split('\n').map(parseCsvRow);
-        const limited = body.slice(0, this.props().dataTableMaxRows ?? 100);
+            headings = table.headings;
+            body = table.rows.length > maxRows ? table.rows.slice(0, maxRows) : table.rows;
+        } else {
+            const csv = this.context?.toCsv() ?? '';
+
+            if (csv === '') return empty;
+
+            const [header, ...rows] = csv.split('\n').map(parseCsvRow);
+
+            headings = header;
+            body = rows.slice(0, maxRows);
+        }
+
+        if (headings.length === 0) return empty;
 
         return {
-            headings: header,
-            categories: limited.map((row) => row[0]),
-            series: header.slice(1).map((name, column) => ({
+            headings,
+            categories: body.map((row) => String(row[0] ?? '')),
+            series: headings.slice(1).map((name, column) => ({
                 name,
-                values: limited.map((row) => {
-                    const parsed = Number(row[column + 1]);
+                values: body.map((row) => {
+                    const cell = row[column + 1];
 
-                    return row[column + 1] === '' || !Number.isFinite(parsed) ? null : parsed;
+                    if (cell == null || cell === '') return null;
+
+                    const parsed = typeof cell === 'number' ? cell : Number(cell);
+
+                    return Number.isFinite(parsed) ? parsed : null;
                 })
             }))
         };
@@ -148,9 +169,17 @@ export class ChartA11yView {
 
             if (values.length === 0) return `${entry.name}: no data.`;
 
-            const peak = resolved.categories[entry.values.indexOf(Math.max(...values))];
+            let lowest = Infinity;
+            let highest = -Infinity;
 
-            return `${entry.name}: ${values.length} points, from ${Math.min(...values)} to ${Math.max(...values)}, peaking at ${peak}.`;
+            for (const value of values) {
+                if (value < lowest) lowest = value;
+                if (value > highest) highest = value;
+            }
+
+            const peak = resolved.categories[entry.values.indexOf(highest)];
+
+            return `${entry.name}: ${values.length} points, from ${lowest} to ${highest}, peaking at ${peak}.`;
         });
 
         return `${type} with ${resolved.series.length} data series. ${sentences.join(' ')}`;

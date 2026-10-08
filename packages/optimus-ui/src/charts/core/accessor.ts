@@ -165,12 +165,28 @@ export function readNumeric<T>(accessor: FieldAccessor<T, number> | undefined, d
     const ctx = itemContext(datum, index, seriesIndex, seriesId, null);
     const resolved = resolveScalarAccessor(accessor, ctx, undefined);
 
-    if (typeof resolved === 'number') return Number.isFinite(resolved) ? resolved : null;
+    const direct = toFiniteNumber(resolved);
 
-    if (resolved == null && fallbackField) {
-        const read = readPath(datum, fallbackField);
+    if (direct != null) return direct;
 
-        return typeof read === 'number' && Number.isFinite(read) ? read : null;
+    if (resolved == null && fallbackField) return toFiniteNumber(readPath(datum, fallbackField));
+
+    return null;
+}
+
+/**
+ * Reads a finite number out of a value, accepting numeric strings.
+ *
+ * Data coming from CSV or a JSON API often carries its numbers as strings; dropping them silently
+ * leaves a chart that renders empty with no hint why.
+ */
+export function toFiniteNumber(value: unknown): number | null {
+    if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+
+    if (typeof value === 'string' && value.trim() !== '') {
+        const parsed = Number(value);
+
+        return Number.isFinite(parsed) ? parsed : null;
     }
 
     return null;

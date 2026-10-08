@@ -12,6 +12,7 @@ import { BaseComponent } from '@openng/optimus-ui/basecomponent';
 import type {
     AnimationSpec,
     AnimationTransitions,
+    ChartAccessibilityProps,
     ChartExportOptions,
     ChartPluginEntry,
     ChartPointEvent,
@@ -35,6 +36,7 @@ import { seriesColorAt } from './core/palette';
 import { CHART_CONTEXT, CHART_GROUP, type ChartContext, type ChartGroupMember, nextDatasetId } from './charts-registry';
 import { createChartState, type ChartStateHandle } from './charts-state';
 import type { SceneStamp } from './render/build-scene';
+import { navigate, pointPosition } from './render/keyboard-nav';
 import { installPlugins, type PluginHost } from './charts-plugins';
 
 /** The size a chart falls back to before its container has ever been measured. */
@@ -170,6 +172,11 @@ export abstract class ChartRootBase extends BaseComponent<ChartsPassThrough> imp
      * @group Props
      */
     readonly plugins = input<ChartPluginEntry[] | undefined>(undefined);
+    /**
+     * Accessible name of the chart figure. Left unset, one is generated from the series.
+     * @group Props
+     */
+    readonly ariaLabel = input<string | undefined>(undefined);
     /**
      * Fires as the hover moves, and with `null` when it leaves.
      *
@@ -364,6 +371,39 @@ export abstract class ChartRootBase extends BaseComponent<ChartsPassThrough> imp
      */
     protected readonly $stamps = signal<readonly SceneStamp[]>([]);
 
+    /**
+     * Replaces the stamps, leaving the signal alone when nothing changed.
+     *
+     * Every paint used to write a fresh array, so every hover frame re-ran the stamp view's
+     * diffing even for a chart that has no templates at all.
+     */
+    protected setStamps(next: readonly SceneStamp[]): void {
+        const current = this.$stamps();
+
+        if (current === next) return;
+
+        if (current.length === next.length && current.every((stamp, i) => stamp.key === next[i].key && stamp.template === next[i].template && stamp.context === next[i].context && stamp.x === next[i].x && stamp.y === next[i].y)) return;
+
+        this.$stamps.set(next);
+    }
+
+    /** The figure's accessible name: the explicit one, or one generated from the series. */
+    readonly $ariaLabel = computed(() => {
+        const explicit = this.ariaLabel();
+
+        if (explicit) return explicit;
+
+        const series = this.chartState.resolvedSeries();
+
+        if (series.length === 0) return this.context.text().chart;
+
+        const points = series.reduce((count, entry) => count + entry.points.length, 0);
+
+        const text = this.context.text();
+
+        return series.length === 1 ? text.singleSeriesSummary.replace('{type}', String(series[0].type)).replace('{count}', String(points)) : text.multiSeriesSummary.replace('{count}', String(series.length));
+    });
+
     /** The transform that puts one stamp where its mark is. */
     protected stampTransform(stamp: SceneStamp): string | null {
         // Centre content is laid out against the whole circle from its own context, so it is not
@@ -416,6 +456,9 @@ export abstract class ChartRootBase extends BaseComponent<ChartsPassThrough> imp
 
     private renderQueued = false;
 
+    /** The pending repaint, kept so destroying the chart can cancel it. */
+    private renderHandle: number | null = null;
+
     private readonly frameListeners = new Set<() => void>();
 
     private readonly hoverListeners = new Set<(hover: HoverState | null) => void>();
@@ -461,6 +504,33 @@ export abstract class ChartRootBase extends BaseComponent<ChartsPassThrough> imp
             this.applyMeasurement(element.clientWidth, element.clientHeight);
 
             onCleanup(() => observer.disconnect());
+        });
+
+        // Keyboard navigation moves the same hover a pointer moves. Registered outside Angular, like
+        // the pointer handlers: a key press repaints through the frame loop and writes signals.
+        effect((onCleanup) => {
+            const element = this.containerElement();
+
+            if (!element || isPlatformServer(this.platformId)) return;
+
+            const onKey = (event: KeyboardEvent) => this.handleKeydown(event, element);
+            const onFocusOut = (event: FocusEvent) => {
+                if (!this.keyboardFocused || element.contains(event.relatedTarget as Node | null)) return;
+
+                this.keyboardFocused = false;
+                this.context.setHover(null);
+                this.publishHover(null);
+            };
+
+            this.zone.runOutsideAngular(() => {
+                element.addEventListener('keydown', onKey);
+                element.addEventListener('focusout', onFocusOut);
+            });
+
+            onCleanup(() => {
+                element.removeEventListener('keydown', onKey);
+                element.removeEventListener('focusout', onFocusOut);
+            });
         });
 
         // Any change to the resolved state schedules one frame. Five series updating in the same
@@ -512,6 +582,47 @@ export abstract class ChartRootBase extends BaseComponent<ChartsPassThrough> imp
         }
 
         this.darkMode.set(this.detectDarkMode());
+        this.watchEnvironment();
+    }
+
+    private environmentWatched = false;
+
+    /**
+     * Keeps the dark flag in step with the page.
+     *
+     * The scheme is read once at init, so a user switching the OS theme, or an application toggling
+     * a class on `<html>`, would otherwise leave the chart painted for the old one until something
+     * asked for a `redraw()`. Writing the signal is what repaints it, with or without zone.js; the
+     * signal ignores a write of the same value, so unrelated attribute churn costs nothing.
+     */
+    private watchEnvironment(): void {
+        if (this.environmentWatched || isPlatformServer(this.platformId)) return;
+
+        this.environmentWatched = true;
+
+        const refresh = () => {
+            const dark = this.detectDarkMode();
+
+            if (dark !== this.darkMode()) this.darkMode.set(dark);
+        };
+
+        this.zone.runOutsideAngular(() => {
+            if (typeof matchMedia === 'function') {
+                const query = matchMedia('(prefers-color-scheme: dark)');
+
+                query.addEventListener?.('change', refresh);
+                this.destroyRef.onDestroy(() => query.removeEventListener?.('change', refresh));
+            }
+
+            const root = this.document?.documentElement;
+
+            if (root && typeof MutationObserver === 'function') {
+                const observer = new MutationObserver(refresh);
+
+                observer.observe(root, { attributes: true, attributeFilter: ['class', 'data-theme', 'style'] });
+                this.destroyRef.onDestroy(() => observer.disconnect());
+            }
+        });
     }
 
     /**
@@ -578,8 +689,9 @@ export abstract class ChartRootBase extends BaseComponent<ChartsPassThrough> imp
         this.renderQueued = true;
 
         this.zone.runOutsideAngular(() => {
-            requestAnimationFrame(() => {
+            this.renderHandle = requestAnimationFrame(() => {
                 this.renderQueued = false;
+                this.renderHandle = null;
                 this.runFrame();
             });
         });
@@ -653,6 +765,12 @@ export abstract class ChartRootBase extends BaseComponent<ChartsPassThrough> imp
     }
 
     private stopFrameLoop(): void {
+        if (this.renderHandle != null) {
+            cancelAnimationFrame(this.renderHandle);
+            this.renderHandle = null;
+            this.renderQueued = false;
+        }
+
         if (this.frameHandle != null) {
             cancelAnimationFrame(this.frameHandle);
             this.frameHandle = null;
@@ -811,6 +929,54 @@ export abstract class ChartRootBase extends BaseComponent<ChartsPassThrough> imp
 
             return;
         }
+    }
+
+    /** Whether the current hover was put there by the keyboard, so leaving the chart can clear it. */
+    private keyboardFocused = false;
+
+    /** The last point focused in each series, for `rememberPointFocus`. */
+    private readonly rememberedFocus = new Map<string, number>();
+
+    /**
+     * Moves the hover with the arrow keys, Home, End and Escape.
+     *
+     * Only keys aimed at the chart itself count: the legend and the export menu live inside the
+     * same container and own their own arrow keys, which must not also move the chart's focus.
+     */
+    private handleKeydown(event: KeyboardEvent, element: HTMLElement): void {
+        if (event.target !== element || event.altKey || event.ctrlKey || event.metaKey) return;
+
+        const config = this.context.feature<ChartAccessibilityProps>('accessibility')()?.props()?.keyboardNavigation;
+        const series = this.chartState.resolvedSeries();
+        const result = navigate(series, this.context.hover(), event.key, {
+            config,
+            rtl: this.$direction() === 'rtl',
+            isItemVisible: (datasetId, index) => this.context.isItemVisible(datasetId, index),
+            remembered: this.rememberedFocus
+        });
+
+        if (result.kind === 'none') return;
+
+        event.preventDefault();
+
+        if (result.kind === 'clear') {
+            this.keyboardFocused = false;
+            this.context.setHover(null);
+            this.publishHover(null);
+
+            return;
+        }
+
+        const entry = series.find((candidate) => candidate.id === result.datasetId);
+
+        if (!entry) return;
+
+        const next: HoverState = { datasetId: result.datasetId, index: result.index, ...pointPosition({ scales: this.context.scales(), area: this.context.chartArea() }, entry, result.index) };
+
+        this.keyboardFocused = true;
+        this.rememberedFocus.set(result.datasetId, result.index);
+        this.context.setHover(next);
+        this.publishHover(next);
     }
 
     /** Notifies the plugins and the group that the hover moved. */

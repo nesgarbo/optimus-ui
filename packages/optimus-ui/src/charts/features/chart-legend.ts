@@ -8,6 +8,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, ViewEncapsulation, booleanAttribute, computed, contentChild, effect, inject, input, numberAttribute, signal, viewChild } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import type { Alignment, ChartLegendProps, LegendClickContext, LegendItemRenderContext, Position } from '@openng/optimus-ui/types/charts';
+import { readCategory } from '../core/accessor';
 import { isGradient } from '../core/color';
 import { seriesColorAt } from '../core/palette';
 import { CHART_CONTEXT, CHART_GROUP } from '../charts-registry';
@@ -36,7 +37,7 @@ interface LegendRow {
     standalone: true,
     imports: [NgTemplateOutlet],
     template: `
-        <div #root [class]="rootClass()" [style]="rootStyle()" role="list" [attr.data-slot]="'chart-legend'">
+        <div #root [class]="rootClass()" [style]="rootStyle()" role="group" [attr.data-slot]="'chart-legend'">
             @for (row of rows(); track row.key) {
                 @if (itemTemplate()) {
                     <ng-container [ngTemplateOutlet]="itemTemplate()!" [ngTemplateOutletContext]="{ $implicit: contextFor(row), ctx: contextFor(row) }" />
@@ -45,7 +46,6 @@ interface LegendRow {
                         type="button"
                         class="p-chart-legend-item"
                         data-slot="chart-legend-item"
-                        role="listitem"
                         [attr.data-series]="row.datasetId"
                         [attr.data-state]="row.visible ? 'visible' : 'hidden'"
                         [attr.aria-pressed]="row.visible"
@@ -257,12 +257,13 @@ export class ChartLegend {
 
                 if (perItem) {
                     const data = (props['data'] as Record<string, unknown>[] | undefined) ?? [];
-                    const categoryField = typeof props['categoryField'] === 'string' ? (props['categoryField'] as string) : 'category';
+                    // Read through the series' own accessor, so a function-bound category labels its row.
+                    const categoryAccessor = (props['categoryField'] ?? 'category') as never;
 
                     data.forEach((datum, dataIndex) => {
                         rows.push({
                             key: `${registration.id}:${dataIndex}`,
-                            label: String(datum?.[categoryField] ?? dataIndex),
+                            label: readCategory(categoryAccessor, datum, dataIndex, index, registration.id),
                             color: seriesColorAt(palette, dataIndex),
                             datasetId: registration.id,
                             dataIndex,

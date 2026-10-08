@@ -11,6 +11,10 @@ const CHART_INSTANCE = new InjectionToken<UIChart>('CHART_INSTANCE');
 
 /**
  * Chart groups a collection of contents in tabs.
+ *
+ * It imports `chart.js/auto`, which registers every Chart.js controller, element and scale, so the
+ * whole library ends up in the bundle of any app that uses it. To ship only the pieces you draw, use
+ * the SVG/Canvas charts (`p-chart-svg`, `p-chart-canvas`), which have no such dependency.
  * @group Components
  */
 @Component({
@@ -123,12 +127,9 @@ export class UIChart extends BaseComponent<ChartPassThrough> {
 
     _componentStyle = inject(ChartStyle);
 
-    constructor(
-        public el: ElementRef,
-        private zone: NgZone
-    ) {
-        super();
-    }
+    el: ElementRef = inject(ElementRef);
+
+    private zone = inject(NgZone);
 
     onAfterViewInit() {
         this.initChart();

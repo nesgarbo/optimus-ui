@@ -121,6 +121,14 @@ export function createScene() {
                 if (node) bucket.push(node);
             }
         },
+        /** Adds a list of nodes to a layer, which unlike {@link add} is safe for a very long list. */
+        addAll(layer: LayerKey, nodes: readonly (SvgNode | null | undefined)[]): void {
+            const bucket = layers.get(layer)!;
+
+            for (const node of nodes) {
+                if (node) bucket.push(node);
+            }
+        },
         /** The populated layers, in draw order. */
         toLayers(): SceneLayer[] {
             return LAYER_ORDER.map((key) => ({ key, nodes: layers.get(key)! })).filter((layer) => layer.nodes.length > 0);

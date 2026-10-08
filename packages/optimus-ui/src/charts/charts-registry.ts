@@ -287,6 +287,25 @@ export interface ChartContext {
      * The chart's data as CSV, for the download entry and the screen-reader table.
      */
     toCsv: () => string;
+    /**
+     * The chart's data as a table: a heading row and one row per category.
+     *
+     * Cached until the data changes, and not round-tripped through CSV, so the screen-reader table
+     * does not rebuild and re-parse the whole chart's text on every render.
+     */
+    table?: Signal<ChartTable>;
+}
+
+/** The chart's data laid out as a table. */
+export interface ChartTable {
+    /**
+     * Column headings, starting with the category column.
+     */
+    headings: string[];
+    /**
+     * One row per category: the category, then one value per series.
+     */
+    rows: (string | number | null)[][];
 }
 
 /**

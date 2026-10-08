@@ -46,6 +46,86 @@ export function createSvgElement(node: SvgNode, doc: Document): SVGElement {
     return element;
 }
 
+/** Whether two descriptors describe the same element, attributes and children included. */
+export function svgNodeEqual(a: SvgNode, b: SvgNode): boolean {
+    if (a === b) return true;
+    if (a.tag !== b.tag || a.children.length !== b.children.length) return false;
+
+    const keys = Object.keys(a.attrs);
+
+    if (keys.length !== Object.keys(b.attrs).length) return false;
+
+    for (const key of keys) {
+        if (a.attrs[key] !== b.attrs[key]) return false;
+    }
+
+    for (let i = 0; i < a.children.length; i++) {
+        const left = a.children[i];
+        const right = b.children[i];
+
+        if (typeof left === 'string' || typeof right === 'string') {
+            if (left !== right) return false;
+        } else if (!svgNodeEqual(left, right)) return false;
+    }
+
+    return true;
+}
+
+/** What a parent held after the last {@link syncSvgChildren}, so the next one can reuse its elements. */
+export interface SvgChildrenState {
+    nodes: SvgNode[];
+    elements: SVGElement[];
+}
+
+/** Creates the empty state for {@link syncSvgChildren}. */
+export function createSvgChildrenState(): SvgChildrenState {
+    return { nodes: [], elements: [] };
+}
+
+/**
+ * Makes `parent` hold the elements of `nodes`, keeping every element whose descriptor did not change.
+ *
+ * A descriptor is matched first by identity (the scene reuses the very same object for a series
+ * that did not repaint) and then by equality with the one at the same position last time. Only the
+ * rest is created, so a hover over one series replaces that series' elements and leaves the others
+ * as they were. The parent is expected to hold nothing but these elements.
+ */
+export function syncSvgChildren(parent: Element, nodes: readonly SvgNode[], doc: Document, state: SvgChildrenState): void {
+    // A parent that was never synced may hold something else; start from nothing.
+    if (state.elements.length === 0 && parent.firstChild) parent.replaceChildren();
+
+    const byIdentity = new Map<SvgNode, SVGElement>();
+
+    state.nodes.forEach((node, i) => byIdentity.set(node, state.elements[i]));
+
+    const used = new Set<SVGElement>();
+    const elements = nodes.map((node, i) => {
+        let element = byIdentity.get(node);
+
+        if (!element || used.has(element)) {
+            const previous = state.nodes[i];
+            const candidate = previous && state.elements[i];
+
+            element = candidate && !used.has(candidate) && svgNodeEqual(previous, node) ? candidate : createSvgElement(node, doc);
+        }
+
+        used.add(element);
+
+        return element;
+    });
+
+    for (const element of state.elements) {
+        if (!used.has(element) && element.parentNode === parent) parent.removeChild(element);
+    }
+
+    elements.forEach((element, i) => {
+        if (parent.childNodes[i] !== element) parent.insertBefore(element, parent.childNodes[i] ?? null);
+    });
+
+    state.nodes = [...nodes];
+    state.elements = elements;
+}
+
 /** Serializes a descriptor to markup, which is what the SVG export path needs. */
 export function serializeSvgNode(node: SvgNode): string {
     const attrs = Object.entries(node.attrs)

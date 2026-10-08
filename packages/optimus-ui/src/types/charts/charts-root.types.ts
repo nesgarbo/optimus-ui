@@ -204,6 +204,14 @@ export interface ChartText {
      */
     chart: string;
     /**
+     * Generated accessible name of a chart with one series. `{type}` and `{count}` are replaced by the series type and the number of data points.
+     */
+    singleSeriesSummary: string;
+    /**
+     * Generated accessible name of a chart with several series. `{count}` is replaced by the number of series.
+     */
+    multiSeriesSummary: string;
+    /**
      * Export menu button label.
      */
     exportMenu: string;

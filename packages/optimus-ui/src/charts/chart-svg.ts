@@ -13,7 +13,7 @@ import type { BoxArea, ChartExportOptions, ChartOverlaySurface, RendererType, Sv
 import { buildPdf, dataUrlToBytes, downloadBlob, markupToBlob, rasterizeSvg, resolveExportBackground, serializeSvg } from './core/export';
 import { measureTextWidth } from './core/layout';
 import { seriesColorAt, seriesColorVariable, seriesTokenVariable } from './core/palette';
-import { createSvgElement } from './core/svg-node';
+import { createSvgChildrenState, syncSvgChildren, type SvgChildrenState } from './core/svg-node';
 import { ChartRootBase } from './chart-root-base';
 import { CHART_CONTEXT } from './charts-registry';
 import { ChartA11yView } from './features/chart-a11y-view';
@@ -99,6 +99,10 @@ export class ChartSvg extends ChartRootBase {
 
     private readonly overlays = createOverlayRegistry();
 
+    /** What each scene layer held last frame, so a repaint can keep the elements that did not change. */
+    private readonly layerStates = new Map<string, { group: SVGGElement; state: SvgChildrenState }>();
+    private readonly defsState = createSvgChildrenState();
+
     /**
      * A canvas kept only for text measurement.
      *
@@ -109,17 +113,6 @@ export class ChartSvg extends ChartRootBase {
     private measureContext: CanvasRenderingContext2D | null = null;
 
     readonly $viewBox = computed(() => `0 0 ${this.$width()} ${this.$height()}`);
-
-    /** The figure's accessible name, generated from the series when none was given. */
-    readonly $ariaLabel = computed(() => {
-        const series = this.chartState.resolvedSeries();
-
-        if (series.length === 0) return 'Chart';
-
-        const points = series.reduce((count, entry) => count + entry.points.length, 0);
-
-        return series.length === 1 ? `${series[0].type} chart with ${points} data points.` : `Combination chart with ${series.length} data series.`;
-    });
 
     constructor() {
         super();
@@ -178,10 +171,10 @@ export class ChartSvg extends ChartRootBase {
     /**
      * Materializes the scene into SVG elements.
      *
-     * The plot group is rebuilt wholesale each frame rather than diffed. That sounds wasteful, but a
-     * chart's marks are entirely derived from its data: there is no per-element state worth
-     * preserving, and building a fragment offscreen and swapping it in costs one layout instead of
-     * the many a piecemeal patch would trigger.
+     * Every layer keeps its elements from frame to frame: a descriptor that is the same object as
+     * last frame's (the scene reuses a series that did not repaint) or equal to the one at its
+     * position keeps its element, and only the rest is created. A hover over one series therefore
+     * replaces that series' marks and leaves the others untouched.
      */
     protected paint(): void {
         const plot = this.plotRef()?.nativeElement;
@@ -192,25 +185,44 @@ export class ChartSvg extends ChartRootBase {
         const drawContext = buildDrawContext(this.context, this.chartId, this.measureText, this.seriesColor);
         const scene = buildScene(this.context, this.chartState.resolvedSeries(), drawContext);
 
-        this.$stamps.set(scene.stamps);
+        this.setStamps(scene.stamps);
         const doc = plot.ownerDocument;
-        const fragment = doc.createDocumentFragment();
+        const groups: SVGGElement[] = [];
+        const seen = new Set<string>();
 
         for (const layer of scene.layers) {
-            const group = doc.createElementNS(SVG_NS, 'g');
+            let entry = this.layerStates.get(layer.key);
 
-            group.setAttribute('data-slot', `chart-layer-${layer.key}`);
-            group.setAttribute('class', `p-chart-layer p-chart-layer-${layer.key}`);
+            if (!entry) {
+                const group = doc.createElementNS(SVG_NS, 'g');
 
-            if (isClipped(layer.key)) group.setAttribute('clip-path', clipRefFor(drawContext));
+                group.setAttribute('data-slot', `chart-layer-${layer.key}`);
+                group.setAttribute('class', `p-chart-layer p-chart-layer-${layer.key}`);
+                entry = { group, state: createSvgChildrenState() };
+                this.layerStates.set(layer.key, entry);
+            }
 
-            for (const node of layer.nodes) group.appendChild(createSvgElement(node, doc));
+            if (isClipped(layer.key)) entry.group.setAttribute('clip-path', clipRefFor(drawContext));
 
-            fragment.appendChild(group);
+            syncSvgChildren(entry.group, layer.nodes, doc, entry.state);
+            seen.add(layer.key);
+            groups.push(entry.group);
         }
 
-        plot.replaceChildren(fragment);
-        defs.replaceChildren(...scene.defs.map((node: SvgNode) => createSvgElement(node, doc)));
+        for (const key of [...this.layerStates.keys()]) {
+            if (!seen.has(key)) this.layerStates.delete(key);
+        }
+
+        // Layer groups are kept from frame to frame, so only their order has to be put right.
+        const stale = Array.from(plot.childNodes).filter((child) => !groups.includes(child as SVGGElement));
+
+        for (const child of stale) plot.removeChild(child);
+
+        groups.forEach((group, i) => {
+            if (plot.childNodes[i] !== group) plot.insertBefore(group, plot.childNodes[i] ?? null);
+        });
+
+        syncSvgChildren(defs, scene.defs, doc, this.defsState);
 
         this.paintOverlays(drawContext.area);
     }

@@ -9,8 +9,9 @@
  * has its own vertical scale, its own domain -- always the full one -- and it must keep showing the
  * whole series while the chart's scales are showing a slice of it.
  */
-import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, ViewEncapsulation, booleanAttribute, computed, inject, input, numberAttribute, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, NgZone, ViewEncapsulation, booleanAttribute, computed, inject, input, numberAttribute, signal, viewChild } from '@angular/core';
 import type { ChartNavigatorProps, EasingFunctionName, Padding } from '@openng/optimus-ui/types/charts';
+import { readNumeric } from '../core/accessor';
 import { monotonePath } from '../core/curve';
 import { CHART_CONTEXT, CHART_GROUP, nextGroupId } from '../charts-registry';
 
@@ -86,6 +87,8 @@ export class ChartNavigator {
     private readonly group = inject(CHART_GROUP, { optional: true });
 
     private readonly destroyRef = inject(DestroyRef);
+
+    private readonly zone = inject(NgZone);
 
     private readonly id = nextGroupId('navigator');
 
@@ -257,19 +260,25 @@ export class ChartNavigator {
 
         if (data.length < 2) return null;
 
-        const field = typeof props?.['valueYField'] === 'string' ? (props['valueYField'] as string) : 'value';
-        const values = data.map((datum) => {
-            const raw = datum[field];
-            const value = typeof raw === 'number' ? raw : Number(raw);
+        const accessor = props?.['valueYField'] as never;
+        const seriesId = chosen[0]?.id ?? '';
+        // Read through the accessor the series itself is drawn with, so a callback or a numeric string
+        // gives the strip the same shape the chart has.
+        const values = data.map((datum, index) => readNumeric(accessor, datum, index, 0, seriesId, 'value'));
+        let min = 0;
+        let max = -Infinity;
+        let count = 0;
 
-            return Number.isFinite(value) ? value : null;
-        });
-        const present = values.filter((value): value is number => value != null);
+        for (const value of values) {
+            if (value == null) continue;
 
-        if (present.length < 2) return null;
+            count++;
+            if (value < min) min = value;
+            if (value > max) max = value;
+        }
 
-        const min = Math.min(...present, 0);
-        const max = Math.max(...present);
+        if (count < 2) return null;
+
         const span = max - min || 1;
         const step = width / (values.length - 1);
         const points = values.map((value, index) => ({ x: index * step, y: value == null ? height : height - ((value - min) / span) * height }));
@@ -300,6 +309,57 @@ export class ChartNavigator {
     protected startDrag(event: PointerEvent, kind: 'window' | 'from' | 'to'): void {
         event.preventDefault();
         this.dragging.set({ kind, startX: event.clientX, handle: this.handle() });
+        this.trackPointer();
+    }
+
+    /** Removes the window listeners of the drag in progress, if there is one. */
+    private stopTracking: (() => void) | null = null;
+
+    /**
+     * Follows the pointer for the length of one drag.
+     *
+     * The drag has to continue outside the strip, which is what makes dragging the window to the
+     * edge of the chart work. But that is only true while the button is down, so the window
+     * listeners exist for that long and no longer: a permanent `pointermove` on the window runs on
+     * every pointer move of the whole page.
+     */
+    private trackPointer(): void {
+        if (this.stopTracking || typeof window === 'undefined') return;
+
+        const onMove = (event: PointerEvent) => {
+            const drag = this.dragging();
+            const width = this.width();
+
+            if (!drag || width <= 0) return;
+
+            const delta = (event.clientX - drag.startX) / width;
+            const handle = drag.handle;
+            const next =
+                drag.kind === 'window'
+                    ? { from: handle.from + delta, to: handle.to + delta }
+                    : drag.kind === 'from'
+                      ? { from: Math.min(handle.from + delta, handle.to - 0.02), to: handle.to }
+                      : { from: handle.from, to: Math.max(handle.to + delta, handle.from + 0.02) };
+
+            this.commit(clampHandle(next, drag.kind === 'window'));
+        };
+        const onUp = () => {
+            this.dragging.set(null);
+            this.stopTracking?.();
+        };
+
+        this.zone.runOutsideAngular(() => {
+            window.addEventListener('pointermove', onMove);
+            window.addEventListener('pointerup', onUp);
+            window.addEventListener('pointercancel', onUp);
+        });
+
+        this.stopTracking = () => {
+            window.removeEventListener('pointermove', onMove);
+            window.removeEventListener('pointerup', onUp);
+            window.removeEventListener('pointercancel', onUp);
+            this.stopTracking = null;
+        };
     }
 
     /**
@@ -347,41 +407,10 @@ export class ChartNavigator {
         const remove = this.context.registerFeature({ type: 'navigator', props: this.props });
         const releaseSpace = this.context.reserve(computed(() => ({ edge: 'bottom' as const, size: this.enabled() ? this.height() + this.gap() : 0 })));
 
-        // The drag continues outside the strip, which is what makes dragging the window to the edge
-        // of the chart work rather than stopping the moment the pointer leaves the handle.
-        const onMove = (event: PointerEvent) => {
-            const drag = this.dragging();
-            const width = this.width();
-
-            if (!drag || width <= 0) return;
-
-            const delta = (event.clientX - drag.startX) / width;
-            const handle = drag.handle;
-            const next =
-                drag.kind === 'window'
-                    ? { from: handle.from + delta, to: handle.to + delta }
-                    : drag.kind === 'from'
-                      ? { from: Math.min(handle.from + delta, handle.to - 0.02), to: handle.to }
-                      : { from: handle.from, to: Math.max(handle.to + delta, handle.from + 0.02) };
-
-            this.commit(clampHandle(next, drag.kind === 'window'));
-        };
-
-        const onUp = () => this.dragging.set(null);
-
-        if (typeof window !== 'undefined') {
-            window.addEventListener('pointermove', onMove);
-            window.addEventListener('pointerup', onUp);
-        }
-
         this.destroyRef.onDestroy(() => {
             remove();
             releaseSpace();
-
-            if (typeof window !== 'undefined') {
-                window.removeEventListener('pointermove', onMove);
-                window.removeEventListener('pointerup', onUp);
-            }
+            this.stopTracking?.();
         });
     }
 }

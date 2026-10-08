@@ -10,7 +10,8 @@ import { computed, signal, type Signal, type WritableSignal } from '@angular/cor
 import type { AxisScale, AxisType, BoxArea, ChartDecimationProps, ChartExportOptions, ChartText, ChartTheme, FeatureType, HoverState, RendererType, SeriesType, StackingMode, TickValue } from '@openng/optimus-ui/types/charts';
 import { readCategory, readNumeric, readPath } from './core/accessor';
 import { readBoxStats } from './core/boxplot';
-import { decimate, type Sample } from './core/decimate';
+import { csvCell } from './core/csv';
+import { decimateSeriesPoints } from './core/decimate';
 import { computeLayout, responsiveTier, type EdgeReservation } from './core/layout';
 import { resolveTheme } from './core/palette';
 import { registeredLocales, resolveChartText } from './core/text';
@@ -18,7 +19,7 @@ import { bandScale, linearScale, logScale, timeScale, toNumber, unionCategories 
 import { sortCategories, stackedDomain, stackSeries, waterfallDomain, waterfallSteps, type StackInput } from './core/stack';
 import { niceDomain } from './core/ticks';
 import { tickCountForLength } from './render/axis';
-import { type AxisRegistration, type ChartContext, type FeatureRegistration, type LayoutReservation, type SeriesRegistration, scaleKey } from './charts-registry';
+import { type AxisRegistration, type ChartContext, type ChartTable, type FeatureRegistration, type LayoutReservation, type SeriesRegistration, scaleKey } from './charts-registry';
 
 /**
  * An axis' domain, before it is given a pixel range.
@@ -226,84 +227,122 @@ export function createChartState(options: ChartStateOptions) {
     /* --- Series resolution -------------------------------------------------------------------- */
 
     /** Reads one series' props into points, before any stacking is applied. */
-    const rawSeries = computed(() =>
-        seriesRegistry().map((registration, index) => {
-            const props = registration.props() as Record<string, unknown>;
-            const data = (props['data'] as unknown[] | undefined) ?? [];
-            // A heatmap's rows are its second category axis, read per datum like the columns. It
-            // binds `categoryYField` the way a horizontal bar does, but it means a second category
-            // axis rather than a flipped orientation -- so the flip has to exclude it, or the
-            // columns end up reading from the row field.
-            const gridded = registration.type === 'heatmap';
-            const flipped = props['categoryYField'] != null && !gridded;
-            const categoryAccessor = (flipped ? props['categoryYField'] : props['categoryXField']) as never;
-            const openAccessor = props['openField'] as never;
-            // A scatter series is placed by two numbers, so it has no category axis at all. Its x
-            // comes from `valueXField` rather than from a category lookup.
-            const continuousX = registration.type === 'scatter';
-            const xValueAccessor = props['valueXField'] as never;
-            const rowField = typeof props['categoryYField'] === 'string' ? (props['categoryYField'] as string) : 'row';
-            // A candlestick's value is its close, and its axis has to reach its low and high.
-            const ohlc = registration.type === 'candlestick';
-            // A box plot's value is its median, and its axis has to reach the ends of its whiskers and its outliers.
-            const boxed = registration.type === 'boxplot';
-            /*
-             * Which prop carries the measured value, which differs by family:
-             *  - a heatmap has a single `valueField`, since neither axis measures it
-             *  - a scatter's y is `valueYField`, its x being read separately
-             *  - a horizontal bar measures along x, so `valueXField`
-             */
-            const valueAccessor = (gridded ? props['valueField'] : continuousX ? props['valueYField'] : flipped ? props['valueXField'] : props['valueYField']) as never;
-            const valueFallback = gridded ? 'value' : continuousX ? 'y' : 'value';
+    const parseSeries = (registration: SeriesRegistration, index: number) => {
+        const props = registration.props() as Record<string, unknown>;
+        const data = (props['data'] as unknown[] | undefined) ?? [];
+        // A heatmap's rows are its second category axis, read per datum like the columns. It
+        // binds `categoryYField` the way a horizontal bar does, but it means a second category
+        // axis rather than a flipped orientation -- so the flip has to exclude it, or the
+        // columns end up reading from the row field.
+        const gridded = registration.type === 'heatmap';
+        const flipped = props['categoryYField'] != null && !gridded;
+        const categoryAccessor = (flipped ? props['categoryYField'] : props['categoryXField']) as never;
+        const openAccessor = props['openField'] as never;
+        // A scatter series is placed by two numbers, so it has no category axis at all. Its x
+        // comes from `valueXField` rather than from a category lookup.
+        const continuousX = registration.type === 'scatter';
+        const xValueAccessor = props['valueXField'] as never;
+        const rowField = typeof props['categoryYField'] === 'string' ? (props['categoryYField'] as string) : 'row';
+        // A candlestick's value is its close, and its axis has to reach its low and high.
+        const ohlc = registration.type === 'candlestick';
+        // A box plot's value is its median, and its axis has to reach the ends of its whiskers and its outliers.
+        const boxed = registration.type === 'boxplot';
+        /*
+         * Which prop carries the measured value, which differs by family:
+         *  - a heatmap has a single `valueField`, since neither axis measures it
+         *  - a scatter's y is `valueYField`, its x being read separately
+         *  - a horizontal bar measures along x, so `valueXField`
+         */
+        const valueAccessor = (gridded ? props['valueField'] : continuousX ? props['valueYField'] : flipped ? props['valueXField'] : props['valueYField']) as never;
+        const valueFallback = gridded ? 'value' : continuousX ? 'y' : 'value';
 
-            const points: SeriesPoint[] = data.map((datum, dataIndex) => {
-                const category = readCategory(categoryAccessor, datum, dataIndex, index, registration.id);
-                const value = readNumeric(valueAccessor, datum, dataIndex, index, registration.id, valueFallback);
-                // A floating bar starts at its open value rather than at zero.
-                const base = openAccessor == null ? 0 : (readNumeric(openAccessor, datum, dataIndex, index, registration.id) ?? 0);
-                const xValue = continuousX ? readNumeric(xValueAccessor, datum, dataIndex, index, registration.id, 'x') : undefined;
+        const points: SeriesPoint[] = data.map((datum, dataIndex) => {
+            const category = readCategory(categoryAccessor, datum, dataIndex, index, registration.id);
+            const value = readNumeric(valueAccessor, datum, dataIndex, index, registration.id, valueFallback);
+            // A floating bar starts at its open value rather than at zero.
+            const base = openAccessor == null ? 0 : (readNumeric(openAccessor, datum, dataIndex, index, registration.id) ?? 0);
+            const xValue = continuousX ? readNumeric(xValueAccessor, datum, dataIndex, index, registration.id, 'x') : undefined;
 
-                if (boxed) {
-                    const stats = readBoxStats(datum, {
-                        valuesField: props['valuesField'] as string | undefined,
-                        minField: props['minField'] as string | undefined,
-                        q1Field: props['q1Field'] as string | undefined,
-                        medianField: props['medianField'] as string | undefined,
-                        q3Field: props['q3Field'] as string | undefined,
-                        maxField: props['maxField'] as string | undefined,
-                        meanField: props['meanField'] as string | undefined,
-                        outliersField: props['outliersField'] as string | undefined,
-                        quartileMethod: props['quartileMethod'] as never,
-                        whiskerReach: props['whiskerReach'] as number | undefined
-                    });
+            if (boxed) {
+                const stats = readBoxStats(datum, {
+                    valuesField: props['valuesField'] as string | undefined,
+                    minField: props['minField'] as string | undefined,
+                    q1Field: props['q1Field'] as string | undefined,
+                    medianField: props['medianField'] as string | undefined,
+                    q3Field: props['q3Field'] as string | undefined,
+                    maxField: props['maxField'] as string | undefined,
+                    meanField: props['meanField'] as string | undefined,
+                    outliersField: props['outliersField'] as string | undefined,
+                    quartileMethod: props['quartileMethod'] as never,
+                    whiskerReach: props['whiskerReach'] as number | undefined
+                });
 
-                    return { category, value: stats?.median ?? null, base: 0, dataIndex, extent: stats ? ([stats.lowest, stats.highest] as [number, number]) : undefined };
-                }
+                return { category, value: stats?.median ?? null, base: 0, dataIndex, extent: stats ? ([stats.lowest, stats.highest] as [number, number]) : undefined };
+            }
 
-                if (ohlc) {
-                    const close = readNumeric(props['closeField'] as never, datum, dataIndex, index, registration.id, 'close');
-                    const high = readNumeric(props['highField'] as never, datum, dataIndex, index, registration.id, 'high');
-                    const low = readNumeric(props['lowField'] as never, datum, dataIndex, index, registration.id, 'low');
-                    const extent: [number, number] | undefined = high != null && low != null ? [low, high] : undefined;
+            if (ohlc) {
+                const close = readNumeric(props['closeField'] as never, datum, dataIndex, index, registration.id, 'close');
+                const high = readNumeric(props['highField'] as never, datum, dataIndex, index, registration.id, 'high');
+                const low = readNumeric(props['lowField'] as never, datum, dataIndex, index, registration.id, 'low');
+                const extent: [number, number] | undefined = high != null && low != null ? [low, high] : undefined;
 
-                    return { category, value: close, base: 0, dataIndex, extent };
-                }
+                return { category, value: close, base: 0, dataIndex, extent };
+            }
 
-                return { category, value, base, dataIndex, xValue };
-            });
+            return { category, value, base, dataIndex, xValue };
+        });
 
-            return {
-                registration,
-                seriesIndex: index,
-                horizontal: flipped,
-                continuousX,
-                rows: gridded ? data.map((datum) => String(readPath(datum, rowField) ?? '')) : [],
-                points: decimated(points, continuousX),
-                xAxisId: (props['xAxisId'] as string | undefined) ?? DEFAULT_AXIS,
-                yAxisId: (props['yAxisId'] as string | undefined) ?? DEFAULT_AXIS
-            };
-        })
+        return {
+            registration,
+            seriesIndex: index,
+            horizontal: flipped,
+            continuousX,
+            rows: gridded ? data.map((datum) => String(readPath(datum, rowField) ?? '')) : [],
+            points,
+            xAxisId: (props['xAxisId'] as string | undefined) ?? DEFAULT_AXIS,
+            yAxisId: (props['yAxisId'] as string | undefined) ?? DEFAULT_AXIS
+        };
+    };
+
+    /** The decimation feature's settings, compared by value so an unrelated prop change does not re-decimate. */
+    const decimationProps = computed<Required<ChartDecimationProps> | null>(
+        () => {
+            const feature = featureRegistry().find((entry) => entry.type === 'decimation');
+
+            if (!feature) return null;
+
+            const props = feature.props() as ChartDecimationProps;
+
+            return { algorithm: props.algorithm ?? 'lttb', samples: props.samples ?? 500, threshold: props.threshold ?? 1000 };
+        },
+        { equal: (a, b) => a === b || (a != null && b != null && a.algorithm === b.algorithm && a.samples === b.samples && a.threshold === b.threshold) }
     );
+
+    /**
+     * One computed per registration, so a change to one series' props re-reads that series alone
+     * instead of every series of the chart.
+     */
+    const seriesEntries = new WeakMap<SeriesRegistration, Signal<ReturnType<typeof parseSeries> & { points: SeriesPoint[] }>>();
+
+    const entryFor = (registration: SeriesRegistration) => {
+        let entry = seriesEntries.get(registration);
+
+        if (!entry) {
+            const parsed = computed(() => parseSeries(registration, Math.max(0, seriesRegistry().indexOf(registration))));
+
+            entry = computed(() => {
+                const raw = parsed();
+                const settings = decimationProps();
+
+                return settings ? { ...raw, points: decimateSeriesPoints(raw.points, settings, raw.continuousX, registration.type) } : raw;
+            });
+            seriesEntries.set(registration, entry);
+        }
+
+        return entry;
+    };
+
+    const rawSeries = computed(() => seriesRegistry().map((registration) => entryFor(registration)()));
 
     /**
      * Applies stacking and the waterfall running total.
@@ -466,7 +505,8 @@ export function createChartState(options: ChartStateOptions) {
             if (type === 'category') {
                 const categories = unionCategories(bound.filter((entry) => !entry.continuousX).map((entry) => (axis.axis === 'y' && entry.yCategories.length > 0 ? entry.yCategories : entry.categories)));
                 const sort = props['sort'] as 'value-asc' | 'value-desc' | 'label-asc' | 'label-desc' | undefined;
-                const ordered = sort ? sortCategories(categories, (category) => sumAt(bound, category), sort) : categories;
+                const totals = sort === 'value-asc' || sort === 'value-desc' ? categoryTotals(bound) : null;
+                const ordered = sort ? sortCategories(categories, (category) => totals?.get(category) ?? 0, sort) : categories;
 
                 /*
                  * A heatmap is a matrix, and both of its axes behave like a table's rather than a
@@ -586,17 +626,17 @@ export function createChartState(options: ChartStateOptions) {
         };
     }
 
-    /** Sums what every bound series contributes to one category, for value sorting. */
-    function sumAt(series: readonly ResolvedSeries[], category: string): number {
-        let total = 0;
+    /** Sums what every bound series contributes to each category, once, for value sorting. */
+    function categoryTotals(series: readonly ResolvedSeries[]): Map<string, number> {
+        const totals = new Map<string, number>();
 
         for (const entry of series) {
             for (const point of entry.points) {
-                if (point.category === category && point.value != null) total += point.value;
+                if (point.value != null) totals.set(point.category, (totals.get(point.category) ?? 0) + point.value);
             }
         }
 
-        return total;
+        return totals;
     }
 
     /** Whether the bound series want banded categories, which bars do and lines do not. */
@@ -699,40 +739,6 @@ export function createChartState(options: ChartStateOptions) {
         }
 
         return [min, max];
-    }
-
-    /**
-     * Downsamples a series when a `ChartDecimation` is present and the series is over its threshold.
-     *
-     * The samples carry their original index, so a decimated point still finds its own datum for a
-     * tooltip -- which is what keeps decimation a rendering decision rather than a data one. A
-     * gridded or categorical series is left alone: dropping a category does not summarise it, it
-     * hides it.
-     */
-    function decimated(points: SeriesPoint[], continuousX: boolean): SeriesPoint[] {
-        const feature = featureRegistry().find((entry) => entry.type === 'decimation');
-
-        if (!feature) return points;
-
-        const props = feature.props() as ChartDecimationProps;
-        const threshold = props.threshold ?? 1000;
-
-        if (points.length <= threshold) return points;
-
-        const samples: Sample[] = [];
-
-        for (const point of points) {
-            if (point.value == null) continue;
-
-            samples.push({ x: point.xValue ?? point.dataIndex, y: point.value, index: point.dataIndex });
-        }
-
-        if (samples.length === 0) return points;
-
-        const kept = decimate(samples, props.algorithm ?? 'lttb', props.samples ?? 500);
-        const keptIndices = new Set(kept.map((sample) => sample.index));
-
-        return points.filter((point) => keptIndices.has(point.dataIndex));
     }
 
     /** Reads a numeric prop, ignoring `'auto'` and anything unparseable. */
@@ -859,20 +865,36 @@ export function createChartState(options: ChartStateOptions) {
      * download entry writes it to a file and the screen-reader table renders it. Deriving them from
      * one function is what keeps the announced table and the downloaded file from disagreeing.
      */
-    function toCsv(): string {
+    const table = computed<ChartTable>(() => {
         const series = resolvedSeries().filter((entry) => entry.visible);
 
-        if (series.length === 0) return '';
+        if (series.length === 0) return { headings: [], rows: [] };
 
         const categories = unionCategories(series.map((entry) => entry.categories));
-        const escape = (cell: string) => (/[",\n]/.test(cell) ? `"${cell.replace(/"/g, '""')}"` : cell);
+        // One lookup per series instead of a scan per cell.
+        const lookups = series.map((entry) => {
+            const byCategory = new Map<string, number | null>();
+
+            for (const point of entry.points) if (!byCategory.has(point.category)) byCategory.set(point.category, point.value);
+
+            return byCategory;
+        });
         // An unnamed series is numbered rather than exposing its generated id: `line-2` is an
         // internal handle, and it is the one thing in this table a reader cannot interpret.
         const label = chartText();
-        const header = [label.category, ...series.map((entry, index) => String((entry.registration.props() as Record<string, unknown>)['name'] ?? `${label.series} ${index + 1}`))];
-        const rows = categories.map((category) => [category, ...series.map((entry) => String(entry.points.find((point) => point.category === category)?.value ?? ''))]);
 
-        return [header, ...rows].map((row) => row.map(escape).join(',')).join('\n');
+        return {
+            headings: [label.category, ...series.map((entry, index) => String((entry.registration.props() as Record<string, unknown>)['name'] ?? `${label.series} ${index + 1}`))],
+            rows: categories.map((category) => [category, ...lookups.map((byCategory) => byCategory.get(category) ?? null)])
+        };
+    });
+
+    function toCsv(): string {
+        const { headings, rows } = table();
+
+        if (headings.length === 0) return '';
+
+        return [headings, ...rows].map((row) => row.map((cell) => csvCell(String(cell ?? ''))).join(',')).join('\n');
     }
 
     const context: ChartContext = {
@@ -897,6 +919,7 @@ export function createChartState(options: ChartStateOptions) {
         container: options.container,
         exportChart: options.exportChart,
         toCsv: () => toCsv(),
+        table,
         zoomWindow: zoomWindow.asReadonly(),
         setZoomWindow: (window) => {
             zoomWindow.set(window);

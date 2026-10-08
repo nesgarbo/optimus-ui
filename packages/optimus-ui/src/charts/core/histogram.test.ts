@@ -69,3 +69,27 @@ describe('binCount', () => {
         ).toBe(200);
     });
 });
+
+describe('histogram bins of no width', () => {
+    it('widens a flat domain given with thresholds instead of dividing by zero', () => {
+        const bins = histogram([5, 5, 5], { domain: [5, 5], thresholds: [100] });
+
+        expect(bins).toHaveLength(1);
+        expect(Number.isFinite(bins[0].density)).toBe(true);
+        expect(bins[0].x1).toBeGreaterThan(bins[0].x0);
+    });
+
+    it('ignores a repeated threshold rather than make an empty bin of no width', () => {
+        const bins = histogram([1, 2, 3, 8, 9], { thresholds: [5, 5, 5] });
+
+        expect(bins).toHaveLength(2);
+        expect(bins.every((bin) => bin.x1 > bin.x0 && Number.isFinite(bin.density))).toBe(true);
+    });
+
+    it('accepts a domain given backwards', () => {
+        const bins = histogram([1, 2, 3], { domain: [10, 0], bins: 2 });
+
+        expect(bins[0].x0).toBe(0);
+        expect(bins[bins.length - 1].x1).toBe(10);
+    });
+});

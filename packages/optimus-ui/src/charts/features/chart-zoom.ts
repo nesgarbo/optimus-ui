@@ -10,7 +10,7 @@
  * overlay layer this renders into does not take the pointer -- and should not, or it would swallow
  * the hover.
  */
-import { ChangeDetectionStrategy, Component, DestroyRef, ViewEncapsulation, computed, effect, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, NgZone, ViewEncapsulation, computed, effect, inject, input, signal } from '@angular/core';
 import type { AxisScale, ChartZoomProps, ModifierKey, ZoomButtonsConfig, ZoomDragConfig, ZoomHandle, ZoomLimits, ZoomMode, ZoomPanConfig, ZoomPinchConfig, ZoomState, ZoomWheelConfig } from '@openng/optimus-ui/types/charts';
 import { CHART_CONTEXT, CHART_GROUP, nextGroupId } from '../charts-registry';
 
@@ -52,6 +52,8 @@ export class ChartZoom {
 
     private readonly destroyRef = inject(DestroyRef);
 
+    private readonly zone = inject(NgZone);
+
     private readonly id = nextGroupId('zoom');
 
     /** The drag rectangle currently being pulled out, in pixels. */
@@ -65,6 +67,10 @@ export class ChartZoom {
     readonly mode = input<ZoomMode>('x');
     /**
      * Wheel zoom, optionally requiring a modifier.
+     *
+     * The default zooms on a bare wheel. That takes the scroll away from the page whenever the
+     * pointer crosses the chart, so pass `{ modifierKey: 'ctrl' }` to ask for the Ctrl key (which a
+     * trackpad pinch also sets), `false` to switch it off, or a config to choose the modifier.
      * @defaultValue true
      * @group Props
      */
@@ -343,7 +349,12 @@ export class ChartZoom {
         if (!context) return;
 
         context.setZoomWindow(window);
-        this.onZoomChange()?.({ x: window.x, y: window.y });
+
+        // The listener is application code, so it runs back inside the zone where one exists.
+        const listener = this.onZoomChange();
+
+        if (listener) this.zone.run(() => listener({ x: window.x, y: window.y }));
+
         this.group?.publishExtremes(this.id, window);
     }
 
@@ -401,11 +412,13 @@ export class ChartZoom {
                 if (options.enabled === false) return;
                 if (options.modifierKey && !hasModifier(event, options.modifierKey)) return;
 
-                event.preventDefault();
-
                 const current = this.currentWindow();
 
+                // Left alone when there is nothing to zoom, so the page still scrolls over a chart
+                // that cannot use the wheel.
                 if (!current) return;
+
+                event.preventDefault();
 
                 const speed = options.speed ?? 0.1;
                 const factor = event.deltaY > 0 ? 1 + speed : 1 - speed;
@@ -437,6 +450,10 @@ export class ChartZoom {
             const onPointerDown = (event: PointerEvent) => {
                 if (event.button !== 0) return;
 
+                // The legend, the menus and the zoom buttons live in the same container and take the
+                // click themselves. Capturing the pointer for a drag would swallow it.
+                if ((event.target as Element | null)?.closest?.('button, a, input, select, textarea, [role="menu"]')) return;
+
                 const rect = element!.getBoundingClientRect();
                 const local = { x: event.clientX - rect.left, y: event.clientY - rect.top };
                 const dragConfig = this.drag();
@@ -446,6 +463,7 @@ export class ChartZoom {
 
                     if (options.enabled !== false && (!options.modifierKey || hasModifier(event, options.modifierKey))) {
                         dragStart = local;
+                        capture(event);
 
                         return;
                     }
@@ -463,9 +481,24 @@ export class ChartZoom {
                 if (options.modifierKey && !hasModifier(event, options.modifierKey)) return;
 
                 panStart = { ...local, window: this.currentWindow() ?? { x: null, y: null } };
+                capture(event);
+            };
+
+            // Capturing the pointer keeps the move and release events coming to the chart while the
+            // button is down, wherever the pointer goes. That is what lets the handlers live on the
+            // element instead of on the whole window.
+            const capture = (event: PointerEvent) => {
+                try {
+                    element!.setPointerCapture?.(event.pointerId);
+                } catch {
+                    // A pointer that is already gone cannot be captured, and there is nothing to track.
+                }
             };
 
             const onPointerMove = (event: PointerEvent) => {
+                // Idle moves are the common case and must cost nothing: no layout read, no signal.
+                if (!dragStart && !panStart) return;
+
                 const rect = element!.getBoundingClientRect();
                 const local = { x: event.clientX - rect.left, y: event.clientY - rect.top };
 
@@ -502,7 +535,17 @@ export class ChartZoom {
                 this.apply(next);
             };
 
-            const onPointerUp = () => {
+            const onPointerUp = (event?: Event) => {
+                if (!dragStart && !panStart) return;
+
+                if (event instanceof PointerEvent && event.type !== 'lostpointercapture') {
+                    try {
+                        element!.releasePointerCapture?.(event.pointerId);
+                    } catch {
+                        // Already released.
+                    }
+                }
+
                 const box = this.dragBox();
 
                 dragStart = null;
@@ -553,33 +596,50 @@ export class ChartZoom {
                 pinchDistance = 0;
             };
 
-            element.addEventListener('wheel', onWheel, { passive: false });
-            element.addEventListener('pointerdown', onPointerDown);
-            element.addEventListener('pointermove', onPointerMove);
-            element.addEventListener('touchmove', onTouchMove, { passive: false });
+            const target = element;
 
-            if (typeof window !== 'undefined') {
-                window.addEventListener('pointerup', onPointerUp);
-                window.addEventListener('touchend', onTouchEnd);
-            }
+            // Outside the zone, where one exists: a wheel and a drag fire far faster than a
+            // change-detection pass is worth, and what they change goes through signals.
+            this.zone.runOutsideAngular(() => {
+                target.addEventListener('wheel', onWheel, { passive: false });
+                target.addEventListener('pointerdown', onPointerDown);
+                target.addEventListener('pointermove', onPointerMove);
+                target.addEventListener('pointerup', onPointerUp);
+                target.addEventListener('pointercancel', onPointerUp);
+                target.addEventListener('lostpointercapture', onPointerUp);
+                target.addEventListener('touchmove', onTouchMove, { passive: false });
+                target.addEventListener('touchend', onTouchEnd);
+                target.addEventListener('touchcancel', onTouchEnd);
+            });
 
             teardown.push(() => {
-                element!.removeEventListener('wheel', onWheel);
-                element!.removeEventListener('pointerdown', onPointerDown);
-                element!.removeEventListener('pointermove', onPointerMove);
-                element!.removeEventListener('touchmove', onTouchMove);
-
-                if (typeof window !== 'undefined') {
-                    window.removeEventListener('pointerup', onPointerUp);
-                    window.removeEventListener('touchend', onTouchEnd);
-                }
+                target.removeEventListener('wheel', onWheel);
+                target.removeEventListener('pointerdown', onPointerDown);
+                target.removeEventListener('pointermove', onPointerMove);
+                target.removeEventListener('pointerup', onPointerUp);
+                target.removeEventListener('pointercancel', onPointerUp);
+                target.removeEventListener('lostpointercapture', onPointerUp);
+                target.removeEventListener('touchmove', onTouchMove);
+                target.removeEventListener('touchend', onTouchEnd);
+                target.removeEventListener('touchcancel', onTouchEnd);
             });
 
             return true;
         };
 
         if (!bind()) {
-            const frame = typeof requestAnimationFrame === 'function' ? requestAnimationFrame(() => bind()) : 0;
+            // The root's view may take a few frames to put its container in the document.
+            let frame = 0;
+            let attempts = 0;
+            const retry = () => {
+                frame = 0;
+
+                if (bind() || ++attempts >= 30 || typeof requestAnimationFrame !== 'function') return;
+
+                frame = requestAnimationFrame(retry);
+            };
+
+            if (typeof requestAnimationFrame === 'function') frame = this.zone.runOutsideAngular(() => requestAnimationFrame(retry));
 
             teardown.push(() => {
                 if (frame && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(frame);

@@ -48,10 +48,10 @@ export function projectSankey(ctx: DrawContext, series: ResolvedSeries, props: S
 }
 
 /** The flow under a point, if any. */
-export function hitTestSankey(ctx: DrawContext, series: ResolvedSeries, props: SankeySeriesProps, x: number, y: number): SankeyLink | null {
-    const { links } = projectSankey(ctx, series, props);
+export function hitTestSankey(ctx: DrawContext, series: ResolvedSeries, props: SankeySeriesProps, x: number, y: number, layout?: SankeyLayout): SankeyLink | null {
+    const { links } = layout ?? projectSankey(ctx, series, props);
 
-    for (const link of [...links].reverse()) if (onLink(link, x, y)) return link;
+    for (let i = links.length - 1; i >= 0; i--) if (onLink(links[i], x, y)) return links[i];
 
     return null;
 }

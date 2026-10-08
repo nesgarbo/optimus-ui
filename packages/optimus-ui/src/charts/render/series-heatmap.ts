@@ -14,6 +14,7 @@ import { DEFAULT_HEAT_RANGE } from '../core/palette';
 import type { ResolvedSeries } from '../charts-state';
 import { isHovered, markOpacity, scaleFor, slotGroup, type DrawContext } from './scene';
 import { dashAttr } from './series-line';
+import { indexMap } from '../core/lookup';
 
 /** One cell, resolved into a rectangle and a colour. */
 export interface HeatmapCell {
@@ -91,6 +92,8 @@ export function projectHeatmap(ctx: DrawContext, series: ResolvedSeries, props: 
     const yField = typeof props.categoryYField === 'string' ? props.categoryYField : 'row';
     const spacing = props.spacing ?? 1;
     const cells: HeatmapCell[] = [];
+    const rowIndex = indexMap(yScale.domain as string[]);
+    const colIndex = indexMap(xScale.domain as string[]);
 
     for (const point of series.points) {
         if (!ctx.isItemVisible(series.id, point.dataIndex)) continue;
@@ -119,8 +122,8 @@ export function projectHeatmap(ctx: DrawContext, series: ResolvedSeries, props: 
             value: point.value,
             xLabel: point.category,
             yLabel,
-            row: yScale.domain.indexOf(yLabel),
-            col: xScale.domain.indexOf(point.category),
+            row: rowIndex.get(yLabel) ?? -1,
+            col: colIndex.get(point.category) ?? -1,
             // An explicit per-cell colour wins over the scale; the scale is the default, not a rule.
             color: typeof explicit === 'string' && !scale.opacityMapped ? explicit : color,
             dataIndex: point.dataIndex,

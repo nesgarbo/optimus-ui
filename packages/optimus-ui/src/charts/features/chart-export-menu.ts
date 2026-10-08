@@ -5,10 +5,11 @@
  * need focus, keyboard handling and a hit target. The export itself is the root's job, since only
  * the root knows whether it is serialising an SVG tree or reading back a canvas.
  */
-import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, ViewEncapsulation, booleanAttribute, computed, contentChild, inject, input, numberAttribute, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, Injector, NgZone, afterNextRender, ViewEncapsulation, booleanAttribute, computed, contentChild, effect, inject, input, numberAttribute, signal, viewChild } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import type { ChartExportMenuProps, ExportMenuButtonOptions, ExportMenuItem, ExportMenuItemContext } from '@openng/optimus-ui/types/charts';
 import { CHART_CONTEXT } from '../charts-registry';
+import { csvToBlob } from '../core/export';
 import { ChartExportMenuIconDef, ChartExportMenuItemDef } from './chart-defs';
 
 /** The default menu, and the order the entries appear in. */
@@ -42,8 +43,8 @@ interface MenuEntry {
                     [attr.aria-label]="label()"
                     [attr.aria-expanded]="open()"
                     aria-haspopup="menu"
-                    (click)="toggle()"
-                    (keydown.escape)="open.set(false)"
+                    (click)="openedByKeyboard = $event.detail === 0; toggle()"
+                    (keydown)="onButtonKey($event)"
                 >
                     @if (iconDef()) {
                         <ng-container [ngTemplateOutlet]="iconDef()!.template" [ngTemplateOutletContext]="{ $implicit: { open: open() }, ctx: { open: open() } }" />
@@ -54,14 +55,14 @@ interface MenuEntry {
                     }
                 </button>
                 @if (open()) {
-                    <div class="p-chart-export-menu-list" [class]="menuClass()" data-slot="chart-export-menu-list" role="menu">
+                    <div class="p-chart-export-menu-list" [class]="menuClass()" data-slot="chart-export-menu-list" role="menu" aria-orientation="vertical" (keydown)="onMenuKey($event)">
                         @for (entry of entries(); track entry.key) {
                             @if (entry.format === 'separator') {
                                 <hr class="p-chart-export-menu-separator" data-slot="chart-export-menu-separator" />
                             } @else if (itemDef()) {
                                 <ng-container [ngTemplateOutlet]="itemDef()!.template" [ngTemplateOutletContext]="{ $implicit: contextFor(entry, $index), ctx: contextFor(entry, $index) }" />
                             } @else {
-                                <button type="button" class="p-chart-export-menu-item" data-slot="chart-export-menu-item" role="menuitem" (click)="run(entry)">{{ entry.label }}</button>
+                                <button type="button" class="p-chart-export-menu-item" data-slot="chart-export-menu-item" role="menuitem" tabindex="-1" (click)="run(entry)">{{ entry.label }}</button>
                             }
                         }
                     </div>
@@ -182,8 +183,97 @@ export class ChartExportMenu {
         };
     }
 
+    private readonly injector = inject(Injector);
+
+    private readonly zone = inject(NgZone);
+
     protected toggle(): void {
-        this.open.update((value) => !value);
+        const opening = !this.open();
+
+        this.open.set(opening);
+
+        // A menu opened from the keyboard has to put the focus inside it, or the arrow keys would have
+        // nothing to move. A pointer click leaves the focus where it was.
+        if (opening && this.openedByKeyboard) this.focusItem(0);
+
+        this.openedByKeyboard = false;
+    }
+
+    protected openedByKeyboard = false;
+
+    /** The entries that can take focus, in order. Custom templates count as long as they render buttons. */
+    private items(): HTMLElement[] {
+        return Array.from(this.root()?.nativeElement.querySelectorAll<HTMLElement>('[data-slot="chart-export-menu-list"] [role="menuitem"], [data-slot="chart-export-menu-list"] button') ?? []);
+    }
+
+    /** Focuses an entry once the menu has rendered, wrapping at either end. */
+    private focusItem(position: number | 'last'): void {
+        afterNextRender(
+            () => {
+                const items = this.items();
+
+                if (items.length === 0) return;
+
+                const target = position === 'last' ? items.length - 1 : position;
+
+                items[((target % items.length) + items.length) % items.length].focus();
+            },
+            { injector: this.injector }
+        );
+    }
+
+    /** The button opens the menu with the arrow keys and closes it with Escape. */
+    protected onButtonKey(event: KeyboardEvent): void {
+        if (event.key === 'Escape') {
+            this.open.set(false);
+
+            return;
+        }
+
+        if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+
+        event.preventDefault();
+
+        if (this.open()) {
+            this.focusItem(event.key === 'ArrowUp' ? 'last' : 0);
+
+            return;
+        }
+
+        this.open.set(true);
+        this.focusItem(event.key === 'ArrowUp' ? 'last' : 0);
+    }
+
+    /** Arrow keys, Home and End move between entries; Escape and Tab close the menu. */
+    protected onMenuKey(event: KeyboardEvent): void {
+        const items = this.items();
+        const current = items.indexOf(event.target as HTMLElement);
+
+        switch (event.key) {
+            case 'ArrowDown':
+                event.preventDefault();
+                items[(current + 1) % items.length]?.focus();
+                break;
+            case 'ArrowUp':
+                event.preventDefault();
+                items[(current - 1 + items.length) % items.length]?.focus();
+                break;
+            case 'Home':
+                event.preventDefault();
+                items[0]?.focus();
+                break;
+            case 'End':
+                event.preventDefault();
+                items[items.length - 1]?.focus();
+                break;
+            case 'Escape':
+            case 'Tab':
+                if (event.key === 'Escape') event.preventDefault();
+
+                this.open.set(false);
+                this.root()?.nativeElement.querySelector<HTMLElement>('[data-slot="chart-export-menu-button"]')?.focus();
+                break;
+        }
     }
 
     /** The context a custom entry template receives. */
@@ -221,22 +311,22 @@ export class ChartExportMenu {
         const remove = this.context.registerFeature({ type: 'exportMenu', props: this.props });
 
         // A click anywhere else closes the menu, which is what a menu is expected to do and cannot
-        // be done from the template.
-        const onDocumentClick = (event: Event) => {
-            if (!this.open()) return;
+        // be done from the template. The listener exists only while the menu is open: a permanent
+        // capture listener on the document runs on every click of the page, for every chart on it.
+        effect((onCleanup) => {
+            if (!this.open() || typeof document === 'undefined') return;
 
-            const element = this.root()?.nativeElement;
+            const onDocumentClick = (event: Event) => {
+                const element = this.root()?.nativeElement;
 
-            if (element && !element.contains(event.target as Node)) this.open.set(false);
-        };
+                if (element && !element.contains(event.target as Node)) this.open.set(false);
+            };
 
-        if (typeof document !== 'undefined') document.addEventListener('click', onDocumentClick, true);
-
-        this.destroyRef.onDestroy(() => {
-            remove();
-
-            if (typeof document !== 'undefined') document.removeEventListener('click', onDocumentClick, true);
+            this.zone.runOutsideAngular(() => document.addEventListener('click', onDocumentClick, true));
+            onCleanup(() => document.removeEventListener('click', onDocumentClick, true));
         });
+
+        this.destroyRef.onDestroy(remove);
     }
 }
 
@@ -244,12 +334,14 @@ export class ChartExportMenu {
 function downloadText(filename: string, content: string): void {
     if (typeof document === 'undefined') return;
 
-    const blob = new Blob([content], { type: 'text/csv;charset=utf-8' });
+    const blob = csvToBlob(content);
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
 
     link.href = url;
     link.download = filename;
     link.click();
-    URL.revokeObjectURL(url);
+    // Revoked a tick later: some browsers start the download after `click` returns, and a revoked
+    // URL would turn it into a failed one.
+    setTimeout(() => URL.revokeObjectURL(url), 0);
 }

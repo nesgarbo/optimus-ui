@@ -20,9 +20,97 @@ import { hitTestHeatmap, projectHeatmap, resolveHeatmapScale } from './series-he
 import { hitTestSlices, pieFrame, projectSlices } from './series-pie';
 import { projectBoxes } from './series-boxplot';
 import { hitTestFunnel, projectFunnel } from './series-funnel';
-import { hitTestSankey } from './series-sankey';
+import { hitTestSankey, projectSankey } from './series-sankey';
 import { hitTestSunburst, projectSunburst, sunburstFrame } from './series-sunburst';
 import { hitTestTreemap, projectTreemap } from './series-treemap';
+
+/**
+ * Projections kept between pointer moves.
+ *
+ * A pointer move asks the same question of the same geometry over and over, and projecting a series
+ * into pixels is the expensive half of answering it. The geometry only changes when the series, its
+ * props, the scales, the theme or the item visibility do, so it is keyed on exactly those and
+ * recomputed only when one of them is a different object.
+ */
+const PROJECTIONS = new WeakMap<ResolvedSeries, Map<string, { deps: readonly unknown[]; value: unknown }>>();
+
+/** Returns the memoized value for a series and a kind of projection, recomputing when a dependency changed. */
+export function memoProjection<T>(entry: ResolvedSeries, kind: string, deps: readonly unknown[], compute: () => T): T {
+    let byKind = PROJECTIONS.get(entry);
+
+    if (!byKind) {
+        byKind = new Map();
+        PROJECTIONS.set(entry, byKind);
+    }
+
+    const cached = byKind.get(kind);
+
+    if (cached && cached.deps.length === deps.length && cached.deps.every((value, i) => value === deps[i])) return cached.value as T;
+
+    const value = compute();
+
+    byKind.set(kind, { deps, value });
+
+    return value;
+}
+
+/** What a projection reads from the draw context, other than the hover. */
+function geometryDeps(context: ChartContext, drawContext: DrawContext, entry: ResolvedSeries): unknown[] {
+    return [entry.registration.props(), drawContext.area, drawContext.scales, drawContext.theme, drawContext.fontFamily, drawContext.fontSize, drawContext.direction, drawContext.locale, drawContext.progress, context.hiddenItems()];
+}
+
+/** One placed point of a cartesian series, with where it sits in the series. */
+interface PlacedPoint {
+    px: number;
+    py: number;
+    dataIndex: number;
+    position: number;
+}
+
+/**
+ * A series' points placed in pixels and sorted by x.
+ *
+ * Sorting is what turns "which point is nearest" from a scan of every point into a binary search,
+ * so hovering a hundred-thousand-point line costs the same as hovering a hundred-point one.
+ */
+function placedPoints(drawContext: DrawContext, entry: ResolvedSeries): PlacedPoint[] | null {
+    const xScale = scaleFor(drawContext, 'x', entry.xAxisId);
+    const yScale = scaleFor(drawContext, 'y', entry.yAxisId);
+
+    if (!xScale) return null;
+
+    return memoProjection(entry, 'placed', [entry, xScale, yScale], () => {
+        const placed: PlacedPoint[] = [];
+
+        entry.points.forEach((point, position) => {
+            if (point.value == null) return;
+
+            const px = entry.continuousX ? xScale.scale(point.xValue) : xScale.scale(point.category);
+
+            if (!Number.isFinite(px)) return;
+
+            placed.push({ px, py: yScale && yScale.type !== 'band' ? yScale.scale(point.value) : Number.NaN, dataIndex: point.dataIndex, position });
+        });
+
+        // A stable sort, so points sharing an x keep the order the series gave them.
+        return placed.sort((a, b) => a.px - b.px || a.position - b.position);
+    });
+}
+
+/** Index of the first placed point whose x is not less than `x`. */
+export function lowerBound(placed: readonly { px: number }[], x: number): number {
+    let low = 0;
+    let high = placed.length;
+
+    while (low < high) {
+        const mid = (low + high) >>> 1;
+
+        if (placed[mid].px < x) low = mid + 1;
+        else high = mid;
+    }
+
+    return low;
+}
 
 /** A hit, with the pixel position of the mark that was hit. */
 export type ChartHit = HoverState;
@@ -37,7 +125,7 @@ export function hitTest(context: ChartContext, series: readonly ResolvedSeries[]
     const radial = series.filter((entry) => entry.visible && isRadial(entry.type));
 
     if (radial.length > 0) {
-        const hit = hitTestRadial(radial, drawContext, x, y);
+        const hit = hitTestRadial(context, radial, drawContext, x, y);
 
         if (hit) return hit;
     }
@@ -105,7 +193,11 @@ function hitTestCartesian(context: ChartContext, series: readonly ResolvedSeries
         switch (entry.type) {
             case 'heatmap': {
                 const heatmapProps = props as unknown as HeatmapSeriesProps;
-                const cell = hitTestHeatmap(projectHeatmap(drawContext, entry, heatmapProps, resolveHeatmapScale(entry, heatmapProps)), x, y);
+                const cell = hitTestHeatmap(
+                    memoProjection(entry, 'heatmap', geometryDeps(context, drawContext, entry), () => projectHeatmap(drawContext, entry, heatmapProps, resolveHeatmapScale(entry, heatmapProps))),
+                    x,
+                    y
+                );
 
                 if (cell) candidate = { hit: { datasetId: entry.id, index: cell.dataIndex, x: cell.x + cell.width / 2, y: cell.y + cell.height / 2 }, inside: true, dx: 0, dy: 0 };
 
@@ -114,27 +206,40 @@ function hitTestCartesian(context: ChartContext, series: readonly ResolvedSeries
             case 'sunburst': {
                 const sunburstProps = props as unknown as SunburstSeriesProps;
                 const frame = sunburstFrame(drawContext, sunburstProps);
-                const arc = hitTestSunburst(projectSunburst(drawContext, entry, sunburstProps), frame.cx, frame.cy, x, y);
+                const arc = hitTestSunburst(
+                    memoProjection(entry, 'sunburst', geometryDeps(context, drawContext, entry), () => projectSunburst(drawContext, entry, sunburstProps)),
+                    frame.cx,
+                    frame.cy,
+                    x,
+                    y
+                );
 
                 if (arc) candidate = { hit: { datasetId: entry.id, index: arc.node.dataIndex, x, y }, inside: true, dx: 0, dy: 0 };
 
                 break;
             }
             case 'sankey': {
-                const link = hitTestSankey(drawContext, entry, props as unknown as SankeySeriesProps, x, y);
+                const link = hitTestSankey(
+                    drawContext,
+                    entry,
+                    props as unknown as SankeySeriesProps,
+                    x,
+                    y,
+                    memoProjection(entry, 'sankey', geometryDeps(context, drawContext, entry), () => projectSankey(drawContext, entry, props as unknown as SankeySeriesProps))
+                );
 
                 if (link) candidate = { hit: { datasetId: entry.id, index: link.index, x, y }, inside: true, dx: 0, dy: 0 };
 
                 break;
             }
             case 'boxplot': {
-                for (const box of projectBoxes(drawContext, entry, props as unknown as BoxplotSeriesProps)) {
+                for (const box of memoProjection(entry, 'boxplot', geometryDeps(context, drawContext, entry), () => projectBoxes(drawContext, entry, props as unknown as BoxplotSeriesProps))) {
                     const half = Math.max(box.width / 2, 2);
 
                     if (Math.abs(box.x - x) > half) continue;
 
-                    const top = Math.min(box.whiskerHighY, box.whiskerLowY, ...box.outlierYs);
-                    const bottom = Math.max(box.whiskerHighY, box.whiskerLowY, ...box.outlierYs);
+                    const top = box.outlierYs.reduce((low, value) => Math.min(low, value), Math.min(box.whiskerHighY, box.whiskerLowY));
+                    const bottom = box.outlierYs.reduce((high, value) => Math.max(high, value), Math.max(box.whiskerHighY, box.whiskerLowY));
                     const inside = y >= top && y <= bottom;
 
                     candidate = { hit: { datasetId: entry.id, index: box.dataIndex, x: box.x, y: box.medianY }, inside, dx: Math.abs(box.x - x), dy: inside ? 0 : Math.abs(box.medianY - y) };
@@ -145,14 +250,22 @@ function hitTestCartesian(context: ChartContext, series: readonly ResolvedSeries
             }
             case 'funnel':
             case 'pyramid': {
-                const item = hitTestFunnel(projectFunnel(drawContext, entry, props as unknown as FunnelSeriesProps), x, y);
+                const item = hitTestFunnel(
+                    memoProjection(entry, 'funnel', geometryDeps(context, drawContext, entry), () => projectFunnel(drawContext, entry, props as unknown as FunnelSeriesProps)),
+                    x,
+                    y
+                );
 
                 if (item) candidate = { hit: { datasetId: entry.id, index: item.dataIndex, x: item.cx, y: item.cy }, inside: true, dx: 0, dy: 0 };
 
                 break;
             }
             case 'treemap': {
-                const cell = hitTestTreemap(projectTreemap(drawContext, entry, props as unknown as TreemapSeriesProps), x, y);
+                const cell = hitTestTreemap(
+                    memoProjection(entry, 'treemap', geometryDeps(context, drawContext, entry), () => projectTreemap(drawContext, entry, props as unknown as TreemapSeriesProps)),
+                    x,
+                    y
+                );
 
                 if (cell) candidate = { hit: { datasetId: entry.id, index: cell.node.dataIndex, x: cell.x + cell.width / 2, y: cell.y + cell.height / 2 }, inside: true, dx: 0, dy: 0 };
 
@@ -166,7 +279,7 @@ function hitTestCartesian(context: ChartContext, series: readonly ResolvedSeries
                 const position = groupMembers.indexOf(entry);
                 const slot = bandSlotFor(bandwidth, groupMembers.length || 1, position < 0 ? 0 : position, barProps, grouped && position >= 0);
 
-                for (const bar of projectBars(drawContext, entry, barProps, slot, horizontal)) {
+                for (const bar of memoProjection(entry, 'bar', [...geometryDeps(context, drawContext, entry), series, horizontal], () => projectBars(drawContext, entry, barProps, slot, horizontal))) {
                     // A bar's band is the whole column, so a pointer above a short bar still hovers
                     // it: that is what `snap: 'category'` means, and it is why the cross-axis test
                     // is generous while the along-axis one is exact.
@@ -184,7 +297,7 @@ function hitTestCartesian(context: ChartContext, series: readonly ResolvedSeries
                 break;
             }
             case 'candlestick': {
-                for (const candle of projectCandles(drawContext, entry, props as unknown as CandlestickSeriesProps)) {
+                for (const candle of memoProjection(entry, 'candles', geometryDeps(context, drawContext, entry), () => projectCandles(drawContext, entry, props as unknown as CandlestickSeriesProps))) {
                     const half = Math.max(candle.width / 2, 2);
 
                     if (Math.abs(candle.x - x) > half) continue;
@@ -198,29 +311,45 @@ function hitTestCartesian(context: ChartContext, series: readonly ResolvedSeries
                 break;
             }
             default: {
-                const xScale = scaleFor(drawContext, 'x', entry.xAxisId);
-                const yScale = scaleFor(drawContext, 'y', entry.yAxisId);
+                const placed = placedPoints(drawContext, entry);
 
-                if (!xScale) break;
+                if (!placed || placed.length === 0) break;
 
-                const continuous = entry.continuousX;
+                const scatter = entry.type === 'scatter';
+                let found: Candidate | null = null;
+                let foundPosition = Infinity;
+                let left = lowerBound(placed, x) - 1;
+                let right = left + 1;
 
-                for (const point of entry.points) {
-                    if (point.value == null || !context.isItemVisible(entry.id, point.dataIndex)) continue;
+                // Walk outward from the pointer. A side stops once its x distance alone exceeds the
+                // best distance found, since no point further out can beat it.
+                while (left >= 0 || right < placed.length) {
+                    const reach: number = found ? found.dx : Infinity;
+                    const leftGap = left >= 0 ? x - placed[left].px : Infinity;
+                    const rightGap = right < placed.length ? placed[right].px - x : Infinity;
 
-                    const px = continuous ? xScale.scale(point.xValue) : xScale.scale(point.category);
+                    if (leftGap > reach && rightGap > reach) break;
 
-                    if (!Number.isFinite(px)) continue;
+                    const point = leftGap <= rightGap ? placed[left--] : placed[right++];
 
-                    const py = yScale && yScale.type !== 'band' ? yScale.scale(point.value) : Number.NaN;
+                    if (!context.isItemVisible(entry.id, point.dataIndex)) continue;
+
+                    const py = point.py;
                     // A scatter point is placed by two numbers, so both count. A line is placed by
                     // one, so x decides and y only breaks a tie between series.
-                    const dx = entry.type === 'scatter' && Number.isFinite(py) ? Math.hypot(px - x, py - y) : Math.abs(px - x);
+                    const dx = scatter && Number.isFinite(py) ? Math.hypot(point.px - x, py - y) : Math.abs(point.px - x);
                     const dy = Number.isFinite(py) ? Math.abs(py - y) : 0;
-                    const next: Candidate = { hit: { datasetId: entry.id, index: point.dataIndex, x: px, y: Number.isFinite(py) ? py : y }, inside: false, dx, dy };
+                    const next: Candidate = { hit: { datasetId: entry.id, index: point.dataIndex, x: point.px, y: Number.isFinite(py) ? py : y }, inside: false, dx, dy };
 
-                    if (better(next, candidate)) candidate = next;
+                    // On an exact tie the earlier point in the series wins, as it did when every
+                    // point was visited in order.
+                    if (!found || better(next, found) || (next.dx === found.dx && next.dy === found.dy && point.position < foundPosition)) {
+                        found = next;
+                        foundPosition = point.position;
+                    }
                 }
+
+                candidate = found;
             }
         }
 
@@ -231,12 +360,12 @@ function hitTestCartesian(context: ChartContext, series: readonly ResolvedSeries
 }
 
 /** Finds the slice under the pointer, testing the topmost ring first. */
-function hitTestRadial(series: readonly ResolvedSeries[], drawContext: DrawContext, x: number, y: number): ChartHit | null {
+function hitTestRadial(context: ChartContext, series: readonly ResolvedSeries[], drawContext: DrawContext, x: number, y: number): ChartHit | null {
     const frame = pieFrame(drawContext);
 
     // Reversed so the last-drawn series wins, matching what the reader sees where rings overlap.
     for (const entry of [...series].reverse()) {
-        const slices = projectSlices(drawContext, entry, entry.registration.props() as PieSeriesProps, frame);
+        const slices = memoProjection(entry, 'slices', [...geometryDeps(context, drawContext, entry), frame.center.x, frame.center.y, frame.radius], () => projectSlices(drawContext, entry, entry.registration.props() as PieSeriesProps, frame));
         const slice = hitTestSlices(slices, frame, x, y);
 
         if (slice) return { datasetId: entry.id, index: slice.dataIndex, x, y };

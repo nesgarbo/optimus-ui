@@ -111,10 +111,24 @@ export function histogram(values: readonly unknown[], options: HistogramOptions 
     if (!nums.length) return [];
 
     let [lo, hi] = options.domain ?? [nums[0], nums[nums.length - 1]];
+
+    // A domain given backwards covers the same range, and one that is not a number covers nothing.
+    if (!Number.isFinite(lo) || !Number.isFinite(hi)) return [];
+    if (lo > hi) [lo, hi] = [hi, lo];
+
     let edges: number[];
 
     if (options.thresholds?.length) {
-        edges = [lo, ...options.thresholds.filter((t) => t > lo && t < hi).sort((a, b) => a - b), hi];
+        // A flat domain still needs a width, or the one bin has a density of infinity.
+        if (hi === lo) {
+            lo -= 0.5;
+            hi += 0.5;
+        }
+
+        // A repeated threshold would make a bin of no width, whose density is undefined.
+        const inner = [...new Set(options.thresholds.filter((t) => t > lo && t < hi))].sort((a, b) => a - b);
+
+        edges = [lo, ...inner, hi];
     } else {
         let count = options.bins && options.bins > 0 ? Math.min(Math.floor(options.bins), MAX_BINS) : binCount(nums, options.rule);
 
@@ -153,5 +167,5 @@ export function histogram(values: readonly unknown[], options: HistogramOptions 
 
     const total = inDomain.length || 1;
 
-    return counts.map((count, i) => ({ x0: edges[i], x1: edges[i + 1], count, density: count / total / (edges[i + 1] - edges[i]), label: label(edges[i], edges[i + 1]) }));
+    return counts.map((count, i) => ({ x0: edges[i], x1: edges[i + 1], count, density: edges[i + 1] > edges[i] ? count / total / (edges[i + 1] - edges[i]) : 0, label: label(edges[i], edges[i + 1]) }));
 }
