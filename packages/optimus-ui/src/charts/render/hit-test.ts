@@ -8,7 +8,7 @@
  *
  * Both roots share this, so hover behaves identically in the two renderers.
  */
-import type { BarSeriesProps, CandlestickSeriesProps, HeatmapSeriesProps, HoverState, PieSeriesProps, TreemapSeriesProps } from '@openng/optimus-ui/types/charts';
+import type { BarSeriesProps, BoxplotSeriesProps, SunburstSeriesProps, SankeySeriesProps, CandlestickSeriesProps, FunnelSeriesProps, HeatmapSeriesProps, HoverState, PieSeriesProps, TreemapSeriesProps } from '@openng/optimus-ui/types/charts';
 import { isRadial, type ResolvedSeries } from '../charts-state';
 import type { ChartContext } from '../charts-registry';
 import { containsPoint } from '../core/layout';
@@ -18,6 +18,10 @@ import { bandSlotFor, groupedBars, projectBars, shouldGroup } from './series-bar
 import { projectCandles } from './series-candlestick';
 import { hitTestHeatmap, projectHeatmap, resolveHeatmapScale } from './series-heatmap';
 import { hitTestSlices, pieFrame, projectSlices } from './series-pie';
+import { projectBoxes } from './series-boxplot';
+import { hitTestFunnel, projectFunnel } from './series-funnel';
+import { hitTestSankey } from './series-sankey';
+import { hitTestSunburst, projectSunburst, sunburstFrame } from './series-sunburst';
 import { hitTestTreemap, projectTreemap } from './series-treemap';
 
 /** A hit, with the pixel position of the mark that was hit. */
@@ -104,6 +108,46 @@ function hitTestCartesian(context: ChartContext, series: readonly ResolvedSeries
                 const cell = hitTestHeatmap(projectHeatmap(drawContext, entry, heatmapProps, resolveHeatmapScale(entry, heatmapProps)), x, y);
 
                 if (cell) candidate = { hit: { datasetId: entry.id, index: cell.dataIndex, x: cell.x + cell.width / 2, y: cell.y + cell.height / 2 }, inside: true, dx: 0, dy: 0 };
+
+                break;
+            }
+            case 'sunburst': {
+                const sunburstProps = props as unknown as SunburstSeriesProps;
+                const frame = sunburstFrame(drawContext, sunburstProps);
+                const arc = hitTestSunburst(projectSunburst(drawContext, entry, sunburstProps), frame.cx, frame.cy, x, y);
+
+                if (arc) candidate = { hit: { datasetId: entry.id, index: arc.node.dataIndex, x, y }, inside: true, dx: 0, dy: 0 };
+
+                break;
+            }
+            case 'sankey': {
+                const link = hitTestSankey(drawContext, entry, props as unknown as SankeySeriesProps, x, y);
+
+                if (link) candidate = { hit: { datasetId: entry.id, index: link.index, x, y }, inside: true, dx: 0, dy: 0 };
+
+                break;
+            }
+            case 'boxplot': {
+                for (const box of projectBoxes(drawContext, entry, props as unknown as BoxplotSeriesProps)) {
+                    const half = Math.max(box.width / 2, 2);
+
+                    if (Math.abs(box.x - x) > half) continue;
+
+                    const top = Math.min(box.whiskerHighY, box.whiskerLowY, ...box.outlierYs);
+                    const bottom = Math.max(box.whiskerHighY, box.whiskerLowY, ...box.outlierYs);
+                    const inside = y >= top && y <= bottom;
+
+                    candidate = { hit: { datasetId: entry.id, index: box.dataIndex, x: box.x, y: box.medianY }, inside, dx: Math.abs(box.x - x), dy: inside ? 0 : Math.abs(box.medianY - y) };
+                    break;
+                }
+
+                break;
+            }
+            case 'funnel':
+            case 'pyramid': {
+                const item = hitTestFunnel(projectFunnel(drawContext, entry, props as unknown as FunnelSeriesProps), x, y);
+
+                if (item) candidate = { hit: { datasetId: entry.id, index: item.dataIndex, x: item.cx, y: item.cy }, inside: true, dx: 0, dy: 0 };
 
                 break;
             }

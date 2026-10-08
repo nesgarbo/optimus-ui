@@ -12,7 +12,19 @@
  * detection cannot work on a per-series view, and the per-label font size has to be resolved before
  * any box can be compared.
  */
-import type { BarSeriesProps, CandlestickSeriesProps, ChartDataLabelsProps, HeatmapSeriesProps, LineSeriesProps, PieSeriesProps, PolarSeriesProps, RadarSeriesProps, ScatterSeriesProps, TreemapSeriesProps } from '@openng/optimus-ui/types/charts';
+import type {
+    BarSeriesProps,
+    CandlestickSeriesProps,
+    ChartDataLabelsProps,
+    FunnelSeriesProps,
+    HeatmapSeriesProps,
+    LineSeriesProps,
+    PieSeriesProps,
+    PolarSeriesProps,
+    RadarSeriesProps,
+    ScatterSeriesProps,
+    TreemapSeriesProps
+} from '@openng/optimus-ui/types/charts';
 import { resolveColorAccessor } from '../core/accessor';
 import { polarToCartesian } from '../core/geometry';
 import type { ResolvedSeries } from '../charts-state';
@@ -25,6 +37,7 @@ import { projectLine } from './series-line';
 import { projectSlices, sliceColor, type PieFrame } from './series-pie';
 import { radiusFor, type RadialAxis } from './series-radial';
 import { projectScatter } from './series-scatter';
+import { projectFunnel } from './series-funnel';
 import { projectTreemap } from './series-treemap';
 
 /** What build-scene hands over for one series, once it knows the geometry that series was drawn with. */
@@ -37,6 +50,7 @@ export type LabelSource =
     | { kind: 'polar'; series: ResolvedSeries; axis: RadialAxis; frame: PieFrame; sectorCount: number; sectorIndex: number }
     | { kind: 'heatmap'; series: ResolvedSeries }
     | { kind: 'treemap'; series: ResolvedSeries }
+    | { kind: 'funnel'; series: ResolvedSeries }
     | { kind: 'candlestick'; series: ResolvedSeries };
 
 /** Collects the labels for every source. */
@@ -68,6 +82,9 @@ export function collectLabels(ctx: DrawContext, props: ChartDataLabelsProps, sou
                 break;
             case 'treemap':
                 labels.push(...treemapLabels(ctx, props, source.series));
+                break;
+            case 'funnel':
+                labels.push(...funnelLabels(ctx, props, source.series));
                 break;
             case 'candlestick':
                 labels.push(...candleLabels(ctx, props, source.series));
@@ -517,6 +534,40 @@ function candleLabels(ctx: DrawContext, props: ChartDataLabelsProps, series: Res
             percentage,
             label: candle.category,
             datum: data[candle.dataIndex]
+        });
+    }
+
+    return labels;
+}
+
+/** Funnel and pyramid labels: centred in each slice, in the colour that reads on it, and dropped on a slice too thin to hold one. */
+function funnelLabels(ctx: DrawContext, props: ChartDataLabelsProps, series: ResolvedSeries): LabelInput[] {
+    const seriesProps = series.registration.props() as FunnelSeriesProps;
+    const items = projectFunnel(ctx, series, seriesProps);
+    const data = (seriesProps.data as unknown[] | undefined) ?? [];
+    const total = magnitudeTotal(items.map((item) => item.value));
+    const labels: LabelInput[] = [];
+
+    for (const item of items) {
+        const context = labelContext(data[item.dataIndex], item.dataIndex, series.seriesIndex, series.id, item.value, item.label);
+        const percentage = shareOf(item.value, total);
+        const style = labelStyle(ctx, props, context, markColor(ctx, series, item.dataIndex, item.label, item.value));
+
+        labels.push({
+            datasetId: series.id,
+            dataIndex: item.dataIndex,
+            x: item.cx,
+            y: item.cy,
+            anchor: 'middle',
+            baseline: 'middle',
+            text: labelText(props, item.value, percentage, item.label, data[item.dataIndex], ctx.locale),
+            fontSize: style.fontSize,
+            color: style.color,
+            fitBox: { width: Math.max(item.midWidth - 8, 0), height: Math.max(item.y1 - item.y0 - 2, 0) },
+            value: item.value,
+            percentage,
+            label: item.label,
+            datum: data[item.dataIndex]
         });
     }
 

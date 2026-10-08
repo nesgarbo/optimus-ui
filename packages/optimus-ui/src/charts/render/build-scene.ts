@@ -27,7 +27,11 @@ import type {
     RadarSeriesProps,
     ScatterSeriesProps,
     SvgNode,
-    TreemapSeriesProps
+    TreemapSeriesProps,
+    FunnelSeriesProps,
+    BoxplotSeriesProps,
+    SunburstSeriesProps,
+    SankeySeriesProps
 } from '@openng/optimus-ui/types/charts';
 import type { TemplateRef } from '@angular/core';
 import { isGradient, isLinearGradient } from '../core/color';
@@ -47,6 +51,10 @@ import { paintPolarSeries, paintRadarSeries, paintRadialGrid, radialFrame, resol
 import { paintScatterSeries, projectScatter } from './series-scatter';
 import { paintCandlestickSeries } from './series-candlestick';
 import { heatmapCellContext, paintHeatmapSeries, projectHeatmap, resolveHeatmapScale } from './series-heatmap';
+import { paintBoxplotSeries } from './series-boxplot';
+import { paintFunnelSeries } from './series-funnel';
+import { paintSankeySeries } from './series-sankey';
+import { paintSunburstSeries } from './series-sunburst';
 import { paintTreemapSeries, projectTreemap, treemapCellContext } from './series-treemap';
 import { paintDataLabels } from './data-labels';
 import { paintRangeBand } from './range-band';
@@ -334,6 +342,25 @@ export function buildScene(context: ChartContext, series: readonly ResolvedSerie
                 if (labelsFeature) labelSources.push({ kind: 'treemap', series: entry });
 
                 collectTreemapStamps(drawContext, entry, entry.registration.props() as TreemapSeriesProps, stamps);
+
+                break;
+            case 'sunburst':
+                scene.add('marks', ...paintSunburstSeries(drawContext, entry, entry.registration.props() as SunburstSeriesProps));
+
+                break;
+            case 'sankey':
+                scene.add('marks', ...paintSankeySeries(drawContext, entry, entry.registration.props() as SankeySeriesProps));
+
+                break;
+            case 'boxplot':
+                scene.add('marks', ...paintBoxplotSeries(drawContext, entry, entry.registration.props() as BoxplotSeriesProps));
+
+                break;
+            case 'funnel':
+            case 'pyramid':
+                scene.add('marks', ...paintFunnelSeries(drawContext, entry, entry.registration.props() as FunnelSeriesProps));
+
+                if (labelsFeature) labelSources.push({ kind: 'funnel', series: entry });
 
                 break;
             case 'radar':

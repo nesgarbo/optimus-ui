@@ -1003,10 +1003,288 @@ export interface TreemapSeriesProps<T = unknown> extends BaseSeriesProps<T>, Hov
 }
 
 /**
+ * Inputs of `ChartFunnel`, which draws a funnel or a pyramid: values stacked top to bottom, each slice as tall as its share.
+ * @group Interface
+ */
+export interface FunnelSeriesProps<T = unknown> extends BaseSeriesProps<T>, HoverableSeriesProps<T> {
+    /**
+     * Numeric value field, which sets the height of a slice.
+     */
+    valueField?: FieldAccessor<T, number>;
+    /**
+     * Slice label field.
+     */
+    categoryField?: FieldAccessor<T, string>;
+    /**
+     * Per-slice colors.
+     */
+    color?: FieldAccessor<T, FillValue>;
+    /**
+     * Per-slice fill opacity, from 0 to 1.
+     */
+    opacity?: FieldAccessor<T, number>;
+    /**
+     * Width of the shape, as a share of the plot area, from 0 to 1.
+     */
+    widthRatio?: number;
+    /**
+     * Height of the shape, as a share of the plot area, from 0 to 1.
+     */
+    heightRatio?: number;
+    /**
+     * Width of the neck of a funnel, as a share of its mouth.
+     */
+    neckWidth?: number;
+    /**
+     * Height of the neck of a funnel, as a share of the height.
+     */
+    neckHeight?: number;
+    /**
+     * Space between slices, in pixels.
+     */
+    gap?: number;
+    /**
+     * How a pyramid turns values into slices: by height (`linear`) or by area (`surface`).
+     */
+    mode?: 'linear' | 'surface';
+    /**
+     * Turns a pyramid over, so that its point is at the bottom.
+     */
+    inverted?: boolean;
+    /**
+     * Slice ordering applied before render. A funnel is usually sorted `value-desc`.
+     */
+    sort?: SliceSortOrder;
+    /**
+     * Slice border stroke colour.
+     */
+    borderColor?: FieldAccessor<T, FillValue>;
+    /**
+     * Slice border stroke width in pixels.
+     */
+    borderStrokeWidth?: FieldAccessor<T, number>;
+    /**
+     * Dash pattern.
+     */
+    borderDash?: DashAccessor<T>;
+    /**
+     * How border segments connect at slice corners.
+     */
+    borderJoinStyle?: BorderJoinStyle;
+}
+
+/**
+ * Inputs of `ChartBoxplot`, which draws a box and whiskers for each category: the quartiles, the median, the range and the outliers.
+ * @group Interface
+ */
+export interface BoxplotSeriesProps<T = unknown> extends CartesianSeriesProps<T>, HoverableSeriesProps<T> {
+    /**
+     * Category field for the x axis.
+     */
+    categoryXField?: FieldAccessor<T, string>;
+    /**
+     * A field holding the raw values of a category as an array. The quartiles, whiskers and outliers are worked out from them.
+     */
+    valuesField?: string;
+    /**
+     * Fields holding the numbers of a category, when they are already worked out.
+     */
+    minField?: string;
+    q1Field?: string;
+    medianField?: string;
+    q3Field?: string;
+    maxField?: string;
+    meanField?: string;
+    /**
+     * A field holding the outliers as an array.
+     */
+    outliersField?: string;
+    /**
+     * How the quartiles are found from raw values.
+     */
+    quartileMethod?: 'exclusive' | 'inclusive' | 'linear';
+    /**
+     * How far the whiskers reach, in interquartile ranges, before a value is an outlier.
+     */
+    whiskerReach?: number;
+    /**
+     * Width of a box as a share of its band.
+     */
+    boxWidthRatio?: number;
+    /**
+     * Draws the mean as a marker.
+     */
+    showMean?: boolean;
+    /**
+     * Draws the outliers.
+     */
+    showOutliers?: boolean;
+    /**
+     * Per-box color.
+     */
+    color?: FieldAccessor<T, FillValue>;
+    /**
+     * Fill opacity of the box, from 0 to 1.
+     */
+    fillOpacity?: number;
+    /**
+     * Color of the median line. Defaults to the color of the box.
+     */
+    medianColor?: FillValue;
+    /**
+     * Border stroke width in pixels.
+     */
+    borderStrokeWidth?: FieldAccessor<T, number>;
+    /**
+     * Corner radius of the box.
+     */
+    borderRadius?: FieldAccessor<T, BorderRadius>;
+    /**
+     * Radius of an outlier or mean marker, in pixels.
+     */
+    markerSize?: number;
+}
+
+/**
+ * Inputs of `ChartSunburst`, which draws a hierarchy as rings of arcs.
+ * @group Interface
+ */
+export interface SunburstSeriesProps<T = unknown> extends BaseSeriesProps<T>, HoverableSeriesProps<T> {
+    /**
+     * Numeric value field. A node with children takes the sum of theirs.
+     */
+    valueField?: FieldAccessor<T, number>;
+    /**
+     * Label field.
+     */
+    categoryField?: FieldAccessor<T, string>;
+    /**
+     * Field holding the id of a node, for a flat list.
+     */
+    nodeId?: string;
+    /**
+     * Field holding the id of the parent of a node, for a flat list.
+     */
+    parentField?: string;
+    /**
+     * Per-node colors. By default a node takes the color of its first ancestor, paler for each generation.
+     */
+    color?: FieldAccessor<T, FillValue>;
+    /**
+     * Per-node fill opacity, from 0 to 1.
+     */
+    opacity?: FieldAccessor<T, number>;
+    /**
+     * The hole in the middle, as a share of the outer radius, from 0 to 1.
+     */
+    innerRadius?: number;
+    /**
+     * Outer radius as a share of the available space, from 0 to 1.
+     */
+    outerRadius?: number;
+    /**
+     * Where the first arc begins, in degrees. -90 is twelve o'clock.
+     */
+    startAngle?: number;
+    /**
+     * Angle the arcs cover, in degrees.
+     */
+    sweepAngle?: number;
+    /**
+     * Space between arcs, in pixels.
+     */
+    spacing?: number;
+    /**
+     * Space between rings, in pixels.
+     */
+    ringGap?: number;
+    /**
+     * Generations drawn, from 1. Omitted, all of them.
+     */
+    maxDepth?: number;
+    /**
+     * Writes the name of each arc that has room for it.
+     */
+    showLabels?: boolean;
+    /**
+     * Color of the labels. Defaults to whichever of dark and light reads on the arc.
+     */
+    labelColor?: FieldAccessor<T, FillValue>;
+    /**
+     * Arc border stroke colour.
+     */
+    borderColor?: FieldAccessor<T, FillValue>;
+    /**
+     * Arc border stroke width in pixels.
+     */
+    borderStrokeWidth?: FieldAccessor<T, number>;
+}
+
+/**
+ * Inputs of `ChartSankey`, which draws flows between nodes. Each datum is one flow.
+ * @group Interface
+ */
+export interface SankeySeriesProps<T = unknown> extends BaseSeriesProps<T>, HoverableSeriesProps<T> {
+    /**
+     * Field holding the name of the node a flow leaves.
+     */
+    sourceField?: string;
+    /**
+     * Field holding the name of the node a flow reaches.
+     */
+    targetField?: string;
+    /**
+     * Field holding the size of the flow.
+     */
+    valueField?: FieldAccessor<T, number>;
+    /**
+     * Colours of the nodes, by node name. A node with none takes the next colour of the palette.
+     */
+    nodeColors?: Record<string, string>;
+    /**
+     * Width of the node bars, in pixels.
+     */
+    nodeWidth?: number;
+    /**
+     * Space between the nodes of a column, in pixels.
+     */
+    nodePadding?: number;
+    /**
+     * Passes that move nodes towards the nodes they are linked to.
+     */
+    iterations?: number;
+    /**
+     * `justify` puts a node with no outgoing flow in the last column; `left` keeps it where it first appears.
+     */
+    align?: 'justify' | 'left';
+    /**
+     * What colours a flow: the node it leaves, the node it reaches, or a gradient between the two.
+     */
+    linkColor?: 'source' | 'target' | 'gradient';
+    /**
+     * Fill opacity of the flows, from 0 to 1.
+     */
+    linkOpacity?: number;
+    /**
+     * Writes the name of each node.
+     */
+    showLabels?: boolean;
+    /**
+     * Colour of the labels.
+     */
+    labelColor?: string;
+}
+
+/**
  * Maps each series type to its props, so a dataset registers into context under the right shape.
  * @group Interface
  */
 export interface SeriesPropsMap {
+    boxplot: BoxplotSeriesProps;
+    sunburst: SunburstSeriesProps;
+    sankey: SankeySeriesProps;
+    funnel: FunnelSeriesProps;
+    pyramid: FunnelSeriesProps;
     line: LineSeriesProps;
     bar: BarSeriesProps;
     pie: PieSeriesProps;

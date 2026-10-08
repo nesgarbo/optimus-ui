@@ -9,6 +9,7 @@
 import { computed, signal, type Signal, type WritableSignal } from '@angular/core';
 import type { AxisScale, AxisType, BoxArea, ChartDecimationProps, ChartExportOptions, ChartText, ChartTheme, FeatureType, HoverState, RendererType, SeriesType, StackingMode, TickValue } from '@openng/optimus-ui/types/charts';
 import { readCategory, readNumeric, readPath } from './core/accessor';
+import { readBoxStats } from './core/boxplot';
 import { decimate, type Sample } from './core/decimate';
 import { computeLayout, responsiveTier, type EdgeReservation } from './core/layout';
 import { resolveTheme } from './core/palette';
@@ -165,7 +166,7 @@ export interface ChartStateOptions {
 const DEFAULT_AXIS = 'default';
 
 /** The series types that place their marks against a category and a value axis. */
-const CARTESIAN_TYPES: readonly SeriesType[] = ['line', 'bar', 'scatter', 'candlestick', 'heatmap'];
+const CARTESIAN_TYPES: readonly SeriesType[] = ['line', 'bar', 'scatter', 'candlestick', 'heatmap', 'boxplot'];
 
 /** The series types that have no cartesian axes at all. */
 const RADIAL_TYPES: readonly SeriesType[] = ['pie', 'donut', 'pie3d', 'radar', 'polar'];
@@ -244,6 +245,8 @@ export function createChartState(options: ChartStateOptions) {
             const rowField = typeof props['categoryYField'] === 'string' ? (props['categoryYField'] as string) : 'row';
             // A candlestick's value is its close, and its axis has to reach its low and high.
             const ohlc = registration.type === 'candlestick';
+            // A box plot's value is its median, and its axis has to reach the ends of its whiskers and its outliers.
+            const boxed = registration.type === 'boxplot';
             /*
              * Which prop carries the measured value, which differs by family:
              *  - a heatmap has a single `valueField`, since neither axis measures it
@@ -259,6 +262,23 @@ export function createChartState(options: ChartStateOptions) {
                 // A floating bar starts at its open value rather than at zero.
                 const base = openAccessor == null ? 0 : (readNumeric(openAccessor, datum, dataIndex, index, registration.id) ?? 0);
                 const xValue = continuousX ? readNumeric(xValueAccessor, datum, dataIndex, index, registration.id, 'x') : undefined;
+
+                if (boxed) {
+                    const stats = readBoxStats(datum, {
+                        valuesField: props['valuesField'] as string | undefined,
+                        minField: props['minField'] as string | undefined,
+                        q1Field: props['q1Field'] as string | undefined,
+                        medianField: props['medianField'] as string | undefined,
+                        q3Field: props['q3Field'] as string | undefined,
+                        maxField: props['maxField'] as string | undefined,
+                        meanField: props['meanField'] as string | undefined,
+                        outliersField: props['outliersField'] as string | undefined,
+                        quartileMethod: props['quartileMethod'] as never,
+                        whiskerReach: props['whiskerReach'] as number | undefined
+                    });
+
+                    return { category, value: stats?.median ?? null, base: 0, dataIndex, extent: stats ? ([stats.lowest, stats.highest] as [number, number]) : undefined };
+                }
 
                 if (ohlc) {
                     const close = readNumeric(props['closeField'] as never, datum, dataIndex, index, registration.id, 'close');
@@ -581,7 +601,7 @@ export function createChartState(options: ChartStateOptions) {
 
     /** Whether the bound series want banded categories, which bars do and lines do not. */
     function seriesUsesBands(series: readonly ResolvedSeries[]): boolean {
-        return series.some((entry) => entry.type === 'bar' || entry.type === 'candlestick' || entry.type === 'heatmap');
+        return series.some((entry) => entry.type === 'bar' || entry.type === 'candlestick' || entry.type === 'heatmap' || entry.type === 'boxplot');
     }
 
     /**

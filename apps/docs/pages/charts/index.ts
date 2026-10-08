@@ -101,6 +101,11 @@ import { ColumnBarStackedDoc } from '@/doc/charts/types-column-bar-stacked-doc';
 import { ColumnBarTitleAndCaptionDoc } from '@/doc/charts/types-column-bar-title-and-caption-doc';
 import { ColumnBarTooltipDoc } from '@/doc/charts/types-column-bar-tooltip-doc';
 import { ColumnBarVariwideDoc } from '@/doc/charts/types-column-bar-variwide-doc';
+import { ColumnBarHistogramDoc } from '@/doc/charts/types-column-bar-histogram-doc';
+import { FunnelBasicDoc } from '@/doc/charts/types-funnel-basic-doc';
+import { BoxplotBasicDoc } from '@/doc/charts/types-boxplot-basic-doc';
+import { SunburstBasicDoc } from '@/doc/charts/types-sunburst-basic-doc';
+import { SankeyBasicDoc } from '@/doc/charts/types-sankey-basic-doc';
 import { ColumnBarWaterfallDoc } from '@/doc/charts/types-column-bar-waterfall-doc';
 import { ColumnBarZoomAndNavigatorDoc } from '@/doc/charts/types-column-bar-zoom-and-navigator-doc';
 import { ComboBarAndAreaDoc } from '@/doc/charts/types-combo-bar-and-area-doc';
@@ -670,6 +675,11 @@ export class ChartsDemo {
                     id: 'types-column-bar-waterfall',
                     label: 'Waterfall',
                     component: ColumnBarWaterfallDoc
+                },
+                {
+                    id: 'types-column-bar-histogram',
+                    label: 'Histogram',
+                    component: ColumnBarHistogramDoc
                 },
                 {
                     id: 'types-column-bar-overlap',
@@ -1731,6 +1741,54 @@ export class ChartsDemo {
                     id: 'types-candlestick-candlestick-bitcoin-btc-usd-weekly-nov-2021-to-dec-2024',
                     label: 'Bitcoin (BTC/USD), Weekly, Nov 2021 to Dec 2024',
                     component: CandlestickCandlestickBitcoinBtcUsdWeeklyNov2021ToDec2024Doc
+                }
+            ]
+        },
+        {
+            id: 'funnel',
+            label: 'Funnel & Pyramid',
+            description: 'Slices sized by value, in a funnel or a pyramid, by height or by area.',
+            children: [
+                {
+                    id: 'types-funnel-basic',
+                    label: 'Basic',
+                    component: FunnelBasicDoc
+                }
+            ]
+        },
+        {
+            id: 'boxplot',
+            label: 'Boxplot',
+            description: 'Five-number summaries with whiskers, outliers and the mean.',
+            children: [
+                {
+                    id: 'types-boxplot-basic',
+                    label: 'Basic',
+                    component: BoxplotBasicDoc
+                }
+            ]
+        },
+        {
+            id: 'sunburst',
+            label: 'Sunburst',
+            description: 'A hierarchy as rings of arcs.',
+            children: [
+                {
+                    id: 'types-sunburst-basic',
+                    label: 'Basic',
+                    component: SunburstBasicDoc
+                }
+            ]
+        },
+        {
+            id: 'sankey',
+            label: 'Sankey',
+            description: 'Flows between nodes, as thick as what they carry.',
+            children: [
+                {
+                    id: 'types-sankey-basic',
+                    label: 'Basic',
+                    component: SankeyBasicDoc
                 }
             ]
         },

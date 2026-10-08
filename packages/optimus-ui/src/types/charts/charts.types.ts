@@ -78,7 +78,7 @@ export type ResponsiveTier = 'xs' | 'sm' | 'md' | 'lg';
  * String identifier for each supported series type.
  * @group Types
  */
-export type SeriesType = 'pie' | 'donut' | 'pie3d' | 'bar' | 'line' | 'scatter' | 'radar' | 'polar' | 'candlestick' | 'treemap' | 'heatmap';
+export type SeriesType = 'pie' | 'donut' | 'pie3d' | 'bar' | 'line' | 'scatter' | 'radar' | 'polar' | 'candlestick' | 'treemap' | 'heatmap' | 'funnel' | 'pyramid' | 'boxplot' | 'sunburst' | 'sankey';
 
 /**
  * Discriminator identifying a chart feature. The template-literal variants let more than one

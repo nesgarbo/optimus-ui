@@ -253,7 +253,7 @@ export class ChartLegend {
                 const props = registration.props() as Record<string, unknown>;
                 const index = registration.seriesIndex();
                 const color = typeof props['color'] === 'string' ? (props['color'] as string) : isGradient(props['color'] as never) ? seriesColorAt(palette, index) : seriesColorAt(palette, index);
-                const perItem = registration.type === 'pie' || registration.type === 'donut' || registration.type === 'polar';
+                const perItem = registration.type === 'pie' || registration.type === 'donut' || registration.type === 'polar' || registration.type === 'funnel' || registration.type === 'pyramid';
 
                 if (perItem) {
                     const data = (props['data'] as Record<string, unknown>[] | undefined) ?? [];

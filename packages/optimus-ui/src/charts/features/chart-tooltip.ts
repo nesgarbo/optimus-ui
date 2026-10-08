@@ -6,8 +6,10 @@
  */
 import { ChangeDetectionStrategy, Component, DestroyRef, ViewEncapsulation, booleanAttribute, computed, contentChild, effect, inject, input, numberAttribute, signal, type EffectRef } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import type { ChartTooltipProps, CrosshairConfig, HoverState, TooltipItem, TooltipRenderContext, TooltipSnap, TooltipValueFormatter } from '@openng/optimus-ui/types/charts';
+import type { BoxplotSeriesProps, ChartTooltipProps, CrosshairConfig, HoverState, TooltipItem, TooltipRenderContext, TooltipRow, TooltipSnap, TooltipValueFormatter } from '@openng/optimus-ui/types/charts';
+import type { BoxStats } from '../core/boxplot';
 import { formatNumberTick } from '../core/format';
+import { boxStatsOf } from '../render/series-boxplot';
 import { seriesColorAt } from '../core/palette';
 import { CHART_CONTEXT, type ChartContext } from '../charts-registry';
 import { ChartTooltipDef } from './chart-defs';
@@ -170,7 +172,11 @@ export class ChartTooltip {
 
         const primaryProps = primary.props() as Record<string, unknown>;
         const primaryData = (primaryProps['data'] as Record<string, unknown>[] | undefined) ?? [];
-        const category = String(primaryData[hover.index]?.[categoryFieldOf(primaryProps)] ?? hover.index);
+        // A flow has no name of its own: it is called after the two nodes it joins.
+        const category =
+            primary.type === 'sankey'
+                ? `${primaryData[hover.index]?.[String(primaryProps['sourceField'] ?? 'source')] ?? ''} → ${primaryData[hover.index]?.[String(primaryProps['targetField'] ?? 'target')] ?? ''}`
+                : String(primaryData[hover.index]?.[categoryFieldOf(primaryProps)] ?? hover.index);
         const shared = this.mode() === 'shared';
 
         // In shared mode every series contributes its value at the same category, which is what
@@ -185,7 +191,9 @@ export class ChartTooltip {
             const data = (props['data'] as Record<string, unknown>[] | undefined) ?? [];
             const index: number = shared ? data.findIndex((datum) => String(datum?.[categoryFieldOf(props)] ?? '') === category) : hover.index;
             const resolvedIndex = index >= 0 ? index : hover.index;
-            const raw = data[resolvedIndex]?.[valueFieldOf(props)];
+            // A box plot has five numbers to say, and the median stands for it where one is needed.
+            const box = entry.type === 'boxplot' ? boxStatsOf(props as BoxplotSeriesProps, data[resolvedIndex]) : null;
+            const raw = box ? box.median : data[resolvedIndex]?.[valueFieldOf(props)];
             const value = typeof raw === 'number' ? raw : Number(raw);
 
             if (!Number.isFinite(value)) continue;
@@ -213,7 +221,7 @@ export class ChartTooltip {
                 formattedValue: typeof formatted === 'string' ? formatted : formatNumberTick(value, locale),
                 // Rows returned by the formatter replace this series' single line in the card, which
                 // is what lets one hovered mark report several metrics.
-                rows: Array.isArray(formatted) ? formatted : undefined
+                rows: Array.isArray(formatted) ? formatted : box ? boxRows(box, locale) : undefined
             });
         }
 
@@ -346,4 +354,21 @@ function watchHover(context: ChartContext, onChange: (hover: HoverState | null) 
     });
 
     return () => ref.destroy();
+}
+
+/** The rows a box plot's tooltip lists: the five numbers, top to bottom as the box is read, and the outliers when there are some. */
+function boxRows(box: BoxStats, locale: string | undefined): TooltipRow[] {
+    const f = (v: number) => formatNumberTick(v, locale);
+    const rows: TooltipRow[] = [
+        { label: 'Max', value: f(box.max) },
+        { label: 'Q3', value: f(box.q3) },
+        { label: 'Median', value: f(box.median) },
+        { label: 'Q1', value: f(box.q1) },
+        { label: 'Min', value: f(box.min) }
+    ];
+
+    if (box.mean !== undefined) rows.splice(3, 0, { label: 'Mean', value: f(box.mean) });
+    if (box.outliers.length) rows.push({ label: 'Outliers', value: box.outliers.length });
+
+    return rows;
 }

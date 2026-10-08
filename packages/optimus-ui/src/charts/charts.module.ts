@@ -47,6 +47,10 @@ import { ChartPie } from './series/chart-pie';
 import { ChartPolar } from './series/chart-polar';
 import { ChartRadar } from './series/chart-radar';
 import { ChartScatter } from './series/chart-scatter';
+import { ChartBoxplot } from './series/chart-boxplot';
+import { ChartFunnel } from './series/chart-funnel';
+import { ChartSankey } from './series/chart-sankey';
+import { ChartSunburst } from './series/chart-sunburst';
 import { ChartTreemap } from './series/chart-treemap';
 
 /**
@@ -71,6 +75,10 @@ const PARTS = [
     ChartCandlestick,
     ChartHeatmap,
     ChartTreemap,
+    ChartFunnel,
+    ChartBoxplot,
+    ChartSunburst,
+    ChartSankey,
     ChartStacked,
     ChartWaterfall,
     ChartOverlap,
