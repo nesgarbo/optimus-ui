@@ -204,12 +204,12 @@ describe('ScrollPanel', () => {
     describe('Scrollbar Visibility', () => {
         it('should calculate scroll ratios', async () => {
             // Wait for component to initialize
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             // Trigger moveBar calculation
             scrollPanel.moveBar();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             // Scroll ratios should be calculated
@@ -225,10 +225,10 @@ describe('ScrollPanel', () => {
 
             const noScrollPanel = noScrollFixture.debugElement.query(By.directive(ScrollPanel)).componentInstance;
 
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await noScrollFixture.whenStable();
             noScrollPanel.moveBar();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await noScrollFixture.whenStable();
 
             // Should calculate ratios without errors
@@ -239,7 +239,7 @@ describe('ScrollPanel', () => {
 
     describe('Scrolling Behavior', () => {
         beforeEach(async () => {
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
         });
 
@@ -267,7 +267,7 @@ describe('ScrollPanel', () => {
                 }
             };
             scrollPanel.onScroll(scrollEvent2);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(scrollPanel.lastScrollLeft).toBe(100);
@@ -300,7 +300,7 @@ describe('ScrollPanel', () => {
             }
 
             scrollPanel.scrollTop(100);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             // Verify the method was called correctly - scroll behavior might not work in test
@@ -310,13 +310,13 @@ describe('ScrollPanel', () => {
         it('should constrain scroll position within bounds', async () => {
             // Test negative scroll position
             scrollPanel.scrollTop(-50);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             expect(scrollPanel.contentViewChild?.nativeElement.scrollTop).toBe(0);
 
             // Test excessive scroll position (should be limited to max scrollable height)
             scrollPanel.scrollTop(99999);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             const maxScrollTop = scrollPanel.contentViewChild!.nativeElement.scrollHeight - scrollPanel.contentViewChild!.nativeElement.clientHeight;
             expect(scrollPanel.contentViewChild!.nativeElement.scrollTop).toBe(maxScrollTop);
@@ -325,7 +325,7 @@ describe('ScrollPanel', () => {
 
     describe('Keyboard Navigation', () => {
         beforeEach(async () => {
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
         });
 
@@ -345,7 +345,7 @@ describe('ScrollPanel', () => {
             scrollPanel.onKeyDown(arrowUpEvent);
             expect(arrowUpEvent.preventDefault).toHaveBeenCalled();
 
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
         });
 
@@ -364,7 +364,7 @@ describe('ScrollPanel', () => {
             scrollPanel.onKeyDown(arrowLeftEvent);
             expect(arrowLeftEvent.preventDefault).toHaveBeenCalled();
 
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
         });
 
@@ -376,7 +376,7 @@ describe('ScrollPanel', () => {
 
             // clearTimer calls clearTimeout but doesn't set timer to undefined
             expect(typeof timerId).toBe('number');
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
         });
 
@@ -400,7 +400,7 @@ describe('ScrollPanel', () => {
 
     describe('Mouse Interactions', () => {
         beforeEach(async () => {
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
         });
 
@@ -447,7 +447,7 @@ describe('ScrollPanel', () => {
 
             expect(scrollPanel.lastPageY).toBe(120);
 
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
         });
 
@@ -461,7 +461,7 @@ describe('ScrollPanel', () => {
 
             expect(scrollPanel.lastPageX).toBe(120);
 
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
         });
 
@@ -485,7 +485,7 @@ describe('ScrollPanel', () => {
         it('should handle pTemplate content processing', async () => {
             const templateFixture = TestBed.createComponent(TestTemplateScrollPanelComponent);
             templateFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await templateFixture.whenStable();
 
             const templateScrollPanel = templateFixture.debugElement.query(By.directive(ScrollPanel)).componentInstance;
@@ -504,7 +504,7 @@ describe('ScrollPanel', () => {
         it('should handle #content template processing', async () => {
             const contentTemplateFixture = TestBed.createComponent(TestContentTemplateScrollPanelComponent);
             contentTemplateFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await contentTemplateFixture.whenStable();
 
             const contentScrollPanel = contentTemplateFixture.debugElement.query(By.directive(ScrollPanel)).componentInstance;
@@ -524,7 +524,7 @@ describe('ScrollPanel', () => {
             // Test regular content (non-template)
             await expect(async () => {
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
             }).not.toThrow();
 
@@ -532,7 +532,7 @@ describe('ScrollPanel', () => {
             const templateFixture = TestBed.createComponent(TestTemplateScrollPanelComponent);
             await expect(async () => {
                 templateFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await templateFixture.whenStable();
             }).not.toThrow();
 
@@ -540,7 +540,7 @@ describe('ScrollPanel', () => {
             const contentTemplateFixture = TestBed.createComponent(TestContentTemplateScrollPanelComponent);
             await expect(async () => {
                 contentTemplateFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await contentTemplateFixture.whenStable();
             }).not.toThrow();
         });
@@ -549,7 +549,7 @@ describe('ScrollPanel', () => {
             // Test pTemplate rendering
             const pTemplateFixture = TestBed.createComponent(TestTemplateScrollPanelComponent);
             pTemplateFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await pTemplateFixture.whenStable();
 
             const pTemplateScrollPanel = pTemplateFixture.debugElement.query(By.directive(ScrollPanel)).componentInstance;
@@ -560,7 +560,7 @@ describe('ScrollPanel', () => {
             // Test #content template rendering
             const contentTemplateFixture = TestBed.createComponent(TestContentTemplateScrollPanelComponent);
             contentTemplateFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await contentTemplateFixture.whenStable();
 
             const contentScrollPanel = contentTemplateFixture.debugElement.query(By.directive(ScrollPanel)).componentInstance;
@@ -571,7 +571,7 @@ describe('ScrollPanel', () => {
 
     describe('Public Methods', () => {
         beforeEach(async () => {
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
         });
 
@@ -585,7 +585,7 @@ describe('ScrollPanel', () => {
 
         it('should calculate container height correctly', async () => {
             scrollPanel.calculateContainerHeight();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             // Should not throw error and complete calculation
@@ -675,7 +675,7 @@ describe('ScrollPanel', () => {
             expect(scrollPanel.lastScrollTop).toBe(150);
             expect(scrollPanel.orientation).toBe('vertical');
 
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
         });
 
@@ -706,7 +706,7 @@ describe('ScrollPanel', () => {
             // moveBar should be callable
             expect(() => scrollPanel.moveBar()).not.toThrow();
 
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
         });
 
@@ -753,7 +753,7 @@ describe('ScrollPanel', () => {
             // clearTimer calls clearTimeout but timer reference remains
             expect(typeof timerId).toBe('number');
 
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
         });
 
@@ -768,7 +768,7 @@ describe('ScrollPanel', () => {
             scrollPanel.clearTimer();
             expect(typeof timerId).toBe('number');
 
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
         });
     });
@@ -817,13 +817,13 @@ describe('ScrollPanel', () => {
 
     describe('Scroll Ratio Calculations', () => {
         beforeEach(async () => {
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
         });
 
         it('should calculate scroll ratios correctly', async () => {
             scrollPanel.moveBar();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(scrollPanel.scrollXRatio).toBeDefined();
@@ -843,7 +843,7 @@ describe('ScrollPanel', () => {
 
             await expect(async () => {
                 scrollPanel.moveBar();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
             }).not.toThrow();
         });
@@ -871,7 +871,7 @@ describe('ScrollPanel', () => {
             ptFixture.changeDetectorRef.markForCheck();
             await ptFixture.whenStable();
             ptFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await ptFixture.whenStable();
 
             const hostEl = ptFixture.debugElement.query(By.css('p-scrollpanel'));
@@ -907,7 +907,7 @@ describe('ScrollPanel', () => {
             ptFixture.changeDetectorRef.markForCheck();
             await ptFixture.whenStable();
             ptFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await ptFixture.whenStable();
 
             const hostEl = ptFixture.debugElement.query(By.css('p-scrollpanel'));
@@ -936,7 +936,7 @@ describe('ScrollPanel', () => {
             ptFixture.changeDetectorRef.markForCheck();
             await ptFixture.whenStable();
             ptFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await ptFixture.whenStable();
 
             const hostEl = ptFixture.debugElement.query(By.css('p-scrollpanel'));
@@ -968,7 +968,7 @@ describe('ScrollPanel', () => {
             ptFixture.changeDetectorRef.markForCheck();
             await ptFixture.whenStable();
             ptFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await ptFixture.whenStable();
 
             const hostEl = ptFixture.debugElement.query(By.css('p-scrollpanel'));
@@ -991,12 +991,12 @@ describe('ScrollPanel', () => {
             ptFixture.changeDetectorRef.markForCheck();
             await ptFixture.whenStable();
             ptFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await ptFixture.whenStable();
 
             const content = ptFixture.debugElement.query(By.css('.p-scrollpanel-content'));
             content.nativeElement.click();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await ptFixture.whenStable();
 
             expect(clicked).toBe(true);
@@ -1010,7 +1010,7 @@ describe('ScrollPanel', () => {
             ptFixture.changeDetectorRef.markForCheck();
             await ptFixture.whenStable();
             ptFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await ptFixture.whenStable();
 
             const hostEl = ptFixture.debugElement.query(By.css('p-scrollpanel'));

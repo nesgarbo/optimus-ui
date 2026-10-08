@@ -1387,24 +1387,6 @@ describe('Dock', () => {
                 expect(dockRoot.nativeElement.className).toContain('LOCAL_CLASS');
                 expect(dockRoot.nativeElement.getAttribute('aria-label')).toBe('GLOBAL_LABEL');
             });
-
-            it('should apply global.css styles', async () => {
-                const globalFixture = TestBed.createComponent(TestGlobalPTComponent);
-                globalFixture.changeDetectorRef.markForCheck();
-                await globalFixture.whenStable();
-
-                // Global CSS may be injected as style tag or in head
-                const styleElements = document.querySelectorAll('style');
-                let hasGlobalCSS = false;
-                styleElements.forEach((style) => {
-                    if (style.textContent?.includes('.p-dock') && style.textContent?.includes('border: 1px solid red')) {
-                        hasGlobalCSS = true;
-                    }
-                });
-                // Global CSS may not be immediately available or may be handled differently in tests
-                // This is acceptable as the configuration is properly set
-                expect(true).toBe(true); // Pass for now as global CSS handling varies
-            });
         });
     });
 });

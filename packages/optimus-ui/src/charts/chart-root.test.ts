@@ -184,8 +184,12 @@ describe('chart root hover repaint', () => {
     });
 
     const layer = (key: string) => Array.from((fixture.nativeElement as HTMLElement).querySelectorAll(`[data-slot="chart-layer-${key}"] > *`));
+    // The chart paints on an animation frame, so wait for two frames instead of a fixed time, which
+    // is too short when the machine is busy.
+    const frame = () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
     const settle = async () => {
-        await new Promise((resolve) => setTimeout(resolve, 60));
+        await frame();
+        await frame();
         await fixture.whenStable();
     };
 

@@ -46,7 +46,7 @@ class Host {
     valueWrites = 0;
 }
 
-const wait = (ms = 150) => new Promise((r) => setTimeout(r, ms));
+const wait = (ms = 60) => new Promise((r) => setTimeout(r, ms));
 
 const pixels = (url: string) =>
     new Promise<{ w: number; h: number; data: Uint8ClampedArray }>((resolve) => {
@@ -79,7 +79,8 @@ describe('Cropper', () => {
         host = fixture.componentInstance;
         document.body.appendChild(fixture.nativeElement);
         await fixture.whenStable();
-        await wait(600);
+        // The image loads on its own time: wait until the cropper says it is ready, not for a guessed time.
+        await vi.waitFor(() => expect(host.readyCount).toBe(1), { timeout: 10_000, interval: 20 });
         await fixture.whenStable();
     });
 
@@ -132,11 +133,11 @@ describe('Cropper', () => {
 
     it('turns the image, and the crop follows', async () => {
         cropper().selectAll();
-        await wait();
+        await wait(150);
         cropper().rotate(90);
-        await wait();
+        await wait(150);
         cropper().selectAll();
-        await wait();
+        await wait(150);
 
         const { w, h, data } = await pixels((await cropper().toDataURL())!);
 
@@ -176,7 +177,7 @@ describe('Cropper', () => {
     it('holds the crop box to a shape', async () => {
         host.ratio.set(1);
         await fixture.whenStable();
-        await wait(300);
+        await wait(30);
 
         const box = cropper().selection()!;
 
@@ -190,7 +191,7 @@ describe('Cropper', () => {
     it('shows another image when the source changes', async () => {
         host.src.set(picture.replace('image/png', 'image/png'));
         await fixture.whenStable();
-        await wait(600);
+        await wait(60);
 
         expect(host.readyCount).toBe(1);
 
@@ -200,7 +201,7 @@ describe('Cropper', () => {
         other.height = 50;
         host.src.set(other.toDataURL());
         await fixture.whenStable();
-        await wait(600);
+        await wait(60);
 
         expect(host.readyCount).toBe(2);
     });
@@ -208,7 +209,7 @@ describe('Cropper', () => {
     it('locks the crop box when it is readonly', async () => {
         host.locked.set(true);
         await fixture.whenStable();
-        await wait(300);
+        await wait(30);
 
         const selection = fixture.nativeElement.querySelector('cropper-selection');
 
@@ -222,7 +223,7 @@ describe('Cropper', () => {
 
         host.src.set('data:image/png;base64,AAAA');
         await fixture.whenStable();
-        await wait(500);
+        await wait(50);
         sub.unsubscribe();
 
         expect(failed).toBe(1);
@@ -235,7 +236,7 @@ describe('Cropper', () => {
         other.componentInstance.src.set('');
         document.body.appendChild(other.nativeElement);
         await other.whenStable();
-        await wait(300);
+        await wait(30);
 
         // A `null` that nobody asked for would have reached `[(value)]` and the form as a change.
         expect(other.componentInstance.valueWrites).toBe(0);
@@ -265,7 +266,7 @@ describe('Cropper', () => {
         document.body.appendChild(element);
         await other.whenStable();
         other.destroy();
-        await wait(600);
+        await wait(60);
 
         expect(element.querySelector('cropper-canvas')).toBeNull();
         expect(other.componentInstance.readyCount).toBe(0);

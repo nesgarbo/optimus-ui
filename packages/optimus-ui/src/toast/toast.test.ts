@@ -327,7 +327,7 @@ describe('Toast', () => {
             };
 
             messageService.add(message);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -344,7 +344,7 @@ describe('Toast', () => {
             ];
 
             messageService.addAll(messages);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -364,7 +364,7 @@ describe('Toast', () => {
             };
 
             messageService.add(message);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -374,7 +374,7 @@ describe('Toast', () => {
 
             vi.spyOn(toastInstance, 'clearAll');
             messageService.clear('test');
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -390,7 +390,7 @@ describe('Toast', () => {
             };
 
             messageService.add(message);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -400,7 +400,7 @@ describe('Toast', () => {
 
             vi.spyOn(toastInstance, 'clearAll');
             messageService.clear();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -427,7 +427,7 @@ describe('Toast', () => {
             };
 
             messageService.add(message);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -497,7 +497,7 @@ describe('Toast', () => {
             };
 
             messageService.add(message);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -531,7 +531,7 @@ describe('Toast', () => {
             };
 
             messageService.add(message);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -551,7 +551,7 @@ describe('Toast', () => {
             };
 
             messageService.add(message);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -563,7 +563,7 @@ describe('Toast', () => {
             expect(closeButton).toBeTruthy();
 
             closeButton.nativeElement.click();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
@@ -607,30 +607,18 @@ describe('Toast', () => {
             };
 
             messageService.add(message);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
-            const ptemplateMessage = fixture.debugElement.query(By.css('.ptemplate-message'));
-            if (ptemplateMessage) {
-                const ptemplateIcon = fixture.debugElement.query(By.css('.ptemplate-icon'));
-                if (ptemplateIcon) {
-                    expect(ptemplateIcon.nativeElement.textContent).toBe('📢');
-                }
-
-                const ptemplateText = fixture.debugElement.query(By.css('.ptemplate-text'));
-                if (ptemplateText) {
-                    expect(ptemplateText.nativeElement.textContent).toContain('PTemplate Test');
-                }
-            } else {
-                // PTemplate processing may not work in test environment
-                // This is acceptable as the component structure is correct
-                expect(true).toBe(true);
-            }
+            // The headless template wins over the message one: the toast draws it with no frame of its own.
+            expect(fixture.debugElement.query(By.css('.ptemplate-message'))).toBeNull();
+            expect(fixture.debugElement.query(By.css('.ptemplate-headless'))).toBeTruthy();
+            expect(fixture.debugElement.query(By.css('.ptemplate-content')).nativeElement.textContent).toContain('PTemplate message content');
         });
     });
 
@@ -768,7 +756,7 @@ describe('Toast', () => {
             };
 
             messageService.add(longMessage);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -1109,7 +1097,7 @@ describe('Toast', () => {
 
             const toastElement = fixture.debugElement.query(By.css('p-toast'));
             toastElement.nativeElement.click();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(clicked).toBe(true);
@@ -1131,7 +1119,7 @@ describe('Toast', () => {
 
             const toastElement = fixture.debugElement.query(By.css('p-toast'));
             toastElement.nativeElement.dispatchEvent(new MouseEvent('mouseenter'));
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(mouseEntered).toBe(true);
@@ -1726,7 +1714,7 @@ describe('ToastItem', () => {
             component.initTimeout();
             component.initTimeout();
 
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            await new Promise((resolve) => setTimeout(resolve, 100));
             await fixture.whenStable();
 
             // Should call clearTimeout when reinitializing
@@ -2050,7 +2038,7 @@ describe('ToastItem', () => {
 
             const messageElement = fixture.debugElement.query(By.css('[role="alert"]'));
             messageElement.nativeElement.click();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(clicked).toBe(true);
@@ -2072,7 +2060,7 @@ describe('ToastItem', () => {
 
             const messageElement = fixture.debugElement.query(By.css('[role="alert"]'));
             messageElement.nativeElement.dispatchEvent(new MouseEvent('mouseenter'));
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(mouseEntered).toBe(true);

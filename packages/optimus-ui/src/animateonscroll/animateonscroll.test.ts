@@ -667,16 +667,17 @@ describe('AnimateOnScroll', () => {
         });
 
         it('should handle rapid create and destroy cycles', async () => {
-            for (let i = 0; i < 5; i++) {
-                const testFixture = TestBed.createComponent(TestCustomAnimateOnScrollComponent);
-                testFixture.componentInstance.enterClass = 'fade-in';
-                testFixture.changeDetectorRef.markForCheck();
-                await testFixture.whenStable();
-                testFixture.destroy();
-            }
-
-            // If we got here without errors, the test passes
-            expect(true).toBe(true);
+            await expect(
+                (async () => {
+                    for (let i = 0; i < 5; i++) {
+                        const testFixture = TestBed.createComponent(TestCustomAnimateOnScrollComponent);
+                        testFixture.componentInstance.enterClass = 'fade-in';
+                        testFixture.changeDetectorRef.markForCheck();
+                        await testFixture.whenStable();
+                        testFixture.destroy();
+                    }
+                })()
+            ).resolves.toBeUndefined();
         });
     });
 

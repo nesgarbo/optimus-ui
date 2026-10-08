@@ -102,7 +102,7 @@ describe('Textarea', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(component.value).toBe('test content');
@@ -113,7 +113,7 @@ describe('Textarea', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(textareaEl.nativeElement.value).toBe('new content');
@@ -152,7 +152,7 @@ describe('Textarea', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(component.resizeEventCount).toBeGreaterThan(0);
@@ -217,7 +217,7 @@ describe('Textarea', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(component.resizeEventCount).toBeGreaterThan(initialCount);
@@ -246,7 +246,7 @@ describe('Textarea', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(textareaEl.nativeElement.value).toBe('reactive form content');
@@ -259,7 +259,7 @@ describe('Textarea', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(component.textControl.value).toBe('user input');
@@ -270,7 +270,7 @@ describe('Textarea', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(textareaEl.nativeElement.classList.contains('ng-invalid')).toBe(true);
@@ -299,7 +299,7 @@ describe('Textarea', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(textareaEl.nativeElement.value).toBe('' as any);
@@ -310,7 +310,7 @@ describe('Textarea', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(textareaEl.nativeElement.value).toBe('' as any);
@@ -322,7 +322,7 @@ describe('Textarea', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(textareaEl.nativeElement.value).toBe(multilineContent);
@@ -353,7 +353,7 @@ describe('Textarea', () => {
                 fixture.changeDetectorRef.markForCheck();
                 await fixture.whenStable();
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
 
                 expect(textareaEl.classList.contains('ROOT_CLASS')).toBe(true);
@@ -364,7 +364,7 @@ describe('Textarea', () => {
                 fixture.changeDetectorRef.markForCheck();
                 await fixture.whenStable();
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
 
                 expect(textareaEl.classList.contains('HOST_CLASS')).toBe(true);
@@ -384,7 +384,7 @@ describe('Textarea', () => {
                 fixture.changeDetectorRef.markForCheck();
                 await fixture.whenStable();
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
 
                 expect(textareaEl.classList.contains('ROOT_OBJECT_CLASS')).toBe(true);
@@ -404,7 +404,7 @@ describe('Textarea', () => {
                 fixture.changeDetectorRef.markForCheck();
                 await fixture.whenStable();
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
 
                 expect(textareaEl.classList.contains('HOST_OBJECT_CLASS')).toBe(true);
@@ -424,7 +424,7 @@ describe('Textarea', () => {
                 fixture.changeDetectorRef.markForCheck();
                 await fixture.whenStable();
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
 
                 expect(textareaEl.classList.contains('ROOT_MIXED_CLASS')).toBe(true);
@@ -455,7 +455,7 @@ describe('Textarea', () => {
                 fixture.changeDetectorRef.markForCheck();
                 await fixture.whenStable();
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
 
                 expect(instanceAccessed).toBe(true);
@@ -483,7 +483,7 @@ describe('Textarea', () => {
                 fixture.changeDetectorRef.markForCheck();
                 await fixture.whenStable();
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
 
                 expect(instanceAccessed).toBe(true);
@@ -505,7 +505,7 @@ describe('Textarea', () => {
                 fixture.changeDetectorRef.markForCheck();
                 await fixture.whenStable();
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
 
                 expect(textareaEl.style.borderColor).toBe('red');
@@ -525,7 +525,7 @@ describe('Textarea', () => {
                 fixture.changeDetectorRef.markForCheck();
                 await fixture.whenStable();
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
 
                 textareaEl.click();
@@ -544,7 +544,7 @@ describe('Textarea', () => {
                 fixture.changeDetectorRef.markForCheck();
                 await fixture.whenStable();
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
 
                 textareaEl.dispatchEvent(new Event('focus'));
@@ -559,7 +559,7 @@ describe('Textarea', () => {
                 inlineFixture.changeDetectorRef.markForCheck();
                 await inlineFixture.whenStable();
                 inlineFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await inlineFixture.whenStable();
 
                 const el = inlineFixture.debugElement.query(By.directive(Textarea)).nativeElement;
@@ -576,7 +576,7 @@ describe('Textarea', () => {
                 inlineFixture.changeDetectorRef.markForCheck();
                 await inlineFixture.whenStable();
                 inlineFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await inlineFixture.whenStable();
 
                 const el = inlineFixture.debugElement.query(By.directive(Textarea)).nativeElement;
@@ -605,7 +605,7 @@ describe('Textarea', () => {
                 globalFixture.changeDetectorRef.markForCheck();
                 await globalFixture.whenStable();
                 globalFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await globalFixture.whenStable();
 
                 const el = globalFixture.debugElement.query(By.directive(Textarea)).nativeElement;
@@ -635,7 +635,7 @@ describe('Textarea', () => {
                 globalFixture.changeDetectorRef.markForCheck();
                 await globalFixture.whenStable();
                 globalFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await globalFixture.whenStable();
 
                 const el = globalFixture.debugElement.query(By.directive(Textarea)).nativeElement;
@@ -661,7 +661,7 @@ describe('Textarea', () => {
                 newFixture.changeDetectorRef.markForCheck();
                 await newFixture.whenStable();
                 newFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await newFixture.whenStable();
 
                 expect(hookCalled).toBe(true);
@@ -680,7 +680,7 @@ describe('Textarea', () => {
                 fixture.changeDetectorRef.markForCheck();
                 await fixture.whenStable();
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
 
                 expect(hookCallCount).toBeGreaterThan(0);
@@ -699,7 +699,7 @@ describe('Textarea', () => {
                 fixture.changeDetectorRef.markForCheck();
                 await fixture.whenStable();
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
 
                 fixture.destroy();

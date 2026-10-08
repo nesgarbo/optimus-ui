@@ -762,15 +762,6 @@ describe('ImageCompare', () => {
             });
         });
 
-        describe('Case 7: OptimusConfig', () => {
-            // Skipping this test as Optimus config PT requires specific configuration
-            // that conflicts with the existing TestBed setup
-            it('should be able to configure global PT (skipped)', () => {
-                // This test would require a separate test file or different setup
-                expect(true).toBe(true);
-            });
-        });
-
         describe('Case 8: Hooks', () => {
             // PT Hooks are handled by the BaseComponent lifecycle
             // These tests verify that PT system is compatible with hooks

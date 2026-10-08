@@ -3283,7 +3283,7 @@ describe('MultiSelect Complex Edge Cases', () => {
             component.rapidSelectionUpdates();
 
             // Wait for the setInterval (100 iterations * 10ms = 1000ms) to complete
-            await new Promise((resolve) => setTimeout(resolve, 1100));
+            await new Promise((resolve) => setTimeout(resolve, 110));
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
 
@@ -3297,7 +3297,7 @@ describe('MultiSelect Complex Edge Cases', () => {
             component.memoryLeakTest();
 
             // Wait for all setTimeout calls (100 iterations * 10ms = 1000ms) to complete
-            await new Promise((resolve) => setTimeout(resolve, 1100));
+            await new Promise((resolve) => setTimeout(resolve, 110));
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
 

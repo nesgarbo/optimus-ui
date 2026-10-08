@@ -858,11 +858,6 @@ describe('DatePicker', () => {
     });
 
     describe('Locale and Internationalization', () => {
-        it('should handle locale via configuration service', () => {
-            // Locale is handled via Optimus config service, not direct input
-            expect(true).toBe(true);
-        });
-
         it('should handle first day of week', async () => {
             testComponent.firstDayOfWeek = 1; // Monday
             testFixture.changeDetectorRef.markForCheck();

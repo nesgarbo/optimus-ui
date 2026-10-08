@@ -120,6 +120,9 @@ class TestListboxComponent {
     }
 }
 
+/** A key press as the list reads it: by its `code`. */
+const press = (code: string, init: KeyboardEventInit = {}) => new KeyboardEvent('keydown', { code, key: code, bubbles: true, cancelable: true, ...init });
+
 describe('Listbox', () => {
     let component: Listbox;
     let fixture: ComponentFixture<Listbox>;
@@ -204,9 +207,7 @@ describe('Listbox', () => {
 
                 // Check if any option is selected using data attribute
                 const selectedOptions = testFixture.debugElement.queryAll(By.css('.p-listbox-option[data-p-selected="true"]'));
-                expect(selectedOptions.length).toBeGreaterThanOrEqual(0);
-            } else {
-                expect(true).toBe(true);
+                expect(selectedOptions.length).toBeGreaterThanOrEqual(1);
             }
         });
     });
@@ -232,10 +233,8 @@ describe('Listbox', () => {
                 await testFixture.whenStable();
 
                 const visibleOptions = testFixture.debugElement.queryAll(By.css('.p-listbox-option:not(.p-hidden)'));
-                expect(visibleOptions.length).toBeLessThanOrEqual(3);
-            } else {
-                // If filter input is not found, test should pass
-                expect(true).toBe(true);
+                expect(visibleOptions.length).toBe(1);
+                expect(visibleOptions[0].nativeElement.textContent).toContain('Option 1');
             }
         });
     });
@@ -300,25 +299,34 @@ describe('Listbox', () => {
         it('should handle arrow key navigation', async () => {
             const listbox = testFixture.debugElement.query(By.css('[role="listbox"]'));
 
-            const event = new KeyboardEvent('keydown', { key: 'ArrowDown' });
-            listbox.nativeElement.dispatchEvent(event);
-            testFixture.changeDetectorRef.markForCheck();
-            await testFixture.whenStable();
+            const instance = testFixture.debugElement.query(By.directive(Listbox)).componentInstance as Listbox;
 
-            // Should handle keyboard navigation
-            expect(true).toBe(true); // Basic check that no errors occur
+            listbox.nativeElement.dispatchEvent(press('ArrowDown'));
+            await testFixture.whenStable();
+            expect(instance.focusedOptionIndex()).toBe(0);
+
+            listbox.nativeElement.dispatchEvent(press('ArrowDown'));
+            await testFixture.whenStable();
+            expect(instance.focusedOptionIndex()).toBe(1);
+
+            listbox.nativeElement.dispatchEvent(press('ArrowUp'));
+            await testFixture.whenStable();
+            expect(instance.focusedOptionIndex()).toBe(0);
         });
 
         it('should handle Enter key for selection', async () => {
             const listbox = testFixture.debugElement.query(By.css('[role="listbox"]'));
 
-            const event = new KeyboardEvent('keydown', { key: 'Enter' });
-            listbox.nativeElement.dispatchEvent(event);
-            testFixture.changeDetectorRef.markForCheck();
+            const instance = testFixture.debugElement.query(By.directive(Listbox)).componentInstance as Listbox;
+            const changed = vi.spyOn(testComponent, 'onSelectionChange');
+
+            listbox.nativeElement.dispatchEvent(press('ArrowDown'));
+            listbox.nativeElement.dispatchEvent(press('Enter'));
             await testFixture.whenStable();
 
-            // Should handle Enter key
-            expect(true).toBe(true); // Basic check that no errors occur
+            expect(instance.focusedOptionIndex()).toBe(0);
+            expect(changed).toHaveBeenCalledTimes(1);
+            expect(testComponent.selectedValue).toBe('option1');
         });
     });
 
@@ -476,6 +484,7 @@ describe('Listbox', () => {
         it('should not handle touch events in readonly mode', async () => {
             const listboxComponent = testFixture.debugElement.query(By.css('p-listbox')).componentInstance;
             vi.spyOn(listboxComponent, 'onOptionTouchEnd');
+            vi.spyOn(testComponent, 'onSelectionChange');
 
             const firstOption = testFixture.debugElement.query(By.css('.p-listbox-option'));
             if (firstOption) {
@@ -484,8 +493,7 @@ describe('Listbox', () => {
                 await testFixture.whenStable();
 
                 expect(listboxComponent.onOptionTouchEnd).toHaveBeenCalled();
-                // Skip optionTouched check as it's internal implementation
-                expect(true).toBe(true);
+                expect(testComponent.onSelectionChange).not.toHaveBeenCalled();
             }
         });
     });
@@ -542,18 +550,15 @@ describe('Listbox', () => {
                 await testFixture.whenStable();
 
                 // Click select all
-                const selectAllCheckbox = testFixture.debugElement.query(By.css('.p-checkbox-box'));
+                const selectAllCheckbox = testFixture.debugElement.query(By.css('.p-listbox-header p-checkbox input'));
                 if (selectAllCheckbox) {
                     selectAllCheckbox.nativeElement.click();
                     testFixture.changeDetectorRef.markForCheck();
                     await testFixture.whenStable();
 
-                    // Check if selectedValue is an array (multiple selection mode)
-                    expect(testComponent.selectedValue == null || Array.isArray(testComponent.selectedValue)).toBe(true);
+                    // Every option matches 'Option', so all of them end up selected.
+                    expect(testComponent.selectedValue).toEqual(['option1', 'option2', 'option3']);
                 }
-            } else {
-                // If filter input is not found, test should pass
-                expect(true).toBe(true);
             }
         });
     });
@@ -565,40 +570,17 @@ describe('Listbox', () => {
 
         it('should navigate with arrow keys and select with Enter', async () => {
             const listbox = testFixture.debugElement.query(By.css('[role="listbox"]'));
+            const instance = testFixture.debugElement.query(By.directive(Listbox)).componentInstance as Listbox;
 
-            if (listbox) {
-                // Arrow down
-                const downEvent = new KeyboardEvent('keydown', { key: 'ArrowDown', which: 40 } as any);
-                listbox.nativeElement.dispatchEvent(downEvent);
-                testFixture.changeDetectorRef.markForCheck();
-                await testFixture.whenStable();
+            listbox.nativeElement.dispatchEvent(press('ArrowDown'));
+            listbox.nativeElement.dispatchEvent(press('ArrowDown'));
+            listbox.nativeElement.dispatchEvent(press('ArrowUp'));
+            listbox.nativeElement.dispatchEvent(press('Enter'));
+            await testFixture.whenStable();
 
-                // Arrow up
-                const upEvent = new KeyboardEvent('keydown', { key: 'ArrowUp', which: 38 } as any);
-                listbox.nativeElement.dispatchEvent(upEvent);
-                testFixture.changeDetectorRef.markForCheck();
-                await testFixture.whenStable();
-
-                // Enter to select
-                const enterEvent = new KeyboardEvent('keydown', { key: 'Enter', which: 13 } as any);
-                listbox.nativeElement.dispatchEvent(enterEvent);
-                testFixture.changeDetectorRef.markForCheck();
-                await testFixture.whenStable();
-
-                // Just check that no errors occurred during keyboard navigation
-                expect(true).toBe(true);
-            }
-        });
-    });
-
-    describe('Direct Component Tests (Legacy)', () => {
-        // Most of the direct component tests are not compatible with the modern Angular component structure
-        // These tests were designed for an older version where internal methods were directly accessible
-
-        it('should maintain basic functionality as covered by existing tests', () => {
-            // The functionality tested in the old tests is now covered by the existing test structure
-            // which uses the component through its proper public API
-            expect(true).toBe(true);
+            // Down, down, up leaves the focus on the first option, which Enter selects.
+            expect(instance.focusedOptionIndex()).toBe(0);
+            expect(testComponent.selectedValue).toBe('option1');
         });
     });
 
@@ -923,38 +905,32 @@ describe('Listbox', () => {
 
         it('should handle Home and End keys', async () => {
             const listbox = testFixture.debugElement.query(By.css('[role="listbox"]'));
+            const instance = testFixture.debugElement.query(By.directive(Listbox)).componentInstance as Listbox;
 
-            // Home key
-            const homeEvent = new KeyboardEvent('keydown', { key: 'Home' });
-            listbox?.nativeElement.dispatchEvent(homeEvent);
-            testFixture.changeDetectorRef.markForCheck();
+            listbox.nativeElement.dispatchEvent(press('End'));
             await testFixture.whenStable();
+            expect(instance.focusedOptionIndex()).toBe(2);
 
-            // End key
-            const endEvent = new KeyboardEvent('keydown', { key: 'End' });
-            listbox?.nativeElement.dispatchEvent(endEvent);
-            testFixture.changeDetectorRef.markForCheck();
+            listbox.nativeElement.dispatchEvent(press('Home'));
             await testFixture.whenStable();
-
-            expect(true).toBe(true); // Basic check that no errors occur
+            expect(instance.focusedOptionIndex()).toBe(0);
         });
 
         it('should handle PageUp and PageDown keys', async () => {
             const listbox = testFixture.debugElement.query(By.css('[role="listbox"]'));
+            const instance = testFixture.debugElement.query(By.directive(Listbox)).componentInstance as Listbox;
+            const scrollInView = vi.spyOn(instance, 'scrollInView');
+            const pageUp = press('PageUp');
+            const pageDown = press('PageDown');
 
-            // PageUp key
-            const pageUpEvent = new KeyboardEvent('keydown', { key: 'PageUp' });
-            listbox?.nativeElement.dispatchEvent(pageUpEvent);
-            testFixture.changeDetectorRef.markForCheck();
-            await testFixture.whenStable();
+            listbox.nativeElement.dispatchEvent(pageUp);
+            listbox.nativeElement.dispatchEvent(pageDown);
 
-            // PageDown key
-            const pageDownEvent = new KeyboardEvent('keydown', { key: 'PageDown' });
-            listbox?.nativeElement.dispatchEvent(pageDownEvent);
-            testFixture.changeDetectorRef.markForCheck();
-            await testFixture.whenStable();
-
-            expect(true).toBe(true); // Basic check that no errors occur
+            // PageUp scrolls to the last option, PageDown to the first, and neither scrolls the page itself.
+            expect(scrollInView).toHaveBeenNthCalledWith(1, 2);
+            expect(scrollInView).toHaveBeenNthCalledWith(2, 0);
+            expect(pageUp.defaultPrevented).toBe(true);
+            expect(pageDown.defaultPrevented).toBe(true);
         });
 
         it('should handle Ctrl+A for select all in multiple mode', async () => {
@@ -963,23 +939,21 @@ describe('Listbox', () => {
             await testFixture.whenStable();
 
             const listbox = testFixture.debugElement.query(By.css('[role="listbox"]'));
-            const selectAllEvent = new KeyboardEvent('keydown', { key: 'a', ctrlKey: true });
-            listbox?.nativeElement.dispatchEvent(selectAllEvent);
-            testFixture.changeDetectorRef.markForCheck();
+
+            listbox.nativeElement.dispatchEvent(press('KeyA', { key: 'a', ctrlKey: true }));
             await testFixture.whenStable();
 
-            expect(true).toBe(true); // Basic check that no errors occur
+            expect(testComponent.selectedValue).toEqual(['option1', 'option2', 'option3']);
         });
 
         it('should handle Space key for selection', async () => {
             const listbox = testFixture.debugElement.query(By.css('[role="listbox"]'));
 
-            const spaceEvent = new KeyboardEvent('keydown', { key: ' ' });
-            listbox?.nativeElement.dispatchEvent(spaceEvent);
-            testFixture.changeDetectorRef.markForCheck();
+            listbox.nativeElement.dispatchEvent(press('ArrowDown'));
+            listbox.nativeElement.dispatchEvent(press('Space', { key: ' ' }));
             await testFixture.whenStable();
 
-            expect(true).toBe(true); // Basic check that no errors occur
+            expect(testComponent.selectedValue).toBe('option1');
         });
     });
 
@@ -994,18 +968,16 @@ describe('Listbox', () => {
 
         it('should handle null options', () => {
             testComponent.options = null as any;
-            testFixture.detectChanges();
 
-            // Should not throw error
-            expect(true).toBe(true);
+            expect(() => testFixture.detectChanges()).not.toThrow();
+            expect(testFixture.debugElement.queryAll(By.css('.p-listbox-option')).length).toBe(0);
         });
 
         it('should handle invalid selectedValue', () => {
             testComponent.selectedValue = 'invalid-value';
-            testFixture.detectChanges();
 
-            // Should not throw error
-            expect(true).toBe(true);
+            expect(() => testFixture.detectChanges()).not.toThrow();
+            expect(testFixture.debugElement.queryAll(By.css('.p-listbox-option[data-p-selected="true"]')).length).toBe(0);
         });
 
         it('should handle disabled filter input when component is disabled', () => {
@@ -1028,9 +1000,9 @@ describe('Listbox', () => {
             const circularOption: any = { label: 'Circular', value: 'circular' };
             circularOption.self = circularOption;
             testComponent.options = [circularOption];
-            testFixture.detectChanges();
 
-            expect(true).toBe(true); // Should not throw error
+            expect(() => testFixture.detectChanges()).not.toThrow();
+            expect(testFixture.debugElement.queryAll(By.css('.p-listbox-option')).length).toBe(1);
         });
 
         it('should handle very large datasets', async () => {
@@ -1949,7 +1921,7 @@ describe('Listbox ViewChild and Advanced Scenarios', () => {
                     expect(component.onFilterHandler).toHaveBeenCalled();
                 } catch (e) {
                     // Filter may fail due to scrollToIndex on virtual scroll - ignore for this test
-                    expect(true).toBe(true);
+                    expect(String(e)).toContain('scroll');
                 }
             }
 
@@ -2338,9 +2310,8 @@ describe('Listbox ViewChild and Advanced Scenarios', () => {
                     ptFixture.changeDetectorRef.markForCheck();
                     await ptFixture.whenStable();
                     expect(headerClicked).toBe(true);
-                } else {
-                    expect(true).toBe(true);
                 }
+                expect(headerEl).toBeTruthy();
             });
         });
 
@@ -2503,15 +2474,12 @@ describe('Listbox ViewChild and Advanced Scenarios', () => {
                 ptFixture.changeDetectorRef.markForCheck();
                 await ptFixture.whenStable();
 
-                // Manually trigger onInit
-                if (listbox.onInit) {
-                    listbox.onInit();
-                    ptFixture.changeDetectorRef.markForCheck();
-                    await ptFixture.whenStable();
-                }
+                // The hook is read at init, which has happened by now, so it runs again by calling it.
+                listbox.onInit();
+                ptFixture.changeDetectorRef.markForCheck();
+                await ptFixture.whenStable();
 
-                // If onInit is not available or hooks not working, pass the test
-                expect(true).toBe(true);
+                expect(onInitCalled).toBe(true);
             });
         });
 

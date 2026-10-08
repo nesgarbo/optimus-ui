@@ -435,14 +435,10 @@ describe('Editor', () => {
 
         it('should render pTemplate toolbar content', () => {
             const ptemplateToolbar = fixture.debugElement.query(By.css('.ptemplate-toolbar'));
-            if (ptemplateToolbar) {
-                expect(ptemplateToolbar).toBeTruthy();
+            expect(ptemplateToolbar).toBeTruthy();
 
-                const underlineButton = fixture.debugElement.query(By.css('.ql-underline'));
-                expect(underlineButton).toBeTruthy();
-            } else {
-                expect(true).toBe(true);
-            }
+            const underlineButton = fixture.debugElement.query(By.css('.ql-underline'));
+            expect(underlineButton).toBeTruthy();
         });
     });
 
@@ -616,16 +612,12 @@ describe('Editor', () => {
             }
         });
 
-        it('should support keyboard navigation', () => {
-            const editorContent = fixture.debugElement.query(By.css('.p-editor-content'));
+        it('should support keyboard navigation', async () => {
+            // Quill is loaded on demand: its editable area appears once it has.
+            await vi.waitFor(() => expect(fixture.nativeElement.querySelector('.ql-editor')).toBeTruthy());
 
-            if (editorContent) {
-                // Editor should be keyboard accessible
-                expect(editorContent.nativeElement.tabIndex).toBeDefined();
-            } else {
-                // Editor content might not be rendered yet in test environment
-                expect(true).toBe(true);
-            }
+            // Quill's editable area is a contenteditable, which the keyboard reaches.
+            expect(fixture.nativeElement.querySelector('.ql-editor').getAttribute('contenteditable')).toBe('true');
         });
 
         it('should have accessible toolbar buttons', () => {
@@ -652,7 +644,9 @@ describe('Editor', () => {
             editorInstance = editorEl.componentInstance as Editor;
         });
 
-        it('should cleanup event listeners on destroy', () => {
+        it('should cleanup event listeners on destroy', async () => {
+            await vi.waitFor(() => expect(editorInstance.quill?.root).toBeTruthy());
+
             if (editorInstance.quill && editorInstance.quill.root) {
                 const mockElement = {
                     removeEventListener: vi.fn()
@@ -668,8 +662,6 @@ describe('Editor', () => {
 
                 // Verify destroy was called properly
                 expect(mockElement.removeEventListener).toHaveBeenCalled();
-            } else {
-                expect(true).toBe(true);
             }
         });
 

@@ -887,11 +887,14 @@ describe('Message', () => {
             const messageInstance = messageEl.componentInstance as Message;
 
             // Destroy component before timeout
+            const clear = vi.spyOn(globalThis, 'clearTimeout');
+
             fixture.destroy();
             await fixture.whenStable();
 
-            // Should not throw any errors
-            expect(true).toBe(true);
+            // The timeout that was waiting to close the message is cleared with it.
+            expect(clear).toHaveBeenCalled();
+            expect(messageInstance.life).toBe(5000);
         });
 
         it('should handle component recreation', async () => {

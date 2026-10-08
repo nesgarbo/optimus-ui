@@ -85,9 +85,10 @@ jobs:
               run: |
                   pnpm --filter @openng/optimus-ui exec playwright install --with-deps chromium
 
-            - name: Unit Test (vitest)
+            # Runs with coverage: vitest.config.mts holds the thresholds, so a fall under them fails the job.
+            - name: Unit Test (vitest, with coverage)
               run: |
-                  pnpm run test:unit
+                  pnpm run test:coverage
 
             # A pull_request from a fork gets a read-only GITHUB_TOKEN whatever the
             # permissions block asks for, so creating the check run fails there. The report
@@ -108,6 +109,14 @@ jobs:
               with:
                   name: junit-vitest
                   path: packages/optimus-ui/reports/junit/vitest.xml
+                  if-no-files-found: warn
+
+            - name: Upload coverage report
+              if: always()
+              uses: actions/upload-artifact@v7
+              with:
+                  name: coverage-vitest
+                  path: packages/optimus-ui/coverage/optimus-ui/
                   if-no-files-found: warn
 
     build:

@@ -562,7 +562,7 @@ describe('ContextMenu', () => {
         it('should handle #item template processing', async () => {
             const itemTemplateFixture = TestBed.createComponent(TestItemTemplateContextMenuComponent);
             await itemTemplateFixture.whenStable();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
 
             const itemTemplateContextMenu = itemTemplateFixture.debugElement.query(By.directive(ContextMenu)).componentInstance;
 
@@ -573,7 +573,7 @@ describe('ContextMenu', () => {
         it('should handle pTemplate processing', async () => {
             const pTemplateFixture = TestBed.createComponent(TestPTemplateContextMenuComponent);
             await pTemplateFixture.whenStable();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
 
             const pTemplateContextMenu = pTemplateFixture.debugElement.query(By.directive(ContextMenu)).componentInstance;
 
@@ -584,7 +584,7 @@ describe('ContextMenu', () => {
         it('should handle submenuicon template', async () => {
             const submenuTemplateFixture = TestBed.createComponent(TestSubmenuIconTemplateComponent);
             await submenuTemplateFixture.whenStable();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
 
             const submenuContextMenu = submenuTemplateFixture.debugElement.query(By.directive(ContextMenu)).componentInstance;
 
@@ -595,7 +595,7 @@ describe('ContextMenu', () => {
         it('should process PrimeTemplate types correctly', async () => {
             const pTemplateFixture = TestBed.createComponent(TestPTemplateContextMenuComponent);
             await pTemplateFixture.whenStable();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
 
             const pTemplateContextMenu = pTemplateFixture.debugElement.query(By.directive(ContextMenu)).componentInstance;
 
@@ -607,7 +607,7 @@ describe('ContextMenu', () => {
         it('should prioritize itemTemplate over _itemTemplate', async () => {
             const itemTemplateFixture = TestBed.createComponent(TestItemTemplateContextMenuComponent);
             await itemTemplateFixture.whenStable();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
 
             const contextMenuComp = itemTemplateFixture.debugElement.query(By.directive(ContextMenu)).componentInstance;
 
@@ -1108,7 +1108,7 @@ describe('ContextMenu', () => {
         it('should handle complete workflow with templates', async () => {
             const templateFixture = TestBed.createComponent(TestItemTemplateContextMenuComponent);
             await templateFixture.whenStable();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
 
             const templateContextMenu = templateFixture.debugElement.query(By.directive(ContextMenu)).componentInstance;
 
@@ -1287,7 +1287,7 @@ describe('ContextMenu', () => {
                 document.dispatchEvent(event);
                 ptFixture.changeDetectorRef.markForCheck();
                 await ptFixture.whenStable();
-                await new Promise((resolve) => setTimeout(resolve, 300));
+                await new Promise((resolve) => setTimeout(resolve, 30));
             });
 
             it('should apply PT string class to root', () => {
@@ -1347,7 +1347,7 @@ describe('ContextMenu', () => {
                 document.dispatchEvent(event);
                 ptFixture.changeDetectorRef.markForCheck();
                 await ptFixture.whenStable();
-                await new Promise((resolve) => setTimeout(resolve, 300));
+                await new Promise((resolve) => setTimeout(resolve, 30));
             });
 
             it('should apply PT object class to root', () => {
@@ -1413,7 +1413,7 @@ describe('ContextMenu', () => {
                 document.dispatchEvent(event);
                 ptFixture.changeDetectorRef.markForCheck();
                 await ptFixture.whenStable();
-                await new Promise((resolve) => setTimeout(resolve, 300));
+                await new Promise((resolve) => setTimeout(resolve, 30));
             });
 
             it('should apply PT mixed object class to root', () => {
@@ -1458,7 +1458,7 @@ describe('ContextMenu', () => {
                 document.dispatchEvent(event);
                 ptFixture.changeDetectorRef.markForCheck();
                 await ptFixture.whenStable();
-                await new Promise((resolve) => setTimeout(resolve, 300));
+                await new Promise((resolve) => setTimeout(resolve, 30));
             });
 
             it('should apply string PT class to item elements', () => {
@@ -1552,7 +1552,7 @@ describe('ContextMenu', () => {
                 document.dispatchEvent(event);
                 ptFixture.changeDetectorRef.markForCheck();
                 await ptFixture.whenStable();
-                await new Promise((resolve) => setTimeout(resolve, 300));
+                await new Promise((resolve) => setTimeout(resolve, 30));
             });
 
             it('should apply PT object to all item elements', () => {

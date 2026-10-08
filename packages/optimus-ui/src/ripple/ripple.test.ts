@@ -381,8 +381,8 @@ describe('Ripple', () => {
                 testFixture.destroy();
             }
 
-            // Basic test that we can create and destroy many instances
-            expect(true).toBe(true); // Test completed successfully
+            // Nothing the ripple made is left behind in the page.
+            expect(document.querySelectorAll('.p-ink').length).toBe(0);
         });
     });
 

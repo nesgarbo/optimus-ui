@@ -566,14 +566,13 @@ describe('Toolbar', () => {
         });
 
         it('should handle rapid creation and destruction', () => {
-            for (let i = 0; i < 5; i++) {
-                const testFixture = TestBed.createComponent(TestBasicToolbarComponent);
-                testFixture.detectChanges();
-                testFixture.destroy();
-            }
-
-            // If we got here without errors, the test passes
-            expect(true).toBe(true);
+            expect(() => {
+                for (let i = 0; i < 5; i++) {
+                    const testFixture = TestBed.createComponent(TestBasicToolbarComponent);
+                    testFixture.detectChanges();
+                    testFixture.destroy();
+                }
+            }).not.toThrow();
         });
     });
 

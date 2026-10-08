@@ -324,7 +324,7 @@ describe('TieredMenu', () => {
             const menuItem = fixture.debugElement.query(By.css('li[role="menuitem"] .p-tieredmenu-item-content'));
 
             menuItem.triggerEventHandler('click', { preventDefault: () => {} });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(clickSpy).toHaveBeenCalled();
@@ -335,7 +335,7 @@ describe('TieredMenu', () => {
             const menuItems = fixture.debugElement.queryAll(By.css('li[role="menuitem"] .p-tieredmenu-item-content'));
             const editMenuItem = menuItems[1]; // Edit is the second root item
             editMenuItem.triggerEventHandler('click', { preventDefault: () => {} });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -348,7 +348,7 @@ describe('TieredMenu', () => {
             const menuItem = fixture.debugElement.query(By.css('li[role="menuitem"] .p-tieredmenu-item-content'));
 
             menuItem.triggerEventHandler('mouseenter', { target: menuItem.nativeElement });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(mouseEnterSpy).toHaveBeenCalled();
@@ -364,7 +364,7 @@ describe('TieredMenu', () => {
             popupFixture = TestBed.createComponent(TestPopupTieredMenuComponent);
             popupComponent = popupFixture.componentInstance;
             popupFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await popupFixture.whenStable();
 
             popupTieredMenu = popupComponent.menu;
@@ -379,13 +379,13 @@ describe('TieredMenu', () => {
             const mockEvent = { currentTarget: popupComponent.toggleButton.nativeElement, preventDefault: () => {} };
 
             popupTieredMenu.toggle(mockEvent);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await popupFixture.whenStable();
 
             expect(popupTieredMenu.visible).toBe(true);
 
             popupTieredMenu.toggle(mockEvent);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await popupFixture.whenStable();
 
             expect(popupTieredMenu.visible).toBeFalsy();
@@ -395,7 +395,7 @@ describe('TieredMenu', () => {
             const mockEvent = { currentTarget: popupComponent.toggleButton.nativeElement };
 
             popupTieredMenu.show(mockEvent);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await popupFixture.whenStable();
 
             expect(popupTieredMenu.visible).toBe(true);
@@ -406,12 +406,12 @@ describe('TieredMenu', () => {
             const mockEvent = { currentTarget: popupComponent.toggleButton.nativeElement };
 
             popupTieredMenu.show(mockEvent);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await popupFixture.whenStable();
             expect(popupTieredMenu.visible).toBe(true);
 
             popupTieredMenu.hide();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await popupFixture.whenStable();
 
             expect(popupTieredMenu.visible).toBeFalsy();
@@ -421,7 +421,7 @@ describe('TieredMenu', () => {
             const mockEvent = { currentTarget: popupComponent.toggleButton.nativeElement };
             popupTieredMenu.show(mockEvent);
             popupFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await popupFixture.whenStable();
 
             // Directly trigger the command on the save item
@@ -435,7 +435,7 @@ describe('TieredMenu', () => {
             if (saveItem.item.command) {
                 saveItem.item.command({ originalEvent: mockClickEvent.originalEvent, item: saveItem.item });
             }
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await popupFixture.whenStable();
 
             expect(popupComponent.saveClicked).toBe(true);
@@ -453,7 +453,7 @@ describe('TieredMenu', () => {
         it('should handle pTemplate content processing', async () => {
             const pTemplateFixture = TestBed.createComponent(TestTemplateTieredMenuComponent);
             pTemplateFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await pTemplateFixture.whenStable();
 
             const tieredMenuInstance = pTemplateFixture.debugElement.query(By.directive(TieredMenu)).componentInstance;
@@ -472,7 +472,7 @@ describe('TieredMenu', () => {
         it('should handle #item template processing', async () => {
             const itemTemplateFixture = TestBed.createComponent(TestContentTemplateTieredMenuComponent);
             itemTemplateFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await itemTemplateFixture.whenStable();
 
             const tieredMenuInstance = itemTemplateFixture.debugElement.query(By.directive(TieredMenu)).componentInstance;
@@ -494,7 +494,7 @@ describe('TieredMenu', () => {
             // Test pTemplate rendering
             const pTemplateFixture = TestBed.createComponent(TestTemplateTieredMenuComponent);
             pTemplateFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await pTemplateFixture.whenStable();
 
             const pTemplateTieredMenu = pTemplateFixture.debugElement.query(By.directive(TieredMenu)).componentInstance;
@@ -504,7 +504,7 @@ describe('TieredMenu', () => {
             // Test #item template rendering
             const itemTemplateFixture = TestBed.createComponent(TestContentTemplateTieredMenuComponent);
             itemTemplateFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await itemTemplateFixture.whenStable();
 
             const itemTemplateTieredMenu = itemTemplateFixture.debugElement.query(By.directive(TieredMenu)).componentInstance;
@@ -513,7 +513,7 @@ describe('TieredMenu', () => {
 
         it('should render custom item template with pTemplate', async () => {
             templateFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await templateFixture.whenStable();
 
             const customItems = templateFixture.debugElement.queryAll(By.css('.custom-item'));
@@ -539,7 +539,7 @@ describe('TieredMenu', () => {
             // Test template context variables (let-item, let-hasSubmenu)
             const contextTemplateFixture = TestBed.createComponent(TestContentTemplateTieredMenuComponent);
             contextTemplateFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await contextTemplateFixture.whenStable();
 
             const tieredMenuInstance = contextTemplateFixture.debugElement.query(By.directive(TieredMenu)).componentInstance;
@@ -567,7 +567,7 @@ describe('TieredMenu', () => {
             // Focus the menu first
             tieredMenu.onMenuFocus({});
             tieredMenu.focusedItemInfo.set({ index: 0, level: 0, parentKey: '', item: null });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
         });
@@ -577,7 +577,7 @@ describe('TieredMenu', () => {
             const menuList = fixture.debugElement.query(By.css('ul[role="menu"]'));
 
             menuList.triggerEventHandler('keydown', { code: 'ArrowDown', preventDefault: () => {} });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(keydownSpy).toHaveBeenCalled();
@@ -588,7 +588,7 @@ describe('TieredMenu', () => {
             const menuList = fixture.debugElement.query(By.css('ul[role="menu"]'));
 
             menuList.triggerEventHandler('keydown', { code: 'ArrowUp', preventDefault: () => {} });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(keydownSpy).toHaveBeenCalled();
@@ -599,7 +599,7 @@ describe('TieredMenu', () => {
             const menuList = fixture.debugElement.query(By.css('ul[role="menu"]'));
 
             menuList.triggerEventHandler('keydown', { code: 'ArrowRight', preventDefault: () => {} });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(keydownSpy).toHaveBeenCalled();
@@ -610,7 +610,7 @@ describe('TieredMenu', () => {
             const menuList = fixture.debugElement.query(By.css('ul[role="menu"]'));
 
             menuList.triggerEventHandler('keydown', { code: 'ArrowLeft', preventDefault: () => {} });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(keydownSpy).toHaveBeenCalled();
@@ -621,7 +621,7 @@ describe('TieredMenu', () => {
             const menuList = fixture.debugElement.query(By.css('ul[role="menu"]'));
 
             menuList.triggerEventHandler('keydown', { code: 'Enter', preventDefault: () => {} });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(keydownSpy).toHaveBeenCalled();
@@ -632,7 +632,7 @@ describe('TieredMenu', () => {
             const menuList = fixture.debugElement.query(By.css('ul[role="menu"]'));
 
             menuList.triggerEventHandler('keydown', { code: 'Space', preventDefault: () => {} });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(keydownSpy).toHaveBeenCalled();
@@ -643,7 +643,7 @@ describe('TieredMenu', () => {
             const menuList = fixture.debugElement.query(By.css('ul[role="menu"]'));
 
             menuList.triggerEventHandler('keydown', { code: 'Escape', preventDefault: () => {} });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(keydownSpy).toHaveBeenCalled();
@@ -654,7 +654,7 @@ describe('TieredMenu', () => {
             const menuList = fixture.debugElement.query(By.css('ul[role="menu"]'));
 
             menuList.triggerEventHandler('keydown', { code: 'Tab', preventDefault: () => {} });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(keydownSpy).toHaveBeenCalled();
@@ -665,7 +665,7 @@ describe('TieredMenu', () => {
             const menuList = fixture.debugElement.query(By.css('ul[role="menu"]'));
 
             menuList.triggerEventHandler('keydown', { code: 'Home', preventDefault: () => {} });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(keydownSpy).toHaveBeenCalled();
@@ -676,7 +676,7 @@ describe('TieredMenu', () => {
             const menuList = fixture.debugElement.query(By.css('ul[role="menu"]'));
 
             menuList.triggerEventHandler('keydown', { code: 'End', preventDefault: () => {} });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(keydownSpy).toHaveBeenCalled();
@@ -687,7 +687,7 @@ describe('TieredMenu', () => {
             const menuList = fixture.debugElement.query(By.css('ul[role="menu"]'));
 
             menuList.triggerEventHandler('keydown', { code: 'KeyF', key: 'f', metaKey: false, ctrlKey: false, preventDefault: () => {} });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(searchSpy).toHaveBeenCalledWith(expect.any(Object), 'f');
@@ -710,7 +710,7 @@ describe('TieredMenu', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             // Verify the style is set on the component
@@ -736,7 +736,7 @@ describe('TieredMenu', () => {
             const rootMenuItems = disabledFixture.debugElement.queryAll(By.css('li[role="menuitem"] .p-tieredmenu-item-content'));
             const actionsMenuItem = rootMenuItems[0]; // Actions is the first root item
             actionsMenuItem.triggerEventHandler('click', { preventDefault: () => {} });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await disabledFixture.whenStable();
             disabledFixture.detectChanges();
 
@@ -756,13 +756,13 @@ describe('TieredMenu', () => {
             routerFixture = TestBed.createComponent(TestRouterTieredMenuComponent);
             router = TestBed.inject(Router);
             routerFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await routerFixture.whenStable();
         });
 
         it('should render router links', async () => {
             // Wait for menu to render
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await routerFixture.whenStable();
             routerFixture.detectChanges();
 
@@ -778,14 +778,14 @@ describe('TieredMenu', () => {
             const navigateSpy = vi.spyOn(router, 'navigate').mockReturnValue(Promise.resolve(true));
 
             // Wait for menu to render
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await routerFixture.whenStable();
             routerFixture.detectChanges();
 
             const routerLinks = routerFixture.debugElement.queryAll(By.css('a[routerLink]'));
             if (routerLinks.length > 0) {
                 routerLinks[0].nativeElement.click();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await routerFixture.whenStable();
                 expect(navigateSpy).toHaveBeenCalled();
             } else {
@@ -817,7 +817,7 @@ describe('TieredMenu', () => {
             const menu = fixture.debugElement.query(By.css('ul[role="menu"]'));
 
             menu.triggerEventHandler('focus', {});
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(focusSpy).toHaveBeenCalled();
@@ -829,10 +829,10 @@ describe('TieredMenu', () => {
             const menu = fixture.debugElement.query(By.css('ul[role="menu"]'));
 
             menu.triggerEventHandler('focus', {});
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             menu.triggerEventHandler('blur', {});
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(blurSpy).toHaveBeenCalled();
@@ -877,7 +877,7 @@ describe('TieredMenu', () => {
         beforeEach(async () => {
             popupFixture = TestBed.createComponent(TestPopupTieredMenuComponent);
             popupFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await popupFixture.whenStable();
             popupTieredMenu = popupFixture.componentInstance.menu;
         });
@@ -890,7 +890,7 @@ describe('TieredMenu', () => {
             popupFixture.changeDetectorRef.markForCheck();
             await popupFixture.whenStable();
             popupFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await popupFixture.whenStable();
 
             // Verify visible state instead of testing internal animation
@@ -902,10 +902,10 @@ describe('TieredMenu', () => {
             const mockEvent = { currentTarget: document.createElement('button') };
 
             popupTieredMenu.show(mockEvent);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await popupFixture.whenStable();
             popupTieredMenu.hide();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await popupFixture.whenStable();
 
             expect(hideSpy).toHaveBeenCalled();
@@ -1342,7 +1342,7 @@ describe('TieredMenu', () => {
                 const itemLabel = ptFixture.debugElement.query(By.css('.p-tieredmenu-item-label'));
 
                 itemLabel.nativeElement.click();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 expect(component.clickedValue).toBe('LABEL_CLICKED');
@@ -1435,7 +1435,7 @@ describe('TieredMenu', () => {
             it('should call PT hook onInit', async () => {
                 const component = ptFixture.componentInstance;
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 expect(component.hookCalled).toBe(true);
@@ -1463,7 +1463,7 @@ describe('TieredMenu', () => {
                     providers: [provideZonelessChangeDetection()]
                 }).createComponent(InlineStringComponent);
                 inlineFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await inlineFixture.whenStable();
 
                 const root = inlineFixture.debugElement.query(By.css('.p-tieredmenu'));
@@ -1486,7 +1486,7 @@ describe('TieredMenu', () => {
                     providers: [provideZonelessChangeDetection()]
                 }).createComponent(InlineObjectComponent);
                 inlineFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await inlineFixture.whenStable();
 
                 const root = inlineFixture.debugElement.query(By.css('.p-tieredmenu'));

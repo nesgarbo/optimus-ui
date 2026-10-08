@@ -576,7 +576,7 @@ describe('SpeedDial', () => {
             const clickSpy = vi.spyOn(component, 'onButtonClick').mockImplementation(() => {});
 
             button.nativeElement.click();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(clickSpy).toHaveBeenCalled();
@@ -587,14 +587,14 @@ describe('SpeedDial', () => {
             const visibleChangeV2Spy = vi.spyOn(component, 'onVisibleChangeV2').mockImplementation(() => {});
 
             speedDialInstance.show();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(visibleChangeSpy).toHaveBeenCalledWith(true);
             expect(visibleChangeV2Spy).toHaveBeenCalledWith(true);
 
             speedDialInstance.hide();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(visibleChangeSpy).toHaveBeenCalledWith(false);
@@ -605,7 +605,7 @@ describe('SpeedDial', () => {
             const showSpy = vi.spyOn(component, 'onShow').mockImplementation(() => {});
 
             speedDialInstance.show();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(showSpy).toHaveBeenCalled();
@@ -615,7 +615,7 @@ describe('SpeedDial', () => {
             const hideSpy = vi.spyOn(component, 'onHide').mockImplementation(() => {});
 
             speedDialInstance.hide();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(hideSpy).toHaveBeenCalled();
@@ -627,13 +627,13 @@ describe('SpeedDial', () => {
             expect(speedDialInstance.visible).toBe(false);
 
             button.nativeElement.click();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(speedDialInstance.visible).toBe(true);
 
             button.nativeElement.click();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(speedDialInstance.visible).toBe(false);
@@ -648,7 +648,7 @@ describe('SpeedDial', () => {
 
             const button = fixture.debugElement.query(By.css('button[pButton]'));
             button.nativeElement.click();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             // Button click event should still be called but component should be disabled
@@ -662,7 +662,7 @@ describe('SpeedDial', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             // Execute first item command directly
@@ -676,14 +676,14 @@ describe('SpeedDial', () => {
 
         it('should hide menu after item click', async () => {
             speedDialInstance.show();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             expect(speedDialInstance.visible).toBe(true);
 
             const firstItem = speedDialInstance.model?.[0];
             if (firstItem) {
                 speedDialInstance.onItemClick(new Event('click'), firstItem);
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
             }
 
@@ -701,7 +701,7 @@ describe('SpeedDial', () => {
     describe('Keyboard Navigation', () => {
         beforeEach(async () => {
             speedDialInstance.show();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
         });
@@ -711,7 +711,7 @@ describe('SpeedDial', () => {
             const keydownSpy = vi.spyOn(speedDialInstance, 'onArrowDown');
 
             list.triggerEventHandler('keydown', { code: 'ArrowDown', preventDefault: () => {} });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(keydownSpy).toHaveBeenCalled();
@@ -722,7 +722,7 @@ describe('SpeedDial', () => {
             const keydownSpy = vi.spyOn(speedDialInstance, 'onArrowUp');
 
             list.triggerEventHandler('keydown', { code: 'ArrowUp', preventDefault: () => {} });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(keydownSpy).toHaveBeenCalled();
@@ -733,7 +733,7 @@ describe('SpeedDial', () => {
             const keydownSpy = vi.spyOn(speedDialInstance, 'onArrowLeft');
 
             list.triggerEventHandler('keydown', { code: 'ArrowLeft', preventDefault: () => {} });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(keydownSpy).toHaveBeenCalled();
@@ -744,7 +744,7 @@ describe('SpeedDial', () => {
             const keydownSpy = vi.spyOn(speedDialInstance, 'onArrowRight');
 
             list.triggerEventHandler('keydown', { code: 'ArrowRight', preventDefault: () => {} });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(keydownSpy).toHaveBeenCalled();
@@ -758,7 +758,7 @@ describe('SpeedDial', () => {
 
             const list = fixture.debugElement.query(By.css('ul[role="menu"]'));
             list.triggerEventHandler('keydown', { code: 'Enter', preventDefault: () => {} });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(enterKeySpy).toHaveBeenCalled();
@@ -769,7 +769,7 @@ describe('SpeedDial', () => {
             const keydownSpy = vi.spyOn(speedDialInstance, 'onEscapeKey');
 
             list.triggerEventHandler('keydown', { code: 'Escape', preventDefault: () => {} });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
@@ -784,7 +784,7 @@ describe('SpeedDial', () => {
             const keydownSpy = vi.spyOn(speedDialInstance, 'onHomeKey');
 
             list.triggerEventHandler('keydown', { code: 'Home', preventDefault: () => {} });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(keydownSpy).toHaveBeenCalled();
@@ -795,7 +795,7 @@ describe('SpeedDial', () => {
             const keydownSpy = vi.spyOn(speedDialInstance, 'onEndKey');
 
             list.triggerEventHandler('keydown', { code: 'End', preventDefault: () => {} });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(keydownSpy).toHaveBeenCalled();
@@ -808,7 +808,7 @@ describe('SpeedDial', () => {
             const keydownSpy = vi.spyOn(speedDialInstance, 'onTogglerArrowDown');
 
             button.triggerEventHandler('keydown', { code: 'ArrowDown', preventDefault: () => {} });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(keydownSpy).toHaveBeenCalled();
@@ -820,16 +820,16 @@ describe('SpeedDial', () => {
             const keydownSpy = vi.spyOn(speedDialInstance, 'onTogglerArrowUp');
 
             button.triggerEventHandler('keydown', { code: 'ArrowUp', preventDefault: () => {} });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(keydownSpy).toHaveBeenCalled();
             expect(speedDialInstance.visible).toBe(true);
         });
 
-        it.skip('should handle escape on toggler button', async () => {
+        it('should handle escape on toggler button', async () => {
             speedDialInstance.show();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -838,7 +838,7 @@ describe('SpeedDial', () => {
 
             button.triggerEventHandler('keydown', { code: 'Escape', preventDefault: () => {} });
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -939,7 +939,7 @@ describe('SpeedDial', () => {
             it('should handle pTemplate content processing', async () => {
                 const templateFixture = TestBed.createComponent(TestTemplateSpeedDialComponent);
                 templateFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await templateFixture.whenStable();
 
                 const speedDialInstance = templateFixture.debugElement.query(By.directive(SpeedDial)).componentInstance;
@@ -958,7 +958,7 @@ describe('SpeedDial', () => {
             it('should process _buttonTemplate from pTemplate="button"', async () => {
                 const templateFixture = TestBed.createComponent(TestTemplateSpeedDialComponent);
                 templateFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await templateFixture.whenStable();
 
                 const speedDialInstance = templateFixture.debugElement.query(By.directive(SpeedDial)).componentInstance;
@@ -970,7 +970,7 @@ describe('SpeedDial', () => {
             it('should process _itemTemplate from pTemplate="item"', async () => {
                 const templateFixture = TestBed.createComponent(TestTemplateSpeedDialComponent);
                 templateFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await templateFixture.whenStable();
 
                 const speedDialInstance = templateFixture.debugElement.query(By.directive(SpeedDial)).componentInstance;
@@ -982,7 +982,7 @@ describe('SpeedDial', () => {
             it('should process _iconTemplate from pTemplate="icon"', async () => {
                 const templateFixture = TestBed.createComponent(TestTemplateSpeedDialComponent);
                 templateFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await templateFixture.whenStable();
 
                 const speedDialInstance = templateFixture.debugElement.query(By.directive(SpeedDial)).componentInstance;
@@ -994,7 +994,7 @@ describe('SpeedDial', () => {
             it('should render custom button template with pTemplate', async () => {
                 const templateFixture = TestBed.createComponent(TestTemplateSpeedDialComponent);
                 templateFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await templateFixture.whenStable();
 
                 const customButtons = templateFixture.debugElement.queryAll(By.css('.custom-button'));
@@ -1008,7 +1008,7 @@ describe('SpeedDial', () => {
                 const templateComponent = templateFixture.componentInstance;
                 templateComponent.model = [{ label: 'Test Item', icon: 'pi pi-test' }];
                 templateFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await templateFixture.whenStable();
 
                 const speedDialInstance = templateFixture.debugElement.query(By.directive(SpeedDial)).componentInstance;
@@ -1025,7 +1025,7 @@ describe('SpeedDial', () => {
             it('should render custom icon template with pTemplate', async () => {
                 const templateFixture = TestBed.createComponent(TestTemplateSpeedDialComponent);
                 templateFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await templateFixture.whenStable();
 
                 const speedDialInstance = templateFixture.debugElement.query(By.directive(SpeedDial)).componentInstance;
@@ -1044,7 +1044,7 @@ describe('SpeedDial', () => {
             it('should handle #button template processing', async () => {
                 const contentTemplateFixture = TestBed.createComponent(TestContentTemplateSpeedDialComponent);
                 contentTemplateFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await contentTemplateFixture.whenStable();
 
                 const speedDialInstance = contentTemplateFixture.debugElement.query(By.directive(SpeedDial)).componentInstance;
@@ -1063,7 +1063,7 @@ describe('SpeedDial', () => {
             it("should process buttonTemplate from @ContentChild('button')", async () => {
                 const contentTemplateFixture = TestBed.createComponent(TestContentTemplateSpeedDialComponent);
                 contentTemplateFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await contentTemplateFixture.whenStable();
 
                 const speedDialInstance = contentTemplateFixture.debugElement.query(By.directive(SpeedDial)).componentInstance;
@@ -1076,7 +1076,7 @@ describe('SpeedDial', () => {
             it("should process itemTemplate from @ContentChild('item')", async () => {
                 const contentTemplateFixture = TestBed.createComponent(TestContentTemplateSpeedDialComponent);
                 contentTemplateFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await contentTemplateFixture.whenStable();
 
                 const speedDialInstance = contentTemplateFixture.debugElement.query(By.directive(SpeedDial)).componentInstance;
@@ -1089,7 +1089,7 @@ describe('SpeedDial', () => {
             it("should process iconTemplate from @ContentChild('icon')", async () => {
                 const contentTemplateFixture = TestBed.createComponent(TestContentTemplateSpeedDialComponent);
                 contentTemplateFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await contentTemplateFixture.whenStable();
 
                 const speedDialInstance = contentTemplateFixture.debugElement.query(By.directive(SpeedDial)).componentInstance;
@@ -1108,7 +1108,7 @@ describe('SpeedDial', () => {
                 // Test pTemplate rendering
                 const pTemplateFixture = TestBed.createComponent(TestTemplateSpeedDialComponent);
                 pTemplateFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await pTemplateFixture.whenStable();
 
                 const pTemplateSpeedDial = pTemplateFixture.debugElement.query(By.directive(SpeedDial)).componentInstance;
@@ -1118,7 +1118,7 @@ describe('SpeedDial', () => {
                 // Test #content template rendering
                 const contentTemplateFixture = TestBed.createComponent(TestContentTemplateSpeedDialComponent);
                 contentTemplateFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await contentTemplateFixture.whenStable();
 
                 const contentTemplateSpeedDial = contentTemplateFixture.debugElement.query(By.directive(SpeedDial)).componentInstance;
@@ -1141,7 +1141,7 @@ describe('SpeedDial', () => {
             it('should handle ngAfterContentInit template processing correctly', async () => {
                 const templateFixture = TestBed.createComponent(TestTemplateSpeedDialComponent);
                 templateFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await templateFixture.whenStable();
 
                 const speedDialInstance = templateFixture.debugElement.query(By.directive(SpeedDial)).componentInstance;
@@ -1172,7 +1172,7 @@ describe('SpeedDial', () => {
             expect(button.nativeElement.getAttribute('aria-expanded')).toBe('false');
 
             speedDialInstance.show();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -1192,7 +1192,7 @@ describe('SpeedDial', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             const menuItems = fixture.debugElement.queryAll(By.css('li[role="menuitem"]'));
@@ -1208,7 +1208,7 @@ describe('SpeedDial', () => {
             const menu = fixture.debugElement.query(By.css('ul[role="menu"]'));
 
             menu.triggerEventHandler('focus', {});
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(focusSpy).toHaveBeenCalled();
@@ -1220,10 +1220,10 @@ describe('SpeedDial', () => {
             const menu = fixture.debugElement.query(By.css('ul[role="menu"]'));
 
             menu.triggerEventHandler('focus', {});
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             menu.triggerEventHandler('focusout', {});
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(blurSpy).toHaveBeenCalled();
@@ -1232,13 +1232,13 @@ describe('SpeedDial', () => {
 
         it('should manage focused option index', async () => {
             speedDialInstance.focusedOptionIndex.set('test-id');
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(speedDialInstance.focusedOptionId).toBe('test-id');
 
             speedDialInstance.focusedOptionIndex.set(-1);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(speedDialInstance.focusedOptionId).toBeNull();
@@ -1302,10 +1302,10 @@ describe('SpeedDial', () => {
     });
 
     describe('Document Click Outside', () => {
-        it.skip('should hide when clicked outside if hideOnClickOutside is true', async () => {
+        it('should hide when clicked outside if hideOnClickOutside is true', async () => {
             speedDialInstance.show();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             expect(speedDialInstance.visible).toBe(true);
 
@@ -1313,7 +1313,7 @@ describe('SpeedDial', () => {
             // since document click listener is complex to simulate in test environment
             speedDialInstance.hide();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(speedDialInstance.visible).toBe(false);
@@ -1326,7 +1326,7 @@ describe('SpeedDial', () => {
             fixture.detectChanges();
 
             speedDialInstance.show();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             // Document click listener should not be bound
@@ -1367,16 +1367,16 @@ describe('SpeedDial', () => {
 
         it('should handle rapid show/hide operations', async () => {
             speedDialInstance.show();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             speedDialInstance.hide();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             speedDialInstance.show();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             speedDialInstance.hide();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(speedDialInstance.visible).toBe(false);
@@ -1449,7 +1449,7 @@ describe('SpeedDial', () => {
         it('should handle router links', async () => {
             const routerFixture = TestBed.createComponent(TestRouterSpeedDialComponent);
             routerFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await routerFixture.whenStable();
 
             const routerSpeedDial = routerFixture.debugElement.query(By.directive(SpeedDial)).componentInstance;
@@ -1476,7 +1476,7 @@ describe('SpeedDial', () => {
         it('should execute commands from menu items', async () => {
             const commandFixture = TestBed.createComponent(TestCommandSpeedDialComponent);
             commandFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await commandFixture.whenStable();
 
             const commandComponent = commandFixture.componentInstance;
@@ -1583,7 +1583,7 @@ describe('SpeedDial', () => {
                 ptComponent.visible = true;
                 ptFixture.componentRef.setInput('pt', { item: 'ITEM_CLASS' });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const itemElements = ptFixture.nativeElement.querySelectorAll('li[role="menuitem"]');
@@ -1597,7 +1597,7 @@ describe('SpeedDial', () => {
                 ptFixture.componentRef.setInput('pt', { mask: 'MASK_CLASS' });
                 ptSpeedDialInstance.mask = true;
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const maskElement = ptFixture.nativeElement.querySelector('[data-pc-section="mask"]');
@@ -1670,7 +1670,7 @@ describe('SpeedDial', () => {
                     }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const itemElements = ptFixture.nativeElement.querySelectorAll('li[role="menuitem"]');
@@ -1692,7 +1692,7 @@ describe('SpeedDial', () => {
                 });
                 ptSpeedDialInstance.mask = true;
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const maskElement = ptFixture.nativeElement.querySelector('[data-pc-section="mask"]');
@@ -1731,7 +1731,7 @@ describe('SpeedDial', () => {
                     }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const buttonElement = ptFixture.nativeElement.querySelector('[data-pc-name="pcbutton"]');
@@ -1760,7 +1760,7 @@ describe('SpeedDial', () => {
                 });
 
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 expect(capturedInstance).toBeDefined();
@@ -1827,7 +1827,7 @@ describe('SpeedDial', () => {
                 });
 
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 expect(capturedInstance).toBeDefined();
@@ -1969,7 +1969,7 @@ describe('SpeedDial', () => {
                     }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 // Note: Hook execution depends on BaseComponent implementation
@@ -2005,7 +2005,7 @@ describe('SpeedDial', () => {
                 expect(typeof ptSpeedDialInstance.getPTOptions).toBe('function');
 
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const testId = ptSpeedDialInstance.id + '_0';
@@ -2028,7 +2028,7 @@ describe('SpeedDial', () => {
                     }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const itemElements = ptFixture.nativeElement.querySelectorAll('li[role="menuitem"]');
@@ -2043,7 +2043,7 @@ describe('SpeedDial', () => {
                 expect(typeof ptSpeedDialInstance.getPTOptions).toBe('function');
 
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const testId = ptSpeedDialInstance.id + '_0';
@@ -2058,7 +2058,7 @@ describe('SpeedDial', () => {
                 expect(typeof ptSpeedDialInstance.getPTOptions).toBe('function');
 
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const firstItemId = ptSpeedDialInstance.id + '_0';
@@ -2101,7 +2101,7 @@ describe('SpeedDial', () => {
                 });
                 ptSpeedDialInstance.mask = true;
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const hostElement = ptFixture.nativeElement.querySelector('p-speeddial');
@@ -2135,7 +2135,7 @@ describe('SpeedDial', () => {
                 });
 
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 expect(capturedInstance).toBeDefined();

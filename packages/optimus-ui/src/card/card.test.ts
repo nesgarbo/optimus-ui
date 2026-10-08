@@ -953,13 +953,15 @@ describe('Card', () => {
         });
 
         it('should handle rapid creation and destruction', async () => {
-            for (let i = 0; i < 5; i++) {
-                const testFixture = TestBed.createComponent(TestCustomCardComponent);
-                await testFixture.whenStable();
-                testFixture.destroy();
-            }
-
-            expect(true).toBe(true);
+            await expect(
+                (async () => {
+                    for (let i = 0; i < 5; i++) {
+                        const testFixture = TestBed.createComponent(TestCustomCardComponent);
+                        await testFixture.whenStable();
+                        testFixture.destroy();
+                    }
+                })()
+            ).resolves.toBeUndefined();
         });
 
         it('should cleanup complex components', async () => {
@@ -1071,8 +1073,7 @@ describe('Card', () => {
         });
 
         describe('Case 2: Object Values with Attributes and Styles', () => {
-            it.skip('should apply PT object with class, style and data attributes to root', async () => {
-                // Skipped: PT style binding causes infinite loop with current implementation
+            it('should apply PT object with class, style and data attributes to root', async () => {
                 const fixture = TestBed.createComponent(Card);
                 fixture.componentRef.setInput('pt', {
                     root: {
@@ -1089,8 +1090,7 @@ describe('Card', () => {
                 expect(hostElement.getAttribute('aria-label')).toBe('TEST_ARIA_LABEL');
             });
 
-            it.skip('should apply PT object with attributes to header', async () => {
-                // Skipped: PT style binding causes infinite loop
+            it('should apply PT object with attributes to header', async () => {
                 const fixture = TestBed.createComponent(Card);
                 fixture.componentRef.setInput('header', 'Test');
                 fixture.componentRef.setInput('pt', {
@@ -1166,7 +1166,7 @@ describe('Card', () => {
             });
         });
 
-        describe.skip('Case 4: Instance-based Functions', () => {
+        describe('Case 4: Instance-based Functions', () => {
             it('should apply PT function using instance header state', async () => {
                 const fixture = TestBed.createComponent(Card);
                 fixture.componentRef.setInput('header', 'Test Header');
@@ -1184,7 +1184,6 @@ describe('Card', () => {
             });
 
             it('should apply PT function with dynamic styles based on instance state', async () => {
-                // Skipped: PT style binding causes infinite loop
                 const fixture = TestBed.createComponent(Card);
                 fixture.componentRef.setInput('header', 'Test');
                 fixture.componentRef.setInput('pt', {
@@ -1414,9 +1413,10 @@ describe('Card', () => {
             });
         });
 
-        describe.skip('Case 8: PT Hooks', () => {
-            // Skipped: Card component hooks support needs to be verified
-            it.skip('should execute onAfterViewInit hook from PT', async () => {
+        describe('Case 8: PT Hooks', () => {
+            // The PT hooks are the Angular lifecycle ones: onInit, onAfterContentInit, onAfterViewInit and so on. onBeforeInit runs in the
+            // constructor, before any input is set, so a `pt` input can never provide it; only a global PT can.
+            it('should execute onAfterViewInit hook from PT', async () => {
                 let hookExecuted = false;
 
                 @Component({
@@ -1448,19 +1448,19 @@ describe('Card', () => {
                 expect(hookExecuted).toBe(true);
             });
 
-            it.skip('should execute onBeforeMount hook from PT', async () => {
-                let beforeMountExecuted = false;
+            it('should execute onInit hook from PT', async () => {
+                let initExecuted = false;
 
                 @Component({
                     changeDetection: ChangeDetectionStrategy.Eager,
                     standalone: false,
                     template: `<p-card [pt]="pt"></p-card>`
                 })
-                class TestPTBeforeMountComponent {
+                class TestPTInitComponent {
                     pt = {
                         hooks: {
-                            onBeforeMount: () => {
-                                beforeMountExecuted = true;
+                            onInit: () => {
+                                initExecuted = true;
                             }
                         }
                     };
@@ -1469,17 +1469,17 @@ describe('Card', () => {
                 TestBed.resetTestingModule();
                 TestBed.configureTestingModule({
                     imports: [CardModule],
-                    declarations: [TestPTBeforeMountComponent],
+                    declarations: [TestPTInitComponent],
                     providers: [provideZonelessChangeDetection()]
                 });
 
-                const fixture = TestBed.createComponent(TestPTBeforeMountComponent);
+                const fixture = TestBed.createComponent(TestPTInitComponent);
                 await fixture.whenStable();
 
-                expect(beforeMountExecuted).toBe(true);
+                expect(initExecuted).toBe(true);
             });
 
-            it.skip('should execute onAfterContentInit hook from PT', async () => {
+            it('should execute onAfterContentInit hook from PT', async () => {
                 let contentInitExecuted = false;
 
                 @Component({
@@ -1510,7 +1510,7 @@ describe('Card', () => {
                 expect(contentInitExecuted).toBe(true);
             });
 
-            it.skip('should execute multiple lifecycle hooks from PT', async () => {
+            it('should execute multiple lifecycle hooks from PT', async () => {
                 const executedHooks: string[] = [];
 
                 @Component({
@@ -1521,8 +1521,8 @@ describe('Card', () => {
                 class TestMultiplePTHooksComponent {
                     pt = {
                         hooks: {
-                            onBeforeMount: () => {
-                                executedHooks.push('onBeforeMount');
+                            onInit: () => {
+                                executedHooks.push('onInit');
                             },
                             onAfterContentInit: () => {
                                 executedHooks.push('onAfterContentInit');
@@ -1544,7 +1544,7 @@ describe('Card', () => {
                 const fixture = TestBed.createComponent(TestMultiplePTHooksComponent);
                 await fixture.whenStable();
 
-                expect(executedHooks.length).toBeGreaterThan(0);
+                expect(executedHooks).toEqual(expect.arrayContaining(['onInit', 'onAfterContentInit', 'onAfterViewInit']));
             });
         });
 

@@ -880,18 +880,20 @@ describe('MeterGroup', () => {
             ];
 
             for (const combo of combinations) {
-                fixture.changeDetectorRef.markForCheck();
-                await fixture.whenStable();
-
                 component.orientation = combo.orientation as 'horizontal' | 'vertical';
                 component.labelPosition = combo.labelPosition as 'start' | 'end';
                 component.labelOrientation = combo.labelOrientation as 'horizontal' | 'vertical';
 
                 fixture.changeDetectorRef.markForCheck();
                 await fixture.whenStable();
-            }
 
-            expect(true).toBe(true);
+                const meter = fixture.debugElement.query(By.css('p-meterGroup, p-metergroup')).componentInstance;
+
+                expect(meter.orientation).toBe(combo.orientation);
+                expect(meter.labelPosition).toBe(combo.labelPosition);
+                expect(meter.labelOrientation).toBe(combo.labelOrientation);
+                expect(fixture.nativeElement.querySelector('.p-metergroup-label-list')).toBeTruthy();
+            }
         });
 
         it('should handle real-world storage example', () => {

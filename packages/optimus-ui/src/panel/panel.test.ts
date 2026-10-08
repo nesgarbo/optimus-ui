@@ -1130,8 +1130,7 @@ describe('Panel', () => {
         });
 
         describe('Case 2: Object Values with Attributes and Styles', () => {
-            it.skip('should apply PT object with class, style and data attributes to root', () => {
-                // Skipped: PT style and attribute binding to host causes infinite loop with current implementation
+            it('should apply PT object with class, style and data attributes to root', () => {
                 const fixture = TestBed.createComponent(Panel);
                 const panel = fixture.componentInstance;
                 fixture.componentRef.setInput('pt', {
@@ -1289,13 +1288,9 @@ describe('Panel', () => {
                 fixture.detectChanges();
 
                 const titleEl = fixture.debugElement.query(By.css('.p-panel-title'));
-                if (titleEl) {
-                    titleEl.nativeElement.click();
-                    expect(clicked).toBe(true);
-                } else {
-                    // If element is not found, skip the test
-                    expect(true).toBe(true);
-                }
+                expect(titleEl).toBeTruthy();
+                titleEl.nativeElement.click();
+                expect(clicked).toBe(true);
             });
 
             it('should handle onclick event through PT on header section', () => {
@@ -1314,12 +1309,9 @@ describe('Panel', () => {
                 fixture.detectChanges();
 
                 const headerEl = fixture.debugElement.query(By.css('.p-panel-header'));
-                if (headerEl) {
-                    headerEl.nativeElement.click();
-                    expect(headerClicked).toBe(true);
-                } else {
-                    expect(true).toBe(true);
-                }
+                expect(headerEl).toBeTruthy();
+                headerEl.nativeElement.click();
+                expect(headerClicked).toBe(true);
             });
         });
 

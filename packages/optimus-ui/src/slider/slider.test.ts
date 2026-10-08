@@ -281,7 +281,7 @@ describe('Slider', () => {
 
             // Trigger the event directly since DOM-based event testing can be unreliable
             testComponent.onSliderChange({ event: new Event('change'), value: 50 });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await testFixture.whenStable();
 
             expect(testComponent.onSliderChange).toHaveBeenCalledWith({ event: expect.any(Event), value: 50 });
@@ -292,14 +292,14 @@ describe('Slider', () => {
             testFixture.changeDetectorRef.markForCheck();
             await testFixture.whenStable();
             testFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await testFixture.whenStable();
 
             vi.spyOn(testComponent, 'onSliderChange').mockImplementation(() => {});
 
             // Trigger the event directly since DOM-based event testing can be unreliable
             testComponent.onSliderChange({ event: new Event('change'), values: [20, 80] });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await testFixture.whenStable();
 
             expect(testComponent.onSliderChange).toHaveBeenCalledWith({ event: expect.any(Event), values: [20, 80] });
@@ -310,7 +310,7 @@ describe('Slider', () => {
 
             // Trigger the event directly since DOM-based event testing can be unreliable
             testComponent.onSlideEnd({ originalEvent: new Event('mouseup'), value: 75 });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await testFixture.whenStable();
 
             expect(testComponent.onSlideEnd).toHaveBeenCalledWith({ originalEvent: expect.any(Event), value: 75 });
@@ -361,7 +361,7 @@ describe('Slider', () => {
         it('should work with reactive forms', async () => {
             formTestComponent.form.patchValue({ sliderValue: 75 });
             formTestFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await formTestFixture.whenStable();
 
             expect(formTestComponent.form.value.sliderValue).toBe(75 as any);
@@ -372,7 +372,7 @@ describe('Slider', () => {
 
             formTestComponent.form.patchValue({ sliderValue: 25 });
             formTestFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await formTestFixture.whenStable();
 
             expect(formTestComponent.form.valid).toBe(true);
@@ -381,12 +381,12 @@ describe('Slider', () => {
         it('should handle form reset', async () => {
             formTestComponent.form.patchValue({ sliderValue: 80 });
             formTestFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await formTestFixture.whenStable();
 
             formTestComponent.form.reset();
             formTestFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await formTestFixture.whenStable();
 
             expect(formTestComponent.form.pristine).toBe(true);
@@ -395,7 +395,7 @@ describe('Slider', () => {
         it('should handle disabled state through form control', async () => {
             formTestComponent.form.get('sliderValue')?.disable();
             formTestFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await formTestFixture.whenStable();
 
             expect(formTestComponent.form.get('sliderValue')?.disabled).toBe(true);
@@ -407,7 +407,7 @@ describe('Slider', () => {
 
             rangeFormComponent.componentInstance.form.patchValue({ rangeValue: [30, 70] });
             rangeFormComponent.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await rangeFormComponent.whenStable();
 
             expect(rangeFormComponent.componentInstance.form.value.rangeValue).toEqual([30, 70]);
@@ -610,7 +610,7 @@ describe('Slider', () => {
             expect(sliderEl).toBeTruthy();
             expect(testComponent.orientation).toBe('vertical');
 
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await testFixture.whenStable();
         });
 
@@ -662,7 +662,7 @@ describe('Slider', () => {
             testFixture.changeDetectorRef.markForCheck();
             await testFixture.whenStable();
             testFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await testFixture.whenStable();
 
             expect(testComponent.value).toBe(75);
@@ -877,7 +877,7 @@ describe('Slider', () => {
             component.onSlideEnd.subscribe((event) => (slideEndEvent = event));
 
             component.onBarClick(new Event('click'));
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(slideEndEvent).toBeDefined();
@@ -891,7 +891,7 @@ describe('Slider', () => {
             component.onSlideEnd.subscribe((event) => (slideEndEvent = event));
 
             component.onBarClick(new Event('click'));
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(slideEndEvent).toBeDefined();
@@ -1030,7 +1030,7 @@ describe('Slider', () => {
 
             const mockEvent = new Event('click');
             component.onBarClick(mockEvent);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(component.updateDomData).toHaveBeenCalled();
@@ -1157,7 +1157,7 @@ describe('Slider', () => {
 
                 const fixture = TestBed.createComponent(TestPTCase1Component);
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
 
                 const sliderRoot = fixture.debugElement.query(By.css('p-slider')).nativeElement;
@@ -1204,7 +1204,7 @@ describe('Slider', () => {
 
                 const fixture = TestBed.createComponent(TestPTCase2Component);
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
 
                 const sliderRoot = fixture.debugElement.query(By.css('p-slider')).nativeElement;
@@ -1256,7 +1256,7 @@ describe('Slider', () => {
 
                 const fixture = TestBed.createComponent(TestPTCase3Component);
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
 
                 const sliderRoot = fixture.debugElement.query(By.css('p-slider')).nativeElement;
@@ -1317,7 +1317,7 @@ describe('Slider', () => {
 
                 const fixture = TestBed.createComponent(TestPTCase4Component);
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
 
                 const sliderRoot = fixture.debugElement.query(By.css('p-slider')).nativeElement;
@@ -1334,7 +1334,7 @@ describe('Slider', () => {
                 fixture.changeDetectorRef.markForCheck();
                 await fixture.whenStable();
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
 
                 // Root class should change
@@ -1372,7 +1372,7 @@ describe('Slider', () => {
                 const fixture = TestBed.createComponent(TestPTCase5Component);
                 const component = fixture.componentInstance;
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
 
                 const handle = fixture.debugElement.query(By.css('.p-slider-handle'));
@@ -1404,7 +1404,7 @@ describe('Slider', () => {
 
                 const fixture = TestBed.createComponent(TestInlineComponent);
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
 
                 const sliderRoot = fixture.debugElement.query(By.css('p-slider')).nativeElement;
@@ -1429,7 +1429,7 @@ describe('Slider', () => {
 
                 const fixture = TestBed.createComponent(TestInlineObjectComponent);
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
 
                 const sliderRoot = fixture.debugElement.query(By.css('p-slider')).nativeElement;
@@ -1472,7 +1472,7 @@ describe('Slider', () => {
 
                 const fixture = TestBed.createComponent(TestGlobalPTComponent);
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
 
                 const sliders = fixture.debugElement.queryAll(By.css('p-slider'));
@@ -1529,7 +1529,7 @@ describe('Slider', () => {
 
                 const fixture = TestBed.createComponent(TestHooksComponent);
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
 
                 expect(hookCalls).toContain('onAfterViewInit');

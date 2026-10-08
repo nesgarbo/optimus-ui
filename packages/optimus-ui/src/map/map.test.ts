@@ -6,7 +6,7 @@ import { EMPTY_MAP_STYLE, Map } from './map';
 import { MapLayer } from './map-layer';
 import { MapMarker } from './map-marker';
 
-const wait = (ms = 150) => new Promise((r) => setTimeout(r, ms));
+const wait = (ms = 50) => new Promise((r) => setTimeout(r, ms));
 
 const polygon = {
     type: 'FeatureCollection',
@@ -56,8 +56,8 @@ const polygon = {
 })
 class Host {
     readonly map = viewChild.required(Map);
-    // The test server finds the worker where the package keeps it; an application copies it next to its scripts.
-    readonly worker = new URL('../../node_modules/maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).href;
+    // The test server serves the packages of the project under /node_modules, with or without coverage; an application copies the worker next to its scripts.
+    readonly worker = new URL('/node_modules/maplibre-gl/dist/maplibre-gl-worker.mjs', location.origin).href;
     center = signal<[number, number]>([0, 0]);
     zoom = signal(3);
     bearing = signal(0);
@@ -194,7 +194,7 @@ describe('Map', () => {
     it('takes new data, and hides', async () => {
         host.data.set({ type: 'FeatureCollection', features: [] });
         await settle();
-        await wait(200);
+        await wait(20);
 
         const p = map().project([0, 0]);
 
@@ -203,7 +203,7 @@ describe('Map', () => {
         host.data.set(polygon);
         host.visible.set(false);
         await settle();
-        await wait(200);
+        await wait(20);
 
         expect(map().getLayoutProperty('box', 'visibility')).toBe('none');
     });
@@ -265,7 +265,7 @@ describe('Map', () => {
         const element = other.nativeElement as HTMLElement;
 
         other.destroy();
-        await wait(300);
+        await wait(30);
 
         expect(element.querySelector('canvas')).toBeNull();
     });

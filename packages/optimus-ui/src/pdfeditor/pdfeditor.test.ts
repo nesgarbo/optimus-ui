@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PDFDocument, StandardFonts } from 'pdf-lib';
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { PdfAnnotation, PdfFormValues, PdfTextAnnotation } from '@openng/optimus-ui/types/pdfeditor';
-import { MAX_CANVAS_PIXELS, openDocument, renderPage } from './pdf-render';
+import { loadPdfJs, MAX_CANVAS_PIXELS, openDocument, renderPage } from './pdf-render';
 import { PdfEditor } from './pdfeditor';
 import { createTextMeasurer, exportPdf, loadPdf, needsUnicode, readForm, rotatePage } from './pdf-writer';
 
@@ -92,7 +92,9 @@ describe('PdfEditor', () => {
     const open = async (bytes: Uint8Array) => {
         host.src.set(bytes);
         await fixture.whenStable();
-        await wait(900);
+        // The document opens on its own time: wait until it says it has (or that it could not), then for the first layout.
+        for (let i = 0; i < 300 && host.loadedCount === 0 && host.failures.length === 0; i++) await wait(20);
+        await wait(100);
         await fixture.whenStable();
     };
 
@@ -169,6 +171,22 @@ describe('PdfEditor', () => {
 
         expect(canvas.width * canvas.height).toBeLessThanOrEqual(MAX_CANVAS_PIXELS);
         expect(canvas.style.width).toBe(`${300 * 40}px`);
+
+        await doc.loadingTask.destroy();
+    });
+
+    it('draws a page with the library that opened its document, without setting up a second worker', async () => {
+        const doc = await openDocument(await makePdf(1));
+        const lib = await loadPdfJs();
+        const workerSrc = lib.GlobalWorkerOptions.workerSrc;
+        const canvas = document.createElement('canvas');
+
+        await renderPage(doc, 0, canvas, 1, 1).promise;
+
+        expect(canvas.width).toBe(300);
+        expect(canvas.height).toBe(400);
+        expect(lib.GlobalWorkerOptions.workerSrc).toBe(workerSrc);
+        expect(await loadPdfJs()).toBe(lib);
 
         await doc.loadingTask.destroy();
     });
@@ -568,7 +586,7 @@ describe('annotations on the page as it is shown', () => {
 });
 
 describe('text the standard fonts cannot show', () => {
-    const fontUrl = new URL('../../node_modules/pdfjs-dist/standard_fonts/LiberationSans-Regular.ttf', import.meta.url).href;
+    const fontUrl = new URL('/node_modules/pdfjs-dist/standard_fonts/LiberationSans-Regular.ttf', location.origin).href;
     const note = (text: string): PdfTextAnnotation => ({ id: 't', page: 0, type: 'text', x: 20, y: 100, width: 250, height: 40, text, fontSize: 20, fontFamily: 'helvetica', color: '#000000' });
     const textOf = async (bytes: Uint8Array) => {
         const doc = await openDocument(bytes);
@@ -632,7 +650,7 @@ class HostWithFont {
     readonly editor = viewChild.required(PdfEditor);
     readonly src = signal<Uint8Array | null>(null);
     annotations = signal<PdfAnnotation[]>([]);
-    font = new URL('../../node_modules/pdfjs-dist/standard_fonts/LiberationSans-Regular.ttf', import.meta.url).href;
+    font = new URL('/node_modules/pdfjs-dist/standard_fonts/LiberationSans-Regular.ttf', location.origin).href;
 }
 
 describe('PdfEditor messages', () => {

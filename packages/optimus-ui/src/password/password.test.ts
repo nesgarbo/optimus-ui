@@ -462,6 +462,8 @@ describe('Password', () => {
         it('should handle input events', async () => {
             const inputEl = testFixture.debugElement.query(By.css('input'));
 
+            expect(inputEl?.nativeElement).toBeTruthy();
+
             if (inputEl?.nativeElement) {
                 inputEl.nativeElement.value = 'test123';
                 inputEl.nativeElement.dispatchEvent(new Event('input'));
@@ -469,8 +471,6 @@ describe('Password', () => {
                 await testFixture.whenStable();
 
                 expect(testComponent.value).toBe('test123');
-            } else {
-                expect(true).toBe(true); // Placeholder expectation when input not found
             }
         });
 
@@ -479,14 +479,14 @@ describe('Password', () => {
             testFixture.detectChanges();
             const inputEl = testFixture.debugElement.query(By.css('input'));
 
+            expect(inputEl?.nativeElement).toBeTruthy();
+
             if (inputEl?.nativeElement) {
                 inputEl.nativeElement.dispatchEvent(new Event('focus'));
                 testFixture.detectChanges();
                 await testFixture.whenStable();
 
                 expect(testComponent.onInputFocus).toHaveBeenCalled();
-            } else {
-                expect(true).toBe(true); // Placeholder expectation when input not found
             }
         });
 
@@ -495,14 +495,14 @@ describe('Password', () => {
             testFixture.detectChanges();
             const inputEl = testFixture.debugElement.query(By.css('input'));
 
+            expect(inputEl?.nativeElement).toBeTruthy();
+
             if (inputEl?.nativeElement) {
                 inputEl.nativeElement.dispatchEvent(new Event('blur'));
                 testFixture.detectChanges();
                 await testFixture.whenStable();
 
                 expect(testComponent.onInputBlur).toHaveBeenCalled();
-            } else {
-                expect(true).toBe(true); // Placeholder expectation when input not found
             }
         });
 
@@ -512,6 +512,8 @@ describe('Password', () => {
 
             const inputEl = testFixture.debugElement.query(By.css('input'));
             const passwordComponent = testFixture.debugElement.query(By.css('p-password')).componentInstance;
+
+            expect(inputEl?.nativeElement).toBeTruthy();
 
             if (inputEl?.nativeElement) {
                 inputEl.nativeElement.value = 'weakpwd';
@@ -523,8 +525,6 @@ describe('Password', () => {
                 await testFixture.whenStable();
 
                 expect(passwordComponent.overlayVisible).toBe(true);
-            } else {
-                expect(true).toBe(true); // Placeholder expectation when input not found
             }
         });
 
@@ -572,15 +572,15 @@ describe('Password', () => {
             await testFixture.whenStable();
             testFixture.detectChanges();
 
-            const showIcon = testFixture.debugElement.query(By.css('[data-pc-section="showIcon"]'));
+            const showIcon = testFixture.debugElement.query(By.css('button.p-password-icon-button'));
             const passwordComponent = testFixture.debugElement.query(By.css('p-password')).componentInstance;
+
+            expect(showIcon?.nativeElement).toBeTruthy();
 
             if (showIcon?.nativeElement) {
                 showIcon.nativeElement.dispatchEvent(new Event('click'));
                 testFixture.detectChanges();
                 expect(passwordComponent.unmasked).toBe(true);
-            } else {
-                expect(true).toBe(true); // Placeholder expectation when button not found
             }
         });
     });

@@ -252,7 +252,7 @@ describe('Rating', () => {
 
             starOptions[2].nativeElement.click();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(component.value).toBe(3 as any);
@@ -267,7 +267,7 @@ describe('Rating', () => {
 
             starOptions[3].nativeElement.click();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(component.rateEvents.length).toBe(1 as any);
@@ -284,14 +284,14 @@ describe('Rating', () => {
             // First click - set to 3
             starOptions[2].nativeElement.click();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             expect(component.value).toBe(3 as any);
 
             // Second click on same star - unset
             starOptions[2].nativeElement.click();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             expect(component.value).toBeNull();
         });
@@ -329,7 +329,7 @@ describe('Rating', () => {
             inputs[1].nativeElement.checked = true;
             inputs[1].nativeElement.dispatchEvent(changeEvent);
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(component.value).toBe(2 as any);
@@ -378,7 +378,7 @@ describe('Rating', () => {
 
             starOptions[4].nativeElement.click();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(component.value).toBe(initialValue);
@@ -399,7 +399,7 @@ describe('Rating', () => {
 
             starOptions[4].nativeElement.click();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(component.value).toBe(initialValue);
@@ -454,7 +454,7 @@ describe('Rating', () => {
 
             starOptions[2].nativeElement.click();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(component.ratingForm.get('rating')?.value).toBe(3 as any);
@@ -482,7 +482,7 @@ describe('Rating', () => {
 
             starOptions[3].nativeElement.click();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(component.ratingForm.get('rating')?.value).toBe(4 as any);
@@ -505,14 +505,14 @@ describe('Rating', () => {
 
             starOptions[2].nativeElement.click();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(component.ratingForm.get('rating')?.value).toBe(3 as any);
 
             component.ratingForm.reset();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(component.ratingForm.get('rating')?.value).toBeNull();
@@ -667,7 +667,7 @@ describe('Rating', () => {
             inputs[0].nativeElement.focus();
             inputs[0].nativeElement.dispatchEvent(new Event('focus'));
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(ratingInstance.focusedOptionIndex()).toBe(1 as any);
@@ -677,7 +677,7 @@ describe('Rating', () => {
             inputs[2].nativeElement.checked = true;
             inputs[2].nativeElement.dispatchEvent(changeEvent);
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(component.value).toBe(3 as any);
@@ -785,7 +785,7 @@ describe('Rating', () => {
             starOptions[4].nativeElement.click();
 
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(component.value).toBe(5 as any);
@@ -806,7 +806,7 @@ describe('Rating', () => {
 
             starOptions[2].nativeElement.click();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(component.value).toBeNull();
@@ -838,7 +838,7 @@ describe('Rating', () => {
             const newRatingInstance = newFixture.debugElement.query(By.directive(Rating)).componentInstance;
             newRatingInstance.ngOnInit();
             newFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await newFixture.whenStable();
 
             const starOptions = newFixture.debugElement.queryAll(By.css('input[type="radio"]'));
@@ -938,7 +938,7 @@ describe('Rating', () => {
             if (ratingInstance.ngAfterContentInit) {
                 ratingInstance.ngAfterContentInit();
             }
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -949,7 +949,7 @@ describe('Rating', () => {
             if (ratingInstance.ngAfterViewInit) {
                 ratingInstance.ngAfterViewInit();
             }
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -1043,7 +1043,7 @@ describe('Rating', () => {
             if (ratingInstance.ngAfterContentInit) {
                 ratingInstance.ngAfterContentInit();
             }
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -1054,7 +1054,7 @@ describe('Rating', () => {
             if (ratingInstance.ngAfterViewInit) {
                 ratingInstance.ngAfterViewInit();
             }
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -1103,7 +1103,7 @@ describe('Rating', () => {
 
                 const testFixture = TestBed.createComponent(TestPTCase1Component);
                 testFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await testFixture.whenStable();
 
                 const hostEl = testFixture.debugElement.query(By.css('[data-pc-name="rating"]'));
@@ -1150,7 +1150,7 @@ describe('Rating', () => {
 
                 const testFixture = TestBed.createComponent(TestPTCase2Component);
                 testFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await testFixture.whenStable();
 
                 const hostEl = testFixture.debugElement.query(By.css('[data-pc-name="rating"]'));
@@ -1189,7 +1189,7 @@ describe('Rating', () => {
 
                 const testFixture = TestBed.createComponent(TestPTCase3Component);
                 testFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await testFixture.whenStable();
 
                 const hostEl = testFixture.debugElement.query(By.css('[data-pc-name="rating"]'));
@@ -1233,7 +1233,7 @@ describe('Rating', () => {
 
                 const testFixture = TestBed.createComponent(TestPTCase4Component);
                 testFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await testFixture.whenStable();
 
                 const hostEl = testFixture.debugElement.query(By.css('[data-pc-name="rating"]'));
@@ -1279,7 +1279,7 @@ describe('Rating', () => {
                 const testFixture = TestBed.createComponent(TestPTCase5Component);
                 const component = testFixture.componentInstance;
                 testFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await testFixture.whenStable();
 
                 const optionEls = testFixture.debugElement.queryAll(By.css('[data-pc-section="option"]'));
@@ -1312,7 +1312,7 @@ describe('Rating', () => {
 
                 const testFixture = TestBed.createComponent(TestPTCase6InlineComponent);
                 testFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await testFixture.whenStable();
 
                 const hostEl = testFixture.debugElement.query(By.css('[data-pc-name="rating"]'));
@@ -1340,7 +1340,7 @@ describe('Rating', () => {
 
                 const testFixture = TestBed.createComponent(TestPTCase6InlineObjectComponent);
                 testFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await testFixture.whenStable();
 
                 const hostEl = testFixture.debugElement.query(By.css('[data-pc-name="rating"]'));
@@ -1380,7 +1380,7 @@ describe('Rating', () => {
 
                 const testFixture = TestBed.createComponent(TestPTCase7GlobalComponent);
                 testFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await testFixture.whenStable();
 
                 const hostEl = testFixture.debugElement.query(By.css('[data-pc-name="rating"]'));
@@ -1425,13 +1425,13 @@ describe('Rating', () => {
                 const testFixture = TestBed.createComponent(TestPTCase8HooksComponent);
                 const component = testFixture.componentInstance;
                 testFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await testFixture.whenStable();
 
                 expect(component.hooksCalled.some((h) => h.includes('onAfterView'))).toBe(true);
 
                 testFixture.destroy();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await testFixture.whenStable();
             });
         });
@@ -1465,7 +1465,7 @@ describe('Rating', () => {
 
                 const testFixture = TestBed.createComponent(TestPTCoverageComponent);
                 testFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await testFixture.whenStable();
 
                 const hostEl = testFixture.debugElement.query(By.css('[data-pc-name="rating"]'));

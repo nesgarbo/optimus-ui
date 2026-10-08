@@ -146,11 +146,11 @@ describe('Splitter', () => {
     });
 
     describe('Component Initialization', () => {
-        it.skip('should create the component', () => {
+        it('should create the component', () => {
             expect(splitterInstance).toBeTruthy();
         });
 
-        it.skip('should have default values', () => {
+        it('should have default values', () => {
             const fixture = TestBed.createComponent(Splitter);
             const splitter = fixture.componentInstance;
 
@@ -162,7 +162,7 @@ describe('Splitter', () => {
             expect(splitter.minSizes).toEqual([]);
         });
 
-        it.skip('should accept custom values', async () => {
+        it('should accept custom values', async () => {
             testComponent.layout = 'vertical';
             testComponent.gutterSize = 8;
             testComponent.step = 10;
@@ -183,12 +183,12 @@ describe('Splitter', () => {
     });
 
     describe('Panel Rendering', () => {
-        it.skip('should render two panels by default', () => {
+        it('should render two panels by default', () => {
             const panels = testFixture.debugElement.queryAll(By.css('.p-splitterpanel'));
             expect(panels.length).toBe(2);
         });
 
-        it.skip('should render panel content', () => {
+        it('should render panel content', () => {
             const panel1 = testFixture.debugElement.query(By.css('.panel1'));
             const panel2 = testFixture.debugElement.query(By.css('.panel2'));
 
@@ -196,7 +196,7 @@ describe('Splitter', () => {
             expect(panel2.nativeElement.textContent).toContain('Panel 2');
         });
 
-        it.skip('should apply panel styles', async () => {
+        it('should apply panel styles', async () => {
             testComponent.panelStyleClass = 'custom-panel-class';
             testComponent.panelStyle = { backgroundColor: 'red' };
             testFixture.changeDetectorRef.markForCheck();
@@ -207,7 +207,7 @@ describe('Splitter', () => {
             expect(panels[0].nativeElement.className).toContain('custom-panel-class');
         });
 
-        it.skip('should render three panels', () => {
+        it('should render three panels', () => {
             const fixture = TestBed.createComponent(TestThreePanelComponent);
             fixture.detectChanges();
 
@@ -220,17 +220,17 @@ describe('Splitter', () => {
     });
 
     describe('Gutter Functionality', () => {
-        it.skip('should render gutter between panels', () => {
+        it('should render gutter between panels', () => {
             const gutters = testFixture.debugElement.queryAll(By.css('.p-splitter-gutter'));
             expect(gutters.length).toBe(1);
         });
 
-        it.skip('should render gutter handle', () => {
+        it('should render gutter handle', () => {
             const handle = testFixture.debugElement.query(By.css('.p-splitter-gutter-handle'));
             expect(handle).toBeTruthy();
         });
 
-        it.skip('should set gutter size', async () => {
+        it('should set gutter size', async () => {
             testComponent.gutterSize = 10;
             testFixture.changeDetectorRef.markForCheck();
             await testFixture.whenStable();
@@ -240,7 +240,7 @@ describe('Splitter', () => {
             expect(style).toEqual({ width: '10px' });
         });
 
-        it.skip('should set gutter size for vertical layout', async () => {
+        it('should set gutter size for vertical layout', async () => {
             testComponent.layout = 'vertical';
             testComponent.gutterSize = 8;
             testFixture.changeDetectorRef.markForCheck();
@@ -251,7 +251,7 @@ describe('Splitter', () => {
             expect(style).toEqual({ height: '8px' });
         });
 
-        it.skip('should have proper ARIA attributes', () => {
+        it('should have proper ARIA attributes', () => {
             const handle = testFixture.debugElement.query(By.css('.p-splitter-gutter-handle'));
             expect(handle.nativeElement.getAttribute('aria-orientation')).toBe('horizontal');
             expect(handle.nativeElement.getAttribute('tabindex')).toBe('0');
@@ -259,7 +259,7 @@ describe('Splitter', () => {
     });
 
     describe('Panel Sizes with Different Units', () => {
-        it.skip('should handle numeric values as percentages', async () => {
+        it('should handle numeric values as percentages', async () => {
             testComponent.panelSizes = [30, 70];
             testFixture.changeDetectorRef.markForCheck();
             await testFixture.whenStable();
@@ -268,7 +268,7 @@ describe('Splitter', () => {
             expect(splitterInstance._panelSizes).toEqual([30, 70]);
         });
 
-        it.skip('should handle custom percentage values', async () => {
+        it('should handle custom percentage values', async () => {
             testComponent.panelSizes = [25, 75];
             testFixture.changeDetectorRef.markForCheck();
             await testFixture.whenStable();
@@ -277,7 +277,7 @@ describe('Splitter', () => {
             expect(splitterInstance._panelSizes).toEqual([25, 75]);
         });
 
-        it.skip('should split equally when no sizes provided', async () => {
+        it('should split equally when no sizes provided', async () => {
             testComponent.panelSizes = [];
             testFixture.changeDetectorRef.markForCheck();
             await testFixture.whenStable();
@@ -292,7 +292,7 @@ describe('Splitter', () => {
     });
 
     describe('Mouse Resize Operations', () => {
-        it.skip('should start resize on mouse down', () => {
+        it('should start resize on mouse down', () => {
             const gutter = testFixture.debugElement.query(By.css('.p-splitter-gutter'));
             const mouseEvent = new MouseEvent('mousedown');
             Object.defineProperty(mouseEvent, 'pageX', { value: 100, writable: true });
@@ -304,7 +304,7 @@ describe('Splitter', () => {
             expect(splitterInstance.resizeStart).toHaveBeenCalled();
         });
 
-        it.skip('should emit onResizeStart event', () => {
+        it('should emit onResizeStart event', () => {
             const gutter = testFixture.debugElement.query(By.css('.p-splitter-gutter'));
             const mouseEvent = new MouseEvent('mousedown');
             Object.defineProperty(mouseEvent, 'pageX', { value: 100, writable: true });
@@ -318,7 +318,7 @@ describe('Splitter', () => {
             expect(testComponent.resizeStartEvent.sizes).toEqual(splitterInstance._panelSizes);
         });
 
-        it.skip('should emit onResizeEnd event', () => {
+        it('should emit onResizeEnd event', () => {
             const mouseEvent = new MouseEvent('mouseup');
             const gutter = testFixture.debugElement.query(By.css('.p-splitter-gutter'));
             splitterInstance.gutterElement = gutter.nativeElement;
@@ -329,7 +329,7 @@ describe('Splitter', () => {
             expect(testComponent.resizeEndEvent.originalEvent).toBe(mouseEvent);
         });
 
-        it.skip('should validate resize with minSizes', async () => {
+        it('should validate resize with minSizes', async () => {
             testComponent.minSizes = [20, 30];
             testFixture.changeDetectorRef.markForCheck();
             await testFixture.whenStable();
@@ -342,7 +342,7 @@ describe('Splitter', () => {
     });
 
     describe('Touch Resize Operations', () => {
-        it.skip('should handle touch start', () => {
+        it('should handle touch start', () => {
             const gutter = testFixture.debugElement.query(By.css('.p-splitter-gutter'));
 
             vi.spyOn(splitterInstance, 'onGutterTouchStart').mockImplementation(() => {});
@@ -353,7 +353,7 @@ describe('Splitter', () => {
             expect(splitterInstance.onGutterTouchStart).toHaveBeenCalled();
         });
 
-        it.skip('should handle touch move', () => {
+        it('should handle touch move', () => {
             const gutter = testFixture.debugElement.query(By.css('.p-splitter-gutter'));
 
             vi.spyOn(splitterInstance, 'onGutterTouchMove').mockImplementation(() => {});
@@ -364,7 +364,7 @@ describe('Splitter', () => {
             expect(splitterInstance.onGutterTouchMove).toHaveBeenCalled();
         });
 
-        it.skip('should handle touch end', () => {
+        it('should handle touch end', () => {
             const gutter = testFixture.debugElement.query(By.css('.p-splitter-gutter'));
 
             vi.spyOn(splitterInstance, 'onGutterTouchEnd').mockImplementation(() => {});
@@ -391,7 +391,7 @@ describe('Splitter', () => {
                 testFixture.detectChanges();
             });
 
-            it.skip('should handle left arrow key', async () => {
+            it('should handle left arrow key', async () => {
                 const event = new KeyboardEvent('keydown', { code: 'ArrowLeft' });
                 vi.spyOn(splitterInstance, 'setTimer').mockImplementation(() => {});
 
@@ -400,7 +400,7 @@ describe('Splitter', () => {
                 expect(splitterInstance.setTimer).toHaveBeenCalledWith(event, 0, -5);
             });
 
-            it.skip('should handle right arrow key', async () => {
+            it('should handle right arrow key', async () => {
                 const event = new KeyboardEvent('keydown', { code: 'ArrowRight' });
                 vi.spyOn(splitterInstance, 'setTimer').mockImplementation(() => {});
 
@@ -409,7 +409,7 @@ describe('Splitter', () => {
                 expect(splitterInstance.setTimer).toHaveBeenCalledWith(event, 0, 5);
             });
 
-            it.skip('should not handle up/down arrows in horizontal mode', () => {
+            it('should not handle up/down arrows in horizontal mode', () => {
                 const upEvent = new KeyboardEvent('keydown', { code: 'ArrowUp' });
                 const downEvent = new KeyboardEvent('keydown', { code: 'ArrowDown' });
                 vi.spyOn(splitterInstance, 'setTimer').mockImplementation(() => {});
@@ -420,7 +420,7 @@ describe('Splitter', () => {
                 expect(splitterInstance.setTimer).not.toHaveBeenCalled();
             });
 
-            it.skip('should use custom step value', async () => {
+            it('should use custom step value', async () => {
                 testComponent.step = 10;
                 testFixture.changeDetectorRef.markForCheck();
                 await testFixture.whenStable();
@@ -443,7 +443,7 @@ describe('Splitter', () => {
                 testFixture.detectChanges();
             });
 
-            it.skip('should handle up arrow key', async () => {
+            it('should handle up arrow key', async () => {
                 const event = new KeyboardEvent('keydown', { code: 'ArrowUp' });
                 vi.spyOn(splitterInstance, 'setTimer').mockImplementation(() => {});
 
@@ -452,7 +452,7 @@ describe('Splitter', () => {
                 expect(splitterInstance.setTimer).toHaveBeenCalledWith(event, 0, 5);
             });
 
-            it.skip('should handle down arrow key', async () => {
+            it('should handle down arrow key', async () => {
                 const event = new KeyboardEvent('keydown', { code: 'ArrowDown' });
                 vi.spyOn(splitterInstance, 'setTimer').mockImplementation(() => {});
 
@@ -461,7 +461,7 @@ describe('Splitter', () => {
                 expect(splitterInstance.setTimer).toHaveBeenCalledWith(event, 0, -5);
             });
 
-            it.skip('should not handle left/right arrows in vertical mode', () => {
+            it('should not handle left/right arrows in vertical mode', () => {
                 const leftEvent = new KeyboardEvent('keydown', { code: 'ArrowLeft' });
                 const rightEvent = new KeyboardEvent('keydown', { code: 'ArrowRight' });
                 vi.spyOn(splitterInstance, 'setTimer').mockImplementation(() => {});
@@ -473,7 +473,7 @@ describe('Splitter', () => {
             });
         });
 
-        it.skip('should clear timer on key up', () => {
+        it('should clear timer on key up', () => {
             const event = new KeyboardEvent('keyup');
             vi.spyOn(splitterInstance, 'clearTimer').mockImplementation(() => {});
             vi.spyOn(splitterInstance, 'resizeEnd').mockImplementation(() => {});
@@ -486,7 +486,7 @@ describe('Splitter', () => {
     });
 
     describe('State Management', () => {
-        it.skip('should save state to sessionStorage', async () => {
+        it('should save state to sessionStorage', async () => {
             testComponent.stateKey = 'test-splitter';
             testComponent.panelSizes = [40, 60];
             testFixture.changeDetectorRef.markForCheck();
@@ -499,7 +499,7 @@ describe('Splitter', () => {
             expect(savedState).toBe(JSON.stringify([40, 60]));
         });
 
-        it.skip('should save state with custom sizes', async () => {
+        it('should save state with custom sizes', async () => {
             testComponent.stateKey = 'test-splitter-custom';
             testComponent.panelSizes = [30, 70];
             testFixture.changeDetectorRef.markForCheck();
@@ -512,7 +512,7 @@ describe('Splitter', () => {
             expect(savedState).toBe(JSON.stringify([30, 70]));
         });
 
-        it.skip('should restore state from sessionStorage', async () => {
+        it('should restore state from sessionStorage', async () => {
             window.sessionStorage.setItem('test-restore', JSON.stringify([25, 75]));
 
             testComponent.stateKey = 'test-restore';
@@ -525,7 +525,7 @@ describe('Splitter', () => {
             expect(splitterInstance._panelSizes).toEqual([25, 75]);
         });
 
-        it.skip('should restore state from localStorage', async () => {
+        it('should restore state from localStorage', async () => {
             window.localStorage.setItem('test-local', JSON.stringify([20, 80]));
 
             testComponent.stateKey = 'test-local';
@@ -539,7 +539,7 @@ describe('Splitter', () => {
             expect(splitterInstance._panelSizes).toEqual([20, 80]);
         });
 
-        it.skip('should return false when no state exists', async () => {
+        it('should return false when no state exists', async () => {
             testComponent.stateKey = 'non-existent';
             testFixture.changeDetectorRef.markForCheck();
             await testFixture.whenStable();
@@ -549,7 +549,7 @@ describe('Splitter', () => {
             expect(restored).toBe(false);
         });
 
-        it.skip('should check if splitter is stateful', async () => {
+        it('should check if splitter is stateful', async () => {
             expect(splitterInstance.isStateful()).toBe(false);
 
             testComponent.stateKey = 'test-key';
@@ -560,7 +560,7 @@ describe('Splitter', () => {
             expect(splitterInstance.isStateful()).toBe(true);
         });
 
-        it.skip('should throw error for invalid stateStorage', async () => {
+        it('should throw error for invalid stateStorage', async () => {
             testComponent.stateStorage = 'invalid' as any;
             testFixture.changeDetectorRef.markForCheck();
             await testFixture.whenStable();
@@ -571,7 +571,7 @@ describe('Splitter', () => {
     });
 
     describe('Nested Splitters', () => {
-        it.skip('should render nested splitters', () => {
+        it('should render nested splitters', () => {
             const fixture = TestBed.createComponent(TestNestedSplitterComponent);
             fixture.detectChanges();
 
@@ -587,7 +587,7 @@ describe('Splitter', () => {
     });
 
     describe('Helper Methods', () => {
-        it.skip('should correctly identify horizontal layout', async () => {
+        it('should correctly identify horizontal layout', async () => {
             testComponent.layout = 'horizontal';
             testFixture.changeDetectorRef.markForCheck();
             await testFixture.whenStable();
@@ -596,7 +596,7 @@ describe('Splitter', () => {
             expect(splitterInstance.horizontal()).toBe(true);
         });
 
-        it.skip('should correctly identify vertical layout', async () => {
+        it('should correctly identify vertical layout', async () => {
             testComponent.layout = 'vertical';
             testFixture.changeDetectorRef.markForCheck();
             await testFixture.whenStable();
@@ -607,7 +607,7 @@ describe('Splitter', () => {
     });
 
     describe('CSS Classes and Styling', () => {
-        it.skip('should apply custom styleClass', async () => {
+        it('should apply custom styleClass', async () => {
             testComponent.styleClass = 'custom-splitter-class';
             testFixture.changeDetectorRef.markForCheck();
             await testFixture.whenStable();
@@ -617,7 +617,7 @@ describe('Splitter', () => {
             expect(splitterElement.nativeElement.className).toContain('custom-splitter-class');
         });
 
-        it.skip('should apply custom panel styles', async () => {
+        it('should apply custom panel styles', async () => {
             testComponent.panelStyle = { border: '2px solid red', padding: '10px' };
             testFixture.changeDetectorRef.markForCheck();
             await testFixture.whenStable();
@@ -649,7 +649,7 @@ describe('Splitter', () => {
             expect(Object.keys(splitterInstance.panelStyle!)).toContain('padding');
         });
 
-        it.skip('should apply resizing classes during resize', () => {
+        it('should apply resizing classes during resize', () => {
             const gutter = testFixture.debugElement.query(By.css('.p-splitter-gutter'));
             const mouseEvent = new MouseEvent('mousedown');
             Object.defineProperty(mouseEvent, 'pageX', { value: 100, writable: true });
@@ -665,12 +665,12 @@ describe('Splitter', () => {
     });
 
     describe('Accessibility', () => {
-        it.skip('should have separator role on gutter', () => {
+        it('should have separator role on gutter', () => {
             const gutter = testFixture.debugElement.query(By.css('.p-splitter-gutter'));
             expect(gutter.nativeElement.getAttribute('role')).toBe('separator');
         });
 
-        it.skip('should set aria-orientation on handle', async () => {
+        it('should set aria-orientation on handle', async () => {
             const handle = testFixture.debugElement.query(By.css('.p-splitter-gutter-handle'));
 
             testComponent.layout = 'horizontal';
@@ -686,12 +686,12 @@ describe('Splitter', () => {
             expect(handle.nativeElement.getAttribute('aria-orientation')).toBe('vertical');
         });
 
-        it.skip('should be keyboard navigable', () => {
+        it('should be keyboard navigable', () => {
             const handle = testFixture.debugElement.query(By.css('.p-splitter-gutter-handle'));
             expect(handle.nativeElement.getAttribute('tabindex')).toBe('0');
         });
 
-        it.skip('should update aria-valuenow during resize', async () => {
+        it('should update aria-valuenow during resize', async () => {
             const handle = testFixture.debugElement.query(By.css('.p-splitter-gutter-handle'));
 
             testComponent.panelSizes = [30, 70];
@@ -705,7 +705,7 @@ describe('Splitter', () => {
     });
 
     describe('Edge Cases', () => {
-        it.skip('should handle empty panelSizes array', async () => {
+        it('should handle empty panelSizes array', async () => {
             testComponent.panelSizes = [];
             testFixture.changeDetectorRef.markForCheck();
             await testFixture.whenStable();
@@ -714,7 +714,7 @@ describe('Splitter', () => {
             expect(splitterInstance._panelSizes).toBeDefined();
         });
 
-        it.skip('should handle invalid minSizes gracefully', async () => {
+        it('should handle invalid minSizes gracefully', async () => {
             testComponent.minSizes = [];
             testFixture.changeDetectorRef.markForCheck();
             await testFixture.whenStable();
@@ -723,7 +723,7 @@ describe('Splitter', () => {
             expect(splitterInstance.validateResize(50, 50)).toBe(true);
         });
 
-        it.skip('should handle rapid mouse events', () => {
+        it('should handle rapid mouse events', () => {
             const gutter = testFixture.debugElement.query(By.css('.p-splitter-gutter'));
             const mouseEvent1 = new MouseEvent('mousedown');
 
@@ -739,7 +739,7 @@ describe('Splitter', () => {
             splitterInstance.clear();
         });
 
-        it.skip('should handle resize with zero panel sizes', async () => {
+        it('should handle resize with zero panel sizes', async () => {
             testComponent.panelSizes = [0, 100];
             testFixture.changeDetectorRef.markForCheck();
             await testFixture.whenStable();
@@ -748,7 +748,7 @@ describe('Splitter', () => {
             expect(splitterInstance.validateResize(0, 100)).toBeTruthy();
         });
 
-        it.skip('should handle complex nested structure cleanup', () => {
+        it('should handle complex nested structure cleanup', () => {
             splitterInstance.dragging = true;
             splitterInstance.size = 100;
             splitterInstance.startPos = 50;
@@ -764,7 +764,7 @@ describe('Splitter', () => {
             expect(splitterInstance.nextPanelElement).toBeNull();
         });
 
-        it.skip('should handle invalid layout values', async () => {
+        it('should handle invalid layout values', async () => {
             testComponent.layout = 'invalid' as any;
             testFixture.changeDetectorRef.markForCheck();
             await testFixture.whenStable();
@@ -773,7 +773,7 @@ describe('Splitter', () => {
             expect(splitterInstance.horizontal()).toBe(false);
         });
 
-        it.skip('should handle resize validation properly', async () => {
+        it('should handle resize validation properly', async () => {
             testComponent.minSizes = [10, 10];
             testFixture.changeDetectorRef.markForCheck();
             await testFixture.whenStable();
@@ -783,7 +783,7 @@ describe('Splitter', () => {
             expect(splitterInstance.validateResize(5, 20)).toBe(false);
         });
 
-        it.skip('should prevent resize beyond boundaries', async () => {
+        it('should prevent resize beyond boundaries', async () => {
             testComponent.minSizes = [10, 10];
             testFixture.changeDetectorRef.markForCheck();
             await testFixture.whenStable();
@@ -794,7 +794,7 @@ describe('Splitter', () => {
             expect(isValid).toBe(false);
         });
 
-        it.skip('should work with different storage types', async () => {
+        it('should work with different storage types', async () => {
             testComponent.stateKey = 'test-key';
             testComponent.stateStorage = 'local';
             testFixture.changeDetectorRef.markForCheck();
@@ -807,7 +807,7 @@ describe('Splitter', () => {
     });
 
     describe('Memory Management', () => {
-        it.skip('should cleanup mouse listeners on destroy', () => {
+        it('should cleanup mouse listeners on destroy', () => {
             splitterInstance.bindMouseListeners();
 
             expect(splitterInstance.mouseMoveListener).toBeTruthy();
@@ -819,7 +819,7 @@ describe('Splitter', () => {
             expect(splitterInstance.mouseUpListener).toBeNull();
         });
 
-        it.skip('should cleanup touch listeners on destroy', () => {
+        it('should cleanup touch listeners on destroy', () => {
             splitterInstance.bindTouchListeners();
 
             expect(splitterInstance.touchMoveListener).toBeTruthy();
@@ -831,7 +831,7 @@ describe('Splitter', () => {
             expect(splitterInstance.touchEndListener).toBeNull();
         });
 
-        it.skip('should clear timers properly', () => {
+        it('should clear timers properly', () => {
             // Set a timer
             const event = new KeyboardEvent('keydown', { code: 'ArrowLeft' });
             splitterInstance.setTimer(event, 0, 5);
@@ -846,7 +846,7 @@ describe('Splitter', () => {
             expect(typeof timerBeforeClear).toBe('number');
         });
 
-        it.skip('should handle multiple timer clears', () => {
+        it('should handle multiple timer clears', () => {
             splitterInstance.timer = null as any;
 
             expect(() => {
@@ -866,7 +866,7 @@ describe('Splitter', () => {
             ptComponent = ptFixture.componentInstance;
         });
 
-        it.skip('should apply simple string classes to PT sections', async () => {
+        it('should apply simple string classes to PT sections', async () => {
             ptComponent.pt = {
                 host: 'HOST_CLASS',
                 root: 'ROOT_CLASS',
@@ -893,7 +893,7 @@ describe('Splitter', () => {
             expect(gutterHandle.nativeElement.className).toContain('GUTTER_HANDLE_CLASS');
         });
 
-        it.skip('should apply object-based PT options with class and attributes', async () => {
+        it('should apply object-based PT options with class and attributes', async () => {
             ptComponent.pt = {
                 root: {
                     class: 'ROOT_OBJECT_CLASS',
@@ -935,7 +935,7 @@ describe('Splitter', () => {
             expect(gutterHandle.nativeElement.getAttribute('aria-label')).toBe('HANDLE_ARIA_LABEL');
         });
 
-        it.skip('should apply mixed object and string PT values', async () => {
+        it('should apply mixed object and string PT values', async () => {
             ptComponent.pt = {
                 root: {
                     class: 'MIXED_ROOT_CLASS'
@@ -963,7 +963,7 @@ describe('Splitter', () => {
             expect(gutterHandle.nativeElement.className).toContain('MIXED_HANDLE_CLASS');
         });
 
-        it.skip('should use instance variables in PT functions', async () => {
+        it('should use instance variables in PT functions', async () => {
             ptSplitter = ptFixture.debugElement.query(By.directive(Splitter)).componentInstance;
             ptSplitter.layout = 'vertical';
             ptSplitter.dragging = true;
@@ -991,7 +991,7 @@ describe('Splitter', () => {
             expect(gutter.nativeElement.getAttribute('data-layout')).toBe('vertical');
         });
 
-        it.skip('should handle event binding in PT options', async () => {
+        it('should handle event binding in PT options', async () => {
             let clicked = false;
             ptComponent.pt = {
                 panel: {
@@ -1014,7 +1014,7 @@ describe('Splitter', () => {
             expect(clicked).toBe(true);
         });
 
-        it.skip('should apply PT options using setInput', async () => {
+        it('should apply PT options using setInput', async () => {
             ptFixture.componentRef.setInput('pt', {
                 root: 'SET_INPUT_CLASS',
                 gutter: { class: 'GUTTER_SET_INPUT' }

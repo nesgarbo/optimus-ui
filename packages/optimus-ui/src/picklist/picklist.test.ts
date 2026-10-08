@@ -205,7 +205,7 @@ describe('PickList', () => {
             };
 
             picklistComponent.onDrop(dragDropEvent, picklistComponent.TARGET_LIST);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(component.source.length).toBe(initialSourceCount - 1);
@@ -239,7 +239,7 @@ describe('PickList', () => {
             };
 
             picklistComponent.onDrop(dragDropEvent, picklistComponent.SOURCE_LIST);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(component.target.length).toBe(initialTargetCount - 1);
@@ -271,7 +271,7 @@ describe('PickList', () => {
             };
 
             picklistComponent.onDrop(dragDropEvent, picklistComponent.SOURCE_LIST);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             // After reordering: second item should be first, first item should be second
@@ -302,7 +302,7 @@ describe('PickList', () => {
             };
 
             picklistComponent.onDrop(dragDropEvent, picklistComponent.TARGET_LIST);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             // After reordering: second item should be first, first item should be second
@@ -336,7 +336,7 @@ describe('PickList', () => {
             };
 
             picklistComponent.onDrop(dragDropEvent, picklistComponent.SOURCE_LIST);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(component.source.length).toBe(1);
@@ -368,7 +368,7 @@ describe('PickList', () => {
             };
 
             picklistComponent.onDrop(dragDropEvent, picklistComponent.TARGET_LIST);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(component.target.length).toBe(1);
@@ -396,7 +396,7 @@ describe('PickList', () => {
                 sourceFilterInput.nativeElement.value = 'Item 1';
                 sourceFilterInput.nativeElement.dispatchEvent(new Event('input'));
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
             }
 
@@ -420,7 +420,7 @@ describe('PickList', () => {
             };
 
             picklistComponent.onDrop(dragDropEvent, picklistComponent.TARGET_LIST);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(component.target).toContain(itemToMove);
@@ -451,7 +451,7 @@ describe('PickList', () => {
             };
 
             picklistComponent.onDrop(dragDropEvent, picklistComponent.TARGET_LIST);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(component.target.length).toBe(targetListLength + 1);
@@ -488,7 +488,7 @@ describe('PickList', () => {
             };
 
             picklistComponent.onDrop(dragDropEvent, picklistComponent.TARGET_LIST);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             // Move second item from source to target
@@ -512,7 +512,7 @@ describe('PickList', () => {
             };
 
             picklistComponent.onDrop(dragDropEvent, picklistComponent.TARGET_LIST);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(picklistComponent.source()?.length).toBe(2);
@@ -544,7 +544,7 @@ describe('PickList', () => {
                 picklistComponent.onDrop(validDragDropEvent, picklistComponent.TARGET_LIST);
             }).not.toThrow();
 
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             // Arrays should be reasonable (might change based on implementation)
@@ -588,7 +588,7 @@ describe('PickList', () => {
             };
 
             picklistComponent.onDrop(dragDropEvent, picklistComponent.SOURCE_LIST);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             // Check that items were reordered
@@ -657,7 +657,7 @@ describe('PickList', () => {
 
             // Move item using arrow button (moveRight)
             picklistComponent.moveRight();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             // Verify item was moved
@@ -688,7 +688,7 @@ describe('PickList', () => {
             };
 
             picklistComponent.onDrop(dragDropEvent, picklistComponent.TARGET_LIST);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             // Verify drag&drop worked correctly after arrow button transfer
@@ -708,7 +708,7 @@ describe('PickList', () => {
 
             // Move item using arrow button (moveLeft)
             picklistComponent.moveLeft();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -740,7 +740,7 @@ describe('PickList', () => {
             };
 
             picklistComponent.onDrop(dragDropEvent, picklistComponent.SOURCE_LIST);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -754,7 +754,7 @@ describe('PickList', () => {
         it('should allow drag&drop after moveAllRight', async () => {
             // Move all items to target
             picklistComponent.moveAllRight();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -784,7 +784,7 @@ describe('PickList', () => {
             };
 
             picklistComponent.onDrop(dragDropEvent, picklistComponent.SOURCE_LIST);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -798,7 +798,7 @@ describe('PickList', () => {
         it('should allow drag&drop after moveAllLeft', async () => {
             // Move all items to source
             picklistComponent.moveAllLeft();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -828,7 +828,7 @@ describe('PickList', () => {
             };
 
             picklistComponent.onDrop(dragDropEvent, picklistComponent.TARGET_LIST);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -868,7 +868,7 @@ describe('PickList', () => {
             };
 
             picklistComponent.onDrop(dragDropEvent, picklistComponent.TARGET_LIST);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -890,7 +890,7 @@ describe('PickList', () => {
             const itemsToMoveFirst = [picklistComponent.source()[0], picklistComponent.source()[1]];
             picklistComponent.selectedItemsSource = itemsToMoveFirst;
             picklistComponent.moveRight();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -920,7 +920,7 @@ describe('PickList', () => {
             };
 
             picklistComponent.onDrop(dragDropEvent, picklistComponent.SOURCE_LIST);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -964,7 +964,7 @@ describe('PickList', () => {
             };
 
             picklistComponent.onDrop(dragDropEvent, picklistComponent.TARGET_LIST);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -1013,7 +1013,7 @@ describe('PickList', () => {
             };
 
             picklistComponent.onDrop(dragDropEvent, picklistComponent.TARGET_LIST);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -1049,7 +1049,7 @@ describe('PickList', () => {
             };
 
             picklistComponent.onDrop(dragDropEvent, picklistComponent.TARGET_LIST);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -1090,7 +1090,7 @@ describe('PickList', () => {
             };
 
             picklistComponent.onDrop(dragDropEvent, picklistComponent.TARGET_LIST);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             fixture.detectChanges();
 
@@ -1250,7 +1250,7 @@ describe('PickList', () => {
                     pcSourceMoveUpButton: { root: { class: 'CUSTOM_BUTTON_CLASS' } }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const buttons = ptFixture.debugElement.queryAll(By.css('button[pbutton]'));
@@ -1263,7 +1263,7 @@ describe('PickList', () => {
                     pcListbox: { host: { class: 'CUSTOM_LISTBOX_CLASS' } }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const listboxes = ptFixture.debugElement.queryAll(By.css('p-listbox'));
@@ -1405,12 +1405,12 @@ describe('PickList', () => {
                     }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const sourceControlsEl = ptFixture.debugElement.query(By.css('[class*="p-picklist-source-controls"]'));
                 sourceControlsEl?.nativeElement.click();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 expect(clickedFromPT).toBe(true);
@@ -1426,12 +1426,12 @@ describe('PickList', () => {
                     }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const transferControlsEl = ptFixture.debugElement.query(By.css('[class*="p-picklist-transfer-controls"]'));
                 transferControlsEl?.nativeElement.click();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 expect(transferClicked).toBe(true);
@@ -1472,7 +1472,7 @@ describe('PickList', () => {
                     pcSourceMoveBottomButton: { root: { class: 'MOVE_BOTTOM_CLASS' } }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const buttons = ptFixture.debugElement.queryAll(By.css('button[pbutton]'));
@@ -1487,7 +1487,7 @@ describe('PickList', () => {
                     pcMoveAllToSourceButton: { root: { class: 'ALL_TO_SOURCE_CLASS' } }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const buttons = ptFixture.debugElement.queryAll(By.css('button[pbutton]'));
@@ -1503,7 +1503,7 @@ describe('PickList', () => {
                     pcTargetMoveBottomButton: { root: { class: 'TARGET_BOTTOM_CLASS' } }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const buttons = ptFixture.debugElement.queryAll(By.css('button[pbutton]'));
@@ -1524,7 +1524,7 @@ describe('PickList', () => {
                     }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const sourceControlsEl = ptFixture.debugElement.query(By.css('[class*="p-picklist-source-controls"]'));
@@ -1545,7 +1545,7 @@ describe('PickList', () => {
                     }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 // host is the component's root element
@@ -1565,7 +1565,7 @@ describe('PickList', () => {
                     }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 // host is the component's root element
@@ -1583,7 +1583,7 @@ describe('PickList', () => {
                     }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const containerEl = ptFixture.debugElement.query(By.css('.p-picklist-source-controls + div'));
@@ -1602,7 +1602,7 @@ describe('PickList', () => {
                     }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const picklistDivs = ptFixture.debugElement.queryAll(By.css('[class*="p-picklist"]'));
@@ -1624,7 +1624,7 @@ describe('PickList', () => {
                     }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const transferControlsEl = ptFixture.debugElement.query(By.css('[class*="p-picklist-transfer-controls"]'));
@@ -1645,7 +1645,7 @@ describe('PickList', () => {
                     }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const transferControlsEl = ptFixture.debugElement.query(By.css('[class*="p-picklist-transfer-controls"]'));
@@ -1664,7 +1664,7 @@ describe('PickList', () => {
                     }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 // In standalone picklist, $pcPickList should be undefined
@@ -1688,7 +1688,7 @@ describe('PickList', () => {
                     }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const sourceControlsEl = ptFixture.debugElement.query(By.css('[class*="p-picklist-source-controls"]'));
@@ -1707,7 +1707,7 @@ describe('PickList', () => {
                     }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const listboxes = ptFixture.debugElement.queryAll(By.css('p-listbox'));
@@ -1724,7 +1724,7 @@ describe('PickList', () => {
                     }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const listboxes = ptFixture.debugElement.queryAll(By.css('p-listbox'));
@@ -1738,7 +1738,7 @@ describe('PickList', () => {
                     }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const listboxes = ptFixture.debugElement.queryAll(By.css('p-listbox'));
@@ -1752,7 +1752,7 @@ describe('PickList', () => {
                     }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const listboxes = ptFixture.debugElement.queryAll(By.css('p-listbox'));
@@ -1769,7 +1769,7 @@ describe('PickList', () => {
                     }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const listboxes = ptFixture.debugElement.queryAll(By.css('p-listbox'));
@@ -1790,7 +1790,7 @@ describe('PickList', () => {
                 });
                 ptPicklist.disabled = true;
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const listboxes = ptFixture.debugElement.queryAll(By.css('p-listbox'));
@@ -1807,7 +1807,7 @@ describe('PickList', () => {
                     }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const listboxes = ptFixture.debugElement.queryAll(By.css('p-listbox'));
@@ -1826,7 +1826,7 @@ describe('PickList', () => {
                     }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const listboxes = ptFixture.debugElement.queryAll(By.css('p-listbox'));
@@ -1846,7 +1846,7 @@ describe('PickList', () => {
                     }
                 });
                 ptFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await ptFixture.whenStable();
 
                 const listboxes = ptFixture.debugElement.queryAll(By.css('p-listbox'));

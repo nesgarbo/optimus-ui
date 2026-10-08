@@ -259,11 +259,8 @@ describe('ProgressBar', () => {
             await fixture.whenStable();
 
             const labelElement = fixture.debugElement.query(By.css('[data-pc-section="label"] > div'));
-            if (labelElement) {
-                expect(labelElement.nativeElement.style.display).toBe('none');
-            } else {
-                expect(true).toBe(true); // Label element doesn't exist when value is 0, which is expected
-            }
+            // With a value of 0 the label is either not rendered or rendered hidden.
+            expect(labelElement?.nativeElement.style.display ?? 'none').toBe('none');
         });
     });
 

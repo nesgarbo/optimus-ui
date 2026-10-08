@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ViewChild, provideZonelessChangeDetection } from '@angular/core';
+import { ChangeDetectionStrategy, Component, TemplateRef, ViewChild, provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
@@ -3249,6 +3249,23 @@ class TestDynamicTreeTableComponent {
         this.treetable.showGridlines = show;
     }
 }
+@Component({
+    changeDetection: ChangeDetectionStrategy.Eager,
+    template: `<ng-template #tpl><span>template</span></ng-template>`
+})
+class TemplateSourceComponent {
+    @ViewChild('tpl', { static: true }) tpl!: TemplateRef<any>;
+}
+
+/** A real TemplateRef, to give to a component that renders one of its templates. */
+function realTemplate(): TemplateRef<any> {
+    const source = TestBed.createComponent(TemplateSourceComponent);
+
+    source.detectChanges();
+
+    return source.componentInstance.tpl;
+}
+
 describe('TreeTable PT', () => {
     let fixture: ComponentFixture<TreeTable>;
     let treetable: TreeTable;
@@ -3344,25 +3361,9 @@ describe('TreeTable PT', () => {
             expect(tfoot?.classList.contains('TFOOT_CLASS')).toBe(true);
         });
 
-        it.skip('should apply string class to header', async () => {
+        it('should apply string class to header', async () => {
             fixture.componentRef.setInput('pt', { header: 'HEADER_CLASS' });
-            // Create a mock TemplateRef with proper EmbeddedViewRef
-            const mockViewRef = {
-                rootNodes: [],
-                destroy: () => {},
-                destroyed: false,
-                onDestroy: () => {},
-                context: {},
-                markForCheck: () => {},
-                detach: () => {},
-                detectChanges: () => {},
-                checkNoChanges: () => {},
-                reattach: () => {}
-            };
-            treetable.captionTemplate = {
-                createEmbeddedView: () => mockViewRef as any,
-                elementRef: null
-            } as any;
+            treetable.captionTemplate = realTemplate();
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
@@ -3371,25 +3372,9 @@ describe('TreeTable PT', () => {
             expect(header?.classList.contains('HEADER_CLASS')).toBe(true);
         });
 
-        it.skip('should apply string class to footer', async () => {
+        it('should apply string class to footer', async () => {
             fixture.componentRef.setInput('pt', { footer: 'FOOTER_CLASS' });
-            // Create a mock TemplateRef with proper EmbeddedViewRef
-            const mockViewRef = {
-                rootNodes: [],
-                destroy: () => {},
-                destroyed: false,
-                onDestroy: () => {},
-                context: {},
-                markForCheck: () => {},
-                detach: () => {},
-                detectChanges: () => {},
-                checkNoChanges: () => {},
-                reattach: () => {}
-            };
-            treetable.summaryTemplate = {
-                createEmbeddedView: () => mockViewRef as any,
-                elementRef: null
-            } as any;
+            treetable.summaryTemplate = realTemplate();
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
@@ -3460,17 +3445,15 @@ describe('TreeTable PT', () => {
 
     // Case 3: Mixed object and string values
     describe('Case 3: Mixed object and string values', () => {
-        it.skip('should apply mixed PT values', async () => {
+        it('should apply mixed PT values', async () => {
             fixture.componentRef.setInput('scrollable', true);
             fixture.componentRef.setInput('scrollHeight', '200px');
             fixture.componentRef.setInput('pt', {
                 host: {
-                    class: 'HOST_MIXED_CLASS'
+                    class: 'HOST_MIXED_CLASS',
+                    style: { 'background-color': 'red' }
                 },
-                scrollableWrapper: 'WRAPPER_STRING_CLASS',
-                table: {
-                    style: { width: '100%' }
-                }
+                scrollableWrapper: 'WRAPPER_STRING_CLASS'
             });
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
@@ -3478,11 +3461,9 @@ describe('TreeTable PT', () => {
 
             const host = fixture.nativeElement;
             const wrapper = fixture.nativeElement.querySelector('.p-treetable-scrollable-wrapper');
-            const table = fixture.nativeElement.querySelector('table');
-
             expect(host.classList.contains('HOST_MIXED_CLASS')).toBe(true);
             expect(wrapper?.classList.contains('WRAPPER_STRING_CLASS')).toBe(true);
-            expect(table?.style.width).toBe('100%');
+            expect(host.style.backgroundColor).toBe('red');
         });
     });
 
@@ -3606,7 +3587,7 @@ describe('TreeTable PT', () => {
 
     // Case 7: Test with scrollable mode
     describe('Scrollable mode PT', () => {
-        it.skip('should apply PT to scrollable elements', async () => {
+        it('should apply PT to scrollable elements', async () => {
             fixture.componentRef.setInput('scrollable', true);
             fixture.componentRef.setInput('scrollHeight', '400px');
             fixture.componentRef.setInput('pt', {
@@ -3628,7 +3609,7 @@ describe('TreeTable PT', () => {
             expect(scrollableBody?.classList.contains('SCROLLABLE_BODY_CLASS')).toBe(true);
         });
 
-        it.skip('should apply PT to scrollable header table', async () => {
+        it('should apply PT to scrollable header table', async () => {
             fixture.componentRef.setInput('scrollable', true);
             fixture.componentRef.setInput('pt', {
                 scrollableHeaderTable: 'SCROLLABLE_HEADER_TABLE_CLASS',
@@ -3645,25 +3626,9 @@ describe('TreeTable PT', () => {
             expect(headerBox?.classList.contains('SCROLLABLE_HEADER_BOX_CLASS')).toBe(true);
         });
 
-        it.skip('should apply PT to scrollable footer elements', async () => {
+        it('should apply PT to scrollable footer elements', async () => {
             fixture.componentRef.setInput('scrollable', true);
-            // Create a mock TemplateRef with proper EmbeddedViewRef
-            const mockViewRef = {
-                rootNodes: [],
-                destroy: () => {},
-                destroyed: false,
-                onDestroy: () => {},
-                context: {},
-                markForCheck: () => {},
-                detach: () => {},
-                detectChanges: () => {},
-                checkNoChanges: () => {},
-                reattach: () => {}
-            };
-            treetable.footerTemplate = {
-                createEmbeddedView: () => mockViewRef as any,
-                elementRef: null
-            } as any;
+            treetable.footerTemplate = realTemplate();
             fixture.componentRef.setInput('pt', {
                 scrollableFooter: 'SCROLLABLE_FOOTER_CLASS',
                 scrollableFooterBox: 'SCROLLABLE_FOOTER_BOX_CLASS',
@@ -3722,27 +3687,28 @@ describe('TreeTable PT', () => {
 
     // Case 10: Test PT hooks
     describe('Case 10: PT Hooks', () => {
-        it.skip('should execute onAfterViewInit hook', async () => {
-            let hookCalled = false;
+        it('should execute onAfterViewInit hook', async () => {
+            const hooks: string[] = [];
+            const created = TestBed.createComponent(TreeTable);
 
-            await new Promise<void>((resolve) => {
-                fixture.componentRef.setInput('pt', {
-                    host: 'TEST_CLASS',
-                    hooks: {
-                        onAfterContentInit: () => {
-                            hookCalled = true;
-                            resolve();
-                        }
+            created.componentRef.setInput('pt', {
+                host: 'TEST_CLASS',
+                hooks: {
+                    // A hook has to return nothing: the PT resolver calls it to read its value and then calls what it got back.
+                    onAfterContentInit: () => {
+                        hooks.push('onAfterContentInit');
+                    },
+                    onAfterViewInit: () => {
+                        hooks.push('onAfterViewInit');
                     }
-                });
-                fixture.changeDetectorRef.markForCheck();
-                fixture.detectChanges();
+                }
             });
-            await fixture.whenStable();
+            // The hooks run during the first check, so they have to be in place before it.
+            created.detectChanges();
+            await created.whenStable();
 
-            setTimeout(() => {
-                expect(hookCalled).toBe(true);
-            }, 100);
+            expect(hooks).toEqual(expect.arrayContaining(['onAfterContentInit', 'onAfterViewInit']));
+            expect(created.nativeElement.classList.contains('TEST_CLASS')).toBe(true);
         });
     });
 });
@@ -3784,7 +3750,7 @@ describe('TreeTable Global PT', () => {
         expect(wrapper?.classList.contains('GLOBAL_WRAPPER_CLASS')).toBe(true);
     });
 
-    it.skip('should merge local PT with global PT', async () => {
+    it('should merge local PT with global PT', async () => {
         fixture.componentRef.setInput('pt', {
             host: 'LOCAL_HOST_CLASS',
             scrollableWrapper: 'LOCAL_WRAPPER_CLASS'
@@ -3798,8 +3764,9 @@ describe('TreeTable Global PT', () => {
 
         expect(host.getAttribute('aria-label')).toBe('GLOBAL_ARIA_LABEL');
         expect(host.classList.contains('LOCAL_HOST_CLASS')).toBe(true);
-        expect(wrapper?.classList.contains('GLOBAL_WRAPPER_CLASS')).toBe(true);
+        // A section the local PT gives as a string replaces the string of the global one; the sections it does not name stay.
         expect(wrapper?.classList.contains('LOCAL_WRAPPER_CLASS')).toBe(true);
+        expect(wrapper?.classList.contains('GLOBAL_WRAPPER_CLASS')).toBe(false);
     });
 });
 

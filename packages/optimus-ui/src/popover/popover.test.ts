@@ -214,7 +214,7 @@ describe('Popover', () => {
             const target = component.targetButton.nativeElement;
 
             popoverInstance.show(mockEvent, target);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(popoverInstance.overlayVisible).toBe(true);
@@ -227,7 +227,7 @@ describe('Popover', () => {
             const target = component.targetButton.nativeElement;
 
             popoverInstance.show(mockEvent, target);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             popoverInstance.hide();
@@ -242,12 +242,12 @@ describe('Popover', () => {
             expect(popoverInstance.overlayVisible).toBe(false);
 
             popoverInstance.toggle(mockEvent, target);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             expect(popoverInstance.overlayVisible).toBe(true);
 
             popoverInstance.toggle(mockEvent, target);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
             expect(popoverInstance.overlayVisible).toBe(false);
         });
@@ -273,7 +273,7 @@ describe('Popover', () => {
             const target2 = document.createElement('button');
 
             popoverInstance.show(mockEvent, target1);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             vi.spyOn(popoverInstance, 'hasTargetChanged').mockReturnValue(true);
@@ -301,7 +301,7 @@ describe('Popover', () => {
             const target = component.targetButton.nativeElement;
 
             popoverInstance.show(mockEvent, target);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             // Simulate animation start
@@ -317,7 +317,7 @@ describe('Popover', () => {
             const target = component.targetButton.nativeElement;
 
             popoverInstance.show(mockEvent, target);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             popoverInstance.hide();
@@ -348,7 +348,7 @@ describe('Popover', () => {
                 const target = component.targetButton.nativeElement;
 
                 popoverInstance.show(mockEvent, target);
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
 
                 expect(popoverInstance.contentTemplate).toBeTruthy();
@@ -359,7 +359,7 @@ describe('Popover', () => {
                 const target = component.targetButton.nativeElement;
 
                 popoverInstance.show(mockEvent, target);
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
 
                 // Simulate animation start to render template
@@ -404,7 +404,7 @@ describe('Popover', () => {
                 const target = component.targetButton.nativeElement;
 
                 popoverInstance.show(mockEvent, target);
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await fixture.whenStable();
 
                 // Simulate animation start to render template
@@ -440,7 +440,7 @@ describe('Popover', () => {
             await fixture.whenStable();
 
             popoverInstance.show(mockEvent, target);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             // Simulate animation start
@@ -462,7 +462,7 @@ describe('Popover', () => {
             const target = component.targetButton.nativeElement;
 
             popoverInstance.show(mockEvent, target);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             // Create container and set up focus test
@@ -485,7 +485,7 @@ describe('Popover', () => {
             const target = component.targetButton.nativeElement;
 
             popoverInstance.show(mockEvent, target);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             const escapeEvent = new KeyboardEvent('keydown', { key: 'Escape' });
@@ -516,7 +516,7 @@ describe('Popover', () => {
             const target = component.targetButton.nativeElement;
 
             popoverInstance.show(mockEvent, target);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             // Simulate animation start
@@ -539,7 +539,7 @@ describe('Popover', () => {
             const target = component.targetButton.nativeElement;
 
             popoverInstance.show(mockEvent, target);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             // Simulate animation start
@@ -595,13 +595,13 @@ describe('Popover', () => {
             expect(() => {
                 popoverInstance.show(mockEvent, null);
             }).not.toThrow();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(() => {
                 popoverInstance.show(mockEvent, undefined);
             }).not.toThrow();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
         });
 
@@ -610,7 +610,7 @@ describe('Popover', () => {
             const target = component.targetButton.nativeElement;
 
             popoverInstance.show(mockEvent, target);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             // Test animation start
@@ -659,7 +659,7 @@ describe('Popover', () => {
             // Since animation event is commented out, bindDocumentClickListener won't be called
             // Test that show method at least sets the overlay visible
             popoverInstance.show(mockEvent, target);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             // In zoneless mode without animation events, just verify the show worked
@@ -683,7 +683,7 @@ describe('Popover', () => {
             const target = component.targetButton.nativeElement;
 
             popoverInstance.show(mockEvent, target);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             popoverInstance.onWindowResize();

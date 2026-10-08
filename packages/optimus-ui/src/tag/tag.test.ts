@@ -376,7 +376,7 @@ describe('Tag', () => {
         it('should handle #icon template processing', async () => {
             const iconTemplateFixture = TestBed.createComponent(TestIconTemplateTagComponent);
             iconTemplateFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await iconTemplateFixture.whenStable();
 
             const iconTemplateTag = iconTemplateFixture.debugElement.query(By.directive(Tag)).componentInstance;
@@ -397,7 +397,7 @@ describe('Tag', () => {
         it('should handle pTemplate icon processing', async () => {
             const pTemplateFixture = TestBed.createComponent(TestPTemplateTagComponent);
             pTemplateFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await pTemplateFixture.whenStable();
 
             const pTemplateTag = pTemplateFixture.debugElement.query(By.directive(Tag)).componentInstance;
@@ -418,7 +418,7 @@ describe('Tag', () => {
         it('should render #icon template correctly', async () => {
             const iconTemplateFixture = TestBed.createComponent(TestIconTemplateTagComponent);
             iconTemplateFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await iconTemplateFixture.whenStable();
 
             const customIcon = iconTemplateFixture.debugElement.query(By.css('.custom-icon'));
@@ -435,7 +435,7 @@ describe('Tag', () => {
         it('should render pTemplate icon correctly', async () => {
             const pTemplateFixture = TestBed.createComponent(TestPTemplateTagComponent);
             pTemplateFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await pTemplateFixture.whenStable();
 
             const pTemplateIcon = pTemplateFixture.debugElement.query(By.css('.p-template-icon'));
@@ -452,7 +452,7 @@ describe('Tag', () => {
         it('should prioritize iconTemplate over _iconTemplate', async () => {
             const multipleFixture = TestBed.createComponent(TestMultipleIconTemplatesComponent);
             multipleFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await multipleFixture.whenStable();
 
             const multipleTag = multipleFixture.debugElement.query(By.directive(Tag)).componentInstance;
@@ -482,7 +482,7 @@ describe('Tag', () => {
         it('should pass correct template context', async () => {
             const iconTemplateFixture = TestBed.createComponent(TestIconTemplateTagComponent);
             iconTemplateFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await iconTemplateFixture.whenStable();
 
             const iconTemplateTag = iconTemplateFixture.debugElement.query(By.directive(Tag)).componentInstance;
@@ -497,7 +497,7 @@ describe('Tag', () => {
         it('should update template when component state changes', async () => {
             const pTemplateFixture = TestBed.createComponent(TestPTemplateTagComponent);
             pTemplateFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await pTemplateFixture.whenStable();
 
             const pTemplateTag = pTemplateFixture.debugElement.query(By.directive(Tag)).componentInstance;
@@ -505,7 +505,7 @@ describe('Tag', () => {
             // Change component properties
             pTemplateTag.value = 'Updated Template Tag';
             pTemplateFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await pTemplateFixture.whenStable();
 
             // Template should still be processed correctly
@@ -782,7 +782,7 @@ describe('Tag', () => {
         it('should process templates in ngAfterContentInit', async () => {
             const pTemplateFixture = TestBed.createComponent(TestPTemplateTagComponent);
             pTemplateFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await pTemplateFixture.whenStable();
 
             const pTemplateTag = pTemplateFixture.debugElement.query(By.directive(Tag)).componentInstance;
@@ -795,7 +795,7 @@ describe('Tag', () => {
         it('should set _iconTemplate when processing PrimeTemplate', async () => {
             const pTemplateFixture = TestBed.createComponent(TestPTemplateTagComponent);
             pTemplateFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await pTemplateFixture.whenStable();
 
             const pTemplateTag = pTemplateFixture.debugElement.query(By.directive(Tag)).componentInstance;
@@ -812,7 +812,7 @@ describe('Tag', () => {
         it('should handle templates without icon type', async () => {
             const basicFixture = TestBed.createComponent(TestBasicTagComponent);
             basicFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await basicFixture.whenStable();
 
             const basicTag = basicFixture.debugElement.query(By.directive(Tag)).componentInstance;
@@ -1053,7 +1053,7 @@ describe('Tag', () => {
 
             // Check if _iconTemplate is set after processing
             pTemplateTag.ngAfterContentInit();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await pTemplateFixture.whenStable();
 
             // Template processing should work without errors
@@ -1379,7 +1379,7 @@ describe('Tag', () => {
                     }
                 });
                 hookFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await hookFixture.whenStable();
 
                 expect(hookCalled).toBe(true);
@@ -1397,7 +1397,7 @@ describe('Tag', () => {
                     }
                 });
                 hookFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await hookFixture.whenStable();
 
                 expect(hookCalled).toBe(true);
@@ -1415,7 +1415,7 @@ describe('Tag', () => {
                     }
                 });
                 hookFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await hookFixture.whenStable();
 
                 expect(hookCalled).toBe(true);
@@ -1433,7 +1433,7 @@ describe('Tag', () => {
                     }
                 });
                 hookFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await hookFixture.whenStable();
 
                 hookFixture.destroy();

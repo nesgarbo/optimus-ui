@@ -792,15 +792,16 @@ describe('Divider', () => {
         });
 
         it('should handle rapid creation and destruction', async () => {
-            for (let i = 0; i < 5; i++) {
-                const testFixture = TestBed.createComponent(TestCustomDividerComponent);
-                testFixture.changeDetectorRef.markForCheck();
-                await testFixture.whenStable();
-                testFixture.destroy();
-            }
-
-            // If we got here without errors, the test passes
-            expect(true).toBe(true);
+            await expect(
+                (async () => {
+                    for (let i = 0; i < 5; i++) {
+                        const testFixture = TestBed.createComponent(TestCustomDividerComponent);
+                        testFixture.changeDetectorRef.markForCheck();
+                        await testFixture.whenStable();
+                        testFixture.destroy();
+                    }
+                })()
+            ).resolves.toBeUndefined();
         });
     });
 

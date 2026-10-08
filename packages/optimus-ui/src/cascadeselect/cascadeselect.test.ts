@@ -2014,51 +2014,6 @@ describe('CascadeSelect', () => {
         });
 
         describe('Case 9: Test getPTOptions method', () => {
-            it('should call getPTOptions with correct context', async () => {
-                ptFixture.componentRef.setInput('pt', {
-                    option: ({ context }) => {
-                        if (context && context.option) {
-                            expect(context.option).toBeDefined();
-                            expect(context.index).toBeDefined();
-                            expect(context.level).toBeDefined();
-                        }
-                        return {
-                            class: 'CONTEXT_OPTION_CLASS'
-                        };
-                    }
-                });
-                await ptFixture.whenStable();
-
-                ptComponent.show();
-                await ptFixture.whenStable();
-                await new Promise((resolve) => setTimeout(resolve, 0));
-
-                // Context may or may not be called based on rendering, just verify test completes
-                expect(true).toBe(true);
-            });
-
-            it('should pass correct context properties to getPTOptions', async () => {
-                let capturedContext: any;
-                ptFixture.componentRef.setInput('pt', {
-                    option: ({ context }) => {
-                        if (context && context.option) {
-                            capturedContext = context;
-                        }
-                        return {
-                            class: 'OPTION_CONTEXT_CLASS'
-                        };
-                    }
-                });
-                await ptFixture.whenStable();
-
-                ptComponent.show();
-                await ptFixture.whenStable();
-                await new Promise((resolve) => setTimeout(resolve, 0));
-
-                // Context may not be captured if options aren't rendered
-                expect(true).toBe(true);
-            });
-
             it('should handle getPTOptions with different option states', async () => {
                 ptFixture.componentRef.setInput('pt', {
                     option: ({ context }) => {

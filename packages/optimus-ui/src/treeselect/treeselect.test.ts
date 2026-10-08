@@ -864,11 +864,8 @@ describe('TreeSelect', () => {
             expect(treeSelectInstance.showClear).toBe(true);
 
             // Verify clear icon is available when showClear is true and value exists
-            if (treeSelectInstance.checkValue && treeSelectInstance.checkValue()) {
-                expect(true).toBe(true); // Clear functionality is configured
-            } else {
-                expect(treeSelectInstance.showClear).toBe(true); // At least verify showClear is set
-            }
+            expect(treeSelectInstance.checkValue()).toBe(true);
+            expect(testFixture.nativeElement.querySelector('.p-treeselect-clear-icon')).toBeTruthy();
         });
 
         it('should emit onFocus event', () => {

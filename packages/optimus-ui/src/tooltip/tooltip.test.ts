@@ -204,7 +204,7 @@ describe('Tooltip', () => {
             fixture.detectChanges();
 
             tooltipDirective.activate();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(tooltipDirective.container).toBeFalsy();
@@ -217,7 +217,7 @@ describe('Tooltip', () => {
             fixture.detectChanges();
 
             tooltipDirective.activate();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(tooltipDirective.container).toBeFalsy();
@@ -805,7 +805,7 @@ describe('Tooltip', () => {
             fixture.detectChanges();
 
             tooltipDirective.activate();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             const tooltipContainer = document.querySelector('.p-tooltip');
@@ -825,7 +825,7 @@ describe('Tooltip', () => {
             fixture.detectChanges();
 
             tooltipDirective.activate();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             const tooltipContainer = document.querySelector('.p-tooltip');
@@ -854,7 +854,7 @@ describe('Tooltip', () => {
             fixture.detectChanges();
 
             tooltipDirective.activate();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             const tooltipContainer = document.querySelector('.p-tooltip') as HTMLElement;
@@ -884,7 +884,7 @@ describe('Tooltip', () => {
             fixture.detectChanges();
 
             tooltipDirective.activate();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             const tooltipContainer = document.querySelector('.p-tooltip') as HTMLElement;
@@ -912,7 +912,7 @@ describe('Tooltip', () => {
             fixture.detectChanges();
 
             tooltipDirective.activate();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             const tooltipContainer = document.querySelector('.p-tooltip');
@@ -939,7 +939,7 @@ describe('Tooltip', () => {
             fixture.detectChanges();
 
             tooltipDirective.activate();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             const tooltipContainer = document.querySelector('.p-tooltip') as HTMLElement;
@@ -959,11 +959,11 @@ describe('Tooltip', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             tooltipDirective.activate();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             const container = document.querySelector('.p-tooltip');
@@ -988,7 +988,7 @@ describe('Tooltip', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(container?.hasAttribute('data-test')).toBeFalsy();

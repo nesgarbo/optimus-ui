@@ -1464,14 +1464,13 @@ describe('AutoComplete', () => {
             inputElement.nativeElement.value = 'Item';
             inputElement.nativeElement.dispatchEvent(new Event('input'));
             await testFixture.whenStable();
+            testFixture.debugElement.query(By.directive(AutoComplete)).componentInstance.show();
+            testFixture.detectChanges();
+            await testFixture.whenStable();
 
             const listElement = testFixture.debugElement.query(By.css('ul[role="listbox"]'));
-            if (listElement) {
-                expect(listElement.nativeElement.getAttribute('role')).toBe('listbox');
-            } else {
-                // Even if list element is not found, test should have an expectation
-                expect(true).toBe(true);
-            }
+            expect(listElement).toBeTruthy();
+            expect(listElement.nativeElement.getAttribute('role')).toBe('listbox');
         });
 
         it('should support keyboard navigation', () => {

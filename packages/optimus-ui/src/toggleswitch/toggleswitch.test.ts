@@ -187,7 +187,7 @@ describe('ToggleSwitch', () => {
             formTestFixture.changeDetectorRef.markForCheck();
             await formTestFixture.whenStable();
             formTestFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await formTestFixture.whenStable();
 
             expect(formTestComponent.form.value.toggleValue).toBe(true);
@@ -200,7 +200,7 @@ describe('ToggleSwitch', () => {
             formTestFixture.changeDetectorRef.markForCheck();
             await formTestFixture.whenStable();
             formTestFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await formTestFixture.whenStable();
 
             expect(formTestComponent.form.valid).toBe(true);
@@ -211,14 +211,14 @@ describe('ToggleSwitch', () => {
             formTestFixture.changeDetectorRef.markForCheck();
             await formTestFixture.whenStable();
             formTestFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await formTestFixture.whenStable();
 
             formTestComponent.form.reset();
             formTestFixture.changeDetectorRef.markForCheck();
             await formTestFixture.whenStable();
             formTestFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await formTestFixture.whenStable();
 
             expect(formTestComponent.form.pristine).toBe(true);
@@ -229,7 +229,7 @@ describe('ToggleSwitch', () => {
             formTestFixture.changeDetectorRef.markForCheck();
             await formTestFixture.whenStable();
             formTestFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await formTestFixture.whenStable();
 
             expect(formTestComponent.form.get('toggleValue')?.disabled).toBe(true);
@@ -275,7 +275,7 @@ describe('ToggleSwitch', () => {
             templateTestFixture.changeDetectorRef.markForCheck();
             await templateTestFixture.whenStable();
             templateTestFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await templateTestFixture.whenStable();
 
             expect(templateTestComponent.checked).toBe(true);
@@ -308,7 +308,7 @@ describe('ToggleSwitch', () => {
             // Since DOM interaction and event emission may not work in test environment,
             // we'll trigger the component's onChange method directly
             testComponent.onToggleChange({ originalEvent: new Event('click'), checked: true });
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await testFixture.whenStable();
 
             expect(testComponent.onToggleChange).toHaveBeenCalledWith({ originalEvent: expect.any(Event), checked: true });
@@ -323,7 +323,7 @@ describe('ToggleSwitch', () => {
             // Create and trigger the event directly
             const mockEvent = { originalEvent: new Event('click'), checked: true };
             testComponent.onToggleChange(mockEvent);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await testFixture.whenStable();
 
             expect(emittedEvent).toBeDefined();
@@ -337,7 +337,7 @@ describe('ToggleSwitch', () => {
 
             if (input) {
                 input.nativeElement.dispatchEvent(new KeyboardEvent('keydown', { key: ' ' }));
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
                 await testFixture.whenStable();
                 expect(input).toBeTruthy();
             } else {
@@ -778,7 +778,7 @@ describe('ToggleSwitch pTemplate Tests', () => {
         fixture.changeDetectorRef.markForCheck();
         await fixture.whenStable();
         fixture.detectChanges();
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 10));
         await fixture.whenStable();
 
         // Verify that the toggle switch component is working with the value
@@ -792,7 +792,7 @@ describe('ToggleSwitch pTemplate Tests', () => {
         fixture.changeDetectorRef.markForCheck();
         await fixture.whenStable();
         fixture.detectChanges();
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 10));
         await fixture.whenStable();
 
         expect(toggleSwitchInstance.checked()).toBe(true);
@@ -808,7 +808,7 @@ describe('ToggleSwitch pTemplate Tests', () => {
         fixture.changeDetectorRef.markForCheck();
         await fixture.whenStable();
         fixture.detectChanges();
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 10));
         await fixture.whenStable();
 
         expect(toggleSwitchInstance.checked()).toBe(true);
@@ -819,7 +819,7 @@ describe('ToggleSwitch pTemplate Tests', () => {
         fixture.changeDetectorRef.markForCheck();
         await fixture.whenStable();
         fixture.detectChanges();
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 10));
         await fixture.whenStable();
 
         // Verify that the toggle switch component works correctly
@@ -833,7 +833,7 @@ describe('ToggleSwitch pTemplate Tests', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             // Verify that ngAfterContentInit is called correctly
@@ -872,7 +872,7 @@ describe('ToggleSwitch #template Reference Tests', () => {
         fixture.changeDetectorRef.markForCheck();
         await fixture.whenStable();
         fixture.detectChanges();
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 10));
         await fixture.whenStable();
 
         // Verify that the toggle switch component is working with the value
@@ -886,7 +886,7 @@ describe('ToggleSwitch #template Reference Tests', () => {
         fixture.changeDetectorRef.markForCheck();
         await fixture.whenStable();
         fixture.detectChanges();
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 10));
         await fixture.whenStable();
 
         expect(toggleSwitchInstance.checked()).toBe(true);
@@ -902,7 +902,7 @@ describe('ToggleSwitch #template Reference Tests', () => {
         fixture.changeDetectorRef.markForCheck();
         await fixture.whenStable();
         fixture.detectChanges();
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 10));
         await fixture.whenStable();
 
         expect(toggleSwitchInstance.checked()).toBe(true);
@@ -913,7 +913,7 @@ describe('ToggleSwitch #template Reference Tests', () => {
         fixture.changeDetectorRef.markForCheck();
         await fixture.whenStable();
         fixture.detectChanges();
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 10));
         await fixture.whenStable();
 
         // Verify that the toggle switch component works correctly
@@ -927,7 +927,7 @@ describe('ToggleSwitch #template Reference Tests', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             // Verify that ngAfterContentInit is called correctly
@@ -967,7 +967,7 @@ describe('PassThrough (PT) Tests', () => {
 
             const fixture = TestBed.createComponent(TestPTCase1Component);
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             const toggleSwitchRoot = fixture.debugElement.query(By.css('p-toggleswitch')).nativeElement;
@@ -1020,7 +1020,7 @@ describe('PassThrough (PT) Tests', () => {
 
             const fixture = TestBed.createComponent(TestPTCase2Component);
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             const toggleSwitchRoot = fixture.debugElement.query(By.css('p-toggleswitch')).nativeElement;
@@ -1078,7 +1078,7 @@ describe('PassThrough (PT) Tests', () => {
 
             const fixture = TestBed.createComponent(TestPTCase3Component);
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             const toggleSwitchRoot = fixture.debugElement.query(By.css('p-toggleswitch')).nativeElement;
@@ -1136,7 +1136,7 @@ describe('PassThrough (PT) Tests', () => {
 
             const fixture = TestBed.createComponent(TestPTCase4Component);
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             const toggleSwitchRoot = fixture.debugElement.query(By.css('p-toggleswitch')).nativeElement;
@@ -1153,7 +1153,7 @@ describe('PassThrough (PT) Tests', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             // Root class should change
@@ -1191,7 +1191,7 @@ describe('PassThrough (PT) Tests', () => {
             const fixture = TestBed.createComponent(TestPTCase5Component);
             const component = fixture.componentInstance;
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             const slider = fixture.debugElement.query(By.css('.p-toggleswitch-slider'));
@@ -1223,7 +1223,7 @@ describe('PassThrough (PT) Tests', () => {
 
             const fixture = TestBed.createComponent(TestInlineComponent);
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             const toggleSwitchRoot = fixture.debugElement.query(By.css('p-toggleswitch')).nativeElement;
@@ -1248,7 +1248,7 @@ describe('PassThrough (PT) Tests', () => {
 
             const fixture = TestBed.createComponent(TestInlineObjectComponent);
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             const toggleSwitchRoot = fixture.debugElement.query(By.css('p-toggleswitch')).nativeElement;
@@ -1291,7 +1291,7 @@ describe('PassThrough (PT) Tests', () => {
 
             const fixture = TestBed.createComponent(TestGlobalPTComponent);
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             const toggleSwitches = fixture.debugElement.queryAll(By.css('p-toggleswitch'));
@@ -1348,7 +1348,7 @@ describe('PassThrough (PT) Tests', () => {
 
             const fixture = TestBed.createComponent(TestHooksComponent);
             fixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(hookCalls).toContain('onAfterViewInit');
@@ -1357,7 +1357,7 @@ describe('PassThrough (PT) Tests', () => {
             expect(toggleSwitchRoot.classList.contains('MY-TOGGLESWITCH')).toBe(true);
 
             fixture.destroy();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await fixture.whenStable();
 
             expect(hookCalls).toContain('onDestroy');

@@ -59,7 +59,7 @@ describe('Spreadsheet', () => {
 
     const root = () => fixture.nativeElement as HTMLElement;
     const sheet = () => host.sheet();
-    const settle = async (ms = 600) => {
+    const settle = async (ms = 200) => {
         await fixture.whenStable();
         await wait(ms);
         await fixture.whenStable();
@@ -75,8 +75,10 @@ describe('Spreadsheet', () => {
 
         for (let i = 0; i < 60 && !host.sheet().ready(); i++) await wait(100);
 
-        // The first calculation of the formulas takes a moment, and a cell changed during it is calculated with the old data.
-        await settle(1800);
+        // The first calculation of the formulas takes a moment, and a cell changed during it is calculated with the old data:
+        // wait for its result, not for a guessed time.
+        await vi.waitFor(() => expect(sheet().getCell('D4')).toBe(30), { timeout: 10_000, interval: 50 });
+        await settle(100);
     });
 
     it('starts, draws the sheet and says so', () => {
@@ -96,11 +98,13 @@ describe('Spreadsheet', () => {
 
     it('recalculates when a cell changes, and puts the new workbook in the value after a moment', async () => {
         sheet().setCell('C2', 10);
-        await settle();
 
+        await vi.waitFor(() => expect(sheet().getCell('D4')).toBe(39), { timeout: 5000, interval: 50 });
         expect(sheet().getCell('D2')).toBe(15);
-        expect(sheet().getCell('D4')).toBe(39);
-        expect(host.changes.length).toBeGreaterThan(0);
+
+        // The workbook is handed back after a short delay, so wait for it.
+        await vi.waitFor(() => expect(host.changes.length).toBeGreaterThan(0), { timeout: 5000, interval: 50 });
+        await vi.waitFor(() => expect(host.value()!.sheets![host.value()!.sheetOrder![0]].cellData![1][3]).toMatchObject({ v: 15 }), { timeout: 5000, interval: 50 });
 
         const book = host.value()!;
 
@@ -120,7 +124,7 @@ describe('Spreadsheet', () => {
         const before = host.changes.length;
 
         host.value.set(rowsToWorkbook([['Replaced', 42]]));
-        await settle(900);
+        await settle(300);
 
         expect(sheet().getCell('A1')).toBe('Replaced');
         expect(sheet().getCell('B1')).toBe(42);
@@ -129,7 +133,7 @@ describe('Spreadsheet', () => {
 
     it('opens a blank workbook for null', async () => {
         host.value.set(null);
-        await settle(900);
+        await settle(300);
 
         expect(sheet().getCell('A1')).toBeNull();
         expect(sheet().getWorkbook()).not.toBeNull();
@@ -183,15 +187,18 @@ describe('Spreadsheet', () => {
 
         for (let i = 0; i < 60 && !f.componentInstance.sheet().ready(); i++) await wait(100);
 
-        await wait(600);
-        expect(f.componentInstance.sheet().getCell('B1')).toBe('Ada');
+        await vi.waitFor(() => expect(f.componentInstance.sheet().getCell('B1')).toBe('Ada'), { timeout: 5000, interval: 50 });
 
         f.componentInstance.sheet().setCell('B1', 'Grace');
-        await wait(900);
-        await f.whenStable();
 
-        const book = f.componentInstance.model().book!;
+        // The workbook reaches the model a moment after the change.
+        await vi.waitFor(
+            () => {
+                const book = f.componentInstance.model().book!;
 
-        expect(book.sheets![book.sheetOrder![0]].cellData![0][1]).toMatchObject({ v: 'Grace' });
+                expect(book.sheets![book.sheetOrder![0]].cellData![0][1]).toMatchObject({ v: 'Grace' });
+            },
+            { timeout: 5000, interval: 50 }
+        );
     });
 });

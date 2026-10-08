@@ -564,7 +564,7 @@ describe('PanelMenu', () => {
             const templateFixture = TestBed.createComponent(TestTemplatePanelMenuComponent);
             templateFixture.componentInstance.model[0].expanded = true;
             templateFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await templateFixture.whenStable();
 
             const panelMenuInstance = templateFixture.debugElement.query(By.directive(PanelMenu)).componentInstance;
@@ -581,7 +581,7 @@ describe('PanelMenu', () => {
             const itemTemplateFixture = TestBed.createComponent(TestContentItemTemplatePanelMenuComponent);
             itemTemplateFixture.componentInstance.model[0].expanded = true;
             itemTemplateFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await itemTemplateFixture.whenStable();
 
             const panelMenuInstance = itemTemplateFixture.debugElement.query(By.directive(PanelMenu)).componentInstance;
@@ -598,7 +598,7 @@ describe('PanelMenu', () => {
             const pTemplateFixture = TestBed.createComponent(TestTemplatePanelMenuComponent);
             pTemplateFixture.componentInstance.model[0].expanded = true;
             pTemplateFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await pTemplateFixture.whenStable();
 
             const pTemplatePanelMenu = pTemplateFixture.debugElement.query(By.directive(PanelMenu)).componentInstance;
@@ -608,7 +608,7 @@ describe('PanelMenu', () => {
             const itemTemplateFixture = TestBed.createComponent(TestContentItemTemplatePanelMenuComponent);
             itemTemplateFixture.componentInstance.model[0].expanded = true;
             itemTemplateFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await itemTemplateFixture.whenStable();
 
             const itemTemplatePanelMenu = itemTemplateFixture.debugElement.query(By.directive(PanelMenu)).componentInstance;
@@ -629,7 +629,7 @@ describe('PanelMenu', () => {
         it('should render custom header icon template', async () => {
             const iconTemplateFixture = TestBed.createComponent(TestIconTemplatePanelMenuComponent);
             iconTemplateFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await iconTemplateFixture.whenStable();
 
             const panelMenuInstance = iconTemplateFixture.debugElement.query(By.directive(PanelMenu)).componentInstance;
@@ -648,7 +648,7 @@ describe('PanelMenu', () => {
             const iconTemplateComponent = iconTemplateFixture.componentInstance;
             iconTemplateComponent.model[0].expanded = true;
             iconTemplateFixture.detectChanges();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await iconTemplateFixture.whenStable();
 
             const panelMenuInstance = iconTemplateFixture.debugElement.query(By.directive(PanelMenu)).componentInstance;
@@ -1225,7 +1225,7 @@ describe('PanelMenu', () => {
                 });
 
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 150));
+                await new Promise((resolve) => setTimeout(resolve, 15));
                 await fixture.whenStable();
 
                 const hostElement = fixture.nativeElement;
@@ -1256,7 +1256,7 @@ describe('PanelMenu', () => {
                 });
 
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 150));
+                await new Promise((resolve) => setTimeout(resolve, 15));
                 await fixture.whenStable();
 
                 const hostElement = fixture.nativeElement;
@@ -1286,7 +1286,7 @@ describe('PanelMenu', () => {
                 });
 
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 150));
+                await new Promise((resolve) => setTimeout(resolve, 15));
                 await fixture.whenStable();
 
                 const hostElement = fixture.nativeElement;
@@ -1311,7 +1311,7 @@ describe('PanelMenu', () => {
                 });
 
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 150));
+                await new Promise((resolve) => setTimeout(resolve, 15));
                 await fixture.whenStable();
 
                 const hostElement = fixture.nativeElement;
@@ -1333,7 +1333,7 @@ describe('PanelMenu', () => {
                 });
 
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 150));
+                await new Promise((resolve) => setTimeout(resolve, 15));
                 await fixture.whenStable();
 
                 const headerElement = fixture.nativeElement.querySelector('.p-panelmenu-header');
@@ -1352,7 +1352,7 @@ describe('PanelMenu', () => {
                 testFixture.componentRef.setInput('pt', { root: 'INLINE_TEST_CLASS' });
 
                 testFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 150));
+                await new Promise((resolve) => setTimeout(resolve, 15));
                 await testFixture.whenStable();
 
                 const hostElement = testFixture.nativeElement;
@@ -1369,7 +1369,7 @@ describe('PanelMenu', () => {
                 });
 
                 testFixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 150));
+                await new Promise((resolve) => setTimeout(resolve, 15));
                 await testFixture.whenStable();
 
                 const hostElement = testFixture.nativeElement;
@@ -1386,7 +1386,7 @@ describe('PanelMenu', () => {
                 });
 
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 150));
+                await new Promise((resolve) => setTimeout(resolve, 15));
                 await fixture.whenStable();
 
                 const hostElement = fixture.nativeElement;
@@ -1404,7 +1404,7 @@ describe('PanelMenu', () => {
                 });
 
                 fixture.detectChanges();
-                await new Promise((resolve) => setTimeout(resolve, 150));
+                await new Promise((resolve) => setTimeout(resolve, 15));
                 await fixture.whenStable();
 
                 const hostElement = fixture.nativeElement;

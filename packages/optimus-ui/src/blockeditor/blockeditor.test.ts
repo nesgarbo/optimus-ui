@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { BlockContent } from '@openng/optimus-ui/types/blockeditor';
 import { BlockEditor, type BlockValue } from './blockeditor';
 
-const wait = (ms = 120) => new Promise((r) => setTimeout(r, ms));
+const wait = (ms = 60) => new Promise((r) => setTimeout(r, ms));
 
 const doc = (...blocks: BlockContent[]): BlockContent => ({ type: 'doc', content: blocks });
 const p = (text: string): BlockContent => ({ type: 'paragraph', content: [{ type: 'text', text }] });

@@ -505,7 +505,7 @@ describe('ConfirmPopup', () => {
 
             const triggerBtn = focusFixture.debugElement.query(By.css('.trigger-btn'));
             triggerBtn.nativeElement.click();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             focusFixture.changeDetectorRef.markForCheck();
             fixture.detectChanges();
             await focusFixture.whenStable();
@@ -531,7 +531,7 @@ describe('ConfirmPopup', () => {
 
             const triggerBtn = focusFixture.debugElement.query(By.css('.trigger-btn'));
             triggerBtn.nativeElement.click();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             focusFixture.changeDetectorRef.markForCheck();
             fixture.detectChanges();
             await focusFixture.whenStable();
@@ -554,7 +554,7 @@ describe('ConfirmPopup', () => {
 
             const triggerBtn = focusFixture.debugElement.query(By.css('.trigger-btn'));
             triggerBtn.nativeElement.click();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             focusFixture.changeDetectorRef.markForCheck();
             fixture.detectChanges();
             await focusFixture.whenStable();
@@ -570,7 +570,7 @@ describe('ConfirmPopup', () => {
             it('should handle pTemplate content processing', async () => {
                 const templateFixture = TestBed.createComponent(TestTemplatePConfirmPopupComponent);
                 await templateFixture.whenStable();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
 
                 const confirmPopupInstance = templateFixture.debugElement.query(By.directive(ConfirmPopup)).componentInstance;
 
@@ -584,7 +584,7 @@ describe('ConfirmPopup', () => {
             it('should process _contentTemplate from pTemplate="content"', async () => {
                 const templateFixture = TestBed.createComponent(TestTemplatePConfirmPopupComponent);
                 await templateFixture.whenStable();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
 
                 const confirmPopupInstance = templateFixture.debugElement.query(By.directive(ConfirmPopup)).componentInstance;
 
@@ -595,7 +595,7 @@ describe('ConfirmPopup', () => {
             it('should process _acceptIconTemplate from pTemplate="accepticon"', async () => {
                 const templateFixture = TestBed.createComponent(TestTemplatePConfirmPopupComponent);
                 await templateFixture.whenStable();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
 
                 const confirmPopupInstance = templateFixture.debugElement.query(By.directive(ConfirmPopup)).componentInstance;
 
@@ -606,7 +606,7 @@ describe('ConfirmPopup', () => {
             it('should process _rejectIconTemplate from pTemplate="rejecticon"', async () => {
                 const templateFixture = TestBed.createComponent(TestTemplatePConfirmPopupComponent);
                 await templateFixture.whenStable();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
 
                 const confirmPopupInstance = templateFixture.debugElement.query(By.directive(ConfirmPopup)).componentInstance;
 
@@ -617,7 +617,7 @@ describe('ConfirmPopup', () => {
             it('should process _headlessTemplate from pTemplate="headless"', async () => {
                 const templateFixture = TestBed.createComponent(TestTemplatePConfirmPopupComponent);
                 await templateFixture.whenStable();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
 
                 const confirmPopupInstance = templateFixture.debugElement.query(By.directive(ConfirmPopup)).componentInstance;
 
@@ -630,7 +630,7 @@ describe('ConfirmPopup', () => {
             it('should handle #content template processing', async () => {
                 const contentTemplateFixture = TestBed.createComponent(TestContentTemplateConfirmPopupComponent);
                 await contentTemplateFixture.whenStable();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
 
                 const confirmPopupInstance = contentTemplateFixture.debugElement.query(By.directive(ConfirmPopup)).componentInstance;
 
@@ -644,7 +644,7 @@ describe('ConfirmPopup', () => {
             it("should process contentTemplate from @ContentChild('content')", async () => {
                 const contentTemplateFixture = TestBed.createComponent(TestContentTemplateConfirmPopupComponent);
                 await contentTemplateFixture.whenStable();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
 
                 const confirmPopupInstance = contentTemplateFixture.debugElement.query(By.directive(ConfirmPopup)).componentInstance;
 
@@ -656,7 +656,7 @@ describe('ConfirmPopup', () => {
             it("should process acceptIconTemplate from @ContentChild('accepticon')", async () => {
                 const contentTemplateFixture = TestBed.createComponent(TestContentTemplateConfirmPopupComponent);
                 await contentTemplateFixture.whenStable();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
 
                 const confirmPopupInstance = contentTemplateFixture.debugElement.query(By.directive(ConfirmPopup)).componentInstance;
 
@@ -668,7 +668,7 @@ describe('ConfirmPopup', () => {
             it("should process rejectIconTemplate from @ContentChild('rejecticon')", async () => {
                 const contentTemplateFixture = TestBed.createComponent(TestContentTemplateConfirmPopupComponent);
                 await contentTemplateFixture.whenStable();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
 
                 const confirmPopupInstance = contentTemplateFixture.debugElement.query(By.directive(ConfirmPopup)).componentInstance;
 
@@ -680,7 +680,7 @@ describe('ConfirmPopup', () => {
             it("should process headlessTemplate from @ContentChild('headless')", async () => {
                 const contentTemplateFixture = TestBed.createComponent(TestContentTemplateConfirmPopupComponent);
                 await contentTemplateFixture.whenStable();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
 
                 const confirmPopupInstance = contentTemplateFixture.debugElement.query(By.directive(ConfirmPopup)).componentInstance;
 
@@ -697,7 +697,7 @@ describe('ConfirmPopup', () => {
                 // Test pTemplate rendering
                 const pTemplateFixture = TestBed.createComponent(TestTemplatePConfirmPopupComponent);
                 await pTemplateFixture.whenStable();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
 
                 const pTemplateConfirmPopup = pTemplateFixture.debugElement.query(By.directive(ConfirmPopup)).componentInstance;
                 expect(pTemplateConfirmPopup.templates).toBeDefined();
@@ -706,7 +706,7 @@ describe('ConfirmPopup', () => {
                 // Test #content template rendering
                 const contentTemplateFixture = TestBed.createComponent(TestContentTemplateConfirmPopupComponent);
                 await contentTemplateFixture.whenStable();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
 
                 const contentTemplateConfirmPopup = contentTemplateFixture.debugElement.query(By.directive(ConfirmPopup)).componentInstance;
                 expect(contentTemplateConfirmPopup.contentTemplate).toBeDefined();
@@ -723,7 +723,7 @@ describe('ConfirmPopup', () => {
             it('should handle ngAfterContentInit template processing correctly', async () => {
                 const templateFixture = TestBed.createComponent(TestTemplatePConfirmPopupComponent);
                 await templateFixture.whenStable();
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await new Promise((resolve) => setTimeout(resolve, 10));
 
                 const confirmPopupInstance = templateFixture.debugElement.query(By.directive(ConfirmPopup)).componentInstance;
 
@@ -1981,7 +1981,7 @@ describe('ConfirmPopup focus buttons', () => {
 
             const popup: ConfirmPopup = fixture.debugElement.query(By.directive(ConfirmPopup)).componentInstance;
             fixture.debugElement.query(By.css('.trigger-btn')).nativeElement.click();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
 
