@@ -242,6 +242,21 @@ describe('ScrollTop', () => {
         });
     });
 
+    describe('Style', () => {
+        it('should apply the style input to the p-button host, where the fixed position lives', () => {
+            const fixture = TestBed.createComponent(TestBasicScrollTopComponent);
+            fixture.detectChanges();
+            const scrollTop: ScrollTop = fixture.debugElement.query(By.directive(ScrollTop)).componentInstance;
+            scrollTop.style = { 'bottom.px': 40 };
+            scrollTop.checkVisibility(500);
+            fixture.detectChanges();
+
+            const host = fixture.nativeElement.querySelector('p-button') as HTMLElement;
+            expect(host).toBeTruthy();
+            expect(host.style.bottom).toBe('40px');
+        });
+    });
+
     describe('Scroll Behavior', () => {
         let fixture: ComponentFixture<TestBasicScrollTopComponent>;
         let scrollTop: ScrollTop;

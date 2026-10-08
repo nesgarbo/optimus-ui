@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import {
     AfterContentInit,
     AfterViewChecked,
@@ -8,14 +8,13 @@ import {
     computed,
     ContentChild,
     ContentChildren,
-    EventEmitter,
     forwardRef,
     inject,
     InjectionToken,
     input,
     Input,
     NgModule,
-    Output,
+    output,
     QueryList,
     TemplateRef,
     ViewEncapsulation
@@ -49,7 +48,7 @@ export { InputOtpChangeEvent, InputOtpInputTemplateContext, InputOtpTemplateEven
 @Component({
     selector: 'p-inputOtp, p-inputotp, p-input-otp',
     standalone: true,
-    imports: [CommonModule, InputText, AutoFocus, SharedModule, BindModule],
+    imports: [NgTemplateOutlet, InputText, AutoFocus, SharedModule, BindModule],
     template: `
         @for (i of getRange(length); track trackByFn($index)) {
             @if (!inputTemplate && !_inputTemplate) {
@@ -156,19 +155,19 @@ export class InputOtp extends BaseEditableHolder<InputOtpPassThrough> implements
      * Callback to invoke on value change.
      * @group Emits
      */
-    @Output() onChange: EventEmitter<InputOtpChangeEvent> = new EventEmitter<InputOtpChangeEvent>();
+    onChange = output<InputOtpChangeEvent>();
     /**
      * Callback to invoke when the component receives focus.
      * @param {Event} event - Browser event.
      * @group Emits
      */
-    @Output() onFocus: EventEmitter<Event> = new EventEmitter();
+    onFocus = output<Event>();
     /**
      * Callback to invoke when the component loses focus.
      * @param {Event} event - Browser event.
      * @group Emits
      */
-    @Output() onBlur: EventEmitter<Event> = new EventEmitter();
+    onBlur = output<Event>();
     /**
      * Custom input template.
      * @param {InputOtpInputTemplateContext} context - Context of the template

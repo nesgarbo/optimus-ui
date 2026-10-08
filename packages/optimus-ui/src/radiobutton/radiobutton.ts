@@ -1,24 +1,4 @@
-import {
-    booleanAttribute,
-    ChangeDetectionStrategy,
-    Component,
-    computed,
-    ElementRef,
-    EventEmitter,
-    forwardRef,
-    inject,
-    Injectable,
-    InjectionToken,
-    Injector,
-    input,
-    Input,
-    NgModule,
-    numberAttribute,
-    OnDestroy,
-    OnInit,
-    Output,
-    ViewChild
-} from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, computed, ElementRef, forwardRef, inject, Injectable, InjectionToken, Injector, Input, input, NgModule, numberAttribute, OnDestroy, OnInit, output, ViewChild } from '@angular/core';
 import { NG_VALUE_ACCESSOR, NgControl } from '@angular/forms';
 import { SharedModule } from '@openng/optimus-ui/api';
 import { AutoFocus } from '@openng/optimus-ui/autofocus';
@@ -183,19 +163,19 @@ export class RadioButton extends BaseEditableHolder<RadioButtonPassThrough> {
      * @param {RadioButtonClickEvent} event - Custom click event.
      * @group Emits
      */
-    @Output() onClick: EventEmitter<RadioButtonClickEvent> = new EventEmitter<RadioButtonClickEvent>();
+    onClick = output<RadioButtonClickEvent>();
     /**
      * Callback to invoke when the receives focus.
      * @param {Event} event - Browser event.
      * @group Emits
      */
-    @Output() onFocus: EventEmitter<Event> = new EventEmitter<Event>();
+    onFocus = output<Event>();
     /**
      * Callback to invoke when the loses focus.
      * @param {Event} event - Browser event.
      * @group Emits
      */
-    @Output() onBlur: EventEmitter<Event> = new EventEmitter<Event>();
+    onBlur = output<Event>();
 
     @ViewChild('input') inputViewChild!: ElementRef;
 

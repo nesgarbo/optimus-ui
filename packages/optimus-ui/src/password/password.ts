@@ -9,17 +9,16 @@ import {
     Directive,
     effect,
     ElementRef,
-    EventEmitter,
     forwardRef,
     HostListener,
     inject,
     InjectionToken,
-    input,
     Input,
+    input,
     NgModule,
     NgZone,
     numberAttribute,
-    Output,
+    output,
     Pipe,
     PipeTransform,
     QueryList,
@@ -168,7 +167,9 @@ export class PasswordDirective extends BaseEditableHolder {
 
     _componentStyle = inject(PasswordStyle);
 
-    constructor(public zone: NgZone) {
+    public zone: NgZone = inject(NgZone);
+
+    constructor() {
         super();
 
         effect(() => {
@@ -224,8 +225,11 @@ export class PasswordDirective extends BaseEditableHolder {
             this.renderer.setStyle(this.panel, 'zIndex', String(++DomHandler.zindex));
             this.renderer.setStyle(this.panel, 'display', 'block');
             this.zone.runOutsideAngular(() => {
-                setTimeout(() => {
-                    addClass(this.panel!, 'p-connected-overlay-visible');
+                this.defer(() => {
+                    // The directive can be gone by now: there is no panel to show and nothing to listen to.
+                    if (!this.panel) return;
+
+                    addClass(this.panel, 'p-connected-overlay-visible');
                     this.bindScrollListener();
                     this.bindDocumentResizeListener();
                 }, 1);
@@ -242,7 +246,7 @@ export class PasswordDirective extends BaseEditableHolder {
             this.unbindDocumentResizeListener();
 
             this.zone.runOutsideAngular(() => {
-                setTimeout(() => {
+                this.defer(() => {
                     this.onDestroy();
                 }, 150);
             });
@@ -353,11 +357,15 @@ export class PasswordDirective extends BaseEditableHolder {
 
     bindScrollListener() {
         if (!this.scrollHandler) {
-            this.scrollHandler = new ConnectedOverlayScrollHandler(this.el.nativeElement, () => {
-                if (hasClass(this.panel!, 'p-connected-overlay-visible')) {
-                    this.hideOverlay();
-                }
-            });
+            this.scrollHandler = new ConnectedOverlayScrollHandler(
+                this.el.nativeElement,
+                () => {
+                    if (hasClass(this.panel!, 'p-connected-overlay-visible')) {
+                        this.zone.run(() => this.hideOverlay());
+                    }
+                },
+                this.zone
+            );
         }
 
         this.scrollHandler.bindScrollListener();
@@ -391,7 +399,21 @@ export class PasswordDirective extends BaseEditableHolder {
         }
     }
 
+    private pendingTimers = new Set<ReturnType<typeof setTimeout>>();
+
+    private defer(fn: () => void, delay: number) {
+        const id = setTimeout(() => {
+            this.pendingTimers.delete(id);
+            fn();
+        }, delay);
+
+        this.pendingTimers.add(id);
+    }
+
     onDestroy() {
+        this.pendingTimers.forEach((id) => clearTimeout(id));
+        this.pendingTimers.clear();
+
         if (this.panel) {
             if (this.scrollHandler) {
                 this.scrollHandler.destroy();
@@ -467,35 +489,38 @@ export const Password_VALUE_ACCESSOR: any = {
             [unstyled]="unstyled()"
         />
         @if (showClear && value != null) {
-            @if (!clearIconTemplate && !_clearIconTemplate) {
-                <svg data-p-icon="times" [class]="cx('clearIcon')" (click)="clear()" [pBind]="ptm('clearIcon')" />
-            }
-            <span (click)="clear()" [class]="cx('clearIcon')" [pBind]="ptm('clearIcon')">
-                <ng-template *ngTemplateOutlet="clearIconTemplate || _clearIconTemplate"></ng-template>
-            </span>
+            <button type="button" class="p-password-icon-button" [attr.aria-label]="clearLabel" (click)="clear()">
+                @if (!clearIconTemplate && !_clearIconTemplate) {
+                    <svg data-p-icon="times" [class]="cx('clearIcon')" [pBind]="ptm('clearIcon')" />
+                } @else {
+                    <span [class]="cx('clearIcon')" [pBind]="ptm('clearIcon')">
+                        <ng-template *ngTemplateOutlet="clearIconTemplate || _clearIconTemplate"></ng-template>
+                    </span>
+                }
+            </button>
         }
 
         @if (toggleMask) {
-            @if (unmasked) {
-                @if (!hideIconTemplate && !_hideIconTemplate) {
-                    <svg data-p-icon="eyeslash" [class]="cx('maskIcon')" [pBind]="ptm('maskIcon')" (click)="onMaskToggle()" />
+            <!-- One button for both states, so keyboard focus stays on it after toggling. -->
+            <button type="button" class="p-password-icon-button" [attr.aria-label]="unmasked ? hideLabel : showLabel" [attr.aria-pressed]="unmasked" (click)="onMaskToggle()">
+                @if (unmasked) {
+                    @if (!hideIconTemplate && !_hideIconTemplate) {
+                        <svg data-p-icon="eyeslash" [class]="cx('maskIcon')" [pBind]="ptm('maskIcon')" />
+                    } @else {
+                        <span [pBind]="ptm('maskIcon')">
+                            <ng-template *ngTemplateOutlet="hideIconTemplate || _hideIconTemplate; context: { class: cx('maskIcon') }"></ng-template>
+                        </span>
+                    }
+                } @else {
+                    @if (!showIconTemplate && !_showIconTemplate) {
+                        <svg data-p-icon="eye" [class]="cx('unmaskIcon')" [pBind]="ptm('unmaskIcon')" />
+                    } @else {
+                        <span [pBind]="ptm('unmaskIcon')">
+                            <ng-template *ngTemplateOutlet="showIconTemplate || _showIconTemplate; context: { class: cx('unmaskIcon') }"></ng-template>
+                        </span>
+                    }
                 }
-                @if (hideIconTemplate || _hideIconTemplate) {
-                    <span (click)="onMaskToggle()" [pBind]="ptm('maskIcon')">
-                        <ng-template *ngTemplateOutlet="hideIconTemplate || _hideIconTemplate; context: { class: cx('maskIcon') }"></ng-template>
-                    </span>
-                }
-            }
-            @if (!unmasked) {
-                @if (!showIconTemplate && !_showIconTemplate) {
-                    <svg data-p-icon="eye" [class]="cx('unmaskIcon')" [pBind]="ptm('unmaskIcon')" (click)="onMaskToggle()" />
-                }
-                @if (showIconTemplate || _showIconTemplate) {
-                    <span (click)="onMaskToggle()" [pBind]="ptm('unmaskIcon')">
-                        <ng-template *ngTemplateOutlet="showIconTemplate || _showIconTemplate; context: { class: cx('unmaskIcon') }"></ng-template>
-                    </span>
-                }
-            }
+            </button>
         }
 
         <p-overlay #overlay [hostAttrSelector]="$attrSelector" [(visible)]="overlayVisible" [options]="overlayOptions" [target]="'@parent'" [appendTo]="$appendTo()" [unstyled]="unstyled()" [pt]="ptm('pcOverlay')" [motionOptions]="motionOptions()">
@@ -507,7 +532,7 @@ export const Password_VALUE_ACCESSOR: any = {
                     } @else {
                         <div [class]="cx('content')" [pBind]="ptm('content')">
                             <div [class]="cx('meter')" [pBind]="ptm('meter')">
-                                <div [class]="cx('meterLabel')" [ngStyle]="{ width: meter ? meter.width : '' }" [pBind]="ptm('meterLabel')" [attr.data-p]="meterDataP"></div>
+                                <div [class]="cx('meterLabel')" [style]="{ width: meter ? meter.width : '' }" [pBind]="ptm('meterLabel')" [attr.data-p]="meterDataP"></div>
                             </div>
                             <div [class]="cx('meterText')" [pBind]="ptm('meterText')">{{ infoText }}</div>
                         </div>
@@ -678,18 +703,18 @@ export class Password extends BaseInput<PasswordPassThrough> {
      * @param {Event} event - Browser event.
      * @group Emits
      */
-    @Output() onFocus: EventEmitter<Event> = new EventEmitter<Event>();
+    onFocus = output<Event>();
     /**
      * Callback to invoke when the component loses focus.
      * @param {Event} event - Browser event.
      * @group Emits
      */
-    @Output() onBlur: EventEmitter<Event> = new EventEmitter<Event>();
+    onBlur = output<Event>();
     /**
      * Callback to invoke when clear button is clicked.
      * @group Emits
      */
-    @Output() onClear: EventEmitter<any> = new EventEmitter<any>();
+    onClear = output<any>();
 
     @ViewChild('overlay') overlayViewChild!: Overlay;
 
@@ -900,6 +925,18 @@ export class Password extends BaseInput<PasswordPassThrough> {
         this.infoText = label;
     }
 
+    get clearLabel(): string {
+        return this.getTranslation(TranslationKeys.CLEAR) || 'Clear';
+    }
+
+    get showLabel(): string {
+        return this.getTranslation(TranslationKeys.ARIA)?.showPassword || 'Show password';
+    }
+
+    get hideLabel(): string {
+        return this.getTranslation(TranslationKeys.ARIA)?.hidePassword || 'Hide password';
+    }
+
     onMaskToggle() {
         this.unmasked = !this.unmasked;
     }
@@ -949,7 +986,7 @@ export class Password extends BaseInput<PasswordPassThrough> {
         this.value = null;
         this.onModelChange(this.value);
         this.writeValue(this.value);
-        this.onClear.emit();
+        this.onClear.emit(undefined);
     }
 
     /**

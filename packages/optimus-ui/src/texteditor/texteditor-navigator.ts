@@ -1,5 +1,5 @@
 import { NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, contentChild, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, contentChild, inject, NgZone, signal } from '@angular/core';
 import { BaseComponent } from '@openng/optimus-ui/basecomponent';
 import type { TextEditorPartPassThrough } from '@openng/optimus-ui/types/texteditor';
 import { TextEditorRoot } from './texteditor';
@@ -52,7 +52,22 @@ export class TextEditorNavigator extends BaseComponent<TextEditorPartPassThrough
 
     private scrollTarget: HTMLElement | null = null;
 
-    private readonly onScroll = () => this.root.onNavigatorScroll(this.root.headings());
+    private readonly zone = inject(NgZone);
+
+    private frame: number | null = null;
+
+    private readonly onScroll = () => {
+        if (this.frame !== null) return;
+
+        const win = this.document.defaultView;
+
+        if (!win) return;
+
+        this.frame = win.requestAnimationFrame(() => {
+            this.frame = null;
+            this.root.onNavigatorScroll(this.root.headings());
+        });
+    };
 
     /**
      * The document's heading outline.
@@ -84,13 +99,21 @@ export class TextEditorNavigator extends BaseComponent<TextEditorPartPassThrough
         /* The active heading follows the scroll container the content actually lives in, which is
            the body part when it has a height and the page otherwise. */
         this.scrollTarget = this.root.getEditorElement()?.closest('.p-text-editor-body') ?? null;
-        this.scrollTarget?.addEventListener('scroll', this.onScroll, { passive: true });
-        this.document.defaultView?.addEventListener('scroll', this.onScroll, { passive: true });
+        this.zone.runOutsideAngular(() => {
+            this.scrollTarget?.addEventListener('scroll', this.onScroll, { passive: true });
+            this.document.defaultView?.addEventListener('scroll', this.onScroll, { passive: true });
+        });
     }
 
     onDestroy(): void {
         this.scrollTarget?.removeEventListener('scroll', this.onScroll);
         this.document.defaultView?.removeEventListener('scroll', this.onScroll);
+
+        if (this.frame !== null) {
+            this.document.defaultView?.cancelAnimationFrame(this.frame);
+            this.frame = null;
+        }
+
         this.unregister?.();
     }
 

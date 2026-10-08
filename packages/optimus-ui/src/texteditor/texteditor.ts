@@ -1,5 +1,5 @@
 import { NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, ViewEncapsulation, booleanAttribute, computed, contentChild, effect, forwardRef, inject, input, model, numberAttribute, output, signal, untracked, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, ViewEncapsulation, booleanAttribute, computed, contentChild, effect, forwardRef, inject, input, model, NgZone, numberAttribute, output, signal, untracked, viewChild } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { BaseEditableHolder } from '@openng/optimus-ui/baseeditableholder';
@@ -212,6 +212,8 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
     /** @internal */
     _componentStyle = inject(TextEditorStyle);
+
+    private readonly zone = inject(NgZone);
 
     private readonly bindDirectiveInstance = inject(Bind, { self: true });
 
@@ -1115,7 +1117,7 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
 
         if (active !== this.activeHeadingIndex()) {
             this.activeHeading.set(active);
-            this.navigatorActiveIndexChange.emit(active);
+            this.zone.run(() => this.navigatorActiveIndexChange.emit(active));
         }
     }
 
@@ -1891,8 +1893,12 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
             }
         });
 
-        this.document.defaultView?.addEventListener('scroll', this.onViewportChange, { capture: true, passive: true });
-        this.document.defaultView?.addEventListener('resize', this.onViewportChange, { passive: true });
+        /* A capturing scroll listener on the window sees every scroll on the page: keep it out of the
+           zone, and only write signals (which schedule their own refresh) when a surface is open. */
+        this.zone.runOutsideAngular(() => {
+            this.document.defaultView?.addEventListener('scroll', this.onViewportChange, { capture: true, passive: true });
+            this.document.defaultView?.addEventListener('resize', this.onViewportChange, { passive: true });
+        });
 
         this.pluginCleanups = installPlugins(registrations, {
             getSelectedText: () => this.getSelectedText(),
@@ -1913,6 +1919,11 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
     private destroyView(): void {
         this.document.defaultView?.removeEventListener('scroll', this.onViewportChange, { capture: true } as EventListenerOptions);
         this.document.defaultView?.removeEventListener('resize', this.onViewportChange);
+
+        if (this.viewportFrame !== null) {
+            this.document.defaultView?.cancelAnimationFrame(this.viewportFrame);
+            this.viewportFrame = null;
+        }
 
         for (const cleanup of this.pluginCleanups) cleanup();
 
@@ -2316,16 +2327,31 @@ export class TextEditorRoot extends BaseEditableHolder<TextEditorPassThrough> {
      * Re-measures the caret the floating surfaces are anchored to. Their coordinates are viewport
      * coordinates, and scrolling moves the text under a popover that would otherwise stay put.
      */
+    private viewportFrame: number | null = null;
+
     private readonly onViewportChange = (): void => {
-        if (!this.view) return;
+        if (!this.view || this.viewportFrame !== null) return;
 
-        const from = this.view.state.selection.from;
+        /* Nothing is anchored to the caret: there is nothing to re-measure. */
+        if (!this.contextCaret() && !this.typeahead().active) return;
 
-        if (this.contextCaret()) this.contextCaret.set(caretPositionAt(this.view, from));
+        const win = this.document.defaultView;
 
-        const typeahead = this.typeahead();
+        if (!win) return;
 
-        if (typeahead.active) this.typeahead.set({ ...typeahead, position: caretPositionAt(this.view, from) });
+        this.viewportFrame = win.requestAnimationFrame(() => {
+            this.viewportFrame = null;
+
+            if (!this.view) return;
+
+            const from = this.view.state.selection.from;
+
+            if (this.contextCaret()) this.contextCaret.set(caretPositionAt(this.view, from));
+
+            const typeahead = this.typeahead();
+
+            if (typeahead.active) this.typeahead.set({ ...typeahead, position: caretPositionAt(this.view, from) });
+        });
     };
 
     private printDocument(): void {

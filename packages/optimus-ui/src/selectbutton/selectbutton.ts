@@ -7,15 +7,14 @@ import {
     Component,
     ContentChild,
     ContentChildren,
-    EventEmitter,
     forwardRef,
     inject,
     InjectionToken,
-    input,
     Input,
+    input,
     NgModule,
     numberAttribute,
-    Output,
+    output,
     QueryList,
     TemplateRef,
     ViewEncapsulation
@@ -170,13 +169,13 @@ export class SelectButton extends BaseEditableHolder<SelectButtonPassThrough> im
      * @param {SelectButtonOptionClickEvent} event - Custom click event.
      * @group Emits
      */
-    @Output() onOptionClick: EventEmitter<SelectButtonOptionClickEvent> = new EventEmitter<SelectButtonOptionClickEvent>();
+    onOptionClick = output<SelectButtonOptionClickEvent>();
     /**
      * Callback to invoke on selection change.
      * @param {SelectButtonChangeEvent} event - Custom change event.
      * @group Emits
      */
-    @Output() onChange: EventEmitter<SelectButtonChangeEvent> = new EventEmitter<SelectButtonChangeEvent>();
+    onChange = output<SelectButtonChangeEvent>();
     /**
      * Custom item template.
      * @param {SelectButtonItemTemplateContext} context - item context.

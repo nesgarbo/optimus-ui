@@ -1,4 +1,4 @@
-import { booleanAttribute, ChangeDetectionStrategy, Component, EventEmitter, forwardRef, inject, InjectionToken, Input, NgModule, numberAttribute, Output, signal, ViewEncapsulation } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, forwardRef, inject, InjectionToken, Input, NgModule, numberAttribute, output, signal, ViewEncapsulation } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { $dt } from '@openng/optimus-ui-styled';
 import { SharedModule } from '@openng/optimus-ui/api';
@@ -156,7 +156,7 @@ export class Knob extends BaseEditableHolder<KnobPassThrough> {
      * @param {number} value - New value.
      * @group Emits
      */
-    @Output() onChange: EventEmitter<number> = new EventEmitter<number>();
+    onChange = output<number>();
 
     radius: number = 40;
 
@@ -215,6 +215,7 @@ export class Knob extends BaseEditableHolder<KnobPassThrough> {
     onMouseDown(event: MouseEvent) {
         if (!this.$disabled() && !this.readonly) {
             const window = this.document.defaultView || 'window';
+            this.unbindMouseListeners();
             this.windowMouseMoveListener = this.renderer.listen(window, 'mousemove', this.onMouseMove.bind(this));
             this.windowMouseUpListener = this.renderer.listen(window, 'mouseup', this.onMouseUp.bind(this));
             event.preventDefault();
@@ -223,15 +224,7 @@ export class Knob extends BaseEditableHolder<KnobPassThrough> {
 
     onMouseUp(event: MouseEvent) {
         if (!this.$disabled() && !this.readonly) {
-            if (this.windowMouseMoveListener) {
-                this.windowMouseMoveListener();
-                this.windowMouseUpListener = null;
-            }
-
-            if (this.windowMouseUpListener) {
-                this.windowMouseUpListener();
-                this.windowMouseMoveListener = null;
-            }
+            this.unbindMouseListeners();
             event.preventDefault();
         }
     }
@@ -239,6 +232,7 @@ export class Knob extends BaseEditableHolder<KnobPassThrough> {
     onTouchStart(event: TouchEvent) {
         if (!this.$disabled() && !this.readonly) {
             const window = this.document.defaultView || 'window';
+            this.unbindTouchListeners();
             this.windowTouchMoveListener = this.renderer.listen(window, 'touchmove', this.onTouchMove.bind(this));
             this.windowTouchEndListener = this.renderer.listen(window, 'touchend', this.onTouchEnd.bind(this));
             event.preventDefault();
@@ -247,16 +241,28 @@ export class Knob extends BaseEditableHolder<KnobPassThrough> {
 
     onTouchEnd(event: TouchEvent) {
         if (!this.$disabled() && !this.readonly) {
-            if (this.windowTouchMoveListener) {
-                this.windowTouchMoveListener();
-            }
-            if (this.windowTouchEndListener) {
-                this.windowTouchEndListener();
-            }
-            this.windowTouchMoveListener = null;
-            this.windowTouchEndListener = null;
+            this.unbindTouchListeners();
             event.preventDefault();
         }
+    }
+
+    private unbindMouseListeners() {
+        this.windowMouseMoveListener?.();
+        this.windowMouseUpListener?.();
+        this.windowMouseMoveListener = null;
+        this.windowMouseUpListener = null;
+    }
+
+    private unbindTouchListeners() {
+        this.windowTouchMoveListener?.();
+        this.windowTouchEndListener?.();
+        this.windowTouchMoveListener = null;
+        this.windowTouchEndListener = null;
+    }
+
+    onDestroy() {
+        this.unbindMouseListeners();
+        this.unbindTouchListeners();
     }
 
     onMouseMove(event: MouseEvent) {

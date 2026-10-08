@@ -7,6 +7,38 @@ const style = /*css*/ `
         position: relative;
     }
 
+    button.p-inputmask-icon-button {
+        appearance: none;
+        background: transparent;
+        border: 0;
+        padding: 0;
+        margin: 0;
+        font: inherit;
+        color: inherit;
+        line-height: 0;
+        cursor: pointer;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        inset-inline-end: dt('form.field.padding.x');
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* The icon sits in the flow of the button, so the button has a real hit area and focus box. */
+    button.p-inputmask-icon-button > * {
+        position: static;
+        inset: auto;
+        margin: 0;
+    }
+
+    button.p-inputmask-icon-button:focus-visible {
+        outline: 2px solid currentColor;
+        outline-offset: 2px;
+        border-radius: 2px;
+    }
+
     .p-inputmask-clear-icon {
         position: absolute;
         top: 50%;

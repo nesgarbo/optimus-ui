@@ -1,5 +1,5 @@
-import { CommonModule, isPlatformServer } from '@angular/common';
-import { afterNextRender, ChangeDetectionStrategy, Component, ContentChild, ContentChildren, EventEmitter, forwardRef, inject, InjectionToken, Input, NgModule, Output, QueryList, TemplateRef, ViewEncapsulation } from '@angular/core';
+import { NgTemplateOutlet, isPlatformServer } from '@angular/common';
+import { afterNextRender, ChangeDetectionStrategy, Component, ContentChild, ContentChildren, forwardRef, inject, InjectionToken, Input, NgModule, output, QueryList, TemplateRef, ViewEncapsulation } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { findSingle } from '@openng/optimus-ui-utils';
 import { Header, PrimeTemplate, SharedModule } from '@openng/optimus-ui/api';
@@ -24,7 +24,7 @@ export const EDITOR_VALUE_ACCESSOR: any = {
 @Component({
     selector: 'p-editor',
     standalone: true,
-    imports: [CommonModule, SharedModule, BindModule],
+    imports: [NgTemplateOutlet, SharedModule, BindModule],
     template: `
         @if (toolbar || headerTemplate || _headerTemplate) {
             <div [class]="cx('toolbar')" [pBind]="ptm('toolbar')">
@@ -75,7 +75,7 @@ export const EDITOR_VALUE_ACCESSOR: any = {
                 </span>
             </div>
         }
-        <div [class]="cx('content')" [ngStyle]="style" [pBind]="ptm('content')"></div>
+        <div [class]="cx('content')" [style]="style" [pBind]="ptm('content')"></div>
     `,
     providers: [EDITOR_VALUE_ACCESSOR, EditorStyle, { provide: EDITOR_INSTANCE, useExisting: Editor }, { provide: PARENT_INSTANCE, useExisting: Editor }],
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -157,37 +157,37 @@ export class Editor extends BaseEditableHolder<EditorPassThrough> {
      * @param {EditorInitEvent} event - custom event.
      * @group Emits
      */
-    @Output('onInit') onEditorInit: EventEmitter<EditorInitEvent> = new EventEmitter<EditorInitEvent>();
+    onEditorInit = output<EditorInitEvent>({ alias: 'onInit' });
     /**
      * Callback to invoke when text of editor changes.
      * @param {EditorTextChangeEvent} event - custom event.
      * @group Emits
      */
-    @Output() onTextChange: EventEmitter<EditorTextChangeEvent> = new EventEmitter<EditorTextChangeEvent>();
+    onTextChange = output<EditorTextChangeEvent>();
     /**
      * Callback to invoke when selection of the text changes.
      * @param {EditorSelectionChangeEvent} event - custom event.
      * @group Emits
      */
-    @Output() onSelectionChange: EventEmitter<EditorSelectionChangeEvent> = new EventEmitter<EditorSelectionChangeEvent>();
+    onSelectionChange = output<EditorSelectionChangeEvent>();
     /**
      * Callback to invoke when editor content changes (combines both text and selection changes).
      * @param {EditorChangeEvent} event - custom event.
      * @group Emits
      */
-    @Output() onEditorChange: EventEmitter<EditorChangeEvent> = new EventEmitter<EditorChangeEvent>();
+    onEditorChange = output<EditorChangeEvent>();
     /**
      * Callback to invoke when editor receives focus.
      * @param {EditorFocusEvent} event - custom event.
      * @group Emits
      */
-    @Output() onFocus: EventEmitter<EditorFocusEvent> = new EventEmitter<EditorFocusEvent>();
+    onFocus = output<EditorFocusEvent>();
     /**
      * Callback to invoke when editor loses focus.
      * @param {EditorBlurEvent} event - custom event.
      * @group Emits
      */
-    @Output() onBlur: EventEmitter<EditorBlurEvent> = new EventEmitter<EditorBlurEvent>();
+    onBlur = output<EditorBlurEvent>();
 
     @ContentChild(Header) toolbar: any;
 

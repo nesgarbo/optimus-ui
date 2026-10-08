@@ -2861,3 +2861,41 @@ class TestFormIsolationListboxComponent {
     form = new FormGroup({ value: new FormControl<string[]>([]) });
     options = ['A', 'B'];
 }
+
+describe('Listbox regressions', () => {
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
+            imports: [Listbox, FormsModule],
+            providers: [provideZonelessChangeDetection(), provideNoopAnimations()]
+        }).compileComponents();
+    });
+
+    it('should resolve filterViewChild to the filter input', async () => {
+        const fixture = TestBed.createComponent(Listbox);
+        fixture.componentRef.setInput('options', [{ label: 'A', value: 'a' }]);
+        fixture.componentInstance.filter = true;
+        fixture.changeDetectorRef.markForCheck();
+        await fixture.whenStable();
+
+        expect(fixture.componentInstance.filterViewChild?.nativeElement).toBe(fixture.nativeElement.querySelector('input'));
+    });
+
+    it('should emit onChange only once when toggling all', async () => {
+        const fixture = TestBed.createComponent(Listbox);
+        const listbox = fixture.componentInstance;
+        listbox.multiple = true;
+        listbox.options = [
+            { label: 'A', value: 'a' },
+            { label: 'B', value: 'b' }
+        ];
+        fixture.changeDetectorRef.markForCheck();
+        await fixture.whenStable();
+
+        const spy = vi.fn();
+        listbox.onChange.subscribe(spy);
+        listbox.onToggleAll(new Event('click'));
+
+        expect(spy).toHaveBeenCalledTimes(1);
+        expect(listbox.value).toEqual(['a', 'b']);
+    });
+});

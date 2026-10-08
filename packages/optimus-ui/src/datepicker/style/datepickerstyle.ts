@@ -6,6 +6,46 @@ const style = /*css*/ `
 ${datepicker_style}
 
 /* For Optimus */
+button.p-datepicker-icon-button {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    line-height: 0;
+    cursor: pointer;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    inset-inline-end: dt('form.field.padding.x');
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* The icon sits in the flow of the button, so the button has a real hit area and focus box. */
+button.p-datepicker-icon-button > * {
+    position: static;
+    inset: auto;
+    margin: 0;
+}
+
+.p-datepicker:has(.p-datepicker-dropdown) button.p-datepicker-icon-button {
+    inset-inline-end: calc(dt('datepicker.dropdown.width') + dt('form.field.padding.x'));
+}
+
+.p-datepicker:has(.p-datepicker-input-icon-container) button.p-datepicker-icon-button {
+    inset-inline-end: calc((dt('form.field.padding.x') * 2) + dt('icon.size'));
+}
+
+button.p-datepicker-icon-button:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
 .p-datepicker.ng-invalid.ng-dirty .p-inputtext {
     border-color: dt('inputtext.invalid.border.color');
 }

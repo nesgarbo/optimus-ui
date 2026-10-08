@@ -1233,4 +1233,39 @@ describe('Knob', () => {
             });
         });
     });
+    describe('Window listeners', () => {
+        let fixture: ComponentFixture<TestBasicKnobComponent>;
+        let knob: Knob;
+
+        beforeEach(async () => {
+            await TestBed.configureTestingModule({
+                imports: [TestBasicKnobComponent],
+                providers: [provideZonelessChangeDetection()]
+            }).compileComponents();
+
+            fixture = TestBed.createComponent(TestBasicKnobComponent);
+            fixture.detectChanges();
+            knob = fixture.debugElement.query(By.directive(Knob)).componentInstance;
+        });
+
+        it('should unbind both mouse listeners on mouseup', () => {
+            knob.onMouseDown(new MouseEvent('mousedown', { cancelable: true }));
+            expect(knob.windowMouseMoveListener).toBeTruthy();
+            expect(knob.windowMouseUpListener).toBeTruthy();
+
+            knob.onMouseUp(new MouseEvent('mouseup', { cancelable: true }));
+
+            expect(knob.windowMouseMoveListener).toBeNull();
+            expect(knob.windowMouseUpListener).toBeNull();
+        });
+
+        it('should unbind the listeners when destroyed in the middle of a drag', () => {
+            knob.onMouseDown(new MouseEvent('mousedown', { cancelable: true }));
+
+            fixture.destroy();
+
+            expect(knob.windowMouseMoveListener).toBeNull();
+            expect(knob.windowMouseUpListener).toBeNull();
+        });
+    });
 });

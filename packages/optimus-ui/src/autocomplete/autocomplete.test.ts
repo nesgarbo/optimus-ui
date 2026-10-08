@@ -827,6 +827,15 @@ describe('AutoComplete', () => {
             expect(autocompleteElement.nativeElement.classList.contains('custom-autocomplete')).toBe(true);
         });
 
+        it('should keep unit keys such as width.px working in inputStyle', async () => {
+            testComponent.inputStyle = { 'width.px': 123 };
+            testFixture.changeDetectorRef.markForCheck();
+            await testFixture.whenStable();
+
+            const inputElement = testFixture.debugElement.query(By.css('input'));
+            expect((inputElement.nativeElement as HTMLInputElement).style.width).toBe('123px');
+        });
+
         it('should work with panelStyle and panelStyleClass', async () => {
             testComponent.panelStyle = { background: 'lightgray' };
             testComponent.panelStyleClass = 'custom-panel';
@@ -1397,6 +1406,25 @@ describe('AutoComplete', () => {
         beforeEach(async () => {
             testFixture.changeDetectorRef.markForCheck();
             await testFixture.whenStable();
+        });
+
+        it('should render the clear icon inside a labelled button that clears the value', async () => {
+            testComponent.showClear = true;
+            testComponent.selectedValue = 'test';
+            testFixture.changeDetectorRef.markForCheck();
+            await testFixture.whenStable();
+            testFixture.detectChanges();
+            await testFixture.whenStable();
+
+            const button = testFixture.nativeElement.querySelector('button.p-autocomplete-icon-button') as HTMLButtonElement;
+            expect(button).toBeTruthy();
+            expect(button.type).toBe('button');
+            expect(button.getAttribute('aria-label')).toBe('Clear');
+            expect(button.querySelector('.p-autocomplete-clear-icon')).toBeTruthy();
+
+            button.click();
+            await testFixture.whenStable();
+            expect(testComponent.clearEvent).toBe(true);
         });
 
         it('should have proper ARIA attributes', () => {

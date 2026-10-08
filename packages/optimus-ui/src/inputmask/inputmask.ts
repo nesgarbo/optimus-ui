@@ -36,15 +36,13 @@ import {
     Directive,
     effect,
     ElementRef,
-    EventEmitter,
     forwardRef,
     inject,
     InjectionToken,
-    input,
     Input,
+    input,
     NgModule,
     output,
-    Output,
     QueryList,
     TemplateRef,
     ViewChild,
@@ -52,7 +50,7 @@ import {
 } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { getUserAgent, isClient } from '@openng/optimus-ui-utils';
-import { PrimeTemplate, SharedModule } from '@openng/optimus-ui/api';
+import { PrimeTemplate, SharedModule, TranslationKeys } from '@openng/optimus-ui/api';
 import { AutoFocus } from '@openng/optimus-ui/autofocus';
 import { BaseComponent, PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { BaseInput } from '@openng/optimus-ui/baseinput';
@@ -215,7 +213,25 @@ export class InputMaskDirective extends BaseComponent<InputMaskPassThrough> {
     }
 
     onDestroy() {
+        this.clearTimers();
         this._listeners.forEach((unlisten) => unlisten());
+    }
+
+    private pendingTimers = new Set<ReturnType<typeof setTimeout>>();
+
+    private defer(fn: () => void, delay: number = 0) {
+        const id = setTimeout(() => {
+            this.pendingTimers.delete(id);
+            fn();
+        }, delay);
+        this.pendingTimers.add(id);
+        return id;
+    }
+
+    private clearTimers() {
+        this.pendingTimers.forEach((id) => clearTimeout(id));
+        this.pendingTimers.clear();
+        clearTimeout(this.caretTimeoutId);
     }
 
     initMask() {
@@ -275,7 +291,7 @@ export class InputMaskDirective extends BaseComponent<InputMaskPassThrough> {
         clearTimeout(this.caretTimeoutId);
         const pos = this.checkVal();
 
-        this.caretTimeoutId = setTimeout(() => {
+        this.caretTimeoutId = this.defer(() => {
             if (this.inputElement !== this.inputElement.ownerDocument.activeElement) {
                 return;
             }
@@ -395,7 +411,7 @@ export class InputMaskDirective extends BaseComponent<InputMaskPassThrough> {
                         const proxy = () => {
                             this.caret(next);
                         };
-                        setTimeout(proxy, 0);
+                        this.defer(proxy, 0);
                     } else {
                         this.caret(next);
                     }
@@ -549,7 +565,7 @@ export class InputMaskDirective extends BaseComponent<InputMaskPassThrough> {
                 while (pos.begin < (this.firstNonMaskPos as number) && !this.tests[pos.begin]) pos.begin++;
             }
 
-            setTimeout(() => {
+            this.defer(() => {
                 this.caret(pos.begin, pos.begin);
                 this.onUnmaskedChange.emit(this.getUnmaskedValue());
                 if (this.isCompleted()) {
@@ -560,7 +576,7 @@ export class InputMaskDirective extends BaseComponent<InputMaskPassThrough> {
             this.checkVal(true);
             while (pos.begin < (this.len as number) && !this.tests[pos.begin]) pos.begin++;
 
-            setTimeout(() => {
+            this.defer(() => {
                 this.caret(pos.begin, pos.begin);
                 this.onUnmaskedChange.emit(this.getUnmaskedValue());
                 if (this.isCompleted()) {
@@ -575,7 +591,7 @@ export class InputMaskDirective extends BaseComponent<InputMaskPassThrough> {
             return;
         }
 
-        setTimeout(() => {
+        this.defer(() => {
             const pos = this.checkVal(true);
             this.caret(pos);
             this.onUnmaskedChange.emit(this.getUnmaskedValue());
@@ -704,7 +720,7 @@ export const INPUTMASK_VALUE_ACCESSOR: any = {
             [attr.name]="name()"
             [invalid]="$invalid()"
             [class]="styleClass"
-            [ngStyle]="style"
+            [style]="style"
             [attr.placeholder]="placeholder"
             [attr.title]="title"
             [pSize]="size()"
@@ -730,14 +746,15 @@ export const INPUTMASK_VALUE_ACCESSOR: any = {
             [fluid]="hasFluid"
         />
         @if (value != null && $filled() && showClear && !$disabled()) {
-            @if (!clearIconTemplate && !_clearIconTemplate) {
-                <svg data-p-icon="times" [class]="cx('clearIcon')" [pBind]="ptm('clearIcon')" (click)="clear()" />
-            }
-            @if (clearIconTemplate || _clearIconTemplate) {
-                <span [class]="cx('clearIcon')" [pBind]="ptm('clearIcon')" (click)="clear()">
-                    <ng-template *ngTemplateOutlet="clearIconTemplate || _clearIconTemplate"></ng-template>
-                </span>
-            }
+            <button type="button" class="p-inputmask-icon-button" [attr.aria-label]="clearLabel" (click)="clear()">
+                @if (!clearIconTemplate && !_clearIconTemplate) {
+                    <svg data-p-icon="times" [class]="cx('clearIcon')" [pBind]="ptm('clearIcon')" />
+                } @else {
+                    <span [class]="cx('clearIcon')" [pBind]="ptm('clearIcon')">
+                        <ng-template *ngTemplateOutlet="clearIconTemplate || _clearIconTemplate"></ng-template>
+                    </span>
+                }
+            </button>
         }
     `,
     providers: [INPUTMASK_VALUE_ACCESSOR, InputMaskStyle, { provide: INPUTMASK_INSTANCE, useExisting: InputMask }, { provide: PARENT_INSTANCE, useExisting: InputMask }],
@@ -759,6 +776,10 @@ export class InputMask extends BaseInput<InputMaskPassThrough> {
 
     onAfterViewChecked(): void {
         this.bindDirectiveInstance.setAttrs(this.ptms(['root', 'host']));
+    }
+
+    get clearLabel(): string {
+        return this.config.getTranslation(TranslationKeys.CLEAR) || 'Clear';
     }
 
     ptmParams = computed(() => ({ context: { filled: this.$variant() === 'filled' } }));
@@ -876,36 +897,36 @@ export class InputMask extends BaseInput<InputMaskPassThrough> {
      * Callback to invoke when the mask is completed.
      * @group Emits
      */
-    @Output() onComplete: EventEmitter<any> = new EventEmitter<any>();
+    onComplete = output<any>();
     /**
      * Callback to invoke when the component receives focus.
      * @param {Event} event - Browser event.
      * @group Emits
      */
-    @Output() onFocus: EventEmitter<Event> = new EventEmitter<Event>();
+    onFocus = output<Event>();
     /**
      * Callback to invoke when the component loses focus.
      * @param {Event} event - Browser event.
      * @group Emits
      */
-    @Output() onBlur: EventEmitter<Event> = new EventEmitter<Event>();
+    onBlur = output<Event>();
     /**
      * Callback to invoke on input.
      * @param {Event} event - Browser event.
      * @group Emits
      */
-    @Output() onInput: EventEmitter<Event> = new EventEmitter<Event>();
+    onInput = output<Event>();
     /**
      * Callback to invoke on input key press.
      * @param {Event} event - Browser event.
      * @group Emits
      */
-    @Output() onKeydown: EventEmitter<Event> = new EventEmitter<Event>();
+    onKeydown = output<Event>();
     /**
      * Callback to invoke when input field is cleared.
      * @group Emits
      */
-    @Output() onClear: EventEmitter<any> = new EventEmitter<any>();
+    onClear = output<any>();
     /**
      * Custom clear icon template.
      * @group Templates
@@ -943,6 +964,27 @@ export class InputMask extends BaseInput<InputMaskPassThrough> {
     focusText: Nullable<string>;
 
     caretTimeoutId: any;
+
+    private pendingTimers = new Set<ReturnType<typeof setTimeout>>();
+
+    private defer(fn: () => void, delay: number = 0) {
+        const id = setTimeout(() => {
+            this.pendingTimers.delete(id);
+            fn();
+        }, delay);
+        this.pendingTimers.add(id);
+        return id;
+    }
+
+    private clearTimers() {
+        this.pendingTimers.forEach((id) => clearTimeout(id));
+        this.pendingTimers.clear();
+        clearTimeout(this.caretTimeoutId);
+    }
+
+    onDestroy() {
+        this.clearTimers();
+    }
 
     androidChrome: boolean = true;
 
@@ -1125,22 +1167,22 @@ export class InputMask extends BaseInput<InputMaskPassThrough> {
                 while (pos.begin < (this.firstNonMaskPos as number) && !this.tests[pos.begin]) pos.begin++;
             }
 
-            setTimeout(() => {
+            this.defer(() => {
                 this.caret(pos.begin, pos.begin);
                 this.updateModel(e);
                 if (this.isCompleted()) {
-                    this.onComplete.emit();
+                    this.onComplete.emit(undefined);
                 }
             }, 0);
         } else {
             this.checkVal(true);
             while (pos.begin < (this.len as number) && !this.tests[pos.begin]) pos.begin++;
 
-            setTimeout(() => {
+            this.defer(() => {
                 this.caret(pos.begin, pos.begin);
                 this.updateModel(e);
                 if (this.isCompleted()) {
-                    this.onComplete.emit();
+                    this.onComplete.emit(undefined);
                 }
             }, 0);
         }
@@ -1250,7 +1292,7 @@ export class InputMask extends BaseInput<InputMaskPassThrough> {
                             this.caret(next);
                         };
 
-                        setTimeout(proxy, 0);
+                        this.defer(proxy, 0);
                     } else {
                         this.caret(next);
                     }
@@ -1268,7 +1310,7 @@ export class InputMask extends BaseInput<InputMaskPassThrough> {
         this.updateModel(e);
 
         if (completed) {
-            this.onComplete.emit();
+            this.onComplete.emit(undefined);
         }
     }
 
@@ -1357,7 +1399,7 @@ export class InputMask extends BaseInput<InputMaskPassThrough> {
 
         pos = this.keepBuffer ? this.inputViewChild?.nativeElement.value.length : this.checkVal();
 
-        this.caretTimeoutId = setTimeout(() => {
+        this.caretTimeoutId = this.defer(() => {
             if (this.inputViewChild?.nativeElement !== this.inputViewChild?.nativeElement.ownerDocument.activeElement) {
                 return;
             }
@@ -1384,12 +1426,12 @@ export class InputMask extends BaseInput<InputMaskPassThrough> {
             return;
         }
 
-        setTimeout(() => {
+        this.defer(() => {
             var pos = this.checkVal(true);
             this.caret(pos);
             this.updateModel(event);
             if (this.isCompleted()) {
-                this.onComplete.emit();
+                this.onComplete.emit(undefined);
             }
         }, 0);
     }
@@ -1428,7 +1470,7 @@ export class InputMask extends BaseInput<InputMaskPassThrough> {
         (this.inputViewChild as ElementRef).nativeElement.value = '';
         this.value = null;
         this.onModelChange(this.value);
-        this.onClear.emit();
+        this.onClear.emit(undefined);
     }
 
     /**

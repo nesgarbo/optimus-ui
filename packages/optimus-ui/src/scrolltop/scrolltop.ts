@@ -1,5 +1,5 @@
-import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, ContentChild, ContentChildren, inject, InjectionToken, input, Input, NgModule, numberAttribute, QueryList, signal, TemplateRef, ViewEncapsulation } from '@angular/core';
+import { CommonModule, isPlatformBrowser, NgStyle } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, ContentChild, ContentChildren, inject, InjectionToken, input, Input, NgModule, NgZone, numberAttribute, QueryList, signal, TemplateRef, ViewEncapsulation } from '@angular/core';
 import { MotionEvent, MotionOptions } from '@openng/optimus-ui-motion';
 import { getWindowScrollTop } from '@openng/optimus-ui-utils';
 import { PrimeTemplate, SharedModule } from '@openng/optimus-ui/api';
@@ -21,7 +21,7 @@ const SCROLLTOP_INSTANCE = new InjectionToken<ScrollTop>('SCROLLTOP_INSTANCE');
 @Component({
     selector: 'p-scrollTop, p-scrolltop, p-scroll-top',
     standalone: true,
-    imports: [CommonModule, ChevronUpIcon, Button, SharedModule, MotionDirective],
+    imports: [CommonModule, NgStyle, ChevronUpIcon, Button, SharedModule, MotionDirective],
     template: `
         @if (render()) {
             <p-button
@@ -168,6 +168,8 @@ export class ScrollTop extends BaseComponent<ScrollTopPassThrough> {
 
     _componentStyle = inject(ScrollTopStyle);
 
+    private zone: NgZone = inject(NgZone);
+
     onInit() {
         if (this.target === 'window') this.bindDocumentScrollListener();
         else if (this.target === 'parent') this.bindParentScrollListener();
@@ -219,16 +221,21 @@ export class ScrollTop extends BaseComponent<ScrollTopPassThrough> {
 
     bindParentScrollListener() {
         if (isPlatformBrowser(this.platformId)) {
-            this.parentScrollListener = this.renderer.listen(this.el.nativeElement.parentElement, 'scroll', () => {
-                this.checkVisibility(this.el.nativeElement.parentElement.scrollTop);
+            this.zone.runOutsideAngular(() => {
+                this.parentScrollListener = this.renderer.listen(this.el.nativeElement.parentElement, 'scroll', () => {
+                    this.checkVisibility(this.el.nativeElement.parentElement.scrollTop);
+                });
             });
         }
     }
 
     bindDocumentScrollListener() {
         if (isPlatformBrowser(this.platformId)) {
-            this.documentScrollListener = this.renderer.listen(this.document.defaultView, 'scroll', () => {
-                this.checkVisibility(getWindowScrollTop());
+            // Visibility lives in signals, so scrolling does not need to run change detection by itself.
+            this.zone.runOutsideAngular(() => {
+                this.documentScrollListener = this.renderer.listen(this.document.defaultView, 'scroll', () => {
+                    this.checkVisibility(getWindowScrollTop());
+                });
             });
         }
     }

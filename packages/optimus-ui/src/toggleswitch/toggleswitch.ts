@@ -6,16 +6,15 @@ import {
     ContentChild,
     ContentChildren,
     ElementRef,
-    EventEmitter,
     forwardRef,
     HostListener,
     inject,
     InjectionToken,
-    input,
     Input,
+    input,
     NgModule,
     numberAttribute,
-    Output,
+    output,
     QueryList,
     TemplateRef,
     ViewChild,
@@ -153,7 +152,7 @@ export class ToggleSwitch extends BaseEditableHolder<ToggleSwitchPassThrough> {
      * @param {ToggleSwitchChangeEvent} event - Custom change event.
      * @group Emits
      */
-    @Output() onChange: EventEmitter<ToggleSwitchChangeEvent> = new EventEmitter<ToggleSwitchChangeEvent>();
+    onChange = output<ToggleSwitchChangeEvent>();
 
     @ViewChild('input') input!: ElementRef;
     /**

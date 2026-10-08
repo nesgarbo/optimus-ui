@@ -1,5 +1,5 @@
 import { NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, contentChild, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, contentChild, inject, input, NgZone, signal } from '@angular/core';
 import { BaseComponent } from '@openng/optimus-ui/basecomponent';
 import type { TextEditorPartPassThrough } from '@openng/optimus-ui/types/texteditor';
 import { TextEditorRoot } from './texteditor';
@@ -44,6 +44,8 @@ export class TextEditorToolbar extends BaseComponent<TextEditorPartPassThrough> 
 
     private resizeObserver?: ResizeObserver;
 
+    private readonly zone = inject(NgZone);
+
     /**
      * Accessible name of the toolbar region.
      * @defaultValue 'Formatting'
@@ -74,8 +76,11 @@ export class TextEditorToolbar extends BaseComponent<TextEditorPartPassThrough> 
         const publish = () => this.root.el.nativeElement.style.setProperty('--p-text-editor-toolbar-height', `${this.el.nativeElement.offsetHeight}px`);
 
         publish();
-        this.resizeObserver = new ResizeObserver(publish);
-        this.resizeObserver.observe(this.el.nativeElement);
+        /* It only writes a CSS variable, so it has no business inside the zone. */
+        this.zone.runOutsideAngular(() => {
+            this.resizeObserver = new ResizeObserver(publish);
+            this.resizeObserver.observe(this.el.nativeElement);
+        });
     }
 
     onDestroy(): void {

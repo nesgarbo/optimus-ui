@@ -441,6 +441,24 @@ describe('Password', () => {
             testFixture.detectChanges();
         });
 
+        it('should keep the same toggle button when toggling, so keyboard focus is not lost', async () => {
+            testComponent.toggleMask = true;
+            testFixture.changeDetectorRef.markForCheck();
+            await testFixture.whenStable();
+
+            const before = testFixture.nativeElement.querySelector('button.p-password-icon-button') as HTMLButtonElement;
+            expect(before).toBeTruthy();
+            expect(before.getAttribute('aria-pressed')).toBe('false');
+
+            before.click();
+            testFixture.detectChanges();
+            await testFixture.whenStable();
+
+            const after = testFixture.nativeElement.querySelector('button.p-password-icon-button') as HTMLButtonElement;
+            expect(after).toBe(before);
+            expect(after.getAttribute('aria-pressed')).toBe('true');
+        });
+
         it('should handle input events', async () => {
             const inputEl = testFixture.debugElement.query(By.css('input'));
 
@@ -1300,6 +1318,21 @@ describe('PasswordDirective', () => {
             expect(directive.mediumLabel).toBe('Medium');
             expect(directive.strongLabel).toBe('Strong');
             expect(directive.feedback).toBe(true);
+        });
+    });
+
+    describe('Overlay timers', () => {
+        it('should not leave a panel or a listener behind when destroyed right after it opened', async () => {
+            fixture.detectChanges();
+            directive.showOverlay();
+            expect(document.body.querySelector('.p-password-overlay')).not.toBeNull();
+
+            fixture.destroy();
+            await new Promise((resolve) => setTimeout(resolve, 200));
+
+            expect(document.body.querySelector('.p-password-overlay')).toBeNull();
+            expect(directive.scrollHandler).toBeFalsy();
+            expect(directive.documentResizeListener).toBeFalsy();
         });
     });
 

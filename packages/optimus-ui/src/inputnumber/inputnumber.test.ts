@@ -1514,4 +1514,30 @@ describe('InputNumber', () => {
             });
         });
     });
+
+    describe('Cleanup and keyboard', () => {
+        it('should clear the repeat timer when destroyed', () => {
+            component.repeat(new Event('mousedown'), null, 1);
+            expect(component.timer).toBeTruthy();
+
+            fixture.destroy();
+
+            expect(component.timer).toBeUndefined();
+        });
+
+        it('should clear the value with the keyboard from the clear icon', async () => {
+            fixture.componentRef.setInput('showClear', true);
+            component.writeControlValue(5, () => {});
+            await fixture.whenStable();
+
+            const icon = fixture.debugElement.query(By.css('[data-p-icon="times"]'));
+            expect(icon.nativeElement.getAttribute('tabindex')).toBe('0');
+            expect(icon.nativeElement.getAttribute('role')).toBe('button');
+            expect(icon.nativeElement.getAttribute('aria-label')).toBeTruthy();
+
+            icon.nativeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', cancelable: true }));
+
+            expect(component.value).toBeNull();
+        });
+    });
 });

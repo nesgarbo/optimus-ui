@@ -1,5 +1,5 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
-import { booleanAttribute, Directive, ElementRef, EventEmitter, forwardRef, HostListener, Inject, Input, NgModule, Output, PLATFORM_ID, Provider } from '@angular/core';
+import { booleanAttribute, Directive, ElementRef, forwardRef, HostListener, inject, Input, NgModule, output, PLATFORM_ID, Provider } from '@angular/core';
 import { AbstractControl, NG_VALIDATORS, Validator } from '@angular/forms';
 import { getBrowser, isAndroid } from '@openng/optimus-ui-utils';
 
@@ -102,7 +102,7 @@ export class KeyFilter implements Validator {
      * @param {(string | number)} modelValue - Custom model change event.
      * @group Emits
      */
-    @Output() ngModelChange: EventEmitter<string | number> = new EventEmitter<string | number>();
+    ngModelChange = output<string | number>();
 
     regex: RegExp = /./;
 
@@ -112,11 +112,13 @@ export class KeyFilter implements Validator {
 
     lastValue: any;
 
-    constructor(
-        @Inject(DOCUMENT) private document: Document,
-        @Inject(PLATFORM_ID) private platformId: any,
-        public el: ElementRef
-    ) {
+    private document: Document = inject(DOCUMENT);
+
+    private platformId: any = inject(PLATFORM_ID);
+
+    public el: ElementRef = inject(ElementRef);
+
+    constructor() {
         if (isPlatformBrowser(this.platformId)) {
             this.isAndroid = isAndroid();
         } else {

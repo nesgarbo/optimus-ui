@@ -1212,6 +1212,18 @@ describe('MultiSelect', () => {
             expect(panel).toBeTruthy();
         });
 
+        it('should keep unit keys such as width.px working in panelStyle', async () => {
+            component.panelStyle = { 'width.px': 321 };
+            fixture.detectChanges();
+
+            multiSelect.show();
+            await fixture.whenStable();
+            fixture.detectChanges();
+
+            const panel = fixture.debugElement.query(By.css('.p-multiselect-overlay'));
+            expect((panel.nativeElement as HTMLElement).style.width).toBe('321px');
+        });
+
         it('should show loading icon when loading', () => {
             component.loading = true;
             fixture.detectChanges();

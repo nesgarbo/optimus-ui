@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { ElementRef, Signal, effect, inject, signal } from '@angular/core';
+import { ElementRef, NgZone, Signal, effect, inject, signal } from '@angular/core';
 import type { CaretPosition, TextEditorSubmenu } from '@openng/optimus-ui/types/texteditor';
 
 /**
@@ -158,20 +158,36 @@ export function usePopoverKeys(options: PopoverKeysOptions): void {
  */
 export function useAnchorTick(open: Signal<boolean>): Signal<number> {
     const document = inject(DOCUMENT);
+    const zone = inject(NgZone);
     const tick = signal(0);
 
     effect((onCleanup) => {
         if (!open()) return;
 
-        const bump = () => tick.update((value) => value + 1);
         const view = document.defaultView;
+        let frame: number | null = null;
 
-        view?.addEventListener('scroll', bump, { capture: true, passive: true });
-        view?.addEventListener('resize', bump, { passive: true });
+        /* At most one tick per frame, and the page-wide listeners stay out of the zone: the tick is a
+           signal, so reading it in a template or computed refreshes by itself. */
+        const bump = () => {
+            if (frame !== null || !view) return;
+
+            frame = view.requestAnimationFrame(() => {
+                frame = null;
+                tick.update((value) => value + 1);
+            });
+        };
+
+        zone.runOutsideAngular(() => {
+            view?.addEventListener('scroll', bump, { capture: true, passive: true });
+            view?.addEventListener('resize', bump, { passive: true });
+        });
 
         onCleanup(() => {
             view?.removeEventListener('scroll', bump, { capture: true });
             view?.removeEventListener('resize', bump);
+
+            if (frame !== null) view?.cancelAnimationFrame(frame);
         });
     });
 

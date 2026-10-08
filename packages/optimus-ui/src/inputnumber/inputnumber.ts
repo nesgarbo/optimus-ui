@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import {
     booleanAttribute,
     ChangeDetectionStrategy,
@@ -6,7 +6,6 @@ import {
     ContentChild,
     ContentChildren,
     ElementRef,
-    EventEmitter,
     forwardRef,
     inject,
     InjectionToken,
@@ -14,7 +13,7 @@ import {
     Input,
     NgModule,
     numberAttribute,
-    Output,
+    output,
     QueryList,
     SimpleChanges,
     TemplateRef,
@@ -48,7 +47,7 @@ export const INPUTNUMBER_VALUE_ACCESSOR: any = {
 @Component({
     selector: 'p-inputNumber, p-inputnumber, p-input-number',
     standalone: true,
-    imports: [CommonModule, InputText, AutoFocus, TimesIcon, AngleUpIcon, AngleDownIcon, SharedModule, BindModule],
+    imports: [NgTemplateOutlet, InputText, AutoFocus, TimesIcon, AngleUpIcon, AngleDownIcon, SharedModule, BindModule],
     template: `
         <input
             pInputText
@@ -57,7 +56,7 @@ export const INPUTNUMBER_VALUE_ACCESSOR: any = {
             role="spinbutton"
             [class]="cn(cx('pcInputText'), inputStyleClass)"
             [value]="formattedValue()"
-            [ngStyle]="inputStyle"
+            [style]="inputStyle"
             [variant]="$variant()"
             [invalid]="$invalid()"
             [attr.aria-valuemin]="$min()"
@@ -98,10 +97,29 @@ export const INPUTNUMBER_VALUE_ACCESSOR: any = {
         />
         @if (buttonLayout != 'vertical' && showClear && value) {
             @if (!clearIconTemplate && !_clearIconTemplate) {
-                <svg data-p-icon="times" [pBind]="ptm('clearIcon')" [class]="cx('clearIcon')" (click)="clear()" />
+                <svg
+                    data-p-icon="times"
+                    [pBind]="ptm('clearIcon')"
+                    [class]="cx('clearIcon')"
+                    role="button"
+                    tabindex="0"
+                    [attr.aria-label]="clearAriaLabel"
+                    (click)="clear()"
+                    (keydown.enter)="clear(); $event.preventDefault()"
+                    (keydown.space)="clear(); $event.preventDefault()"
+                />
             }
             @if (clearIconTemplate || _clearIconTemplate) {
-                <span [pBind]="ptm('clearIcon')" (click)="clear()" [class]="cx('clearIcon')">
+                <span
+                    [pBind]="ptm('clearIcon')"
+                    (click)="clear()"
+                    [class]="cx('clearIcon')"
+                    role="button"
+                    tabindex="0"
+                    [attr.aria-label]="clearAriaLabel"
+                    (keydown.enter)="clear(); $event.preventDefault()"
+                    (keydown.space)="clear(); $event.preventDefault()"
+                >
                     <ng-template *ngTemplateOutlet="clearIconTemplate || _clearIconTemplate"></ng-template>
                 </span>
             }
@@ -123,7 +141,7 @@ export const INPUTNUMBER_VALUE_ACCESSOR: any = {
                     [attr.data-p]="dataP"
                 >
                     @if (incrementButtonIcon) {
-                        <span [pBind]="ptm('incrementButtonIcon')" [ngClass]="incrementButtonIcon"></span>
+                        <span [pBind]="ptm('incrementButtonIcon')" [class]="incrementButtonIcon"></span>
                     }
                     @if (!incrementButtonIcon) {
                         @if (!incrementButtonIconTemplate && !_incrementButtonIconTemplate) {
@@ -147,7 +165,7 @@ export const INPUTNUMBER_VALUE_ACCESSOR: any = {
                     [attr.data-p]="dataP"
                 >
                     @if (decrementButtonIcon) {
-                        <span [pBind]="ptm('decrementButtonIcon')" [ngClass]="decrementButtonIcon"></span>
+                        <span [pBind]="ptm('decrementButtonIcon')" [class]="decrementButtonIcon"></span>
                     }
                     @if (!decrementButtonIcon) {
                         @if (!decrementButtonIconTemplate && !_decrementButtonIconTemplate) {
@@ -174,7 +192,7 @@ export const INPUTNUMBER_VALUE_ACCESSOR: any = {
                 [attr.data-p]="dataP"
             >
                 @if (incrementButtonIcon) {
-                    <span [pBind]="ptm('incrementButtonIcon')" [ngClass]="incrementButtonIcon"></span>
+                    <span [pBind]="ptm('incrementButtonIcon')" [class]="incrementButtonIcon"></span>
                 }
                 @if (!incrementButtonIcon) {
                     @if (!incrementButtonIconTemplate && !_incrementButtonIconTemplate) {
@@ -200,7 +218,7 @@ export const INPUTNUMBER_VALUE_ACCESSOR: any = {
                 [attr.data-p]="dataP"
             >
                 @if (decrementButtonIcon) {
-                    <span [pBind]="ptm('decrementButtonIcon')" [ngClass]="decrementButtonIcon"></span>
+                    <span [pBind]="ptm('decrementButtonIcon')" [class]="decrementButtonIcon"></span>
                 }
                 @if (!decrementButtonIcon) {
                     @if (!decrementButtonIconTemplate && !_decrementButtonIconTemplate) {
@@ -404,30 +422,30 @@ export class InputNumber extends BaseInput<InputNumberPassThrough> {
      * @param {InputNumberInputEvent} event - Custom input event.
      * @group Emits
      */
-    @Output() onInput: EventEmitter<InputNumberInputEvent> = new EventEmitter<InputNumberInputEvent>();
+    onInput = output<InputNumberInputEvent>();
     /**
      * Callback to invoke when the component receives focus.
      * @param {Event} event - Browser event.
      * @group Emits
      */
-    @Output() onFocus: EventEmitter<Event> = new EventEmitter<Event>();
+    onFocus = output<Event>();
     /**
      * Callback to invoke when the component loses focus.
      * @param {Event} event - Browser event.
      * @group Emits
      */
-    @Output() onBlur: EventEmitter<Event> = new EventEmitter<Event>();
+    onBlur = output<Event>();
     /**
      * Callback to invoke on input key press.
      * @param {KeyboardEvent} event - Keyboard event.
      * @group Emits
      */
-    @Output() onKeyDown: EventEmitter<KeyboardEvent> = new EventEmitter<KeyboardEvent>();
+    onKeyDown = output<KeyboardEvent>();
     /**
      * Callback to invoke when clear token is clicked.
      * @group Emits
      */
-    @Output() onClear: EventEmitter<void> = new EventEmitter<void>();
+    onClear = output<void>();
 
     /**
      * Custom clear icon template.
@@ -496,8 +514,10 @@ export class InputNumber extends BaseInput<InputNumberPassThrough> {
 
     private ngControl: NgControl | null = null;
 
-    constructor(public readonly injector: Injector) {
-        super();
+    readonly injector: Injector = inject(Injector);
+
+    get clearAriaLabel(): string | undefined {
+        return this.config.getTranslation('clear') || undefined;
     }
 
     onChanges(simpleChange: SimpleChanges) {
@@ -1493,8 +1513,13 @@ export class InputNumber extends BaseInput<InputNumberPassThrough> {
 
     clearTimer() {
         if (this.timer) {
-            clearInterval(this.timer);
+            clearTimeout(this.timer);
+            this.timer = undefined;
         }
+    }
+
+    onDestroy() {
+        this.clearTimer();
     }
 
     get dataP() {

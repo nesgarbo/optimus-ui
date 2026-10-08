@@ -1,5 +1,5 @@
-import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { booleanAttribute, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, forwardRef, HostListener, inject, InjectionToken, Input, NgModule, NgZone, numberAttribute, Output, ViewChild, ViewEncapsulation } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { booleanAttribute, ChangeDetectionStrategy, Component, ElementRef, forwardRef, HostListener, inject, InjectionToken, Input, NgModule, NgZone, numberAttribute, output, ViewChild, ViewEncapsulation } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { addClass, getWindowScrollLeft, getWindowScrollTop, isRTL, removeClass } from '@openng/optimus-ui-utils';
 import { SharedModule } from '@openng/optimus-ui/api';
@@ -26,16 +26,17 @@ export const SLIDER_VALUE_ACCESSOR: any = {
 @Component({
     selector: 'p-slider',
     standalone: true,
-    imports: [CommonModule, AutoFocus, SharedModule, BindModule],
+    imports: [AutoFocus, SharedModule, BindModule],
     template: `
         @if (range && orientation == 'horizontal') {
             <span
                 [class]="cx('range')"
-                [ngStyle]="{
-                    'inset-inline-start': offset !== null && offset !== undefined ? offset + '%' : handleValues[0] + '%',
-                    width: diff ? diff + '%' : handleValues[1] - handleValues[0] + '%'
-                }"
-                [style]="sx('range')"
+                [style]="
+                    withStyle('range', {
+                        'inset-inline-start': offset !== null && offset !== undefined ? offset + '%' : handleValues[0] + '%',
+                        width: diff ? diff + '%' : handleValues[1] - handleValues[0] + '%'
+                    })
+                "
                 [attr.data-pc-section]="'range'"
                 [attr.data-p]="dataP"
                 [pBind]="ptm('range')"
@@ -44,32 +45,34 @@ export const SLIDER_VALUE_ACCESSOR: any = {
         @if (range && orientation == 'vertical') {
             <span
                 [class]="cx('range')"
-                [ngStyle]="{
-                    bottom: offset !== null && offset !== undefined ? offset + '%' : handleValues[0] + '%',
-                    height: diff ? diff + '%' : handleValues[1] - handleValues[0] + '%'
-                }"
-                [style]="sx('range')"
+                [style]="
+                    withStyle('range', {
+                        bottom: offset !== null && offset !== undefined ? offset + '%' : handleValues[0] + '%',
+                        height: diff ? diff + '%' : handleValues[1] - handleValues[0] + '%'
+                    })
+                "
                 [attr.data-pc-section]="'range'"
                 [attr.data-p]="dataP"
                 [pBind]="ptm('range')"
             ></span>
         }
         @if (!range && orientation == 'vertical') {
-            <span [class]="cx('range')" [attr.data-pc-section]="'range'" [style]="sx('range')" [ngStyle]="{ height: handleValue + '%' }" [pBind]="ptm('range')"></span>
+            <span [class]="cx('range')" [attr.data-pc-section]="'range'" [style]="withStyle('range', { height: handleValue + '%' })" [pBind]="ptm('range')"></span>
         }
         @if (!range && orientation == 'horizontal') {
-            <span [class]="cx('range')" [attr.data-pc-section]="'range'" [style]="sx('range')" [ngStyle]="{ width: handleValue + '%' }" [pBind]="ptm('range')"></span>
+            <span [class]="cx('range')" [attr.data-pc-section]="'range'" [style]="withStyle('range', { width: handleValue + '%' })" [pBind]="ptm('range')"></span>
         }
         @if (!range) {
             <span
                 #sliderHandle
                 [class]="cx('handle')"
                 [style.transition]="dragging ? 'none' : null"
-                [ngStyle]="{
-                    'inset-inline-start': orientation == 'horizontal' ? handleValue + '%' : null,
-                    bottom: orientation == 'vertical' ? handleValue + '%' : null
-                }"
-                [style]="sx('handle')"
+                [style]="
+                    withStyle('handle', {
+                        'inset-inline-start': orientation == 'horizontal' ? handleValue + '%' : null,
+                        bottom: orientation == 'vertical' ? handleValue + '%' : null
+                    })
+                "
                 (touchstart)="onDragStart($event)"
                 (touchmove)="onDrag($event)"
                 (touchend)="onDragEnd($event)"
@@ -95,8 +98,7 @@ export const SLIDER_VALUE_ACCESSOR: any = {
                 #sliderHandleStart
                 [style.transition]="dragging ? 'none' : null"
                 [class]="cn(cx('handle'), handleIndex == 0 && 'p-slider-handle-active')"
-                [style]="sx('handle')"
-                [ngStyle]="{ 'inset-inline-start': rangeStartLeft, bottom: rangeStartBottom }"
+                [style]="withStyle('handle', { 'inset-inline-start': rangeStartLeft, bottom: rangeStartBottom })"
                 (keydown)="onKeyDown($event, 0)"
                 (blur)="onModelTouched()"
                 (mousedown)="onMouseDown($event, 0)"
@@ -122,8 +124,7 @@ export const SLIDER_VALUE_ACCESSOR: any = {
                 #sliderHandleEnd
                 [style.transition]="dragging ? 'none' : null"
                 [class]="cn(cx('handle'), handleIndex == 1 && 'p-slider-handle-active')"
-                [ngStyle]="{ 'inset-inline-start': rangeEndLeft, bottom: rangeEndBottom }"
-                [style]="sx('handle')"
+                [style]="withStyle('handle', { 'inset-inline-start': rangeEndLeft, bottom: rangeEndBottom })"
                 (keydown)="onKeyDown($event, 1)"
                 (blur)="onModelTouched()"
                 (mousedown)="onMouseDown($event, 1)"
@@ -227,13 +228,13 @@ export class Slider extends BaseEditableHolder<SliderPassThrough> {
      * @param {SliderChangeEvent} event - Custom value change event.
      * @group Emits
      */
-    @Output() onChange: EventEmitter<SliderChangeEvent> = new EventEmitter<SliderChangeEvent>();
+    onChange = output<SliderChangeEvent>();
     /**
      * Callback to invoke when slide ended.
      * @param {SliderSlideEndEvent} event - Custom slide end event.
      * @group Emits
      */
-    @Output() onSlideEnd: EventEmitter<SliderSlideEndEvent> = new EventEmitter<SliderSlideEndEvent>();
+    onSlideEnd = output<SliderSlideEndEvent>();
 
     @ViewChild('sliderHandle') sliderHandle: Nullable<ElementRef>;
 
@@ -495,6 +496,7 @@ export class Slider extends BaseEditableHolder<SliderPassThrough> {
                             this.dragging = false;
                             this.el.nativeElement.setAttribute('data-p-sliding', false);
                             this.ngZone.run(() => {
+                                this.cd.markForCheck();
                                 if (this.range) this.onSlideEnd.emit({ originalEvent: event, values: this.values as number[] });
                                 else this.onSlideEnd.emit({ originalEvent: event, value: this.value as number });
 
@@ -700,6 +702,13 @@ export class Slider extends BaseEditableHolder<SliderPassThrough> {
         } else {
             return Math.floor(val);
         }
+    }
+
+    /**
+     * Merges the inline styles of the theme with the dynamic position of a range or handle.
+     */
+    withStyle(key: string, style: Record<string, any>) {
+        return { ...this.sx(key), ...style };
     }
 
     onDestroy() {

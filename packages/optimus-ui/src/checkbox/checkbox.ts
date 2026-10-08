@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import {
     booleanAttribute,
     ChangeDetectionStrategy,
@@ -7,7 +7,6 @@ import {
     ContentChild,
     ContentChildren,
     ElementRef,
-    EventEmitter,
     forwardRef,
     inject,
     InjectionToken,
@@ -15,7 +14,7 @@ import {
     Input,
     NgModule,
     numberAttribute,
-    Output,
+    output,
     QueryList,
     signal,
     SimpleChanges,
@@ -49,7 +48,7 @@ export const CHECKBOX_VALUE_ACCESSOR: any = {
 @Component({
     selector: 'p-checkbox, p-checkBox, p-check-box',
     standalone: true,
-    imports: [CommonModule, SharedModule, CheckIcon, MinusIcon, BindModule],
+    imports: [NgTemplateOutlet, SharedModule, CheckIcon, MinusIcon, BindModule],
     template: `
         <input
             #input
@@ -75,7 +74,7 @@ export const CHECKBOX_VALUE_ACCESSOR: any = {
             @if (!checkboxIconTemplate && !_checkboxIconTemplate) {
                 @if (checked) {
                     @if (checkboxIcon) {
-                        <span [class]="cx('icon')" [ngClass]="checkboxIcon" [pBind]="ptm('icon')" [attr.data-p]="dataP"></span>
+                        <span [class]="cn(cx('icon'), checkboxIcon)" [pBind]="ptm('icon')" [attr.data-p]="dataP"></span>
                     }
                     @if (!checkboxIcon) {
                         <svg data-p-icon="check" [class]="cx('icon')" [pBind]="ptm('icon')" [attr.data-p]="dataP" />
@@ -202,19 +201,19 @@ export class Checkbox extends BaseEditableHolder<CheckboxPassThrough> {
      * @param {CheckboxChangeEvent} event - Custom value change event.
      * @group Emits
      */
-    @Output() onChange: EventEmitter<CheckboxChangeEvent> = new EventEmitter();
+    onChange = output<CheckboxChangeEvent>();
     /**
      * Callback to invoke when the receives focus.
      * @param {Event} event - Browser event.
      * @group Emits
      */
-    @Output() onFocus: EventEmitter<Event> = new EventEmitter<Event>();
+    onFocus = output<Event>();
     /**
      * Callback to invoke when the loses focus.
      * @param {Event} event - Browser event.
      * @group Emits
      */
-    @Output() onBlur: EventEmitter<Event> = new EventEmitter<Event>();
+    onBlur = output<Event>();
 
     @ViewChild('input') inputViewChild: Nullable<ElementRef>;
 

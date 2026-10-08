@@ -1874,4 +1874,25 @@ describe('DatePicker', () => {
             expect(ptFixture.componentInstance).toBeTruthy();
         });
     });
+
+    describe('Clear button accessibility', () => {
+        it('should render the clear icon inside a labelled button that clears the value', async () => {
+            testComponent.showClear = true;
+            testComponent.selectedDate = new Date(2023, 5, 15);
+            testFixture.changeDetectorRef.markForCheck();
+            await testFixture.whenStable();
+            testFixture.detectChanges();
+            await testFixture.whenStable();
+
+            const button = testFixture.nativeElement.querySelector('button.p-datepicker-icon-button') as HTMLButtonElement;
+            expect(button).toBeTruthy();
+            expect(button.type).toBe('button');
+            expect(button.getAttribute('aria-label')).toBe('Clear');
+            expect(button.querySelector('.p-datepicker-clear-icon')).toBeTruthy();
+
+            button.click();
+            await testFixture.whenStable();
+            expect(testComponent.selectedDate).toBeNull();
+        });
+    });
 });

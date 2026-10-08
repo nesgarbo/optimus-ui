@@ -408,6 +408,55 @@ describe('FileUpload', () => {
             expect(component.uploading).toBe(false);
         });
 
+        it('should reset the progress on a failed upload', async () => {
+            component.files = [new File(['test'], 'test.txt', { type: 'text/plain' })];
+            component.uploader();
+
+            const req = httpMock.expectOne('https://test.com/upload');
+            req.event({ type: HttpEventType.UploadProgress, loaded: 50, total: 100 });
+            expect(component.progress).toBe(50);
+
+            req.error(new ErrorEvent('Network error'));
+
+            expect(component.progress).toBe(0);
+            expect(component.uploading).toBe(false);
+        });
+
+        it('should cancel the pending request when destroyed', async () => {
+            component.files = [new File(['test'], 'test.txt', { type: 'text/plain' })];
+            component.uploader();
+
+            const req = httpMock.expectOne('https://test.com/upload');
+            fixture.destroy();
+
+            expect(req.cancelled).toBe(true);
+        });
+
+        it('should revoke the preview url of a removed image', async () => {
+            const revoke = vi.spyOn(window.URL, 'revokeObjectURL');
+            const image = new File(['img'], 'a.png', { type: 'image/png' });
+            component.files = [image];
+
+            component.remove(new Event('click'), 0);
+
+            expect(revoke).toHaveBeenCalledTimes(1);
+            expect(component.files.length).toBe(0);
+        });
+
+        it('should keep the preview url of uploaded files and revoke it on destroy', async () => {
+            const revoke = vi.spyOn(window.URL, 'revokeObjectURL');
+            const image = new File(['img'], 'a.png', { type: 'image/png' });
+            component.files = [image];
+            component.uploader();
+
+            httpMock.expectOne('https://test.com/upload').flush({}, { status: 200, statusText: 'OK' });
+            expect(component.uploadedFiles.length).toBe(1);
+            expect(revoke).not.toHaveBeenCalled();
+
+            fixture.destroy();
+            expect(revoke).toHaveBeenCalledTimes(1);
+        });
+
         it('should handle custom upload', async () => {
             component.customUpload = true;
             const testFile = new File(['test'], 'test.txt', { type: 'text/plain' });

@@ -1,4 +1,4 @@
-import { AfterViewChecked, booleanAttribute, ChangeDetectionStrategy, Component, computed, ElementRef, EventEmitter, forwardRef, inject, InjectionToken, input, Input, NgModule, Output, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
+import { AfterViewChecked, booleanAttribute, ChangeDetectionStrategy, Component, computed, ElementRef, forwardRef, inject, InjectionToken, input, Input, NgModule, output, signal, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MotionOptions } from '@openng/optimus-ui-motion';
 import { OverlayOptions, OverlayService, SharedModule, TranslationKeys } from '@openng/optimus-ui/api';
@@ -175,17 +175,17 @@ export class ColorPicker extends BaseEditableHolder<ColorPickerPassThrough> impl
      * @param {ColorPickerChangeEvent} event - Custom value change event.
      * @group Emits
      */
-    @Output() onChange: EventEmitter<ColorPickerChangeEvent> = new EventEmitter<ColorPickerChangeEvent>();
+    onChange = output<ColorPickerChangeEvent>();
     /**
      * Callback to invoke on panel is shown.
      * @group Emits
      */
-    @Output() onShow: EventEmitter<any> = new EventEmitter<any>();
+    onShow = output<any>();
     /**
      * Callback to invoke on panel is hidden.
      * @group Emits
      */
-    @Output() onHide: EventEmitter<any> = new EventEmitter<any>();
+    onHide = output<any>();
 
     @ViewChild('input') inputViewChild: Nullable<ElementRef>;
 
@@ -195,7 +195,15 @@ export class ColorPicker extends BaseEditableHolder<ColorPickerPassThrough> impl
 
     value: any = { h: 0, s: 100, b: 100 };
 
-    inputBgColor: string | undefined;
+    private _inputBgColor = signal<string | undefined>(undefined);
+
+    get inputBgColor(): string | undefined {
+        return this._inputBgColor();
+    }
+
+    set inputBgColor(value: string | undefined) {
+        this._inputBgColor.set(value);
+    }
 
     shown: Nullable<boolean>;
 
@@ -225,9 +233,7 @@ export class ColorPicker extends BaseEditableHolder<ColorPickerPassThrough> impl
 
     _componentStyle = inject(ColorPickerStyle);
 
-    constructor(public overlayService: OverlayService) {
-        super();
-    }
+    public overlayService = inject(OverlayService);
 
     @ViewChild('colorSelector') set colorSelector(element: ElementRef) {
         this.colorSelectorViewChild = element;
@@ -675,6 +681,9 @@ export class ColorPicker extends BaseEditableHolder<ColorPickerPassThrough> impl
     }
 
     onDestroy() {
+        this.unbindDocumentMousemoveListener();
+        this.unbindDocumentMouseupListener();
+
         if (this.scrollHandler) {
             this.scrollHandler.destroy();
             this.scrollHandler = null;

@@ -4457,3 +4457,24 @@ describe('Select PT (PassThrough)', () => {
         });
     });
 });
+
+describe('Select options change', () => {
+    it('should flag optionsChanged when the options change and realign the overlay', async () => {
+        await TestBed.configureTestingModule({
+            imports: [Select, FormsModule],
+            providers: [provideZonelessChangeDetection()]
+        }).compileComponents();
+
+        const fixture = TestBed.createComponent(Select);
+        const select = fixture.componentInstance;
+        select.options = [{ label: 'A', value: 'a' }];
+        expect(select.optionsChanged).toBe(true);
+
+        select.optionsChanged = false;
+        select.options = [{ label: 'A', value: 'a' }];
+        expect(select.optionsChanged).toBe(false);
+
+        select.options = [{ label: 'B', value: 'b' }];
+        expect(select.optionsChanged).toBe(true);
+    });
+});
