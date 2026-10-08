@@ -3,6 +3,7 @@ import { form, FormField } from '@angular/forms/signals';
 import { AutoCompleteModule } from '@openng/optimus-ui/autocomplete';
 import { CheckboxModule } from '@openng/optimus-ui/checkbox';
 import { CascadeSelectModule } from '@openng/optimus-ui/cascadeselect';
+import { ColorPickerModule } from '@openng/optimus-ui/colorpicker';
 import { DatePickerModule } from '@openng/optimus-ui/datepicker';
 import { InputNumberModule } from '@openng/optimus-ui/inputnumber';
 import { InputTextModule } from '@openng/optimus-ui/inputtext';
@@ -17,6 +18,7 @@ import { SelectButtonModule } from '@openng/optimus-ui/selectbutton';
 import { SliderModule } from '@openng/optimus-ui/slider';
 import { ToggleButtonModule } from '@openng/optimus-ui/togglebutton';
 import { TreeSelectModule } from '@openng/optimus-ui/treeselect';
+import { TextEditorModule } from '@openng/optimus-ui/texteditor';
 import { TextareaModule } from '@openng/optimus-ui/textarea';
 import { ToggleSwitchModule } from '@openng/optimus-ui/toggleswitch';
 
@@ -46,7 +48,9 @@ import { ToggleSwitchModule } from '@openng/optimus-ui/toggleswitch';
         SelectButtonModule,
         RadioButtonModule,
         CascadeSelectModule,
-        TreeSelectModule
+        TreeSelectModule,
+        ColorPickerModule,
+        TextEditorModule
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
@@ -67,6 +71,10 @@ import { ToggleSwitchModule } from '@openng/optimus-ui/toggleswitch';
         <p-cascadeselect [options]="cities" optionLabel="name" [formField]="f.city" />
         <p-treeselect [options]="[]" [formField]="f.node" />
         <p-datepicker [formField]="f.date" />
+        <p-datepicker selectionMode="multiple" [formField]="f.dates" />
+        <p-datepicker selectionMode="range" [formField]="f.range" />
+        <p-colorpicker [formField]="f.text" />
+        <p-text-editor-root [formField]="f.text"><p-text-editor-content /></p-text-editor-root>
         <p-checkbox [binary]="true" [formField]="f.flag" />
         <p-checkbox value="a" [formField]="f.list" />
         <p-toggleswitch [formField]="f.flag" />
@@ -83,6 +91,8 @@ export class FormsTypesProbe {
         num: null as number | null,
         flag: false,
         date: null as Date | null,
+        dates: [] as Date[],
+        range: null as (Date | null)[] | null,
         list: [] as string[],
         list2: [1, 2] as number[],
         city: null as { name: string } | null,
