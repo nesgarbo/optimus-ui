@@ -1,4 +1,4 @@
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
 import { booleanAttribute, ChangeDetectionStrategy, Component, ContentChild, ContentChildren, ElementRef, inject, InjectionToken, Input, NgModule, numberAttribute, QueryList, TemplateRef, ViewEncapsulation } from '@angular/core';
 import { blockBodyScroll, unblockBodyScroll } from '@openng/optimus-ui-utils';
 import { PrimeTemplate, SharedModule } from '@openng/optimus-ui/api';
@@ -17,7 +17,7 @@ const BLOCKUI_INSTANCE = new InjectionToken<BlockUI>('BLOCKUI_INSTANCE');
 @Component({
     selector: 'p-blockUI, p-blockui, p-block-ui',
     standalone: true,
-    imports: [CommonModule, SharedModule],
+    imports: [NgTemplateOutlet, SharedModule],
     template: `
         <ng-content></ng-content>
         <ng-container *ngTemplateOutlet="contentTemplate || _contentTemplate"></ng-container>
@@ -93,10 +93,6 @@ export class BlockUI extends BaseComponent<BlockUIPassThrough> {
 
     _componentStyle = inject(BlockUiStyle);
 
-    constructor() {
-        super();
-    }
-
     onAfterViewInit() {
         if (this._blocked) this.block();
 
@@ -143,6 +139,7 @@ export class BlockUI extends BaseComponent<BlockUIPassThrough> {
 
             this.renderer.addClass(this.el.nativeElement, 'p-overlay-mask');
             this.renderer.addClass(this.el.nativeElement, 'p-overlay-mask-enter-active');
+            this.cd.markForCheck();
         }
     }
 
@@ -154,6 +151,7 @@ export class BlockUI extends BaseComponent<BlockUIPassThrough> {
             }
             this.renderer.removeClass(this.el.nativeElement, 'p-overlay-mask-enter-active');
             this.renderer.addClass(this.el.nativeElement, 'p-overlay-mask-leave-active');
+            this.cd.markForCheck();
         }
     }
 
@@ -183,7 +181,8 @@ export class BlockUI extends BaseComponent<BlockUIPassThrough> {
     }
 
     onDestroy() {
-        if (this._blocked) {
+        // Also clean up when destroyed in the middle of the leave animation, which would otherwise never finish.
+        if (this._blocked || this.animationEndListener) {
             // Skip animation on destroy, just cleanup
             this._blocked = false;
             if (this.el && isPlatformBrowser(this.platformId)) {

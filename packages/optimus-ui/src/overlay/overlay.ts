@@ -1,4 +1,4 @@
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     Component,
@@ -9,11 +9,12 @@ import {
     EventEmitter,
     inject,
     InjectionToken,
-    input,
     Input,
+    input,
     NgModule,
     NgZone,
     Output,
+    output,
     QueryList,
     signal,
     TemplateRef,
@@ -42,7 +43,7 @@ const OVERLAY_INSTANCE = new InjectionToken<Overlay>('OVERLAY_INSTANCE');
 @Component({
     selector: 'p-overlay',
     standalone: true,
-    imports: [CommonModule, SharedModule, Bind, MotionModule],
+    imports: [NgTemplateOutlet, SharedModule, Bind, MotionModule],
     hostDirectives: [Bind],
     template: `
         @if (inline()) {
@@ -277,25 +278,25 @@ export class Overlay extends BaseComponent {
      * @param {Boolean} boolean - Value of visibility as boolean.
      * @group Emits
      */
-    @Output() visibleChange: EventEmitter<boolean> = new EventEmitter<boolean>();
+    visibleChange = output<boolean>();
     /**
      * Callback to invoke before the overlay is shown.
      * @param {OverlayOnBeforeShowEvent} event - Custom overlay before show event.
      * @group Emits
      */
-    @Output() onBeforeShow: EventEmitter<OverlayOnBeforeShowEvent> = new EventEmitter<OverlayOnBeforeShowEvent>();
+    onBeforeShow = output<OverlayOnBeforeShowEvent>();
     /**
      * Callback to invoke when the overlay is shown.
      * @param {OverlayOnShowEvent} event - Custom overlay show event.
      * @group Emits
      */
-    @Output() onShow: EventEmitter<OverlayOnShowEvent> = new EventEmitter<OverlayOnShowEvent>();
+    onShow = output<OverlayOnShowEvent>();
     /**
      * Callback to invoke before the overlay is hidden.
      * @param {OverlayOnBeforeHideEvent} event - Custom overlay before hide event.
      * @group Emits
      */
-    @Output() onBeforeHide: EventEmitter<OverlayOnBeforeHideEvent> = new EventEmitter<OverlayOnBeforeHideEvent>();
+    onBeforeHide = output<OverlayOnBeforeHideEvent>();
     /**
      * Callback to invoke when the overlay is hidden
      * @param {OverlayOnHideEvent} event - Custom hide event.
@@ -308,50 +309,50 @@ export class Overlay extends BaseComponent {
      * @group Emits
      * @deprecated since v21.0.0. Use onOverlayBeforeEnter and onOverlayBeforeLeave instead.
      */
-    @Output() onAnimationStart: EventEmitter<AnimationEvent> = new EventEmitter<AnimationEvent>();
+    onAnimationStart = output<AnimationEvent>();
     /**
      * Callback to invoke when the animation is done.
      * @param {AnimationEvent} event - Animation event.
      * @group Emits
      * @deprecated since v21.0.0. Use onOverlayAfterEnter and onOverlayAfterLeave instead.
      */
-    @Output() onAnimationDone: EventEmitter<AnimationEvent> = new EventEmitter<AnimationEvent>();
+    onAnimationDone = output<AnimationEvent>();
     /**
      * Callback to invoke before the overlay enters.
      * @param {MotionEvent} event - Event before enter.
      * @group Emits
      */
-    @Output() onBeforeEnter: EventEmitter<MotionEvent> = new EventEmitter<MotionEvent>();
+    onBeforeEnter = output<MotionEvent>();
     /**
      * Callback to invoke when the overlay enters.
      * @param {MotionEvent} event - Event on enter.
      * @group Emits
      */
-    @Output() onEnter: EventEmitter<MotionEvent> = new EventEmitter<MotionEvent>();
+    onEnter = output<MotionEvent>();
     /**
      * Callback to invoke after the overlay has entered.
      * @param {MotionEvent} event - Event after enter.
      * @group Emits
      */
-    @Output() onAfterEnter: EventEmitter<MotionEvent> = new EventEmitter<MotionEvent>();
+    onAfterEnter = output<MotionEvent>();
     /**
      * Callback to invoke before the overlay leaves.
      * @param {MotionEvent} event - Event before leave.
      * @group Emits
      */
-    @Output() onBeforeLeave: EventEmitter<MotionEvent> = new EventEmitter<MotionEvent>();
+    onBeforeLeave = output<MotionEvent>();
     /**
      * Callback to invoke when the overlay leaves.
      * @param {MotionEvent} event - Event on leave.
      * @group Emits
      */
-    @Output() onLeave: EventEmitter<MotionEvent> = new EventEmitter<MotionEvent>();
+    onLeave = output<MotionEvent>();
     /**
      * Callback to invoke after the overlay has left.
      * @param {MotionEvent} event - Event after leave.
      * @group Emits
      */
-    @Output() onAfterLeave: EventEmitter<MotionEvent> = new EventEmitter<MotionEvent>();
+    onAfterLeave = output<MotionEvent>();
 
     @ViewChild('overlay') overlayViewChild: ElementRef | undefined;
 
@@ -473,12 +474,9 @@ export class Overlay extends BaseComponent {
         return <any>getTargetElement(this.target, this.el?.nativeElement);
     }
 
-    constructor(
-        public overlayService: OverlayService,
-        private zone: NgZone
-    ) {
-        super();
-    }
+    overlayService: OverlayService = inject(OverlayService);
+
+    private zone: NgZone = inject(NgZone);
 
     onAfterContentInit() {
         this.templates?.forEach((item) => {
@@ -520,6 +518,7 @@ export class Overlay extends BaseComponent {
     onVisibleChange(visible: boolean) {
         this._visible = visible;
         this.visibleChange.emit(visible);
+        this.cd.markForCheck();
     }
 
     onOverlayClick() {
@@ -648,15 +647,19 @@ export class Overlay extends BaseComponent {
 
     bindScrollListener() {
         if (!this.scrollHandler) {
-            this.scrollHandler = new ConnectedOverlayScrollHandler(this.targetEl, (event: any) => {
-                const valid = this.listener ? this.listener(event, { type: 'scroll', mode: this.overlayMode, valid: true }) : true;
+            this.scrollHandler = new ConnectedOverlayScrollHandler(
+                this.targetEl,
+                (event: any) => {
+                    const valid = this.listener ? this.zone.run(() => this.listener(event, { type: 'scroll', mode: this.overlayMode, valid: true })) : true;
 
-                if (valid) {
-                    this.zone.run(() => {
-                        this.hide(event, true);
-                    });
-                }
-            });
+                    if (valid) {
+                        this.zone.run(() => {
+                            this.hide(event, true);
+                        });
+                    }
+                },
+                this.zone
+            );
         }
 
         this.scrollHandler.bindScrollListener();
@@ -670,18 +673,21 @@ export class Overlay extends BaseComponent {
 
     bindDocumentClickListener() {
         if (!this.documentClickListener) {
-            this.documentClickListener = this.renderer.listen(this.document, 'click', (event) => {
-                const isTargetClicked = this.targetEl && ((this.targetEl as any).isSameNode(event.target) || (!this.isOverlayClicked && (this.targetEl as any).contains(event.target)));
-                const isOutsideClicked = !isTargetClicked && !this.isOverlayContentClicked;
-                const valid = this.listener ? this.listener(event, { type: 'outside', mode: this.overlayMode, valid: event.which !== 3 && isOutsideClicked }) : isOutsideClicked;
+            // Outside the zone: only a real dismiss re-enters it, so every click of the page does not run change detection.
+            this.zone.runOutsideAngular(() => {
+                this.documentClickListener = this.renderer.listen(this.document, 'click', (event) => {
+                    const isTargetClicked = this.targetEl && ((this.targetEl as any).isSameNode(event.target) || (!this.isOverlayClicked && (this.targetEl as any).contains(event.target)));
+                    const isOutsideClicked = !isTargetClicked && !this.isOverlayContentClicked;
+                    const valid = this.listener ? this.zone.run(() => this.listener(event, { type: 'outside', mode: this.overlayMode, valid: event.which !== 3 && isOutsideClicked })) : isOutsideClicked;
 
-                if (valid) {
-                    this.zone.run(() => {
-                        this.hide(event);
-                    });
-                }
+                    if (valid) {
+                        this.zone.run(() => {
+                            this.hide(event);
+                        });
+                    }
 
-                this.isOverlayClicked = this.isOverlayContentClicked = false;
+                    this.isOverlayClicked = this.isOverlayContentClicked = false;
+                });
             });
         }
     }
@@ -695,14 +701,16 @@ export class Overlay extends BaseComponent {
 
     bindDocumentResizeListener() {
         if (!this.documentResizeListener) {
-            this.documentResizeListener = this.renderer.listen(this.document.defaultView, 'resize', (event) => {
-                const valid = this.listener ? this.listener(event, { type: 'resize', mode: this.overlayMode, valid: !isTouchDevice() }) : !isTouchDevice();
+            this.zone.runOutsideAngular(() => {
+                this.documentResizeListener = this.renderer.listen(this.document.defaultView, 'resize', (event) => {
+                    const valid = this.listener ? this.zone.run(() => this.listener(event, { type: 'resize', mode: this.overlayMode, valid: !isTouchDevice() })) : !isTouchDevice();
 
-                if (valid) {
-                    this.zone.run(() => {
-                        this.hide(event, true);
-                    });
-                }
+                    if (valid) {
+                        this.zone.run(() => {
+                            this.hide(event, true);
+                        });
+                    }
+                });
             });
         }
     }
@@ -725,7 +733,7 @@ export class Overlay extends BaseComponent {
                     return;
                 }
 
-                const valid = this.listener ? this.listener(event, { type: 'keydown', mode: this.overlayMode, valid: !isTouchDevice() }) : !isTouchDevice();
+                const valid = this.listener ? this.zone.run(() => this.listener(event, { type: 'keydown', mode: this.overlayMode, valid: !isTouchDevice() })) : !isTouchDevice();
 
                 if (valid) {
                     this.zone.run(() => {

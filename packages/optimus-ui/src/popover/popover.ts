@@ -1,4 +1,4 @@
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
 import {
     booleanAttribute,
     ChangeDetectionStrategy,
@@ -7,16 +7,14 @@ import {
     ContentChild,
     ContentChildren,
     ElementRef,
-    EventEmitter,
-    HostListener,
     inject,
     InjectionToken,
-    input,
     Input,
+    input,
     NgModule,
     NgZone,
     numberAttribute,
-    Output,
+    output,
     QueryList,
     TemplateRef,
     ViewEncapsulation,
@@ -45,16 +43,18 @@ const POPOVER_INSTANCE = new InjectionToken<Popover>('POPOVER_INSTANCE');
 @Component({
     selector: 'p-popover',
     standalone: true,
-    imports: [CommonModule, SharedModule, Bind, MotionModule],
+    imports: [NgTemplateOutlet, SharedModule, Bind, MotionModule],
     providers: [PopoverStyle, { provide: POPOVER_INSTANCE, useExisting: Popover }, { provide: PARENT_INSTANCE, useExisting: Popover }],
     hostDirectives: [Bind],
+    host: {
+        '(document:keydown.escape)': 'onEscapeKeydown($event)'
+    },
     template: `
         @if (render) {
             <div
                 [pBind]="ptm('root')"
                 [class]="cn(cx('root'), styleClass)"
-                [style]="sx('root')"
-                [ngStyle]="style"
+                [style]="rootStyles"
                 (click)="onOverlayClick($event)"
                 role="dialog"
                 [attr.aria-modal]="overlayVisible"
@@ -69,7 +69,7 @@ const POPOVER_INSTANCE = new InjectionToken<Popover>('POPOVER_INSTANCE');
             >
                 <div [pBind]="ptm('content')" [class]="cx('content')" (click)="onContentClick($event)" (mousedown)="onContentClick($event)">
                     <ng-content></ng-content>
-                    <ng-template *ngTemplateOutlet="contentTemplate || _contentTemplate; context: { closeCallback: onCloseClick.bind(this) }"></ng-template>
+                    <ng-container *ngTemplateOutlet="contentTemplate || _contentTemplate; context: { closeCallback: onCloseClick.bind(this) }"></ng-container>
                 </div>
             </div>
         }
@@ -167,12 +167,12 @@ export class Popover extends BaseComponent<PopoverPassThrough> {
      * Callback to invoke when an overlay becomes visible.
      * @group Emits
      */
-    @Output() onShow: EventEmitter<any> = new EventEmitter();
+    onShow = output<any>();
     /**
      * Callback to invoke when an overlay gets hidden.
      * @group Emits
      */
-    @Output() onHide: EventEmitter<any> = new EventEmitter<any>();
+    onHide = output<any>();
 
     $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
 
@@ -218,6 +218,12 @@ export class Popover extends BaseComponent<PopoverPassThrough> {
 
     overlayService = inject(OverlayService);
 
+    private focusTimeout: ReturnType<typeof setTimeout> | undefined;
+
+    get rootStyles() {
+        return { ...this.sx('root'), ...this.style };
+    }
+
     onAfterContentInit() {
         this.templates.forEach((item) => {
             switch (item.getType()) {
@@ -234,17 +240,19 @@ export class Popover extends BaseComponent<PopoverPassThrough> {
                 let documentEvent = isIOS() ? 'touchstart' : 'click';
                 const documentTarget: any = this.el ? this.el.nativeElement.ownerDocument : this.document;
 
-                this.documentClickListener = this.renderer.listen(documentTarget, documentEvent, (event) => {
-                    if (!this.dismissable) {
-                        return;
-                    }
+                // Outside the zone: `hide()` marks the view for check, so only a real dismiss repaints.
+                this.zone.runOutsideAngular(() => {
+                    this.documentClickListener = this.renderer.listen(documentTarget, documentEvent, (event) => {
+                        if (!this.dismissable) {
+                            return;
+                        }
 
-                    if (!this.container?.contains(event.target) && this.target !== event.target && !this.target.contains(event.target) && !this.selfClick) {
-                        this.hide();
-                    }
+                        if (!this.container?.contains(event.target) && this.target !== event.target && !this.target?.contains(event.target) && !this.selfClick) {
+                            this.hide();
+                        }
 
-                    this.selfClick = false;
-                    this.cd.markForCheck();
+                        this.selfClick = false;
+                    });
                 });
             }
         }
@@ -378,6 +386,7 @@ export class Popover extends BaseComponent<PopoverPassThrough> {
             }
         };
 
+        this.overlaySubscription?.unsubscribe();
         this.overlaySubscription = this.overlayService.clickObservable.subscribe(this.overlayEventListener);
         this.onShow.emit(null);
     }
@@ -408,7 +417,8 @@ export class Popover extends BaseComponent<PopoverPassThrough> {
         let focusable = <any>findSingle(this.container!, '[autofocus]');
         if (focusable) {
             this.zone.runOutsideAngular(() => {
-                setTimeout(() => focusable.focus(), 5);
+                clearTimeout(this.focusTimeout);
+                this.focusTimeout = setTimeout(() => focusable.focus(), 5);
             });
         }
     }
@@ -426,7 +436,6 @@ export class Popover extends BaseComponent<PopoverPassThrough> {
         event.preventDefault();
     }
 
-    @HostListener('document:keydown.escape', ['$event'])
     onEscapeKeydown(_event: KeyboardEvent) {
         this.hide();
     }
@@ -441,7 +450,9 @@ export class Popover extends BaseComponent<PopoverPassThrough> {
         if (isPlatformBrowser(this.platformId)) {
             if (!this.documentResizeListener) {
                 const window = this.document.defaultView as Window;
-                this.documentResizeListener = this.renderer.listen(window, 'resize', this.onWindowResize.bind(this));
+                this.zone.runOutsideAngular(() => {
+                    this.documentResizeListener = this.renderer.listen(window, 'resize', this.onWindowResize.bind(this));
+                });
             }
         }
     }
@@ -456,11 +467,15 @@ export class Popover extends BaseComponent<PopoverPassThrough> {
     bindScrollListener() {
         if (isPlatformBrowser(this.platformId)) {
             if (!this.scrollHandler) {
-                this.scrollHandler = new ConnectedOverlayScrollHandler(this.target, () => {
-                    if (this.overlayVisible) {
-                        this.hide();
-                    }
-                });
+                this.scrollHandler = new ConnectedOverlayScrollHandler(
+                    this.target,
+                    () => {
+                        if (this.overlayVisible) {
+                            this.hide();
+                        }
+                    },
+                    this.zone
+                );
             }
 
             this.scrollHandler.bindScrollListener();
@@ -484,6 +499,8 @@ export class Popover extends BaseComponent<PopoverPassThrough> {
     }
 
     onDestroy() {
+        clearTimeout(this.focusTimeout);
+
         if (this.scrollHandler) {
             this.scrollHandler.destroy();
             this.scrollHandler = null;

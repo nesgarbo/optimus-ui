@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import {
     booleanAttribute,
     ChangeDetectionStrategy,
@@ -7,14 +7,14 @@ import {
     ContentChild,
     ContentChildren,
     ElementRef,
-    EventEmitter,
     inject,
     InjectionToken,
-    input,
     Input,
+    input,
     NgModule,
+    NgZone,
     numberAttribute,
-    Output,
+    output,
     QueryList,
     TemplateRef,
     ViewChild,
@@ -44,7 +44,7 @@ const DRAWER_INSTANCE = new InjectionToken<Drawer>('DRAWER_INSTANCE');
 @Component({
     selector: 'p-drawer',
     standalone: true,
-    imports: [CommonModule, Button, TimesIcon, SharedModule, Bind, FocusTrapModule, MotionModule],
+    imports: [NgTemplateOutlet, Button, TimesIcon, SharedModule, Bind, FocusTrapModule, MotionModule],
     providers: [DrawerStyle, { provide: DRAWER_INSTANCE, useExisting: Drawer }, { provide: PARENT_INSTANCE, useExisting: Drawer }],
     hostDirectives: [Bind],
     template: `
@@ -70,7 +70,7 @@ const DRAWER_INSTANCE = new InjectionToken<Drawer>('DRAWER_INSTANCE');
                 @if (headlessTemplate || _headlessTemplate) {
                     <ng-container *ngTemplateOutlet="headlessTemplate || _headlessTemplate"></ng-container>
                 } @else {
-                    <div [pBind]="ptm('header')" [ngClass]="cx('header')" [attr.data-pc-section]="'header'">
+                    <div [pBind]="ptm('header')" [class]="cx('header')" [attr.data-pc-section]="'header'">
                         <ng-container *ngTemplateOutlet="headerTemplate || _headerTemplate"></ng-container>
                         @if (header) {
                             <div [pBind]="ptm('title')" [class]="cx('title')">{{ header }}</div>
@@ -78,7 +78,7 @@ const DRAWER_INSTANCE = new InjectionToken<Drawer>('DRAWER_INSTANCE');
                         @if (showCloseIcon && closable) {
                             <p-button
                                 [pt]="ptm('pcCloseButton')"
-                                [ngClass]="cx('pcCloseButton')"
+                                [class]="cx('pcCloseButton')"
                                 (onClick)="close($event)"
                                 (keydown.enter)="close($event)"
                                 [buttonProps]="closeButtonProps"
@@ -90,19 +90,19 @@ const DRAWER_INSTANCE = new InjectionToken<Drawer>('DRAWER_INSTANCE');
                                     @if (!closeIconTemplate && !_closeIconTemplate) {
                                         <svg data-p-icon="times" [attr.data-pc-section]="'closeicon'" />
                                     }
-                                    <ng-template *ngTemplateOutlet="closeIconTemplate || _closeIconTemplate"></ng-template>
+                                    <ng-container *ngTemplateOutlet="closeIconTemplate || _closeIconTemplate"></ng-container>
                                 </ng-template>
                             </p-button>
                         }
                     </div>
 
-                    <div [pBind]="ptm('content')" [ngClass]="cx('content')" [attr.data-pc-section]="'content'">
+                    <div [pBind]="ptm('content')" [class]="cx('content')" [attr.data-pc-section]="'content'">
                         <ng-content></ng-content>
                         <ng-container *ngTemplateOutlet="contentTemplate || _contentTemplate"></ng-container>
                     </div>
 
                     @if (footerTemplate || _footerTemplate) {
-                        <div [pBind]="ptm('footer')" [ngClass]="cx('footer')" [attr.data-pc-section]="'footer'">
+                        <div [pBind]="ptm('footer')" [class]="cx('footer')" [attr.data-pc-section]="'footer'">
                             <ng-container *ngTemplateOutlet="footerTemplate || _footerTemplate"></ng-container>
                         </div>
                     }
@@ -256,18 +256,18 @@ export class Drawer extends BaseComponent<DrawerPassThrough> {
      * Callback to invoke when dialog is shown.
      * @group Emits
      */
-    @Output() onShow: EventEmitter<any> = new EventEmitter<any>();
+    onShow = output<any>();
     /**
      * Callback to invoke when dialog is hidden.
      * @group Emits
      */
-    @Output() onHide: EventEmitter<any> = new EventEmitter<any>();
+    onHide = output<any>();
     /**
      * Callback to invoke when dialog visibility is changed.
      * @param {boolean} value - Visible value.
      * @group Emits
      */
-    @Output() visibleChange: EventEmitter<boolean> = new EventEmitter<boolean>();
+    visibleChange = output<boolean>();
 
     @ViewChild('container') containerViewChild: ElementRef | undefined;
 
@@ -294,6 +294,8 @@ export class Drawer extends BaseComponent<DrawerPassThrough> {
     animationEndListener: VoidListener;
 
     _componentStyle = inject(DrawerStyle);
+
+    private zone: NgZone = inject(NgZone);
 
     onAfterViewInit() {
         this.initialized = true;
@@ -494,12 +496,15 @@ export class Drawer extends BaseComponent<DrawerPassThrough> {
     bindDocumentEscapeListener() {
         const documentTarget: any = this.el ? this.el.nativeElement.ownerDocument : this.document;
 
-        this.documentEscapeListener = this.renderer.listen(documentTarget, 'keydown', (event) => {
-            if (event.which == 27) {
-                if (parseInt((this.container as HTMLDivElement)?.style.zIndex) === ZIndexUtils.get(this.container)) {
-                    this.close(event);
+        // Outside the zone so unrelated key presses do not trigger change detection; only a real close re-enters it.
+        this.zone.runOutsideAngular(() => {
+            this.documentEscapeListener = this.renderer.listen(documentTarget, 'keydown', (event) => {
+                if (event.which == 27) {
+                    if (parseInt((this.container as HTMLDivElement)?.style.zIndex) === ZIndexUtils.get(this.container)) {
+                        this.zone.run(() => this.close(event));
+                    }
                 }
-            }
+            });
         });
     }
 
@@ -532,7 +537,7 @@ export class Drawer extends BaseComponent<DrawerPassThrough> {
     onDestroy() {
         this.initialized = false;
 
-        if (this.visible && this.modal) {
+        if (this.mask || (this.visible && this.modal)) {
             this.destroyModal();
         }
 

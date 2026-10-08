@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { booleanAttribute, ChangeDetectionStrategy, Component, computed, ContentChild, ContentChildren, EventEmitter, inject, InjectionToken, input, Input, NgModule, Output, QueryList, signal, TemplateRef, ViewEncapsulation } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import { booleanAttribute, ChangeDetectionStrategy, Component, computed, ContentChild, ContentChildren, inject, InjectionToken, Input, input, NgModule, output, QueryList, signal, TemplateRef, ViewEncapsulation } from '@angular/core';
 import { MotionOptions } from '@openng/optimus-ui-motion';
 import { PrimeTemplate, SharedModule } from '@openng/optimus-ui/api';
 import { BaseComponent, PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
@@ -19,7 +19,7 @@ const MESSAGE_INSTANCE = new InjectionToken<Message>('MESSAGE_INSTANCE');
 @Component({
     selector: 'p-message',
     standalone: true,
-    imports: [CommonModule, TimesIcon, Ripple, SharedModule, Bind, MotionModule],
+    imports: [NgTemplateOutlet, TimesIcon, Ripple, SharedModule, Bind, MotionModule],
     template: `
         <div [pBind]="ptm('contentWrapper')" [class]="cx('contentWrapper')" [attr.data-p]="dataP">
             <div [pBind]="ptm('content')" [class]="cx('content')" [attr.data-p]="dataP">
@@ -36,23 +36,23 @@ const MESSAGE_INSTANCE = new InjectionToken<Message>('MESSAGE_INSTANCE');
                     @if (!escape) {
                         <div>
                             @if (!escape) {
-                                <span [pBind]="ptm('text')" [ngClass]="cx('text')" [innerHTML]="text" [attr.data-p]="dataP"></span>
+                                <span [pBind]="ptm('text')" [class]="cx('text')" [innerHTML]="text" [attr.data-p]="dataP"></span>
                             }
                         </div>
                     } @else {
                         @if (escape && text) {
-                            <span [pBind]="ptm('text')" [ngClass]="cx('text')" [attr.data-p]="dataP">{{ text }}</span>
+                            <span [pBind]="ptm('text')" [class]="cx('text')" [attr.data-p]="dataP">{{ text }}</span>
                         }
                     }
 
-                    <span [pBind]="ptm('text')" [ngClass]="cx('text')" [attr.data-p]="dataP">
+                    <span [pBind]="ptm('text')" [class]="cx('text')" [attr.data-p]="dataP">
                         <ng-content></ng-content>
                     </span>
                 }
                 @if (closable) {
                     <button [pBind]="ptm('closeButton')" pRipple type="button" [class]="cx('closeButton')" (click)="close($event)" [attr.aria-label]="closeAriaLabel" [attr.data-p]="dataP">
                         @if (closeIcon) {
-                            <i [pBind]="ptm('closeIcon')" [class]="cn(cx('closeIcon'), closeIcon)" [ngClass]="closeIcon" [attr.data-p]="dataP"></i>
+                            <i [pBind]="ptm('closeIcon')" [class]="cn(cx('closeIcon'), closeIcon)" [attr.data-p]="dataP"></i>
                         }
                         @if (closeIconTemplate || _closeIconTemplate) {
                             <ng-container *ngTemplateOutlet="closeIconTemplate || _closeIconTemplate"></ng-container>
@@ -184,7 +184,7 @@ export class Message extends BaseComponent<MessagePassThrough> {
      * @param {{ originalEvent: Event }} event - The event object containing the original event.
      * @group Emits
      */
-    @Output() onClose: EventEmitter<{ originalEvent: Event }> = new EventEmitter<{ originalEvent: Event }>();
+    onClose = output<{ originalEvent: Event }>();
 
     get closeAriaLabel() {
         return this.config.translation.aria ? this.config.translation.aria.close : undefined;
@@ -224,12 +224,19 @@ export class Message extends BaseComponent<MessagePassThrough> {
         this.close(event);
     };
 
+    private lifeTimeout: ReturnType<typeof setTimeout> | undefined;
+
     onInit() {
         if (this.life) {
-            setTimeout(() => {
+            this.lifeTimeout = setTimeout(() => {
+                this.lifeTimeout = undefined;
                 this.visible.set(false);
             }, this.life);
         }
+    }
+
+    onDestroy() {
+        clearTimeout(this.lifeTimeout);
     }
 
     onAfterContentInit() {

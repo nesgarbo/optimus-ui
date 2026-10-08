@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { NgComponentOutlet } from '@angular/common';
 import { Binding, ChangeDetectionStrategy, Component, ComponentRef, DirectiveWithBindings, inject, InjectionToken, inputBinding, NgModule, Type, ViewChild, ViewEncapsulation } from '@angular/core';
 import { uuid } from '@openng/optimus-ui-utils';
 import { SharedModule, TranslationKeys } from '@openng/optimus-ui/api';
@@ -16,7 +16,7 @@ const DYNAMIC_DIALOG_INSTANCE = new InjectionToken<DynamicDialog>('DYNAMIC_DIALO
 @Component({
     selector: 'p-dynamicDialog, p-dynamicdialog, p-dynamic-dialog',
     standalone: true,
-    imports: [CommonModule, SharedModule, DynamicDialogContent, Dialog, BindModule],
+    imports: [NgComponentOutlet, SharedModule, DynamicDialogContent, Dialog, BindModule],
     template: `
         <p-dialog
             [(visible)]="visible"
@@ -100,6 +100,7 @@ const DYNAMIC_DIALOG_INSTANCE = new InjectionToken<DynamicDialog>('DYNAMIC_DIALO
             }
         </p-dialog>
     `,
+    // Eager on purpose: items and nodes are often mutated in place, which OnPush cannot see.
     changeDetection: ChangeDetectionStrategy.Eager,
     encapsulation: ViewEncapsulation.None,
     providers: [DynamicDialogStyle, { provide: DYNAMIC_DIALOG_INSTANCE, useExisting: DynamicDialog }, { provide: PARENT_INSTANCE, useExisting: DynamicDialog }],
@@ -260,12 +261,9 @@ export class DynamicDialog extends BaseComponent<DialogPassThrough> {
 
     documentEscapeListener: any;
 
-    constructor(
-        public ddconfig: DynamicDialogConfig,
-        private dialogRef: DynamicDialogRef
-    ) {
-        super();
-    }
+    ddconfig: DynamicDialogConfig = inject(DynamicDialogConfig);
+
+    private dialogRef: DynamicDialogRef = inject(DynamicDialogRef);
 
     onVisibleChange(visible: boolean) {
         if (!visible) {

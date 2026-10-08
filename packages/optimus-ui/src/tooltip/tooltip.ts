@@ -1,5 +1,6 @@
 import { isPlatformBrowser } from '@angular/common';
-import { booleanAttribute, computed, Directive, effect, ElementRef, inject, InjectionToken, input, Input, NgModule, NgZone, numberAttribute, SimpleChanges, TemplateRef, ViewContainerRef } from '@angular/core';
+import { booleanAttribute, computed, Directive, effect, ElementRef, EmbeddedViewRef, inject, InjectionToken, input, Input, NgModule, NgZone, numberAttribute, SecurityContext, SimpleChanges, TemplateRef, ViewContainerRef } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
 import { appendChild, createElement, fadeIn, findSingle, getOuterHeight, getOuterWidth, getViewport, getWindowScrollLeft, getWindowScrollTop, hasClass, removeChild, uuid } from '@openng/optimus-ui-utils';
 import { TooltipOptions } from '@openng/optimus-ui/api';
 import { BaseComponent, PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
@@ -220,10 +221,19 @@ export class Tooltip extends BaseComponent<TooltipPassThroughOptions> {
      */
     pTooltipUnstyled = input<boolean | undefined>();
 
-    constructor(
-        public zone: NgZone,
-        private viewContainer: ViewContainerRef
-    ) {
+    zone: NgZone = inject(NgZone);
+
+    private viewContainer: ViewContainerRef = inject(ViewContainerRef);
+
+    private sanitizer: DomSanitizer = inject(DomSanitizer);
+
+    private embeddedViewRef: EmbeddedViewRef<any> | null = null;
+
+    private dialogTimeout: ReturnType<typeof setTimeout> | undefined;
+
+    private eventsBound = false;
+
+    constructor() {
         super();
         effect(() => {
             const pt = this.ptTooltip() || this.pTooltipPT();
@@ -236,7 +246,12 @@ export class Tooltip extends BaseComponent<TooltipPassThroughOptions> {
     }
 
     onAfterViewInit() {
-        if (isPlatformBrowser(this.platformId)) {
+        this.bindEvents();
+    }
+
+    bindEvents() {
+        if (isPlatformBrowser(this.platformId) && !this.eventsBound) {
+            this.eventsBound = true;
             this.zone.runOutsideAngular(() => {
                 const tooltipEvent = this.getOption('tooltipEvent');
 
@@ -258,20 +273,22 @@ export class Tooltip extends BaseComponent<TooltipPassThroughOptions> {
                     this.focusListener = this.onFocus.bind(this);
                     this.blurListener = this.onBlur.bind(this);
 
-                    let target = this.el.nativeElement.querySelector('.p-component');
+                    const target = this.getFocusTarget();
 
-                    if (!target) {
-                        target = this.getTarget(this.el.nativeElement);
-                    }
-
-                    target.addEventListener('focus', this.focusListener);
-                    target.addEventListener('blur', this.blurListener);
+                    target?.addEventListener('focus', this.focusListener as any);
+                    target?.addEventListener('blur', this.blurListener as any);
                 }
             });
         }
     }
 
+    private getFocusTarget(): HTMLElement | null {
+        return this.el.nativeElement.querySelector('.p-component') || (this.getTarget(this.el.nativeElement) as HTMLElement | null);
+    }
+
     onChanges(simpleChange: SimpleChanges) {
+        const previousEvent = this.getOption('tooltipEvent');
+
         if (simpleChange.tooltipPosition) {
             this.setOption({ tooltipPosition: simpleChange.tooltipPosition.currentValue });
         }
@@ -369,6 +386,14 @@ export class Tooltip extends BaseComponent<TooltipPassThroughOptions> {
                     this.hide();
                 }
             }
+        }
+
+        // `tooltipEvent` (alone or through `tooltipOptions`) changed while bound: hook the listeners of the new event.
+        if (this.eventsBound && this.getOption('tooltipEvent') !== previousEvent) {
+            this.deactivate();
+            this.unbindEvents(previousEvent);
+            this.eventsBound = false;
+            this.bindEvents();
         }
     }
 
@@ -478,7 +503,6 @@ export class Tooltip extends BaseComponent<TooltipPassThroughOptions> {
             if (this.getOption('hideOnEscape')) {
                 this.documentEscapeListener = this.renderer.listen('document', 'keydown.escape', () => {
                     this.deactivate();
-                    this.documentEscapeListener?.();
                 });
             }
             this.interactionInProgress = true;
@@ -501,6 +525,7 @@ export class Tooltip extends BaseComponent<TooltipPassThroughOptions> {
 
         if (this.documentEscapeListener) {
             this.documentEscapeListener();
+            this.documentEscapeListener = null;
         }
     }
 
@@ -554,7 +579,7 @@ export class Tooltip extends BaseComponent<TooltipPassThroughOptions> {
 
     unbindContainerMouseleaveListener() {
         if (this.containerMouseleaveListener) {
-            this.bindContainerMouseleaveListener();
+            this.containerMouseleaveListener();
             this.containerMouseleaveListener = null;
         }
     }
@@ -570,7 +595,9 @@ export class Tooltip extends BaseComponent<TooltipPassThroughOptions> {
         const pDialogWrapper = nativeElement.closest('p-dialog');
 
         if (pDialogWrapper) {
-            setTimeout(() => {
+            clearTimeout(this.dialogTimeout);
+            this.dialogTimeout = setTimeout(() => {
+                this.dialogTimeout = undefined;
                 this.container && (this.container.style.display = 'inline-block');
                 this.container && this.align();
             }, 100);
@@ -597,15 +624,26 @@ export class Tooltip extends BaseComponent<TooltipPassThroughOptions> {
 
     updateText() {
         const content = this.getOption('tooltipLabel');
+        this.destroyEmbeddedView();
+
         if (content && typeof (content as TemplateRef<any>).createEmbeddedView === 'function') {
-            const embeddedViewRef = this.viewContainer.createEmbeddedView(content);
-            embeddedViewRef.detectChanges();
-            embeddedViewRef.rootNodes.forEach((node) => this.tooltipText.appendChild(node));
+            this.tooltipText.textContent = '';
+            this.embeddedViewRef = this.viewContainer.createEmbeddedView(content);
+            this.embeddedViewRef.detectChanges();
+            this.embeddedViewRef.rootNodes.forEach((node) => this.tooltipText.appendChild(node));
         } else if (this.getOption('escape')) {
             this.tooltipText.textContent = '';
             this.tooltipText.appendChild(document.createTextNode(content));
         } else {
-            this.tooltipText.innerHTML = content;
+            // Opt-in HTML: always sanitized so a tooltip fed with user content cannot inject script.
+            this.tooltipText.innerHTML = this.sanitizer.sanitize(SecurityContext.HTML, content) ?? '';
+        }
+    }
+
+    private destroyEmbeddedView() {
+        if (this.embeddedViewRef) {
+            this.embeddedViewRef.destroy();
+            this.embeddedViewRef = null;
         }
     }
 
@@ -750,6 +788,7 @@ export class Tooltip extends BaseComponent<TooltipPassThroughOptions> {
     }
 
     bindDocumentResizeListener() {
+        this.unbindDocumentResizeListener();
         this.zone.runOutsideAngular(() => {
             this.resizeListener = this.onWindowResize.bind(this);
             window.addEventListener('resize', this.resizeListener);
@@ -765,11 +804,15 @@ export class Tooltip extends BaseComponent<TooltipPassThroughOptions> {
 
     bindScrollListener() {
         if (!this.scrollHandler) {
-            this.scrollHandler = new ConnectedOverlayScrollHandler(this.el.nativeElement, () => {
-                if (this.container) {
-                    this.hide();
-                }
-            });
+            this.scrollHandler = new ConnectedOverlayScrollHandler(
+                this.el.nativeElement,
+                () => {
+                    if (this.container) {
+                        this.hide();
+                    }
+                },
+                this.zone
+            );
         }
 
         this.scrollHandler.bindScrollListener();
@@ -781,9 +824,7 @@ export class Tooltip extends BaseComponent<TooltipPassThroughOptions> {
         }
     }
 
-    unbindEvents() {
-        const tooltipEvent = this.getOption('tooltipEvent');
-
+    unbindEvents(tooltipEvent: string = this.getOption('tooltipEvent')) {
         this.pointerInside = false;
 
         if (tooltipEvent === 'hover' || tooltipEvent === 'both') {
@@ -797,16 +838,13 @@ export class Tooltip extends BaseComponent<TooltipPassThroughOptions> {
             this.unbindDocumentTouchListener();
         }
         if (tooltipEvent === 'focus' || tooltipEvent === 'both') {
-            let target = this.el.nativeElement.querySelector('.p-component');
+            const target = this.getFocusTarget();
 
-            if (!target) {
-                target = this.getTarget(this.el.nativeElement);
-            }
-
-            target.removeEventListener('focus', this.focusListener);
-            target.removeEventListener('blur', this.blurListener);
+            target?.removeEventListener('focus', this.focusListener as any);
+            target?.removeEventListener('blur', this.blurListener as any);
         }
         this.unbindDocumentResizeListener();
+        this.eventsBound = false;
     }
 
     remove() {
@@ -821,6 +859,9 @@ export class Tooltip extends BaseComponent<TooltipPassThroughOptions> {
         this.unbindContainerMouseleaveListener();
         this.unbindDocumentTouchListener();
         this.clearTimeouts();
+        clearTimeout(this.dialogTimeout);
+        this.dialogTimeout = undefined;
+        this.destroyEmbeddedView();
         this.container = null;
         this.scrollHandler = null;
     }
@@ -860,6 +901,7 @@ export class Tooltip extends BaseComponent<TooltipPassThroughOptions> {
 
         if (this.documentEscapeListener) {
             this.documentEscapeListener();
+            this.documentEscapeListener = null;
         }
     }
 }

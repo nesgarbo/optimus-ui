@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import {
     booleanAttribute,
     ChangeDetectionStrategy,
@@ -7,16 +7,14 @@ import {
     ContentChild,
     ContentChildren,
     effect,
-    EventEmitter,
     inject,
     InjectionToken,
-    input,
     Input,
+    input,
     NgModule,
     NgZone,
     numberAttribute,
     output,
-    Output,
     QueryList,
     signal,
     TemplateRef,
@@ -39,7 +37,7 @@ const TOAST_INSTANCE = new InjectionToken<Toast>('TOAST_INSTANCE');
 @Component({
     selector: 'p-toastItem',
     standalone: true,
-    imports: [CommonModule, CheckIcon, ExclamationTriangleIcon, InfoCircleIcon, TimesIcon, TimesCircleIcon, SharedModule, Bind, MotionModule],
+    imports: [NgTemplateOutlet, CheckIcon, ExclamationTriangleIcon, InfoCircleIcon, TimesIcon, TimesCircleIcon, SharedModule, Bind, MotionModule],
     template: `
         <div
             #container
@@ -85,11 +83,11 @@ const TOAST_INSTANCE = new InjectionToken<Toast>('TOAST_INSTANCE');
                                 }
                             }
                         }
-                        <div [pBind]="ptm('messageText')" [ngClass]="cx('messageText')" [attr.data-p]="dataP">
-                            <div [pBind]="ptm('summary')" [ngClass]="cx('summary')" [attr.data-p]="dataP">
+                        <div [pBind]="ptm('messageText')" [class]="cx('messageText')" [attr.data-p]="dataP">
+                            <div [pBind]="ptm('summary')" [class]="cx('summary')" [attr.data-p]="dataP">
                                 {{ message.summary }}
                             </div>
-                            <div [pBind]="ptm('detail')" [ngClass]="cx('detail')" [attr.data-p]="dataP">{{ message.detail }}</div>
+                            <div [pBind]="ptm('detail')" [class]="cx('detail')" [attr.data-p]="dataP">{{ message.detail }}</div>
                         </div>
                     }
                     <ng-container *ngTemplateOutlet="template; context: { $implicit: message }"></ng-container>
@@ -106,9 +104,7 @@ const TOAST_INSTANCE = new InjectionToken<Toast>('TOAST_INSTANCE');
                                 [attr.data-p]="dataP"
                             >
                                 @if (message.closeIcon) {
-                                    @if (message.closeIcon) {
-                                        <span [pBind]="ptm('closeIcon')" [class]="cn(cx('closeIcon'), message?.closeIcon)"></span>
-                                    }
+                                    <span [pBind]="ptm('closeIcon')" [class]="cn(cx('closeIcon'), message?.closeIcon)"></span>
                                 } @else {
                                     <svg [pBind]="ptm('closeIcon')" data-p-icon="times" [class]="cx('closeIcon')" [attr.aria-hidden]="true" />
                                 }
@@ -167,7 +163,7 @@ export class ToastItem extends BaseComponent<ToastPassThrough> {
         }
     }
 
-    @Output() onClose: EventEmitter<ToastItemCloseEvent> = new EventEmitter();
+    onClose = output<ToastItemCloseEvent>();
 
     _componentStyle = inject(ToastStyle);
 
@@ -179,7 +175,9 @@ export class ToastItem extends BaseComponent<ToastPassThrough> {
 
     private isClosing = false;
 
-    constructor(private zone: NgZone) {
+    private zone: NgZone = inject(NgZone);
+
+    constructor() {
         super();
 
         effect(() => {
@@ -257,7 +255,7 @@ export class ToastItem extends BaseComponent<ToastPassThrough> {
 @Component({
     selector: 'p-toast',
     standalone: true,
-    imports: [CommonModule, ToastItem, SharedModule],
+    imports: [ToastItem, SharedModule],
     template: `
         @for (msg of messages; track msg; let i = $index) {
             <p-toastItem
@@ -391,7 +389,7 @@ export class Toast extends BaseComponent<ToastPassThrough> {
      * @param {ToastCloseEvent} event - custom close event.
      * @group Emits
      */
-    @Output() onClose: EventEmitter<ToastCloseEvent> = new EventEmitter<ToastCloseEvent>();
+    onClose = output<ToastCloseEvent>();
     /**
      * Custom message template.
      * @param {ToastMessageTemplateContext} context - message context.
@@ -428,10 +426,6 @@ export class Toast extends BaseComponent<ToastPassThrough> {
     @ContentChildren(PrimeTemplate) templates: QueryList<PrimeTemplate> | undefined;
 
     clearAllTrigger = signal<{} | null>(null);
-
-    constructor() {
-        super();
-    }
 
     onInit() {
         this.messageSubscription = this.messageService.messageObserver.subscribe((messages) => {

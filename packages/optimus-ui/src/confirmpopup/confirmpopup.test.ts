@@ -1964,3 +1964,35 @@ describe('ConfirmPopup', () => {
         });
     });
 });
+
+describe('ConfirmPopup focus buttons', () => {
+    it('should resolve the accept and reject button references and focus the default one', async () => {
+        await TestBed.configureTestingModule({
+            declarations: [TestFocusConfirmPopupComponent],
+            imports: [ConfirmPopup, ButtonModule, FocusTrap],
+            providers: [ConfirmationService, OverlayService, provideZonelessChangeDetection()]
+        }).compileComponents();
+
+        for (const defaultFocus of ['accept', 'reject']) {
+            const fixture = TestBed.createComponent(TestFocusConfirmPopupComponent);
+            fixture.componentInstance.defaultFocus = defaultFocus;
+            fixture.changeDetectorRef.markForCheck();
+            await fixture.whenStable();
+
+            const popup: ConfirmPopup = fixture.debugElement.query(By.directive(ConfirmPopup)).componentInstance;
+            fixture.debugElement.query(By.css('.trigger-btn')).nativeElement.click();
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            fixture.changeDetectorRef.markForCheck();
+            await fixture.whenStable();
+
+            expect(popup.acceptButtonViewChild()).toBeTruthy();
+            expect(popup.rejectButtonViewChild()).toBeTruthy();
+
+            const target = defaultFocus === 'accept' ? popup.acceptButtonViewChild() : popup.rejectButtonViewChild();
+            const button = target!.nativeElement.querySelector('[data-pc-section="root"]') as HTMLButtonElement;
+            const spy = vi.spyOn(button, 'focus');
+            popup.handleFocus();
+            expect(spy).toHaveBeenCalled();
+        }
+    });
+});

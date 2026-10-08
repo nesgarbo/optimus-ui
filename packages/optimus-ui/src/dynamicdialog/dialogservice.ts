@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { ApplicationRef, ComponentRef, EmbeddedViewRef, Inject, Injectable, Injector, Type, createComponent } from '@angular/core';
+import { ApplicationRef, ComponentRef, EmbeddedViewRef, inject, Injectable, Injector, Type, createComponent } from '@angular/core';
 import { appendChild } from '@openng/optimus-ui-utils';
 import { DynamicDialog } from './dynamicdialog';
 import { DynamicDialogConfig } from './dynamicdialog-config';
@@ -14,11 +14,12 @@ import { DynamicDialogRef } from './dynamicdialog-ref';
 export class DialogService {
     dialogComponentRefMap: Map<DynamicDialogRef<any>, ComponentRef<DynamicDialog>> = new Map();
 
-    constructor(
-        private appRef: ApplicationRef,
-        private injector: Injector,
-        @Inject(DOCUMENT) private document: Document
-    ) {}
+    private appRef = inject(ApplicationRef);
+
+    private injector = inject(Injector);
+
+    private document = inject<Document>(DOCUMENT);
+
     /**
      * Displays the dialog using the dynamic dialog object options.
      * @param {*} componentType - Dynamic component for content template.

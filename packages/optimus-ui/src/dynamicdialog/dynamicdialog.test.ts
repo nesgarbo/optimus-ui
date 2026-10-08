@@ -665,7 +665,7 @@ describe('DynamicDialog', () => {
 
         it('should pass ariaLabelledBy from config to the dialog', async () => {
             mockConfig.ariaLabelledBy = 'custom-label-id';
-            fixture.changeDetectorRef.markForCheck();
+            component.cd.markForCheck();
             await fixture.whenStable();
 
             const dialogElement = fixture.debugElement.query(By.css('[role="dialog"]'));

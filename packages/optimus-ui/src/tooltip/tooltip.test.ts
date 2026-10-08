@@ -994,4 +994,74 @@ describe('Tooltip', () => {
             expect(container?.hasAttribute('data-test')).toBeFalsy();
         });
     });
+    describe('Hot rebinding and sanitization', () => {
+        let fixture: ComponentFixture<TestBasicTooltipComponent>;
+        let component: TestBasicTooltipComponent;
+        let tooltipDirective: Tooltip;
+        let inputElement: HTMLElement;
+
+        beforeEach(() => {
+            fixture = TestBed.createComponent(TestBasicTooltipComponent);
+            component = fixture.componentInstance;
+            fixture.detectChanges();
+
+            tooltipDirective = fixture.debugElement.query(By.directive(Tooltip)).injector.get(Tooltip);
+            inputElement = component.inputElement.nativeElement;
+        });
+
+        afterEach(() => {
+            tooltipDirective.deactivate();
+        });
+
+        it('should rebind the listeners when tooltipEvent changes at runtime', async () => {
+            const activateSpy = vi.spyOn(tooltipDirective, 'activate').mockImplementation(() => {});
+
+            component.tooltipEvent = 'focus';
+            fixture.changeDetectorRef.markForCheck();
+            await fixture.whenStable();
+
+            inputElement.dispatchEvent(new MouseEvent('mouseenter'));
+            expect(activateSpy).not.toHaveBeenCalled();
+
+            inputElement.dispatchEvent(new FocusEvent('focus'));
+            expect(activateSpy).toHaveBeenCalledTimes(1);
+
+            component.tooltipEvent = 'hover';
+            fixture.changeDetectorRef.markForCheck();
+            await fixture.whenStable();
+
+            inputElement.dispatchEvent(new FocusEvent('focus'));
+            expect(activateSpy).toHaveBeenCalledTimes(1);
+
+            inputElement.dispatchEvent(new MouseEvent('mouseenter'));
+            expect(activateSpy).toHaveBeenCalledTimes(2);
+        });
+
+        it('should not throw in focus mode when the focus target cannot be resolved', () => {
+            const unbindSpy = vi.spyOn(tooltipDirective, 'getTarget').mockReturnValue(null as any);
+            tooltipDirective.setOption({ tooltipEvent: 'focus' });
+            tooltipDirective.unbindEvents('hover');
+            (tooltipDirective as any).eventsBound = false;
+
+            expect(() => tooltipDirective.bindEvents()).not.toThrow();
+            expect(() => tooltipDirective.unbindEvents('focus')).not.toThrow();
+            expect(unbindSpy).toHaveBeenCalled();
+        });
+
+        it('should sanitize the content when escape is false', async () => {
+            component.escape = false;
+            fixture.changeDetectorRef.markForCheck();
+            await fixture.whenStable();
+
+            tooltipDirective.setOption({ tooltipLabel: '<b>bold</b><img src="x" onerror="window.__tooltipXss = true"><script>window.__tooltipXss = true</script>' });
+            tooltipDirective.setOption({ escape: false });
+            tooltipDirective.show();
+
+            const text = document.querySelector('.p-tooltip-text') as HTMLElement;
+            expect(text.querySelector('b')?.textContent).toBe('bold');
+            expect(text.querySelector('script')).toBeNull();
+            expect(text.innerHTML).not.toContain('onerror');
+            expect((window as any).__tooltipXss).toBeUndefined();
+        });
+    });
 });

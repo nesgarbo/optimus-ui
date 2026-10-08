@@ -1,3 +1,4 @@
+import { NgZone } from '@angular/core';
 import { DomHandler } from './domhandler';
 
 export class ConnectedOverlayScrollHandler {
@@ -7,16 +8,33 @@ export class ConnectedOverlayScrollHandler {
 
     scrollableParents: any;
 
-    constructor(element: any, listener: any = () => {}) {
+    /**
+     * Optional zone. When given, the scroll listeners are registered outside of Angular so a scroll does not trigger
+     * change detection; the listener must then write a signal or call `markForCheck` when something visible changes.
+     */
+    zone: NgZone | null | undefined;
+
+    constructor(element: any, listener: any = () => {}, zone?: NgZone | null) {
         this.element = element;
         this.listener = listener;
+        this.zone = zone;
     }
 
     bindScrollListener() {
-        this.scrollableParents = DomHandler.getScrollableParents(this.element);
-        for (let i = 0; i < this.scrollableParents.length; i++) {
-            this.scrollableParents[i].addEventListener('scroll', this.listener);
+        if (this.scrollableParents) {
+            this.unbindScrollListener();
         }
+
+        const parents = DomHandler.getScrollableParents(this.element);
+        this.scrollableParents = parents;
+
+        const bind = () => {
+            for (let i = 0; i < parents.length; i++) {
+                parents[i].addEventListener('scroll', this.listener, { passive: true });
+            }
+        };
+
+        this.zone ? this.zone.runOutsideAngular(bind) : bind();
     }
 
     unbindScrollListener() {
@@ -32,5 +50,6 @@ export class ConnectedOverlayScrollHandler {
         this.element = null;
         this.listener = null;
         this.scrollableParents = null;
+        this.zone = null;
     }
 }

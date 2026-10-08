@@ -1,8 +1,7 @@
-import { CommonModule, DOCUMENT } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import {
     booleanAttribute,
     ChangeDetectionStrategy,
-    ChangeDetectorRef,
     Component,
     computed,
     ContentChild,
@@ -10,16 +9,14 @@ import {
     effect,
     ElementRef,
     EventEmitter,
-    HostListener,
-    Inject,
     inject,
     InjectionToken,
     input,
     Input,
     NgModule,
+    NgZone,
     numberAttribute,
     QueryList,
-    Renderer2,
     signal,
     TemplateRef,
     untracked,
@@ -50,9 +47,12 @@ const CONFIRMPOPUP_INSTANCE = new InjectionToken<ConfirmPopup>('CONFIRMPOPUP_INS
 @Component({
     selector: 'p-confirmpopup',
     standalone: true,
-    imports: [CommonModule, SharedModule, ButtonModule, FocusTrap, Bind, MotionModule],
+    imports: [NgTemplateOutlet, SharedModule, ButtonModule, FocusTrap, Bind, MotionModule],
     providers: [ConfirmPopupStyle, { provide: CONFIRMPOPUP_INSTANCE, useExisting: ConfirmPopup }, { provide: PARENT_INSTANCE, useExisting: ConfirmPopup }],
     hostDirectives: [Bind],
+    host: {
+        '(document:keydown.escape)': 'onEscapeKeydown($event)'
+    },
     template: `
         @if (render()) {
             <div
@@ -65,65 +65,75 @@ const CONFIRMPOPUP_INSTANCE = new InjectionToken<ConfirmPopup>('CONFIRMPOPUP_INS
                 pFocusTrap
                 [pBind]="ptm('root')"
                 [class]="cn(cx('root'), styleClass)"
-                [ngStyle]="style"
+                [style]="style"
                 role="alertdialog"
                 (click)="onOverlayClick($event)"
             >
-                <ng-container *ngIf="headlessTemplate || _headlessTemplate; else notHeadless">
+                @if (headlessTemplate || _headlessTemplate) {
                     <ng-container *ngTemplateOutlet="headlessTemplate || _headlessTemplate; context: { $implicit: confirmation }"></ng-container>
-                </ng-container>
-                <ng-template #notHeadless>
+                } @else {
                     <div #content [pBind]="ptm('content')" [class]="cx('content')">
-                        <ng-container *ngIf="contentTemplate || _contentTemplate; else withoutContentTemplate">
+                        @if (contentTemplate || _contentTemplate) {
                             <ng-container *ngTemplateOutlet="contentTemplate || _contentTemplate; context: { $implicit: confirmation }"></ng-container>
-                        </ng-container>
-                        <ng-template #withoutContentTemplate>
-                            <i [pBind]="ptm('icon')" [class]="cx('icon')" *ngIf="confirmation?.icon"></i>
+                        } @else {
+                            @if (confirmation?.icon) {
+                                <i [pBind]="ptm('icon')" [class]="cx('icon')"></i>
+                            }
                             <span [pBind]="ptm('message')" [class]="cx('message')">{{ confirmation?.message }}</span>
-                        </ng-template>
+                        }
                     </div>
                     <div [pBind]="ptm('footer')" [class]="cx('footer')">
-                        <p-button
-                            type="button"
-                            [label]="rejectButtonLabel"
-                            (onClick)="onReject()"
-                            [pt]="ptm('pcRejectButton')"
-                            [class]="cx('pcRejectButton')"
-                            [styleClass]="confirmation?.rejectButtonStyleClass"
-                            [size]="confirmation?.rejectButtonProps?.size || 'small'"
-                            [text]="confirmation?.rejectButtonProps?.text || false"
-                            *ngIf="confirmation?.rejectVisible !== false"
-                            [attr.aria-label]="rejectButtonLabel"
-                            [buttonProps]="getRejectButtonProps()"
-                            [autofocus]="autoFocusReject"
-                            [unstyled]="unstyled()"
-                        >
-                            <ng-template #icon>
-                                <i [class]="confirmation?.rejectIcon" *ngIf="confirmation?.rejectIcon; else rejecticon"></i>
-                                <ng-template #rejecticon *ngTemplateOutlet="rejectIconTemplate || _rejectIconTemplate"></ng-template>
-                            </ng-template>
-                        </p-button>
-                        <p-button
-                            type="button"
-                            [label]="acceptButtonLabel"
-                            (onClick)="onAccept()"
-                            [pt]="ptm('pcAcceptButton')"
-                            [class]="cx('pcAcceptButton')"
-                            [styleClass]="confirmation?.acceptButtonStyleClass"
-                            [size]="confirmation?.acceptButtonProps?.size || 'small'"
-                            *ngIf="confirmation?.acceptVisible !== false"
-                            [attr.aria-label]="acceptButtonLabel"
-                            [buttonProps]="getAcceptButtonProps()"
-                            [autofocus]="autoFocusAccept"
-                            [unstyled]="unstyled()"
-                        >
-                            <ng-template #icon>
-                                <i [class]="confirmation?.acceptIcon" *ngIf="confirmation?.acceptIcon; else accepticontemplate"></i>
-                                <ng-template #accepticontemplate *ngTemplateOutlet="acceptIconTemplate || _acceptIconTemplate"></ng-template>
-                            </ng-template>
-                        </p-button>
+                        @if (confirmation?.rejectVisible !== false) {
+                            <p-button
+                                type="button"
+                                [label]="rejectButtonLabel"
+                                (onClick)="onReject()"
+                                #rejectButton
+                                [pt]="ptm('pcRejectButton')"
+                                [class]="cx('pcRejectButton')"
+                                [styleClass]="confirmation?.rejectButtonStyleClass"
+                                [size]="confirmation?.rejectButtonProps?.size || 'small'"
+                                [text]="confirmation?.rejectButtonProps?.text || false"
+                                [attr.aria-label]="rejectButtonLabel"
+                                [buttonProps]="getRejectButtonProps()"
+                                [autofocus]="autoFocusReject"
+                                [unstyled]="unstyled()"
+                            >
+                                <ng-template #icon>
+                                    @if (confirmation?.rejectIcon) {
+                                        <i [class]="confirmation?.rejectIcon"></i>
+                                    } @else {
+                                        <ng-container *ngTemplateOutlet="rejectIconTemplate || _rejectIconTemplate"></ng-container>
+                                    }
+                                </ng-template>
+                            </p-button>
+                        }
+                        @if (confirmation?.acceptVisible !== false) {
+                            <p-button
+                                type="button"
+                                [label]="acceptButtonLabel"
+                                (onClick)="onAccept()"
+                                #acceptButton
+                                [pt]="ptm('pcAcceptButton')"
+                                [class]="cx('pcAcceptButton')"
+                                [styleClass]="confirmation?.acceptButtonStyleClass"
+                                [size]="confirmation?.acceptButtonProps?.size || 'small'"
+                                [attr.aria-label]="acceptButtonLabel"
+                                [buttonProps]="getAcceptButtonProps()"
+                                [autofocus]="autoFocusAccept"
+                                [unstyled]="unstyled()"
+                            >
+                                <ng-template #icon>
+                                    @if (confirmation?.acceptIcon) {
+                                        <i [class]="confirmation?.acceptIcon"></i>
+                                    } @else {
+                                        <ng-container *ngTemplateOutlet="acceptIconTemplate || _acceptIconTemplate"></ng-container>
+                                    }
+                                </ng-template>
+                            </p-button>
+                        }
                     </div>
-                </ng-template>
+                }
             </div>
         }
     `,
@@ -273,14 +283,17 @@ export class ConfirmPopup extends BaseComponent<ConfirmPopupPassThrough> {
 
     _componentStyle = inject(ConfirmPopupStyle);
 
-    constructor(
-        public el: ElementRef,
-        private confirmationService: ConfirmationService,
-        public renderer: Renderer2,
-        public cd: ChangeDetectorRef,
-        public overlayService: OverlayService,
-        @Inject(DOCUMENT) public document: Document
-    ) {
+    private confirmationService: ConfirmationService = inject(ConfirmationService);
+
+    overlayService: OverlayService = inject(OverlayService);
+
+    private zone: NgZone = inject(NgZone);
+
+    private alignFrame: number | undefined;
+
+    private listenersTimeout: ReturnType<typeof setTimeout> | undefined;
+
+    constructor() {
         super();
         this.window = this.document.defaultView as Window;
         this.subscription = this.confirmationService.requireConfirmation$.subscribe((confirmation) => {
@@ -290,14 +303,19 @@ export class ConfirmPopup extends BaseComponent<ConfirmPopupPassThrough> {
             }
 
             if (this.computedVisible()) {
-                requestAnimationFrame(() => {
-                    this.alignOverlay();
+                cancelAnimationFrame(this.alignFrame!);
+                this.alignFrame = requestAnimationFrame(() => {
+                    this.alignFrame = undefined;
+                    if (this.container) {
+                        this.alignOverlay();
+                    }
                     this.cd.markForCheck();
                 });
             }
 
             if (confirmation.key === this.key) {
                 this.confirmation = confirmation;
+                this.cd.markForCheck();
 
                 if (this.confirmation.accept) {
                     this.confirmation.acceptEvent = new EventEmitter();
@@ -362,7 +380,6 @@ export class ConfirmPopup extends BaseComponent<ConfirmPopupPassThrough> {
         return undefined;
     }
 
-    @HostListener('document:keydown.Escape', ['$event'])
     onEscapeKeydown(event: KeyboardEvent) {
         if (this.confirmation && this.confirmation.closeOnEscape !== false) {
             this.onReject();
@@ -390,7 +407,7 @@ export class ConfirmPopup extends BaseComponent<ConfirmPopupPassThrough> {
 
         if (defaultFocus && (this.acceptButtonViewChild() || this.rejectButtonViewChild())) {
             const focusEl = <HTMLButtonElement>(defaultFocus === 'accept' ? findSingle(this.acceptButtonViewChild()?.nativeElement, '[data-pc-section="root"]') : findSingle(this.rejectButtonViewChild()?.nativeElement, '[data-pc-section="root"]'));
-            focusEl.focus();
+            focusEl?.focus();
         }
     }
 
@@ -494,7 +511,9 @@ export class ConfirmPopup extends BaseComponent<ConfirmPopupPassThrough> {
          * Need wait when bubbling event up and hang the handler on the next tick.
          * This is the case when eventTarget and confirmation.target do not match when the `confirm` method is called.
          */
-        setTimeout(() => {
+        clearTimeout(this.listenersTimeout);
+        this.listenersTimeout = setTimeout(() => {
+            this.listenersTimeout = undefined;
             this.bindDocumentClickListener();
             this.bindDocumentResizeListener();
             this.bindScrollListener();
@@ -502,6 +521,8 @@ export class ConfirmPopup extends BaseComponent<ConfirmPopupPassThrough> {
     }
 
     unbindListeners() {
+        clearTimeout(this.listenersTimeout);
+        this.listenersTimeout = undefined;
         this.unbindDocumentClickListener();
         this.unbindDocumentResizeListener();
         this.unbindScrollListener();
@@ -512,13 +533,16 @@ export class ConfirmPopup extends BaseComponent<ConfirmPopupPassThrough> {
             let documentEvent = isIOS() ? 'touchstart' : 'click';
             const documentTarget: any = this.el ? this.el.nativeElement.ownerDocument : this.document;
 
-            this.documentClickListener = this.renderer.listen(documentTarget, documentEvent, (event) => {
-                if (this.confirmation && this.confirmation.dismissableMask !== false) {
-                    let targetElement = <HTMLElement>this.confirmation.target;
-                    if (this.container !== event.target && !this.container?.contains(event.target) && targetElement !== event.target && !targetElement.contains(event.target)) {
-                        this.hide();
+            // Outside the zone: only a real dismiss writes the visibility signal.
+            this.zone.runOutsideAngular(() => {
+                this.documentClickListener = this.renderer.listen(documentTarget, documentEvent, (event) => {
+                    if (this.confirmation && this.confirmation.dismissableMask !== false) {
+                        let targetElement = <HTMLElement>this.confirmation.target;
+                        if (this.container !== event.target && !this.container?.contains(event.target) && targetElement !== event.target && !targetElement.contains(event.target)) {
+                            this.hide();
+                        }
                     }
-                }
+                });
             });
         }
     }
@@ -538,7 +562,9 @@ export class ConfirmPopup extends BaseComponent<ConfirmPopupPassThrough> {
 
     bindDocumentResizeListener() {
         if (!this.documentResizeListener) {
-            this.documentResizeListener = this.renderer.listen(this.window, 'resize', this.onWindowResize.bind(this));
+            this.zone.runOutsideAngular(() => {
+                this.documentResizeListener = this.renderer.listen(this.window, 'resize', this.onWindowResize.bind(this));
+            });
         }
     }
 
@@ -551,11 +577,15 @@ export class ConfirmPopup extends BaseComponent<ConfirmPopupPassThrough> {
 
     bindScrollListener() {
         if (!this.scrollHandler) {
-            this.scrollHandler = new ConnectedOverlayScrollHandler(this.confirmation?.target, () => {
-                if (this.computedVisible()) {
-                    this.hide();
-                }
-            });
+            this.scrollHandler = new ConnectedOverlayScrollHandler(
+                this.confirmation?.target,
+                () => {
+                    if (this.computedVisible()) {
+                        this.hide();
+                    }
+                },
+                this.zone
+            );
         }
 
         this.scrollHandler.bindScrollListener();
@@ -601,6 +631,9 @@ export class ConfirmPopup extends BaseComponent<ConfirmPopupPassThrough> {
     }
 
     onDestroy() {
+        cancelAnimationFrame(this.alignFrame!);
+        this.scrollHandler?.destroy();
+        this.scrollHandler = null;
         this.restoreAppend();
 
         if (this.subscription) {

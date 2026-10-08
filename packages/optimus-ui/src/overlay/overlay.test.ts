@@ -390,3 +390,52 @@ describe('Overlay', () => {
         });
     });
 });
+
+describe('Overlay document listeners', () => {
+    let fixture: ComponentFixture<Overlay>;
+    let overlay: Overlay;
+    let runSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
+            imports: [Overlay, BrowserAnimationsModule],
+            providers: [provideZonelessChangeDetection()]
+        }).compileComponents();
+
+        fixture = TestBed.createComponent(Overlay);
+        overlay = fixture.componentInstance;
+        runSpy = vi.spyOn((overlay as any).zone, 'run');
+    });
+
+    afterEach(() => {
+        overlay.unbindDocumentClickListener();
+        overlay.unbindDocumentKeyboardListener();
+    });
+
+    it('should not enter the zone for a click that does not dismiss the overlay', () => {
+        overlay.bindDocumentClickListener();
+        overlay.isOverlayContentClicked = true;
+
+        document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+        expect(runSpy).not.toHaveBeenCalled();
+    });
+
+    it('should enter the zone for a click outside that dismisses the overlay', () => {
+        const hide = vi.spyOn(overlay, 'hide').mockImplementation(() => {});
+        overlay.bindDocumentClickListener();
+
+        document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+        expect(runSpy).toHaveBeenCalled();
+        expect(hide).toHaveBeenCalled();
+    });
+
+    it('should not enter the zone for keys other than Escape', () => {
+        overlay.bindDocumentKeyboardListener();
+
+        window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyA' }));
+
+        expect(runSpy).not.toHaveBeenCalled();
+    });
+});
