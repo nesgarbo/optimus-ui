@@ -157,7 +157,6 @@ export class TemplateDoc implements OnInit {
     }
 
     onContextMenu(event) {
-        this.cm.target = event.currentTarget;
         this.cm.show(event);
     }
 
