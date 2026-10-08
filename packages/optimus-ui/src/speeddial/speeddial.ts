@@ -3,23 +3,24 @@ import {
     booleanAttribute,
     ChangeDetectionStrategy,
     Component,
-    EventEmitter,
-    ContentChild,
-    ContentChildren,
     ElementRef,
     inject,
     InjectionToken,
-    Input,
     NgModule,
-    Output,
     output,
     NgZone,
     numberAttribute,
-    QueryList,
     signal,
     TemplateRef,
-    ViewChild,
-    ViewEncapsulation
+    ViewEncapsulation,
+    input,
+    viewChild,
+    contentChild,
+    contentChildren,
+    effect,
+    linkedSignal,
+    model,
+    untracked
 } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { find, findSingle, focus, hasClass, uuid } from '@openng/optimus-ui-utils';
@@ -45,42 +46,42 @@ const SPEED_DIAL_INSTANCE = new InjectionToken<SpeedDial>('SPEED_DIAL_INSTANCE')
     standalone: true,
     imports: [NgTemplateOutlet, ButtonModule, Ripple, TooltipModule, RouterModule, PlusIcon, SharedModule, Bind],
     template: `
-        <div #container [pBind]="ptm('root')" [class]="cn(cx('root'), className)" [style]="rootInlineStyle">
-            @if (!buttonTemplate && !_buttonTemplate) {
+        <div #container [pBind]="ptm('root')" [class]="cn(cx('root'), className())" [style]="rootInlineStyle">
+            @if (!buttonTemplate() && !_buttonTemplate) {
                 <button
                     type="button"
                     pButton
                     pRipple
-                    [style]="buttonStyle"
+                    [style]="buttonStyle()"
                     [icon]="buttonIconClass"
-                    [class]="cn(cx('pcButton'), buttonClassName)"
-                    [disabled]="disabled"
-                    [attr.aria-expanded]="visible"
+                    [class]="cn(cx('pcButton'), buttonClassName())"
+                    [disabled]="disabled()"
+                    [attr.aria-expanded]="visible()"
                     [attr.aria-haspopup]="true"
-                    [attr.aria-controls]="id + '_list'"
-                    [attr.aria-label]="ariaLabel"
-                    [attr.aria-labelledby]="ariaLabelledBy"
+                    [attr.aria-controls]="_id() + '_list'"
+                    [attr.aria-label]="ariaLabel()"
+                    [attr.aria-labelledby]="ariaLabelledBy()"
                     (click)="onButtonClick($event)"
                     (keydown)="onTogglerKeydown($event)"
-                    [buttonProps]="buttonProps"
+                    [buttonProps]="buttonProps()"
                     [pt]="ptm('pcButton')"
                     [unstyled]="unstyled()"
                 >
-                    @if (!buttonIconClass && !iconTemplate && !_iconTemplate) {
+                    @if (!buttonIconClass && !iconTemplate() && !_iconTemplate) {
                         <svg data-p-icon="plus" pButtonIcon [pt]="ptm('pcButton')['icon']" />
                     }
-                    <ng-container *ngTemplateOutlet="iconTemplate || _iconTemplate"></ng-container>
+                    <ng-container *ngTemplateOutlet="iconTemplate() || _iconTemplate"></ng-container>
                 </button>
             }
-            @if (buttonTemplate || _buttonTemplate) {
-                <ng-container *ngTemplateOutlet="buttonTemplate || _buttonTemplate; context: { toggleCallback: onButtonClick.bind(this) }"></ng-container>
+            @if (buttonTemplate() || _buttonTemplate) {
+                <ng-container *ngTemplateOutlet="buttonTemplate() || _buttonTemplate; context: { toggleCallback: onButtonClick.bind(this) }"></ng-container>
             }
             <ul
                 #list
                 [pBind]="ptm('list')"
                 [class]="cx('list')"
                 role="menu"
-                [id]="id + '_list'"
+                [id]="_id() + '_list'"
                 (focus)="onFocus($event)"
                 (focusout)="onBlur($event)"
                 (keydown)="onKeyDown($event)"
@@ -88,23 +89,23 @@ const SPEED_DIAL_INSTANCE = new InjectionToken<SpeedDial>('SPEED_DIAL_INSTANCE')
                 [tabindex]="-1"
                 [style]="sx('list')"
             >
-                @for (item of model; track item; let i = $index) {
+                @for (item of model(); track item; let i = $index) {
                     <li
-                        [pBind]="getPTOptions(id + '_' + i, 'item')"
+                        [pBind]="getPTOptions(_id() + '_' + i, 'item')"
                         [style]="getItemStyle(i)"
                         [class]="cx('item', { item, i })"
                         pTooltip
                         [pTooltipUnstyled]="unstyled()"
                         [tooltipOptions]="item.tooltipOptions || getTooltipOptions(item)"
-                        [id]="id + '_' + i"
-                        [attr.aria-controls]="id + '_item'"
+                        [id]="_id() + '_' + i"
+                        [attr.aria-controls]="_id() + '_item'"
                         role="menuitem"
-                        [attr.data-p-active]="isItemActive(id + '_' + i)"
+                        [attr.data-p-active]="isItemActive(_id() + '_' + i)"
                     >
-                        @if (itemTemplate || _itemTemplate) {
-                            <ng-container *ngTemplateOutlet="itemTemplate || _itemTemplate; context: { $implicit: item, index: i, toggleCallback: onItemClick.bind(this) }"></ng-container>
+                        @if (itemTemplate() || _itemTemplate) {
+                            <ng-container *ngTemplateOutlet="itemTemplate() || _itemTemplate; context: { $implicit: item, index: i, toggleCallback: onItemClick.bind(this) }"></ng-container>
                         }
-                        @if (!itemTemplate && !_itemTemplate) {
+                        @if (!itemTemplate() && !_itemTemplate) {
                             <button
                                 type="button"
                                 pButton
@@ -118,12 +119,12 @@ const SPEED_DIAL_INSTANCE = new InjectionToken<SpeedDial>('SPEED_DIAL_INSTANCE')
                                 [disabled]="item?.disabled"
                                 (keydown.enter)="onItemClick($event, item)"
                                 [attr.aria-label]="item.label"
-                                [attr.tabindex]="item.disabled || !visible ? null : item.tabindex ? item.tabindex : '0'"
-                                [pt]="getPTOptions(id + '_' + i, 'pcAction')"
+                                [attr.tabindex]="item.disabled || !visible() ? null : item.tabindex ? item.tabindex : '0'"
+                                [pt]="getPTOptions(_id() + '_' + i, 'pcAction')"
                                 [unstyled]="unstyled()"
                             >
                                 @if (item.icon) {
-                                    <span pButtonIcon [pt]="getPTOptions(id + '_' + i, 'actionIcon')" [class]="item.icon"></span>
+                                    <span pButtonIcon [pt]="getPTOptions(_id() + '_' + i, 'actionIcon')" [class]="item.icon"></span>
                                 }
                             </button>
                         }
@@ -131,8 +132,8 @@ const SPEED_DIAL_INSTANCE = new InjectionToken<SpeedDial>('SPEED_DIAL_INSTANCE')
                 }
             </ul>
         </div>
-        @if (mask && visible) {
-            <div [pBind]="ptm('mask')" [class]="cn(cx('mask'), maskClassName)" [style]="maskStyle" animate.enter="p-overlay-mask-enter-active" animate.leave="p-overlay-mask-leave-active"></div>
+        @if (mask() && visible()) {
+            <div [pBind]="ptm('mask')" [class]="cn(cx('mask'), maskClassName())" [style]="maskStyle()" animate.enter="p-overlay-mask-enter-active" animate.leave="p-overlay-mask-leave-active"></div>
         }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -154,145 +155,146 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
      * List of items id.
      * @group Props
      */
-    @Input() id: string | undefined;
+    readonly id = input<string | undefined>(undefined);
     /**
      * MenuModel instance to define the action items.
      * @group Props
      */
-    @Input() model: MenuItem[] | null = null;
+    readonly model = input<MenuItem[] | null>(null);
     /**
      * Specifies the visibility of the overlay.
      * @defaultValue false
      * @group Props
      */
-    @Input() get visible(): boolean {
-        return this._visible;
-    }
-    set visible(value: boolean) {
-        this._visible = value;
-
-        if (this._visible) {
-            this.bindDocumentClickListener();
-        } else {
-            this.unbindDocumentClickListener();
-        }
-    }
+    readonly visible = model<boolean>(false);
     /**
      * Inline style of the element.
      * @group Props
      */
-    @Input() style: { [klass: string]: any } | null | undefined;
+    readonly style = input<
+        | {
+              [klass: string]: any;
+          }
+        | null
+        | undefined
+    >(undefined);
 
     get rootInlineStyle() {
-        return { ...(this.sx('root') as any), ...(this.style as any) };
+        return { ...(this.sx('root') as any), ...(this.style() as any) };
     }
     /**
      * Style class of the element.
      * @group Props
      */
-    @Input() className: string | undefined;
+    readonly className = input<string | undefined>(undefined);
     /**
      * Specifies the opening direction of actions.
      * @gruop Props
      */
-    @Input() direction: 'up' | 'down' | 'left' | 'right' | 'up-left' | 'up-right' | 'down-left' | 'down-right' | undefined = 'up';
+    readonly direction = input<'up' | 'down' | 'left' | 'right' | 'up-left' | 'up-right' | 'down-left' | 'down-right' | undefined>('up');
     /**
      * Transition delay step for each action item.
      * @group Props
      */
-    @Input({ transform: numberAttribute }) transitionDelay: number = 30;
+    readonly transitionDelay = input<number, unknown>(30, { transform: numberAttribute });
     /**
      * Specifies the opening type of actions.
      * @group Props
      */
-    @Input() type: 'linear' | 'circle' | 'semi-circle' | 'quarter-circle' | undefined = 'linear';
+    readonly type = input<'linear' | 'circle' | 'semi-circle' | 'quarter-circle' | undefined>('linear');
     /**
      * Radius for *circle types.
      * @group Props
      */
-    @Input({ transform: numberAttribute }) radius: number = 0;
+    readonly radius = input<number, unknown>(0, { transform: numberAttribute });
     /**
      * Whether to show a mask element behind the speeddial.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) mask: boolean = false;
+    readonly mask = input<boolean, unknown>(false, { transform: booleanAttribute });
     /**
      * Whether the component is disabled.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) disabled: boolean = false;
+    readonly disabled = input<boolean, unknown>(false, { transform: booleanAttribute });
     /**
      * Whether the actions close when clicked outside.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) hideOnClickOutside: boolean = true;
+    readonly hideOnClickOutside = input<boolean, unknown>(true, { transform: booleanAttribute });
     /**
      * Inline style of the button element.
      * @group Props
      */
-    @Input() buttonStyle: { [klass: string]: any } | null | undefined;
+    readonly buttonStyle = input<
+        | {
+              [klass: string]: any;
+          }
+        | null
+        | undefined
+    >(undefined);
     /**
      * Style class of the button element.
      * @group Props
      */
-    @Input() buttonClassName: string | undefined;
+    readonly buttonClassName = input<string | undefined>(undefined);
     /**
      * Inline style of the mask element.
      * @group Props
      */
-    @Input() maskStyle: { [klass: string]: any } | null | undefined;
+    readonly maskStyle = input<
+        | {
+              [klass: string]: any;
+          }
+        | null
+        | undefined
+    >(undefined);
     /**
      * Style class of the mask element.
      * @group Props
      */
-    @Input() maskClassName: string | undefined;
+    readonly maskClassName = input<string | undefined>(undefined);
     /**
      * Show icon of the button element.
      * @group Props
      */
-    @Input() showIcon: string | undefined;
+    readonly showIcon = input<string | undefined>(undefined);
     /**
      * Hide icon of the button element.
      * @group Props
      */
-    @Input() hideIcon: string | undefined;
+    readonly hideIcon = input<string | undefined>(undefined);
     /**
      * Defined to rotate showIcon when hideIcon is not present.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) rotateAnimation: boolean = true;
+    readonly rotateAnimation = input<boolean, unknown>(true, { transform: booleanAttribute });
     /**
      * Defines a string value that labels an interactive element.
      * @group Props
      */
-    @Input() ariaLabel: string | undefined;
+    readonly ariaLabel = input<string | undefined>(undefined);
     /**
      * Identifier of the underlying input element.
      * @group Props
      */
-    @Input() ariaLabelledBy: string | undefined;
+    readonly ariaLabelledBy = input<string | undefined>(undefined);
     /**
      * Whether to display the tooltip on items. The modifiers of Tooltip can be used like an object in it. Valid keys are 'event' and 'position'.
      * @group Props
      */
-    @Input() tooltipOptions: TooltipOptions;
+    readonly tooltipOptions = input<TooltipOptions | undefined>(undefined);
     /**
      * Used to pass all properties of the ButtonProps to the Button component.
      * @group Props
      */
-    @Input() buttonProps: ButtonProps;
+    readonly buttonProps = input<ButtonProps | undefined>(undefined);
     /**
      * Fired when the visibility of element changed.
      * @param {boolean} boolean - Visibility value.
      * @group Emits
      */
     onVisibleChange = output<boolean>();
-    /**
-     * Fired when the visibility of element changed.
-     * @param {boolean} boolean - Visibility value.
-     * @group Emits
-     */
-    visibleChange = output<boolean>();
     /**
      * Fired when the button element clicked.
      * @param {MouseEvent} event - Mouse event.
@@ -304,38 +306,38 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
      * @param {Event} event - Browser event.
      * @group Emits
      */
-    @Output() onShow: EventEmitter<Event> = new EventEmitter<Event>();
+    readonly onShow = output<Event | undefined>();
     /**
      * Fired when the actions are hidden.
      * @param {Event} event - Browser event.
      * @group Emits
      */
-    @Output() onHide: EventEmitter<Event> = new EventEmitter<Event>();
+    readonly onHide = output<Event | undefined>();
 
-    @ViewChild('container') container: ElementRef | undefined;
+    readonly container = viewChild<ElementRef>('container');
 
-    @ViewChild('list') list: ElementRef | undefined;
+    readonly list = viewChild<ElementRef>('list');
     /**
      * Custom button template.
      * @param {SpeedDialButtonTemplateContext} context - button context.
      * @see {@link SpeedDialButtonTemplateContext}
      * @group Templates
      */
-    @ContentChild('button', { descendants: false }) buttonTemplate: TemplateRef<SpeedDialButtonTemplateContext> | undefined;
+    readonly buttonTemplate = contentChild<TemplateRef<SpeedDialButtonTemplateContext>>('button', { descendants: false });
     /**
      * Custom item template.
      * @param {SpeedDialItemTemplateContext} context - item context.
      * @see {@link SpeedDialItemTemplateContext}
      * @group Templates
      */
-    @ContentChild('item', { descendants: false }) itemTemplate: TemplateRef<SpeedDialItemTemplateContext> | undefined;
+    readonly itemTemplate = contentChild<TemplateRef<SpeedDialItemTemplateContext>>('item', { descendants: false });
     /**
      * Custom icon template.
      * @group Templates
      */
-    @ContentChild('icon', { descendants: false }) iconTemplate: TemplateRef<void> | undefined;
+    readonly iconTemplate = contentChild<TemplateRef<void>>('icon', { descendants: false });
 
-    @ContentChildren(PrimeTemplate) templates: QueryList<PrimeTemplate> | undefined;
+    readonly templates = contentChildren(PrimeTemplate);
 
     _buttonTemplate: TemplateRef<SpeedDialButtonTemplateContext> | undefined;
 
@@ -346,8 +348,6 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
     isItemClicked: boolean = false;
 
     private ngZone = inject(NgZone);
-
-    _visible: boolean = false;
 
     documentClickListener: any;
 
@@ -362,14 +362,14 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
     }
 
     getTooltipOptions(item: MenuItem) {
-        return { ...this.tooltipOptions, tooltipLabel: item.label, disabled: !this.tooltipOptions };
+        return { ...this.tooltipOptions(), tooltipLabel: item.label, disabled: !this.tooltipOptions() };
     }
 
     getPTOptions(id: string, key: string) {
         return this.ptm(key, {
             context: {
                 active: this.isItemActive(id),
-                hidden: !this.visible
+                hidden: !this.visible()
             }
         });
     }
@@ -378,28 +378,36 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
         return id === this.focusedOptionId;
     }
 
-    onInit() {
-        this.id = this.id || uuid('pn_id_');
-    }
+    /** Id actually rendered: the `id` input, or a generated one. */
+    readonly _id = linkedSignal(() => this.id() || uuid('pn_id_'));
+
+    private readonly _visibleEffect = effect(() => {
+        if (this.visible()) {
+            untracked(() => this.bindDocumentClickListener());
+        } else {
+            untracked(() => this.unbindDocumentClickListener());
+        }
+    });
 
     onAfterViewInit() {
         if (isPlatformBrowser(this.platformId)) {
-            if (this.type !== 'linear') {
-                const button = <any>findSingle(this.container?.nativeElement, '[data-pc-name="pcbutton"]');
-                const firstItem = <any>findSingle(this.list?.nativeElement, '[data-pc-section="item"]');
+            if (this.type() !== 'linear') {
+                const button = <any>findSingle(this.container()?.nativeElement, '[data-pc-name="pcbutton"]');
+                const list = this.list();
+                const firstItem = <any>findSingle(list?.nativeElement, '[data-pc-section="item"]');
 
                 if (button && firstItem) {
                     const wDiff = Math.abs(button.offsetWidth - firstItem.offsetWidth);
                     const hDiff = Math.abs(button.offsetHeight - firstItem.offsetHeight);
-                    this.list?.nativeElement.style.setProperty('--item-diff-x', `${wDiff / 2}px`);
-                    this.list?.nativeElement.style.setProperty('--item-diff-y', `${hDiff / 2}px`);
+                    list?.nativeElement.style.setProperty('--item-diff-x', `${wDiff / 2}px`);
+                    list?.nativeElement.style.setProperty('--item-diff-y', `${hDiff / 2}px`);
                 }
             }
         }
     }
 
     onAfterContentInit() {
-        this.templates?.forEach((item) => {
+        this.templates()?.forEach((item) => {
             switch (item.getType()) {
                 case 'button':
                     this._buttonTemplate = item.template;
@@ -416,24 +424,22 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
 
     show() {
         this.onVisibleChange.emit(true);
-        this.visibleChange.emit(true);
-        this._visible = true;
-        this.onShow.emit();
+        this.visible.set(true);
+        this.onShow.emit(undefined);
         this.bindDocumentClickListener();
         this.cd.markForCheck();
     }
 
     hide() {
         this.onVisibleChange.emit(false);
-        this.visibleChange.emit(false);
-        this._visible = false;
-        this.onHide.emit();
+        this.visible.set(false);
+        this.onHide.emit(undefined);
         this.unbindDocumentClickListener();
         this.cd.markForCheck();
     }
 
     onButtonClick(event: MouseEvent) {
-        this.visible ? this.hide() : this.show();
+        this.visible() ? this.hide() : this.show();
         this.onClick.emit(event);
         this.isItemClicked = true;
     }
@@ -498,9 +504,10 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
     }
 
     onArrowUp(event) {
-        if (this.direction === 'up') {
+        const direction = this.direction();
+        if (direction === 'up') {
             this.navigateNextItem(event);
-        } else if (this.direction === 'down') {
+        } else if (direction === 'down') {
             this.navigatePrevItem(event);
         } else {
             this.navigateNextItem(event);
@@ -508,9 +515,10 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
     }
 
     onArrowDown(event) {
-        if (this.direction === 'up') {
+        const direction = this.direction();
+        if (direction === 'up') {
             this.navigatePrevItem(event);
-        } else if (this.direction === 'down') {
+        } else if (direction === 'down') {
             this.navigateNextItem(event);
         } else {
             this.navigatePrevItem(event);
@@ -521,9 +529,10 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
         const leftValidDirections = ['left', 'up-right', 'down-left'];
         const rightValidDirections = ['right', 'up-left', 'down-right'];
 
-        if (leftValidDirections.includes(this.direction || '')) {
+        const direction = this.direction();
+        if (leftValidDirections.includes(direction || '')) {
             this.navigateNextItem(event);
-        } else if (rightValidDirections.includes(this.direction || '')) {
+        } else if (rightValidDirections.includes(direction || '')) {
             this.navigatePrevItem(event);
         } else {
             this.navigatePrevItem(event);
@@ -534,9 +543,10 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
         const leftValidDirections = ['left', 'up-right', 'down-left'];
         const rightValidDirections = ['right', 'up-left', 'down-right'];
 
-        if (leftValidDirections.includes(this.direction || '')) {
+        const direction = this.direction();
+        if (leftValidDirections.includes(direction || '')) {
             this.navigatePrevItem(event);
-        } else if (rightValidDirections.includes(this.direction || '')) {
+        } else if (rightValidDirections.includes(direction || '')) {
             this.navigateNextItem(event);
         } else {
             this.navigateNextItem(event);
@@ -558,15 +568,17 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
     }
 
     onEnterKey(event: any) {
-        const items = find(this.container?.nativeElement, '[data-pc-section="item"]');
+        const container = this.container();
+        const items = find(container?.nativeElement, '[data-pc-section="item"]');
         const itemIndex = [...items].findIndex((item) => item.id === this.focusedOptionIndex());
 
-        if (itemIndex !== -1 && this.model && this.model[itemIndex]) {
-            this.onItemClick(event, this.model[itemIndex]);
+        const model = this.model();
+        if (itemIndex !== -1 && model && model[itemIndex]) {
+            this.onItemClick(event, model[itemIndex]);
         }
         this.onBlur(event);
 
-        const buttonEl = <any>findSingle(this.container?.nativeElement, 'button');
+        const buttonEl = <any>findSingle(container?.nativeElement, 'button');
 
         buttonEl && focus(buttonEl);
     }
@@ -574,7 +586,7 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
     onEscapeKey(event: KeyboardEvent) {
         this.hide();
 
-        const buttonEl = <any>findSingle(this.container?.nativeElement, 'button');
+        const buttonEl = <any>findSingle(this.container()?.nativeElement, 'button');
 
         buttonEl && focus(buttonEl);
     }
@@ -605,7 +617,7 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
 
     onTogglerArrowUp(event) {
         this.focused = true;
-        focus(this.list?.nativeElement);
+        focus(this.list()?.nativeElement);
 
         this.show();
         this.navigatePrevItem(event);
@@ -615,7 +627,7 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
 
     onTogglerArrowDown(event) {
         this.focused = true;
-        focus(this.list?.nativeElement);
+        focus(this.list()?.nativeElement);
 
         this.show();
         this.navigateNextItem(event);
@@ -640,7 +652,7 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
     }
 
     findPrevOptionIndex(index) {
-        const items = find(this.container?.nativeElement, '[data-pc-section="item"]');
+        const items = find(this.container()?.nativeElement, '[data-pc-section="item"]');
 
         const filteredItems = [...items].filter((item) => !hasClass(findSingle(item, 'a')!, 'p-disabled'));
         const newIndex = index === -1 ? filteredItems[filteredItems.length - 1].id : index;
@@ -652,7 +664,7 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
     }
 
     findNextOptionIndex(index) {
-        const items = find(this.container?.nativeElement, '[data-pc-section="item"]');
+        const items = find(this.container()?.nativeElement, '[data-pc-section="item"]');
         const filteredItems = [...items].filter((item) => !hasClass(findSingle(item, 'a')!, 'p-disabled'));
         const newIndex = index === -1 ? filteredItems[0].id : index;
         let matchedOptionIndex = filteredItems.findIndex((link) => link.getAttribute('id') === newIndex);
@@ -663,7 +675,7 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
     }
 
     changeFocusedOptionIndex(index) {
-        const items = find(this.container?.nativeElement, '[data-pc-section="item"]');
+        const items = find(this.container()?.nativeElement, '[data-pc-section="item"]');
         const filteredItems = [...items].filter((item) => !hasClass(findSingle(item, 'a')!, 'p-disabled'));
 
         if (filteredItems[index]) {
@@ -672,11 +684,11 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
     }
 
     calculatePointStyle(index: number) {
-        const type = this.type;
+        const type = this.type();
 
         if (type !== 'linear') {
-            const length = (this.model as MenuItem[]).length;
-            const radius = this.radius || length * 20;
+            const length = (this.model() as MenuItem[]).length;
+            const radius = this.radius() || length * 20;
 
             if (type === 'circle') {
                 const step = (2 * Math.PI) / length;
@@ -686,7 +698,7 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
                     top: `calc(${radius * Math.sin(step * index)}px + var(--item-diff-y, 0px))`
                 };
             } else if (type === 'semi-circle') {
-                const direction = this.direction;
+                const direction = this.direction();
                 const step = Math.PI / (length - 1);
                 const x = `calc(${radius * Math.cos(step * index)}px + var(--item-diff-x, 0px))`;
                 const y = `calc(${radius * Math.sin(step * index)}px + var(--item-diff-y, 0px))`;
@@ -700,7 +712,7 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
                     return { left: y, top: x };
                 }
             } else if (type === 'quarter-circle') {
-                const direction = this.direction;
+                const direction = this.direction();
                 const step = Math.PI / (2 * (length - 1));
                 const x = `calc(${radius * Math.cos(step * index)}px + var(--item-diff-x, 0px))`;
                 const y = `calc(${radius * Math.sin(step * index)}px + var(--item-diff-y, 0px))`;
@@ -720,19 +732,21 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
     }
 
     calculateTransitionDelay(index: number) {
-        const length = (this.model as MenuItem[]).length;
+        const length = (this.model() as MenuItem[]).length;
 
-        return (this.visible ? index : length - index - 1) * this.transitionDelay;
+        return (this.visible() ? index : length - index - 1) * this.transitionDelay();
     }
 
     get buttonIconClass() {
-        if (!this.visible && this.showIcon) {
-            return this.showIcon;
+        const showIcon = this.showIcon();
+        if (!this.visible() && showIcon) {
+            return showIcon;
         }
-        if (this.visible && this.hideIcon) {
-            return this.hideIcon;
+        const hideIcon = this.hideIcon();
+        if (this.visible() && hideIcon) {
+            return hideIcon;
         }
-        return this.showIcon;
+        return showIcon;
     }
 
     getItemStyle(index: number) {
@@ -745,20 +759,21 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
     }
 
     isClickableRouterLink(item: MenuItem) {
-        return item.routerLink && !this.disabled && !item.disabled;
+        return item.routerLink && !this.disabled() && !item.disabled;
     }
 
     isOutsideClicked(event: Event) {
-        return this.container && !(this.container.nativeElement.isSameNode(event.target) || this.container.nativeElement.contains(event.target) || this.isItemClicked);
+        const container = this.container();
+        return container && !(container.nativeElement.isSameNode(event.target) || container.nativeElement.contains(event.target) || this.isItemClicked);
     }
 
     bindDocumentClickListener() {
         if (isPlatformBrowser(this.platformId)) {
-            if (!this.documentClickListener && this.hideOnClickOutside) {
+            if (!this.documentClickListener && this.hideOnClickOutside()) {
                 // Fuera de zona: solo se vuelve a ella cuando hay que ocultar (hide emite eventos).
                 this.documentClickListener = this.ngZone.runOutsideAngular(() =>
                     this.renderer.listen(this.document, 'click', (event) => {
-                        if (this.visible && this.isOutsideClicked(event)) {
+                        if (this.visible() && this.isOutsideClicked(event)) {
                             this.ngZone.run(() => this.hide());
                         }
 

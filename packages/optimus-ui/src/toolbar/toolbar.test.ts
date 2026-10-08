@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DebugElement, Input, TemplateRef, ViewChild, provideZonelessChangeDetection } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DebugElement, TemplateRef, provideZonelessChangeDetection, input, viewChild } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
@@ -73,9 +73,9 @@ class TestLegacyTemplateToolbarComponent {}
     `
 })
 class TestContentChildToolbarComponent {
-    @ViewChild('start') startTemplate!: TemplateRef<any>;
-    @ViewChild('center') centerTemplate!: TemplateRef<any>;
-    @ViewChild('end') endTemplate!: TemplateRef<any>;
+    readonly startTemplate = viewChild.required<TemplateRef<any>>('start');
+    readonly centerTemplate = viewChild.required<TemplateRef<any>>('center');
+    readonly endTemplate = viewChild.required<TemplateRef<any>>('end');
 }
 
 @Component({
@@ -171,7 +171,7 @@ class TestDynamicToolbarComponent {
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false,
     template: `
-        <p-toolbar [pt]="pt">
+        <p-toolbar [pt]="pt()">
             <ng-template pTemplate="start">
                 <button>PT Test Start</button>
             </ng-template>
@@ -185,7 +185,7 @@ class TestDynamicToolbarComponent {
     `
 })
 class TestPTToolbarComponent {
-    @Input() pt: any;
+    readonly pt = input<any>(undefined);
 }
 
 describe('Toolbar', () => {
@@ -648,9 +648,9 @@ describe('Toolbar', () => {
 
         it('should have correct template references in component', () => {
             // Component's ViewChild references should be defined
-            expect(contentChildComponent.startTemplate).toBeDefined();
-            expect(contentChildComponent.centerTemplate).toBeDefined();
-            expect(contentChildComponent.endTemplate).toBeDefined();
+            expect(contentChildComponent.startTemplate()).toBeDefined();
+            expect(contentChildComponent.centerTemplate()).toBeDefined();
+            expect(contentChildComponent.endTemplate()).toBeDefined();
         });
 
         it('should render all three ContentChild sections', () => {
@@ -703,13 +703,13 @@ describe('Toolbar', () => {
         });
 
         it('should apply simple string classes to PT sections', async () => {
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 root: 'ROOT_CLASS',
                 host: 'HOST_CLASS',
                 start: 'START_CLASS',
                 center: 'CENTER_CLASS',
                 end: 'END_CLASS'
-            };
+            });
             ptFixture.changeDetectorRef.markForCheck();
             await ptFixture.whenStable();
             ptFixture.detectChanges();
@@ -730,7 +730,7 @@ describe('Toolbar', () => {
         });
 
         it('should apply object-based PT options with class and attributes', async () => {
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 root: {
                     class: 'PT_ROOT_CLASS',
                     'data-test': 'toolbar-test',
@@ -741,7 +741,7 @@ describe('Toolbar', () => {
                     class: 'PT_START_CLASS',
                     'data-section': 'start'
                 }
-            };
+            });
             ptFixture.changeDetectorRef.markForCheck();
             await ptFixture.whenStable();
             ptFixture.detectChanges();
@@ -761,13 +761,13 @@ describe('Toolbar', () => {
         });
 
         it('should apply mixed object and string PT values', async () => {
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 root: {
                     class: 'PT_ROOT_CLASS'
                 },
                 host: 'PT_HOST_CLASS',
                 start: 'PT_START_STRING'
-            };
+            });
             ptFixture.changeDetectorRef.markForCheck();
             await ptFixture.whenStable();
             ptFixture.detectChanges();
@@ -784,14 +784,14 @@ describe('Toolbar', () => {
         });
 
         it('should use instance variables in PT functions', async () => {
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 root: ({ instance }) => {
                     return {
-                        class: instance?.ariaLabelledBy ? 'HAS_ARIA' : 'NO_ARIA',
-                        'data-styleclass': instance?.styleClass
+                        class: instance?.ariaLabelledBy() ? 'HAS_ARIA' : 'NO_ARIA',
+                        'data-styleclass': instance?.styleClass()
                     };
                 }
-            };
+            });
             ptFixture.changeDetectorRef.markForCheck();
             await ptFixture.whenStable();
             ptFixture.detectChanges();
@@ -807,13 +807,13 @@ describe('Toolbar', () => {
 
         it('should handle event binding in PT options', async () => {
             let clicked = false;
-            ptComponent.pt = {
+            ptFixture.componentRef.setInput('pt', {
                 root: {
                     onclick: () => {
                         clicked = true;
                     }
                 }
-            };
+            });
             ptFixture.changeDetectorRef.markForCheck();
             await ptFixture.whenStable();
             ptFixture.detectChanges();

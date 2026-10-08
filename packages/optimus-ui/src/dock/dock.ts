@@ -1,5 +1,5 @@
 import { NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ContentChild, ContentChildren, ElementRef, inject, InjectionToken, Input, NgModule, output, QueryList, signal, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, inject, InjectionToken, NgModule, output, signal, TemplateRef, ViewEncapsulation, input, viewChild, contentChild, contentChildren, linkedSignal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterModule } from '@angular/router';
 import { find, findSingle, resolve, uuid } from '@openng/optimus-ui-utils';
 import { MenuItem, PrimeTemplate, SharedModule } from '@openng/optimus-ui/api';
@@ -26,21 +26,21 @@ const DOCK_INSTANCE = new InjectionToken<Dock>('DOCK_INSTANCE');
         <div [class]="cx('listContainer')" [pBind]="ptm('listContainer')">
             <ul
                 #list
-                [attr.id]="id"
+                [attr.id]="_id()"
                 [class]="cx('list')"
                 role="menu"
-                [attr.aria-orientation]="position === 'bottom' || position === 'top' ? 'horizontal' : 'vertical'"
+                [attr.aria-orientation]="position() === 'bottom' || position() === 'top' ? 'horizontal' : 'vertical'"
                 [attr.aria-activedescendant]="focused ? focusedOptionId : undefined"
                 [tabindex]="tabindex"
-                [attr.aria-label]="ariaLabel"
-                [attr.aria-labelledby]="ariaLabelledBy"
+                [attr.aria-label]="ariaLabel()"
+                [attr.aria-labelledby]="ariaLabelledBy()"
                 (focus)="onListFocus($event)"
                 (blur)="onListBlur($event)"
                 (keydown)="onListKeyDown($event)"
                 (mouseleave)="onListMouseLeave()"
                 [pBind]="ptm('list')"
             >
-                @for (item of model; track item.label; let i = $index) {
+                @for (item of model(); track item.label; let i = $index) {
                     @if (item.visible !== false) {
                         <li
                             [attr.id]="getItemId(item, i)"
@@ -81,10 +81,10 @@ const DOCK_INSTANCE = new InjectionToken<Dock>('DOCK_INSTANCE');
                                         [attr.aria-hidden]="true"
                                         [pBind]="getPTOptions(item, i, 'itemLink')"
                                     >
-                                        @if (item.icon && !itemTemplate && !_itemTemplate) {
+                                        @if (item.icon && !itemTemplate() && !_itemTemplate) {
                                             <span [class]="cn(cx('itemIcon'), item.icon, item.iconClass)" [style]="item.iconStyle" [pBind]="getPTOptions(item, i, 'itemIcon')"></span>
                                         }
-                                        <ng-container *ngTemplateOutlet="itemTemplate || itemTemplate; context: { $implicit: item }"></ng-container>
+                                        <ng-container *ngTemplateOutlet="itemTemplate() || itemTemplate(); context: { $implicit: item }"></ng-container>
                                         @if (item.badge) {
                                             <p-badge [styleClass]="item.badgeStyleClass" [value]="item.badge" [pt]="getPTOptions(item, i, 'pcBadge')" [unstyled]="unstyled()" />
                                         }
@@ -106,10 +106,10 @@ const DOCK_INSTANCE = new InjectionToken<Dock>('DOCK_INSTANCE');
                                         [attr.aria-hidden]="true"
                                         [pBind]="getPTOptions(item, i, 'itemLink')"
                                     >
-                                        @if (item.icon && !itemTemplate && !_itemTemplate) {
+                                        @if (item.icon && !itemTemplate() && !_itemTemplate) {
                                             <span [class]="cn(cx('itemIcon'), item.icon, item.iconClass)" [style]="item.iconStyle" [pBind]="getPTOptions(item, i, 'itemIcon')"></span>
                                         }
-                                        <ng-container *ngTemplateOutlet="itemTemplate || _itemTemplate; context: { $implicit: item }"></ng-container>
+                                        <ng-container *ngTemplateOutlet="itemTemplate() || _itemTemplate; context: { $implicit: item }"></ng-container>
                                         @if (item.badge) {
                                             <p-badge [styleClass]="item.badgeStyleClass" [value]="item.badge" [pt]="getPTOptions(item, i, 'pcBadge')" [unstyled]="unstyled()" />
                                         }
@@ -126,7 +126,7 @@ const DOCK_INSTANCE = new InjectionToken<Dock>('DOCK_INSTANCE');
     encapsulation: ViewEncapsulation.None,
     providers: [DockStyle, { provide: DOCK_INSTANCE, useExisting: Dock }, { provide: PARENT_INSTANCE, useExisting: Dock }],
     host: {
-        '[class]': 'cn(cx("root"), styleClass)'
+        '[class]': 'cn(cx("root"), styleClass())'
     },
     hostDirectives: [Bind]
 })
@@ -137,39 +137,39 @@ export class Dock extends BaseComponent<DockPassThrough> {
      * Current id state as a string.
      * @group Props
      */
-    @Input() id: string | undefined;
+    readonly id = input<string | undefined>(undefined);
     /**
      * Class of the element.
      * @deprecated since v20.0.0, use `class` instead.
      * @group Props
      */
-    @Input() styleClass: string | undefined;
+    readonly styleClass = input<string | undefined>(undefined);
     /**
      * MenuModel instance to define the action items.
      * @group Props
      */
-    @Input() model: MenuItem[] | undefined | null = null;
+    readonly model = input<MenuItem[] | undefined | null>(null);
     /**
      * Position of element.
      * @group Props
      */
-    @Input() position: 'bottom' | 'top' | 'left' | 'right' = 'bottom';
+    readonly position = input<'bottom' | 'top' | 'left' | 'right'>('bottom');
     /**
      * Defines a string that labels the input for accessibility.
      * @group Props
      */
-    @Input() ariaLabel: string | undefined;
+    readonly ariaLabel = input<string | undefined>(undefined);
     /**
      * The breakpoint to define the maximum width boundary.
      * @defaultValue 960px
      * @group Props
      */
-    @Input() breakpoint: string | undefined = '960px';
+    readonly breakpoint = input<string | undefined>('960px');
     /**
      * Defines a string that labels the dropdown button for accessibility.
      * @group Props
      */
-    @Input() ariaLabelledBy: string | undefined;
+    readonly ariaLabelledBy = input<string | undefined>(undefined);
     /**
      * Callback to execute when button is focused.
      * @param {FocusEvent} event - Focus event.
@@ -183,7 +183,10 @@ export class Dock extends BaseComponent<DockPassThrough> {
      */
     onBlur = output<FocusEvent>();
 
-    @ViewChild('list', { static: false }) listViewChild: Nullable<ElementRef>;
+    readonly listViewChild = viewChild<Nullable<ElementRef>>('list');
+
+    /** Id actually rendered: the `id` input, or a generated one. */
+    readonly _id = linkedSignal(() => this.id() || uuid('pn_id_'));
 
     currentIndex: number = -3;
 
@@ -214,7 +217,6 @@ export class Dock extends BaseComponent<DockPassThrough> {
     }
 
     onInit() {
-        this.id = this.id || uuid('pn_id_');
         this.bindMatchMediaListener();
     }
 
@@ -227,7 +229,7 @@ export class Dock extends BaseComponent<DockPassThrough> {
      * @param {DockItemTemplateContext} context - item template context.
      * @group Templates
      */
-    @ContentChild('item') itemTemplate: TemplateRef<DockItemTemplateContext> | undefined;
+    readonly itemTemplate = contentChild<TemplateRef<DockItemTemplateContext>>('item');
 
     _itemTemplate: TemplateRef<DockItemTemplateContext> | undefined;
 
@@ -279,25 +281,29 @@ export class Dock extends BaseComponent<DockPassThrough> {
     onListKeyDown(event) {
         switch (event.code) {
             case 'ArrowDown': {
-                if (this.position === 'left' || this.position === 'right') this.onArrowDownKey();
+                const position = this.position();
+                if (position === 'left' || position === 'right') this.onArrowDownKey();
                 event.preventDefault();
                 break;
             }
 
             case 'ArrowUp': {
-                if (this.position === 'left' || this.position === 'right') this.onArrowUpKey();
+                const position = this.position();
+                if (position === 'left' || position === 'right') this.onArrowUpKey();
                 event.preventDefault();
                 break;
             }
 
             case 'ArrowRight': {
-                if (this.position === 'top' || this.position === 'bottom') this.onArrowDownKey();
+                const position = this.position();
+                if (position === 'top' || position === 'bottom') this.onArrowDownKey();
                 event.preventDefault();
                 break;
             }
 
             case 'ArrowLeft': {
-                if (this.position === 'top' || this.position === 'bottom') this.onArrowUpKey();
+                const position = this.position();
+                if (position === 'top' || position === 'bottom') this.onArrowUpKey();
                 event.preventDefault();
                 break;
             }
@@ -344,25 +350,25 @@ export class Dock extends BaseComponent<DockPassThrough> {
     }
 
     onEndKey() {
-        this.changeFocusedOptionIndex(find(this.listViewChild?.nativeElement, 'li[data-pc-section="item"][data-p-disabled="false"]').length - 1);
+        this.changeFocusedOptionIndex(find(this.listViewChild()?.nativeElement, 'li[data-pc-section="item"][data-p-disabled="false"]').length - 1);
     }
 
     onSpaceKey() {
-        const element = <HTMLElement>findSingle(this.listViewChild?.nativeElement, `li[id="${`${this.focusedOptionIndex}`}"]`);
+        const element = <HTMLElement>findSingle(this.listViewChild()?.nativeElement, `li[id="${`${this.focusedOptionIndex}`}"]`);
         const anchorElement = element && <HTMLElement>findSingle(element, 'a,button');
 
         anchorElement ? anchorElement.click() : element && element.click();
     }
 
     findNextOptionIndex(index) {
-        const menuitems = find(this.listViewChild?.nativeElement, 'li[data-pc-section="item"][data-p-disabled="false"]');
+        const menuitems = find(this.listViewChild()?.nativeElement, 'li[data-pc-section="item"][data-p-disabled="false"]');
         const matchedOptionIndex = [...menuitems].findIndex((link) => link.id === index);
 
         return matchedOptionIndex > -1 ? matchedOptionIndex + 1 : 0;
     }
 
     changeFocusedOptionIndex(index) {
-        const menuitems = <any>find(this.listViewChild?.nativeElement, 'li[data-pc-section="item"][data-p-disabled="false"]');
+        const menuitems = <any>find(this.listViewChild()?.nativeElement, 'li[data-pc-section="item"][data-p-disabled="false"]');
 
         let order = index >= menuitems.length ? menuitems.length - 1 : index < 0 ? 0 : index;
 
@@ -370,7 +376,7 @@ export class Dock extends BaseComponent<DockPassThrough> {
     }
 
     findPrevOptionIndex(index) {
-        const menuitems = find(this.listViewChild?.nativeElement, 'li[data-pc-section="item"][data-p-disabled="false"]');
+        const menuitems = find(this.listViewChild()?.nativeElement, 'li[data-pc-section="item"][data-p-disabled="false"]');
         const matchedOptionIndex = [...menuitems].findIndex((link) => link.id === index);
 
         return matchedOptionIndex > -1 ? matchedOptionIndex - 1 : 0;
@@ -380,10 +386,10 @@ export class Dock extends BaseComponent<DockPassThrough> {
         return !!item.routerLink && !this.disabled(item);
     }
 
-    @ContentChildren(PrimeTemplate) templates: QueryList<PrimeTemplate> | undefined;
+    readonly templates = contentChildren(PrimeTemplate);
 
     onAfterContentInit() {
-        this.templates?.forEach((item) => {
+        this.templates()?.forEach((item) => {
             switch (item.getType()) {
                 case 'item':
                     this._itemTemplate = item.template;
@@ -411,7 +417,7 @@ export class Dock extends BaseComponent<DockPassThrough> {
 
     bindMatchMediaListener() {
         if (!this.matchMediaListener && isPlatformBrowser(this.platformId)) {
-            const query = window.matchMedia(`(max-width: ${this.breakpoint})`);
+            const query = window.matchMedia(`(max-width: ${this.breakpoint()})`);
             this.query = query;
             this.queryMatches.set(query.matches);
 
