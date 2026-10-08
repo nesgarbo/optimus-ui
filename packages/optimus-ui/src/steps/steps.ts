@@ -1,5 +1,4 @@
-import { CommonModule } from '@angular/common';
-import { booleanAttribute, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, inject, Input, NgModule, numberAttribute, OnDestroy, OnInit, Output, ViewChild, ViewEncapsulation } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, ElementRef, inject, Input, NgModule, numberAttribute, output, ViewChild, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { find, findSingle } from '@openng/optimus-ui-utils';
 import { MenuItem, SharedModule } from '@openng/optimus-ui/api';
@@ -16,16 +15,16 @@ import { StepsStyle } from './style/stepsstyle';
 @Component({
     selector: 'p-steps',
     standalone: true,
-    imports: [CommonModule, RouterModule, TooltipModule, SharedModule],
+    imports: [RouterModule, TooltipModule, SharedModule],
     template: `
-        <nav [class]="cn(cx('root'), styleClass)" [ngStyle]="style" [attr.data-pc-name]="'steps'">
+        <nav [class]="cn(cx('root'), styleClass)" [style]="style" [attr.data-pc-name]="'steps'">
             <ul #list [attr.data-pc-section]="'menu'" [class]="cx('list')">
                 @for (item of model; track item.label; let i = $index) {
                     @if (item.visible !== false) {
                         <li
                             [class]="cx('item', { item, index: i })"
                             #menuitem
-                            [ngStyle]="item.style"
+                            [style]="item.style"
                             [attr.aria-current]="isActive(item, i) ? 'step' : undefined"
                             [attr.id]="item.id"
                             pTooltip
@@ -129,7 +128,7 @@ export class Steps extends BaseComponent {
      * @param {number} number - current index.
      * @group Emits
      */
-    @Output() activeIndexChange: EventEmitter<number> = new EventEmitter<number>();
+    activeIndexChange = output<number>();
 
     @ViewChild('list', { static: false }) listViewChild: Nullable<ElementRef>;
 

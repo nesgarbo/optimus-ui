@@ -1,25 +1,26 @@
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
 import {
     booleanAttribute,
     ChangeDetectionStrategy,
     Component,
+    EventEmitter,
     computed,
     ContentChild,
     ContentChildren,
     ElementRef,
-    EventEmitter,
     forwardRef,
-    Inject,
     inject,
     InjectionToken,
+    NgZone,
     input,
     Input,
     NgModule,
-    numberAttribute,
     Output,
+    output,
+    numberAttribute,
     Pipe,
+    SecurityContext,
     PipeTransform,
-    PLATFORM_ID,
     QueryList,
     signal,
     TemplateRef,
@@ -51,25 +52,24 @@ const MENU_INSTANCE = new InjectionToken<Menu>('MENU_INSTANCE');
     standalone: true
 })
 export class SafeHtmlPipe implements PipeTransform {
-    constructor(
-        @Inject(PLATFORM_ID) private readonly platformId: any,
-        private readonly sanitizer: DomSanitizer
-    ) {}
+    private readonly sanitizer = inject(DomSanitizer);
 
     public transform(value: string): SafeHtml {
-        if (!value || !isPlatformBrowser(this.platformId)) {
+        if (!value) {
             return value;
         }
 
-        return this.sanitizer.bypassSecurityTrustHtml(value);
+        // Pasa por el sanitizador de Angular (tambien en SSR); no se confia en el HTML de la etiqueta.
+        return this.sanitizer.sanitize(SecurityContext.HTML, value) ?? '';
     }
 }
 
 @Component({
+    // Eager on purpose: items and nodes are often mutated in place, which OnPush cannot see.
     changeDetection: ChangeDetectionStrategy.Eager,
     selector: '[pMenuItemContent]',
     standalone: true,
-    imports: [CommonModule, RouterModule, Ripple, TooltipModule, BadgeModule, SharedModule, SafeHtmlPipe, BindModule],
+    imports: [NgTemplateOutlet, RouterModule, Ripple, TooltipModule, BadgeModule, SharedModule, SafeHtmlPipe, BindModule],
     template: ` <div [class]="cx('itemContent')" (click)="onItemClick($event, item)" [attr.data-pc-section]="'content'" [pBind]="getPTOptions('itemContent')">
         @if (!itemTemplate) {
             @if (!item?.routerLink) {
@@ -79,7 +79,7 @@ export class SafeHtmlPipe implements PipeTransform {
                     [attr.data-automationid]="item.automationId"
                     [attr.tabindex]="-1"
                     [class]="cn(cx('itemLink'), item?.linkClass)"
-                    [ngStyle]="item?.linkStyle"
+                    [style]="item?.linkStyle"
                     [target]="item.target"
                     [pBind]="getPTOptions('itemLink')"
                     pRipple
@@ -97,7 +97,7 @@ export class SafeHtmlPipe implements PipeTransform {
                     routerLinkActive="p-menu-item-link-active"
                     [routerLinkActiveOptions]="item.routerLinkActiveOptions || { exact: false }"
                     [class]="cn(cx('itemLink'), item?.linkClass)"
-                    [ngStyle]="item?.linkStyle"
+                    [style]="item?.linkStyle"
                     [target]="item.target"
                     [fragment]="item.fragment"
                     [queryParamsHandling]="item.queryParamsHandling"
@@ -119,12 +119,12 @@ export class SafeHtmlPipe implements PipeTransform {
 
         <ng-template #itemContent>
             @if (item.icon) {
-                <span [class]="cn(cx('itemIcon', { item }), item.iconClass)" [pBind]="getPTOptions('itemIcon')" [ngStyle]="item.iconStyle" [attr.data-pc-section]="'itemicon'"></span>
+                <span [class]="cn(cx('itemIcon', { item }), item.iconClass)" [pBind]="getPTOptions('itemIcon')" [style]="item.iconStyle" [attr.data-pc-section]="'itemicon'"></span>
             }
             @if (item.escape !== false) {
-                <span [class]="cn(cx('itemLabel'), item.labelClass)" [ngStyle]="item.labelStyle" [pBind]="getPTOptions('itemLabel')" [attr.data-pc-section]="'itemlabel'">{{ item.label }}</span>
+                <span [class]="cn(cx('itemLabel'), item.labelClass)" [style]="item.labelStyle" [pBind]="getPTOptions('itemLabel')" [attr.data-pc-section]="'itemlabel'">{{ item.label }}</span>
             } @else {
-                <span [class]="cn(cx('itemLabel'), item.labelClass)" [ngStyle]="item.labelStyle" [attr.data-pc-section]="'itemlabel'" [innerHTML]="item.label | safeHtml" [pBind]="getPTOptions('itemLabel')"></span>
+                <span [class]="cn(cx('itemLabel'), item.labelClass)" [style]="item.labelStyle" [attr.data-pc-section]="'itemlabel'" [innerHTML]="item.label | safeHtml" [pBind]="getPTOptions('itemLabel')"></span>
             }
             @if (item.badge) {
                 <p-badge [styleClass]="item.badgeStyleClass" [value]="item.badge" [pt]="getPTOptions('pcBadge')" [unstyled]="unstyled()" />
@@ -143,18 +143,13 @@ export class MenuItemContent extends BaseComponent {
 
     idx = input<number>(0);
 
-    @Output() onMenuItemClick: EventEmitter<any> = new EventEmitter<any>();
+    onMenuItemClick = output<any>();
 
-    menu: Menu;
+    menu: Menu = inject(forwardRef(() => Menu));
 
     _componentStyle = inject(MenuStyle);
 
     hostName = 'Menu';
-
-    constructor(@Inject(forwardRef(() => Menu)) menu: Menu) {
-        super();
-        this.menu = menu as Menu;
-    }
 
     onItemClick(event, item) {
         this.onMenuItemClick.emit({ originalEvent: event, item });
@@ -171,14 +166,13 @@ export class MenuItemContent extends BaseComponent {
 @Component({
     selector: 'p-menu',
     standalone: true,
-    imports: [CommonModule, RouterModule, MenuItemContent, TooltipModule, BadgeModule, SharedModule, SafeHtmlPipe, BindModule, MotionModule],
+    imports: [NgTemplateOutlet, RouterModule, MenuItemContent, TooltipModule, BadgeModule, SharedModule, SafeHtmlPipe, BindModule, MotionModule],
     template: `
         @if (!popup || overlayVisible) {
             <div
                 #container
                 [class]="cn(cx('root'), styleClass)"
-                [style]="sx('root')"
-                [ngStyle]="style"
+                [style]="rootInlineStyle"
                 (click)="onOverlayClick($event)"
                 [attr.id]="id"
                 [pBind]="ptm('root')"
@@ -283,7 +277,7 @@ export class MenuItemContent extends BaseComponent {
                                     [itemTemplate]="itemTemplate ?? _itemTemplate"
                                     [idx]="i"
                                     [menuitemId]="menuitemId(item, id, i)"
-                                    [ngStyle]="item.style"
+                                    [style]="item.style"
                                     (onMenuItemClick)="itemClick($event, menuitemId(item, id, i))"
                                     pTooltip
                                     [tooltipOptions]="item.tooltipOptions"
@@ -332,6 +326,10 @@ export class Menu extends BaseComponent<MenuPassThrough> {
      * @group Props
      */
     @Input() style: { [klass: string]: any } | null | undefined;
+
+    get rootInlineStyle() {
+        return { ...(this.sx('root') as any), ...(this.style as any) };
+    }
     /**
      * Style class of the component.
      * @group Props
@@ -402,18 +400,18 @@ export class Menu extends BaseComponent<MenuPassThrough> {
      * Callback to invoke when overlay menu is shown.
      * @group Emits
      */
-    @Output() onShow: EventEmitter<any> = new EventEmitter<any>();
+    onShow = output<any>();
     /**
      * Callback to invoke when overlay menu is hidden.
      * @group Emits
      */
-    @Output() onHide: EventEmitter<any> = new EventEmitter<any>();
+    onHide = output<any>();
     /**
      * Callback to invoke when the list loses focus.
      * @param {Event} event - blur event.
      * @group Emits
      */
-    @Output() onBlur: EventEmitter<Event> = new EventEmitter<Event>();
+    onBlur = output<Event>();
     /**
      * Callback to invoke when the list receives focus.
      * @param {Event} event - focus event.
@@ -463,7 +461,11 @@ export class Menu extends BaseComponent<MenuPassThrough> {
         this.bindDirectiveInstance.setAttrs(this.ptm('host'));
     }
 
-    constructor(public overlayService: OverlayService) {
+    overlayService = inject(OverlayService);
+
+    private ngZone = inject(NgZone);
+
+    constructor() {
         super();
         this.id = this.id || uuid('pn_id_');
     }
@@ -878,11 +880,15 @@ export class Menu extends BaseComponent<MenuPassThrough> {
 
     bindScrollListener() {
         if (!this.scrollHandler && isPlatformBrowser(this.platformId)) {
-            this.scrollHandler = new ConnectedOverlayScrollHandler(this.target, () => {
-                if (this.visible) {
-                    this.hide();
-                }
-            });
+            this.scrollHandler = new ConnectedOverlayScrollHandler(
+                this.target,
+                () => {
+                    if (this.visible) {
+                        this.ngZone.run(() => this.hide());
+                    }
+                },
+                this.ngZone
+            );
         }
 
         this.scrollHandler?.bindScrollListener();

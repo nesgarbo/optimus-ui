@@ -1,20 +1,21 @@
-import { CommonModule } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import {
     booleanAttribute,
     ChangeDetectionStrategy,
     Component,
+    EventEmitter,
     computed,
     ContentChild,
     ContentChildren,
     ElementRef,
-    EventEmitter,
     inject,
     InjectionToken,
     input,
     Input,
     NgModule,
-    numberAttribute,
     Output,
+    output,
+    numberAttribute,
     QueryList,
     signal,
     TemplateRef,
@@ -46,7 +47,7 @@ type SplitButtonIconPosition = 'left' | 'right';
 @Component({
     selector: 'p-splitbutton, p-splitButton, p-split-button',
     standalone: true,
-    imports: [CommonModule, ButtonDirective, TieredMenu, AutoFocus, ChevronDownIcon, Ripple, TooltipModule, SharedModule],
+    imports: [NgTemplateOutlet, ButtonDirective, TieredMenu, AutoFocus, ChevronDownIcon, Ripple, TooltipModule, SharedModule],
     template: `
         @if (contentTemplate || _contentTemplate) {
             <button
@@ -332,7 +333,7 @@ export class SplitButton extends BaseComponent<SplitButtonPassThrough> {
      * @param {MouseEvent} event - Mouse event.
      * @group Emits
      */
-    @Output() onClick: EventEmitter<MouseEvent> = new EventEmitter<MouseEvent>();
+    onClick = output<MouseEvent>();
     /**
      * Callback to invoke when overlay menu is hidden.
      * @group Emits

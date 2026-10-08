@@ -1,23 +1,5 @@
-import { CommonModule } from '@angular/common';
-import {
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
-    Component,
-    ContentChild,
-    ContentChildren,
-    ElementRef,
-    EventEmitter,
-    inject,
-    InjectionToken,
-    Input,
-    NgModule,
-    Output,
-    QueryList,
-    signal,
-    TemplateRef,
-    ViewChild,
-    ViewEncapsulation
-} from '@angular/core';
+import { NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
+import { ChangeDetectionStrategy, Component, ContentChild, ContentChildren, ElementRef, inject, InjectionToken, Input, NgModule, output, QueryList, signal, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterModule } from '@angular/router';
 import { find, findSingle, resolve, uuid } from '@openng/optimus-ui-utils';
 import { MenuItem, PrimeTemplate, SharedModule } from '@openng/optimus-ui/api';
@@ -39,7 +21,7 @@ const DOCK_INSTANCE = new InjectionToken<Dock>('DOCK_INSTANCE');
 @Component({
     selector: 'p-dock',
     standalone: true,
-    imports: [CommonModule, RouterModule, RouterLink, RouterLinkActive, Ripple, TooltipModule, SharedModule, Bind, Badge],
+    imports: [NgTemplateOutlet, RouterModule, RouterLink, RouterLinkActive, Ripple, TooltipModule, SharedModule, Bind, Badge],
     template: `
         <div [class]="cx('listContainer')" [pBind]="ptm('listContainer')">
             <ul
@@ -63,7 +45,7 @@ const DOCK_INSTANCE = new InjectionToken<Dock>('DOCK_INSTANCE');
                         <li
                             [attr.id]="getItemId(item, i)"
                             [class]="cn(cx('item', { item, id: getItemId(item, i) }), item?.styleClass)"
-                            [ngStyle]="item.style"
+                            [style]="item.style"
                             role="menuitem"
                             [attr.aria-label]="item.label"
                             [attr.aria-disabled]="disabled(item) || false"
@@ -80,7 +62,7 @@ const DOCK_INSTANCE = new InjectionToken<Dock>('DOCK_INSTANCE');
                                         [routerLink]="item.routerLink"
                                         [queryParams]="item.queryParams"
                                         [class]="cn(cx('itemLink'), item?.linkClass)"
-                                        [ngStyle]="item?.linkStyle"
+                                        [style]="item?.linkStyle"
                                         routerLinkActive="router-link-active"
                                         [routerLinkActiveOptions]="item.routerLinkActiveOptions || { exact: false }"
                                         [target]="item.target"
@@ -100,7 +82,7 @@ const DOCK_INSTANCE = new InjectionToken<Dock>('DOCK_INSTANCE');
                                         [pBind]="getPTOptions(item, i, 'itemLink')"
                                     >
                                         @if (item.icon && !itemTemplate && !_itemTemplate) {
-                                            <span [class]="cn(cx('itemIcon'), item.icon, item.iconClass)" [ngStyle]="item.iconStyle" [pBind]="getPTOptions(item, i, 'itemIcon')"></span>
+                                            <span [class]="cn(cx('itemIcon'), item.icon, item.iconClass)" [style]="item.iconStyle" [pBind]="getPTOptions(item, i, 'itemIcon')"></span>
                                         }
                                         <ng-container *ngTemplateOutlet="itemTemplate || itemTemplate; context: { $implicit: item }"></ng-container>
                                         @if (item.badge) {
@@ -112,7 +94,7 @@ const DOCK_INSTANCE = new InjectionToken<Dock>('DOCK_INSTANCE');
                                         [tooltipPosition]="item.tooltipPosition"
                                         [attr.href]="item.url || null"
                                         [class]="cn(cx('itemLink'), item?.linkClass)"
-                                        [ngStyle]="item?.linkStyle"
+                                        [style]="item?.linkStyle"
                                         pRipple
                                         pTooltip
                                         [tooltipOptions]="item.tooltipOptions"
@@ -125,7 +107,7 @@ const DOCK_INSTANCE = new InjectionToken<Dock>('DOCK_INSTANCE');
                                         [pBind]="getPTOptions(item, i, 'itemLink')"
                                     >
                                         @if (item.icon && !itemTemplate && !_itemTemplate) {
-                                            <span [class]="cn(cx('itemIcon'), item.icon, item.iconClass)" [ngStyle]="item.iconStyle" [pBind]="getPTOptions(item, i, 'itemIcon')"></span>
+                                            <span [class]="cn(cx('itemIcon'), item.icon, item.iconClass)" [style]="item.iconStyle" [pBind]="getPTOptions(item, i, 'itemIcon')"></span>
                                         }
                                         <ng-container *ngTemplateOutlet="itemTemplate || _itemTemplate; context: { $implicit: item }"></ng-container>
                                         @if (item.badge) {
@@ -193,17 +175,17 @@ export class Dock extends BaseComponent<DockPassThrough> {
      * @param {FocusEvent} event - Focus event.
      * @group Emits
      */
-    @Output() onFocus: EventEmitter<FocusEvent> = new EventEmitter<FocusEvent>();
+    onFocus = output<FocusEvent>();
     /**
      * Callback to invoke when the component loses focus.
      * @param {FocusEvent} event - Focus event.
      * @group Emits
      */
-    @Output() onBlur: EventEmitter<FocusEvent> = new EventEmitter<FocusEvent>();
+    onBlur = output<FocusEvent>();
 
     @ViewChild('list', { static: false }) listViewChild: Nullable<ElementRef>;
 
-    currentIndex: number;
+    currentIndex: number = -3;
 
     tabindex: number = 0;
 
@@ -219,6 +201,8 @@ export class Dock extends BaseComponent<DockPassThrough> {
 
     matchMediaListener: any;
 
+    private unlistenMatchMedia: (() => void) | null = null;
+
     query: any;
 
     queryMatches = signal<boolean>(false);
@@ -227,11 +211,6 @@ export class Dock extends BaseComponent<DockPassThrough> {
 
     get focusedOptionId() {
         return this.focusedOptionIndex !== -1 && this.focusedOptionIndex !== '-1' ? String(this.focusedOptionIndex) : null;
-    }
-
-    constructor(public cd: ChangeDetectorRef) {
-        super();
-        this.currentIndex = -3;
     }
 
     onInit() {
@@ -275,9 +254,6 @@ export class Dock extends BaseComponent<DockPassThrough> {
 
     onItemMouseEnter(index: number) {
         this.currentIndex = index;
-
-        if (index === 1) {
-        }
 
         this.cd.markForCheck();
     }
@@ -434,7 +410,7 @@ export class Dock extends BaseComponent<DockPassThrough> {
     }
 
     bindMatchMediaListener() {
-        if (!this.matchMediaListener) {
+        if (!this.matchMediaListener && isPlatformBrowser(this.platformId)) {
             const query = window.matchMedia(`(max-width: ${this.breakpoint})`);
             this.query = query;
             this.queryMatches.set(query.matches);
@@ -444,13 +420,14 @@ export class Dock extends BaseComponent<DockPassThrough> {
                 this.mobileActive.set(false);
             };
 
-            this.renderer.listen(this.query, 'change', this.matchMediaListener.bind(this));
+            this.unlistenMatchMedia = this.renderer.listen(this.query, 'change', this.matchMediaListener);
         }
     }
 
     unbindMatchMediaListener() {
         if (this.matchMediaListener) {
-            this.matchMediaListener();
+            this.unlistenMatchMedia?.();
+            this.unlistenMatchMedia = null;
             this.matchMediaListener = null;
             this.query = null;
         }

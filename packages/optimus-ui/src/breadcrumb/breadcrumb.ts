@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ContentChild, ContentChildren, EventEmitter, inject, InjectionToken, Input, NgModule, Output, QueryList, TemplateRef, ViewEncapsulation } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import { ChangeDetectionStrategy, Component, ContentChild, ContentChildren, inject, InjectionToken, Input, NgModule, output, QueryList, TemplateRef, ViewEncapsulation } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterModule } from '@angular/router';
 import { MenuItem, PrimeTemplate, SharedModule, TranslationKeys } from '@openng/optimus-ui/api';
 import { Badge } from '@openng/optimus-ui/badge';
@@ -19,12 +19,12 @@ const BREADCRUMB_INSTANCE = new InjectionToken<Breadcrumb>('BREADCRUMB_INSTANCE'
 @Component({
     selector: 'p-breadcrumb',
     standalone: true,
-    imports: [CommonModule, RouterModule, RouterLink, RouterLinkActive, TooltipModule, ChevronRightIcon, HomeIcon, SharedModule, Bind, Badge],
+    imports: [NgTemplateOutlet, RouterModule, RouterLink, RouterLinkActive, TooltipModule, ChevronRightIcon, HomeIcon, SharedModule, Bind, Badge],
     template: `
         <nav [pBind]="ptm('root')" [class]="cn(cx('root'), styleClass)" [style]="style">
             <ol [class]="cx('list')" [pBind]="ptm('list')">
                 @if (home && home.visible !== false) {
-                    <li [attr.id]="home.id" [class]="cn(cx('homeItem'), home.styleClass)" [ngStyle]="home.style" pTooltip [tooltipOptions]="home.tooltipOptions" [pBind]="ptm('homeItem')" [unstyled]="unstyled()">
+                    <li [attr.id]="home.id" [class]="cn(cx('homeItem'), home.styleClass)" [style]="home.style" pTooltip [tooltipOptions]="home.tooltipOptions" [pBind]="ptm('homeItem')" [unstyled]="unstyled()">
                         @if (itemTemplate || _itemTemplate) {
                             <ng-template *ngTemplateOutlet="itemTemplate || _itemTemplate; context: { $implicit: home }"></ng-template>
                         } @else {
@@ -33,7 +33,7 @@ const BREADCRUMB_INSTANCE = new InjectionToken<Breadcrumb>('BREADCRUMB_INSTANCE'
                                     [href]="home.url ? home.url : null"
                                     [attr.aria-label]="homeLinkAriaLabel"
                                     [class]="cn(cx('itemLink'), home.linkClass)"
-                                    [ngStyle]="home.linkStyle"
+                                    [style]="home.linkStyle"
                                     (click)="onClick($event, home)"
                                     [target]="home.target"
                                     [attr.title]="home.title"
@@ -42,16 +42,16 @@ const BREADCRUMB_INSTANCE = new InjectionToken<Breadcrumb>('BREADCRUMB_INSTANCE'
                                     [pBind]="ptm('itemLink')"
                                 >
                                     @if (home.icon) {
-                                        <span [class]="cn(cx('itemIcon'), home.icon, home.iconClass)" [ngStyle]="home.iconStyle" [pBind]="ptm('itemIcon')"></span>
+                                        <span [class]="cn(cx('itemIcon'), home.icon, home.iconClass)" [style]="home.iconStyle" [pBind]="ptm('itemIcon')"></span>
                                     }
                                     @if (!home.icon) {
                                         <svg data-p-icon="home" [class]="cx('itemIcon')" [pBind]="ptm('itemIcon')" />
                                     }
                                     @if (home.label) {
                                         @if (home.escape !== false) {
-                                            <span [class]="cn(cx('itemLabel'), home.labelClass)" [ngStyle]="home.labelStyle" [pBind]="ptm('itemLabel')">{{ home.label }}</span>
+                                            <span [class]="cn(cx('itemLabel'), home.labelClass)" [style]="home.labelStyle" [pBind]="ptm('itemLabel')">{{ home.label }}</span>
                                         } @else {
-                                            <span [class]="cn(cx('itemLabel'), home.labelClass)" [ngStyle]="home.labelStyle" [innerHTML]="home.label" [pBind]="ptm('itemLabel')"></span>
+                                            <span [class]="cn(cx('itemLabel'), home.labelClass)" [style]="home.labelStyle" [innerHTML]="home.label" [pBind]="ptm('itemLabel')"></span>
                                         }
                                     }
                                     @if (home.badge) {
@@ -67,7 +67,7 @@ const BREADCRUMB_INSTANCE = new InjectionToken<Breadcrumb>('BREADCRUMB_INSTANCE'
                                     [queryParams]="home.queryParams"
                                     [routerLinkActiveOptions]="home.routerLinkActiveOptions || { exact: false }"
                                     [class]="cn(cx('itemLink'), home.linkClass)"
-                                    [ngStyle]="home.linkStyle"
+                                    [style]="home.linkStyle"
                                     (click)="onClick($event, home)"
                                     [target]="home.target"
                                     [attr.title]="home.title"
@@ -82,16 +82,16 @@ const BREADCRUMB_INSTANCE = new InjectionToken<Breadcrumb>('BREADCRUMB_INSTANCE'
                                     [pBind]="ptm('itemLink')"
                                 >
                                     @if (home.icon) {
-                                        <span [class]="cn(cx('itemIcon'), home.icon, home.iconClass)" [ngStyle]="home.iconStyle" [pBind]="ptm('itemIcon')"></span>
+                                        <span [class]="cn(cx('itemIcon'), home.icon, home.iconClass)" [style]="home.iconStyle" [pBind]="ptm('itemIcon')"></span>
                                     }
                                     @if (!home.icon) {
                                         <svg data-p-icon="home" [class]="cx('itemIcon')" [pBind]="ptm('itemIcon')" />
                                     }
                                     @if (home.label) {
                                         @if (home.escape !== false) {
-                                            <span [class]="cn(cx('itemLabel'), home.labelClass)" [ngStyle]="home.labelStyle" [pBind]="ptm('itemLabel')">{{ home.label }}</span>
+                                            <span [class]="cn(cx('itemLabel'), home.labelClass)" [style]="home.labelStyle" [pBind]="ptm('itemLabel')">{{ home.label }}</span>
                                         } @else {
-                                            <span [class]="cn(cx('itemLabel'), home.labelClass)" [ngStyle]="home.labelStyle" [innerHTML]="home.label" [pBind]="ptm('itemLabel')"></span>
+                                            <span [class]="cn(cx('itemLabel'), home.labelClass)" [style]="home.labelStyle" [innerHTML]="home.label" [pBind]="ptm('itemLabel')"></span>
                                         }
                                     }
                                     @if (home.badge) {
@@ -128,7 +128,7 @@ const BREADCRUMB_INSTANCE = new InjectionToken<Breadcrumb>('BREADCRUMB_INSTANCE'
                                     <a
                                         [attr.href]="menuitem?.url ? menuitem?.url : null"
                                         [class]="cn(cx('itemLink'), menuitem?.linkClass)"
-                                        [ngStyle]="menuitem?.linkStyle"
+                                        [style]="menuitem?.linkStyle"
                                         (click)="onClick($event, menuitem)"
                                         [target]="menuitem?.target"
                                         [attr.title]="menuitem?.title"
@@ -139,13 +139,13 @@ const BREADCRUMB_INSTANCE = new InjectionToken<Breadcrumb>('BREADCRUMB_INSTANCE'
                                     >
                                         @if (!itemTemplate && !_itemTemplate) {
                                             @if (menuitem?.icon) {
-                                                <span [class]="cn(cx('itemIcon'), menuitem?.icon, menuitem?.iconClass)" [ngStyle]="menuitem?.iconStyle" [pBind]="getPTOptions(menuitem, i, 'itemIcon')"></span>
+                                                <span [class]="cn(cx('itemIcon'), menuitem?.icon, menuitem?.iconClass)" [style]="menuitem?.iconStyle" [pBind]="getPTOptions(menuitem, i, 'itemIcon')"></span>
                                             }
                                             @if (menuitem?.label) {
                                                 @if (menuitem?.escape !== false) {
-                                                    <span [class]="cn(cx('itemLabel'), menuitem?.labelClass)" [ngStyle]="menuitem?.labelStyle" [pBind]="getPTOptions(menuitem, i, 'itemLabel')">{{ menuitem?.label }}</span>
+                                                    <span [class]="cn(cx('itemLabel'), menuitem?.labelClass)" [style]="menuitem?.labelStyle" [pBind]="getPTOptions(menuitem, i, 'itemLabel')">{{ menuitem?.label }}</span>
                                                 } @else {
-                                                    <span [class]="cn(cx('itemLabel'), menuitem?.labelClass)" [ngStyle]="menuitem?.labelStyle" [innerHTML]="menuitem?.label" [pBind]="getPTOptions(menuitem, i, 'itemLabel')"></span>
+                                                    <span [class]="cn(cx('itemLabel'), menuitem?.labelClass)" [style]="menuitem?.labelStyle" [innerHTML]="menuitem?.label" [pBind]="getPTOptions(menuitem, i, 'itemLabel')"></span>
                                                 }
                                             }
                                             @if (menuitem?.badge) {
@@ -161,7 +161,7 @@ const BREADCRUMB_INSTANCE = new InjectionToken<Breadcrumb>('BREADCRUMB_INSTANCE'
                                         [queryParams]="menuitem?.queryParams"
                                         [routerLinkActiveOptions]="menuitem?.routerLinkActiveOptions || { exact: false }"
                                         [class]="cn(cx('itemLink'), menuitem?.linkClass)"
-                                        [ngStyle]="menuitem?.linkStyle"
+                                        [style]="menuitem?.linkStyle"
                                         (click)="onClick($event, menuitem)"
                                         [target]="menuitem?.target"
                                         [attr.title]="menuitem?.title"
@@ -177,13 +177,13 @@ const BREADCRUMB_INSTANCE = new InjectionToken<Breadcrumb>('BREADCRUMB_INSTANCE'
                                         [pBind]="getPTOptions(menuitem, i, 'itemLink')"
                                     >
                                         @if (menuitem?.icon) {
-                                            <span [class]="cn(cx('itemIcon'), menuitem?.icon, menuitem?.iconClass)" [ngStyle]="menuitem?.iconStyle" [pBind]="getPTOptions(menuitem, i, 'itemIcon')"></span>
+                                            <span [class]="cn(cx('itemIcon'), menuitem?.icon, menuitem?.iconClass)" [style]="menuitem?.iconStyle" [pBind]="getPTOptions(menuitem, i, 'itemIcon')"></span>
                                         }
                                         @if (menuitem?.label) {
                                             @if (menuitem?.escape !== false) {
-                                                <span [class]="cn(cx('itemLabel'), menuitem?.labelClass)" [ngStyle]="menuitem?.labelStyle" [pBind]="getPTOptions(menuitem, i, 'itemLabel')">{{ menuitem?.label }}</span>
+                                                <span [class]="cn(cx('itemLabel'), menuitem?.labelClass)" [style]="menuitem?.labelStyle" [pBind]="getPTOptions(menuitem, i, 'itemLabel')">{{ menuitem?.label }}</span>
                                             } @else {
-                                                <span [class]="cn(cx('itemLabel'), menuitem?.labelClass)" [ngStyle]="menuitem?.labelStyle" [innerHTML]="menuitem?.label" [pBind]="getPTOptions(menuitem, i, 'itemLabel')"></span>
+                                                <span [class]="cn(cx('itemLabel'), menuitem?.labelClass)" [style]="menuitem?.labelStyle" [innerHTML]="menuitem?.label" [pBind]="getPTOptions(menuitem, i, 'itemLabel')"></span>
                                             }
                                         }
                                         @if (menuitem?.badge) {
@@ -245,7 +245,7 @@ export class Breadcrumb extends BaseComponent<BreadcrumbPassThrough> {
      * @param {BreadcrumbItemClickEvent} event - custom click event.
      * @group Emits
      */
-    @Output() onItemClick: EventEmitter<BreadcrumbItemClickEvent> = new EventEmitter<BreadcrumbItemClickEvent>();
+    onItemClick = output<BreadcrumbItemClickEvent>();
 
     _componentStyle = inject(BreadCrumbStyle);
 

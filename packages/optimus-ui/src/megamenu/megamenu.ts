@@ -1,4 +1,4 @@
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
 import {
     booleanAttribute,
     ChangeDetectionStrategy,
@@ -7,14 +7,14 @@ import {
     ContentChildren,
     effect,
     ElementRef,
-    EventEmitter,
     forwardRef,
     inject,
     InjectionToken,
     Input,
     NgModule,
+    output,
+    NgZone,
     numberAttribute,
-    Output,
     QueryList,
     signal,
     TemplateRef,
@@ -39,10 +39,11 @@ const MEGAMENU_INSTANCE = new InjectionToken<MegaMenu>('MEGAMENU_INSTANCE');
 const MEGAMENU_SUB_INSTANCE = new InjectionToken<MegaMenuSub>('MEGAMENU_SUB_INSTANCE');
 
 @Component({
+    // Eager on purpose: items and nodes are often mutated in place, which OnPush cannot see.
     changeDetection: ChangeDetectionStrategy.Eager,
     selector: 'p-megaMenuSub, p-megamenu-sub, ul[pMegaMenuSub]',
     standalone: true,
-    imports: [CommonModule, RouterModule, Ripple, TooltipModule, AngleDownIcon, AngleRightIcon, BadgeModule, SharedModule, Bind],
+    imports: [NgTemplateOutlet, RouterModule, Ripple, TooltipModule, AngleDownIcon, AngleRightIcon, BadgeModule, SharedModule, Bind],
     template: `
         @if (submenu) {
             <li [class]="cn(cx('submenuLabel'), getItemProp(submenu, 'class'))" [style]="getItemProp(submenu, 'style')" role="presentation" [pBind]="ptm('submenuLabel')">
@@ -68,7 +69,7 @@ const MEGAMENU_SUB_INSTANCE = new InjectionToken<MegaMenuSub>('MEGAMENU_SUB_INST
                     [attr.aria-level]="level + 1"
                     [attr.aria-setsize]="getAriaSetSize()"
                     [attr.aria-posinset]="getAriaPosInset(index)"
-                    [ngStyle]="getItemProp(processedItem, 'style')"
+                    [style]="getItemProp(processedItem, 'style')"
                     [class]="cn(cx('item', { processedItem }), getItemProp(processedItem, 'styleClass'))"
                     pTooltip
                     [tooltipOptions]="getItemProp(processedItem, 'tooltipOptions')"
@@ -84,7 +85,7 @@ const MEGAMENU_SUB_INSTANCE = new InjectionToken<MegaMenuSub>('MEGAMENU_SUB_INST
                                     [attr.title]="getItemProp(processedItem, 'title')"
                                     [target]="getItemProp(processedItem, 'target')"
                                     [class]="cn(cx('itemLink'), getItemProp(processedItem, 'linkClass'))"
-                                    [ngStyle]="getItemProp(processedItem, 'linkStyle')"
+                                    [style]="getItemProp(processedItem, 'linkStyle')"
                                     [attr.tabindex]="-1"
                                     [pBind]="getPTOptions(processedItem, index, 'itemLink')"
                                     pRipple
@@ -92,20 +93,20 @@ const MEGAMENU_SUB_INSTANCE = new InjectionToken<MegaMenuSub>('MEGAMENU_SUB_INST
                                     @if (getItemProp(processedItem, 'icon')) {
                                         <span
                                             [class]="cn(cx('itemIcon'), getItemProp(processedItem, 'icon'), getItemProp(processedItem, 'iconClass'))"
-                                            [ngStyle]="getItemProp(processedItem, 'iconStyle')"
+                                            [style]="getItemProp(processedItem, 'iconStyle')"
                                             [attr.tabindex]="-1"
                                             [pBind]="getPTOptions(processedItem, index, 'itemIcon')"
                                         >
                                         </span>
                                     }
                                     @if (getItemProp(processedItem, 'escape')) {
-                                        <span [class]="cn(cx('itemLabel'), getItemProp(processedItem, 'labelClass'))" [ngStyle]="getItemProp(processedItem, 'labelStyle')" [pBind]="getPTOptions(processedItem, index, 'itemLabel')">
+                                        <span [class]="cn(cx('itemLabel'), getItemProp(processedItem, 'labelClass'))" [style]="getItemProp(processedItem, 'labelStyle')" [pBind]="getPTOptions(processedItem, index, 'itemLabel')">
                                             {{ getItemLabel(processedItem) }}
                                         </span>
                                     } @else {
                                         <span
                                             [class]="cn(cx('itemLabel'), getItemProp(processedItem, 'labelClass'))"
-                                            [ngStyle]="getItemProp(processedItem, 'labelStyle')"
+                                            [style]="getItemProp(processedItem, 'labelStyle')"
                                             [innerHTML]="getItemLabel(processedItem)"
                                             [pBind]="getPTOptions(processedItem, index, 'itemLabel')"
                                         ></span>
@@ -138,7 +139,7 @@ const MEGAMENU_SUB_INSTANCE = new InjectionToken<MegaMenuSub>('MEGAMENU_SUB_INST
                                     [routerLinkActiveOptions]="getItemProp(processedItem, 'routerLinkActiveOptions') || { exact: false }"
                                     [target]="getItemProp(processedItem, 'target')"
                                     [class]="cn(cx('itemLink'), getItemProp(processedItem, 'linkClass'))"
-                                    [ngStyle]="getItemProp(processedItem, 'linkStyle')"
+                                    [style]="getItemProp(processedItem, 'linkStyle')"
                                     [fragment]="getItemProp(processedItem, 'fragment')"
                                     [queryParamsHandling]="getItemProp(processedItem, 'queryParamsHandling')"
                                     [preserveFragment]="getItemProp(processedItem, 'preserveFragment')"
@@ -151,19 +152,19 @@ const MEGAMENU_SUB_INSTANCE = new InjectionToken<MegaMenuSub>('MEGAMENU_SUB_INST
                                     @if (getItemProp(processedItem, 'icon')) {
                                         <span
                                             [class]="cn(cx('itemIcon'), getItemProp(processedItem, 'icon'), getItemProp(processedItem, 'iconClass'))"
-                                            [ngStyle]="getItemProp(processedItem, 'iconStyle')"
+                                            [style]="getItemProp(processedItem, 'iconStyle')"
                                             [attr.tabindex]="-1"
                                             [pBind]="getPTOptions(processedItem, index, 'itemIcon')"
                                         ></span>
                                     }
                                     @if (getItemProp(processedItem, 'escape')) {
-                                        <span [class]="cn(cx('itemLabel'), getItemProp(processedItem, 'labelClass'))" [ngStyle]="getItemProp(processedItem, 'labelStyle')" [pBind]="getPTOptions(processedItem, index, 'itemLabel')">{{
+                                        <span [class]="cn(cx('itemLabel'), getItemProp(processedItem, 'labelClass'))" [style]="getItemProp(processedItem, 'labelStyle')" [pBind]="getPTOptions(processedItem, index, 'itemLabel')">{{
                                             getItemLabel(processedItem)
                                         }}</span>
                                     } @else {
                                         <span
                                             [class]="cn(cx('itemLabel'), getItemProp(processedItem, 'labelClass'))"
-                                            [ngStyle]="getItemProp(processedItem, 'labelStyle')"
+                                            [style]="getItemProp(processedItem, 'labelStyle')"
                                             [innerHTML]="getItemLabel(processedItem)"
                                             [pBind]="getPTOptions(processedItem, index, 'itemLabel')"
                                         ></span>
@@ -284,17 +285,17 @@ export class MegaMenuSub extends BaseComponent<MegaMenuPassThrough> {
 
     @Input({ transform: booleanAttribute }) root: boolean = false;
 
-    @Output() itemClick: EventEmitter<any> = new EventEmitter();
+    itemClick = output<any>();
 
-    @Output() itemMouseEnter: EventEmitter<any> = new EventEmitter();
+    itemMouseEnter = output<any>();
 
-    @Output() menuFocus: EventEmitter<any> = new EventEmitter();
+    menuFocus = output<any>();
 
-    @Output() menuBlur: EventEmitter<any> = new EventEmitter();
+    menuBlur = output<any>();
 
-    @Output() menuKeydown: EventEmitter<any> = new EventEmitter();
+    menuKeydown = output<any>();
 
-    @Output() menuMouseDown: EventEmitter<any> = new EventEmitter();
+    menuMouseDown = output<any>();
 
     megaMenu: MegaMenu = inject(forwardRef(() => MegaMenu));
 
@@ -387,7 +388,7 @@ export class MegaMenuSub extends BaseComponent<MegaMenuPassThrough> {
 @Component({
     selector: 'p-megaMenu, p-megamenu, p-mega-menu',
     standalone: true,
-    imports: [CommonModule, RouterModule, MegaMenuSub, TooltipModule, BarsIcon, BadgeModule, SharedModule, Bind],
+    imports: [NgTemplateOutlet, RouterModule, MegaMenuSub, TooltipModule, BarsIcon, BadgeModule, SharedModule, Bind],
     template: `
         @if (startTemplate || _startTemplate) {
             <div [class]="cx('start')" [pBind]="ptm('start')">
@@ -581,7 +582,7 @@ export class MegaMenu extends BaseComponent<MegaMenuPassThrough> {
 
     outsideClickListener: VoidListener;
 
-    resizeListener: (event: any) => void;
+    resizeListener: () => void;
 
     dirty: boolean = false;
 
@@ -607,7 +608,34 @@ export class MegaMenu extends BaseComponent<MegaMenuPassThrough> {
 
     public queryMatches = signal<boolean>(false);
 
-    public mobileActive: boolean = false;
+    private _mobileActive = signal<boolean>(false);
+
+    get mobileActive(): boolean {
+        return this._mobileActive();
+    }
+
+    set mobileActive(value: boolean) {
+        this._mobileActive.set(!!value);
+    }
+
+    private timers = new Set<ReturnType<typeof setTimeout>>();
+
+    private setTimer(fn: () => void, delay: number = 0) {
+        const id = setTimeout(() => {
+            this.timers.delete(id);
+            fn();
+        }, delay);
+        this.timers.add(id);
+    }
+
+    private clearTimers() {
+        this.timers.forEach((id) => clearTimeout(id));
+        this.timers.clear();
+        if (this.searchTimeout) {
+            clearTimeout(this.searchTimeout);
+            this.searchTimeout = null;
+        }
+    }
 
     get visibleItems() {
         const processedItem = isNotEmpty(this.activeItem()) ? this.activeItem() : null;
@@ -636,6 +664,8 @@ export class MegaMenu extends BaseComponent<MegaMenuPassThrough> {
         const focusedItem = this.focusedItemInfo();
         return focusedItem?.item && focusedItem.item?.id ? focusedItem.item.id : isNotEmpty(focusedItem.key) ? `${this.id}_${focusedItem.key}` : null;
     }
+
+    private ngZone = inject(NgZone);
 
     constructor() {
         super();
@@ -801,7 +831,7 @@ export class MegaMenu extends BaseComponent<MegaMenuPassThrough> {
         } else {
             this.mobileActive = true;
             ZIndexUtils.set('menu', this.rootmenu?.el.nativeElement, this.config.zIndex.menu);
-            setTimeout(() => {
+            this.setTimer(() => {
                 this.show();
             }, 0);
         }
@@ -852,7 +882,7 @@ export class MegaMenu extends BaseComponent<MegaMenuPassThrough> {
     hide(event?, isFocus?: boolean) {
         if (this.mobileActive) {
             this.mobileActive = false;
-            setTimeout(() => {
+            this.setTimer(() => {
                 focus(this.menubuttonViewChild?.nativeElement);
                 this.scrollInView();
             }, 100);
@@ -889,7 +919,7 @@ export class MegaMenu extends BaseComponent<MegaMenuPassThrough> {
             return;
         }
 
-        setTimeout(() => {
+        this.setTimer(() => {
             const activeElement = this.document.activeElement;
             if (activeElement && this.el.nativeElement.contains(activeElement)) {
                 return;
@@ -1264,7 +1294,9 @@ export class MegaMenu extends BaseComponent<MegaMenuPassThrough> {
 
     bindResizeListener() {
         if (!this.resizeListener) {
-            this.resizeListener = (event) => {
+            if (!isPlatformBrowser(this.platformId)) return;
+
+            const resizeHandler = (event) => {
                 if (!isTouchDevice()) {
                     this.hide(event, true);
                 }
@@ -1272,20 +1304,27 @@ export class MegaMenu extends BaseComponent<MegaMenuPassThrough> {
                 this.mobileActive = false;
             };
 
-            window.addEventListener('resize', this.resizeListener);
+            // Fuera de zona: el listener solo escribe signals, que ya avisan a OnPush.
+            this.resizeListener = this.ngZone.runOutsideAngular(() => {
+                const win = this.document.defaultView!;
+                win.addEventListener('resize', resizeHandler, { passive: true });
+                return () => win.removeEventListener('resize', resizeHandler);
+            });
         }
     }
 
     bindOutsideClickListener() {
         if (isPlatformBrowser(this.platformId)) {
             if (!this.outsideClickListener) {
-                this.outsideClickListener = this.renderer.listen(this.document, 'click', (event) => {
-                    const isOutsideContainer = this.el?.nativeElement !== event.target && !this.el?.nativeElement.contains(event.target);
+                this.outsideClickListener = this.ngZone.runOutsideAngular(() =>
+                    this.renderer.listen(this.document, 'click', (event) => {
+                        const isOutsideContainer = this.el?.nativeElement !== event.target && !this.el?.nativeElement.contains(event.target);
 
-                    if (isOutsideContainer) {
-                        this.hide();
-                    }
-                });
+                        if (isOutsideContainer) {
+                            this.hide();
+                        }
+                    })
+                );
             }
         }
     }
@@ -1299,7 +1338,7 @@ export class MegaMenu extends BaseComponent<MegaMenuPassThrough> {
 
     unbindResizeListener() {
         if (this.resizeListener) {
-            window.removeEventListener('resize', this.resizeListener);
+            this.resizeListener();
             this.resizeListener = null!;
         }
     }
@@ -1308,6 +1347,7 @@ export class MegaMenu extends BaseComponent<MegaMenuPassThrough> {
         this.unbindOutsideClickListener();
         this.unbindResizeListener();
         this.unbindMatchMediaListener();
+        this.clearTimers();
     }
 }
 

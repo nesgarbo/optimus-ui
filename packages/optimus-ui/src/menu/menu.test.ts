@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DebugElement, provideZonelessChangeDetection, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DebugElement, NgZone, provideZonelessChangeDetection, ViewChild } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
@@ -2110,5 +2110,23 @@ describe('Menu', () => {
                 })
             );
         });
+    });
+});
+
+describe('Menu scroll handler zone', () => {
+    it('should create the scroll handler with the zone', async () => {
+        await TestBed.configureTestingModule({
+            imports: [Menu],
+            providers: [provideZonelessChangeDetection(), provideNoopAnimations(), provideOptimus()]
+        }).compileComponents();
+
+        const fixture = TestBed.createComponent(Menu);
+        const menu = fixture.componentInstance;
+        menu.popup = true;
+        menu.target = document.createElement('div');
+        menu.bindScrollListener();
+
+        expect(menu.scrollHandler?.zone).toBe(TestBed.inject(NgZone));
+        menu.scrollHandler?.destroy();
     });
 });

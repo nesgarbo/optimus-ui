@@ -1,18 +1,20 @@
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
 import {
     booleanAttribute,
     ChangeDetectionStrategy,
     Component,
+    EventEmitter,
     ContentChild,
     ContentChildren,
     ElementRef,
-    EventEmitter,
     inject,
     InjectionToken,
     Input,
     NgModule,
-    numberAttribute,
     Output,
+    output,
+    NgZone,
+    numberAttribute,
     QueryList,
     signal,
     TemplateRef,
@@ -41,9 +43,9 @@ const SPEED_DIAL_INSTANCE = new InjectionToken<SpeedDial>('SPEED_DIAL_INSTANCE')
 @Component({
     selector: 'p-speeddial, p-speedDial, p-speed-dial',
     standalone: true,
-    imports: [CommonModule, ButtonModule, Ripple, TooltipModule, RouterModule, PlusIcon, SharedModule, Bind],
+    imports: [NgTemplateOutlet, ButtonModule, Ripple, TooltipModule, RouterModule, PlusIcon, SharedModule, Bind],
     template: `
-        <div #container [pBind]="ptm('root')" [class]="cn(cx('root'), className)" [style]="style" [ngStyle]="sx('root')">
+        <div #container [pBind]="ptm('root')" [class]="cn(cx('root'), className)" [style]="rootInlineStyle">
             @if (!buttonTemplate && !_buttonTemplate) {
                 <button
                     type="button"
@@ -84,12 +86,12 @@ const SPEED_DIAL_INSTANCE = new InjectionToken<SpeedDial>('SPEED_DIAL_INSTANCE')
                 (keydown)="onKeyDown($event)"
                 [attr.aria-activedescendant]="focused ? focusedOptionId : undefined"
                 [tabindex]="-1"
-                [ngStyle]="sx('list')"
+                [style]="sx('list')"
             >
                 @for (item of model; track item; let i = $index) {
                     <li
                         [pBind]="getPTOptions(id + '_' + i, 'item')"
-                        [ngStyle]="getItemStyle(i)"
+                        [style]="getItemStyle(i)"
                         [class]="cx('item', { item, i })"
                         pTooltip
                         [pTooltipUnstyled]="unstyled()"
@@ -130,7 +132,7 @@ const SPEED_DIAL_INSTANCE = new InjectionToken<SpeedDial>('SPEED_DIAL_INSTANCE')
             </ul>
         </div>
         @if (mask && visible) {
-            <div [pBind]="ptm('mask')" [class]="cn(cx('mask'), maskClassName)" [ngStyle]="maskStyle" animate.enter="p-overlay-mask-enter-active" animate.leave="p-overlay-mask-leave-active"></div>
+            <div [pBind]="ptm('mask')" [class]="cn(cx('mask'), maskClassName)" [style]="maskStyle" animate.enter="p-overlay-mask-enter-active" animate.leave="p-overlay-mask-leave-active"></div>
         }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -180,6 +182,10 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
      * @group Props
      */
     @Input() style: { [klass: string]: any } | null | undefined;
+
+    get rootInlineStyle() {
+        return { ...(this.sx('root') as any), ...(this.style as any) };
+    }
     /**
      * Style class of the element.
      * @group Props
@@ -280,19 +286,19 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
      * @param {boolean} boolean - Visibility value.
      * @group Emits
      */
-    @Output() onVisibleChange: EventEmitter<boolean> = new EventEmitter<boolean>();
+    onVisibleChange = output<boolean>();
     /**
      * Fired when the visibility of element changed.
      * @param {boolean} boolean - Visibility value.
      * @group Emits
      */
-    @Output() visibleChange: EventEmitter<boolean> = new EventEmitter<boolean>();
+    visibleChange = output<boolean>();
     /**
      * Fired when the button element clicked.
      * @param {MouseEvent} event - Mouse event.
      * @group Emits
      */
-    @Output() onClick: EventEmitter<MouseEvent> = new EventEmitter<MouseEvent>();
+    onClick = output<MouseEvent>();
     /**
      * Fired when the actions are visible.
      * @param {Event} event - Browser event.
@@ -338,6 +344,8 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
     _iconTemplate: TemplateRef<void> | undefined;
 
     isItemClicked: boolean = false;
+
+    private ngZone = inject(NgZone);
 
     _visible: boolean = false;
 
@@ -747,13 +755,16 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
     bindDocumentClickListener() {
         if (isPlatformBrowser(this.platformId)) {
             if (!this.documentClickListener && this.hideOnClickOutside) {
-                this.documentClickListener = this.renderer.listen(this.document, 'click', (event) => {
-                    if (this.visible && this.isOutsideClicked(event)) {
-                        this.hide();
-                    }
+                // Fuera de zona: solo se vuelve a ella cuando hay que ocultar (hide emite eventos).
+                this.documentClickListener = this.ngZone.runOutsideAngular(() =>
+                    this.renderer.listen(this.document, 'click', (event) => {
+                        if (this.visible && this.isOutsideClicked(event)) {
+                            this.ngZone.run(() => this.hide());
+                        }
 
-                    this.isItemClicked = false;
-                });
+                        this.isItemClicked = false;
+                    })
+                );
             }
         }
     }

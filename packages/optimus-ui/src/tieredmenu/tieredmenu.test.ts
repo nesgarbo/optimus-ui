@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, ViewChild, provideZonelessChangeDetection } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, NgZone, ViewChild, provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
@@ -1493,5 +1493,27 @@ describe('TieredMenu', () => {
                 expect(root.nativeElement.classList.contains('INLINE_OBJECT_CLASS')).toBe(true);
             });
         });
+    });
+});
+
+describe('TieredMenu scroll handler zone', () => {
+    it('should create the scroll handler with the zone and hide on scroll', async () => {
+        await TestBed.configureTestingModule({
+            imports: [TieredMenu, RouterTestingModule],
+            providers: [provideZonelessChangeDetection(), provideOptimus()]
+        }).compileComponents();
+
+        const fixture = TestBed.createComponent(TieredMenu);
+        const menu = fixture.componentInstance;
+        menu.popup = true;
+        menu.target = document.createElement('div');
+        menu.visible = true;
+        menu.bindScrollListener();
+
+        expect(menu.scrollHandler?.zone).toBe(TestBed.inject(NgZone));
+
+        menu.scrollHandler?.listener(new Event('scroll'));
+        expect(menu.visible).toBe(false);
+        menu.scrollHandler?.destroy();
     });
 });
