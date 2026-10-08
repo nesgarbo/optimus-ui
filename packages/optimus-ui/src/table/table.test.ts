@@ -1675,3 +1675,117 @@ describe('Table', () => {
         });
     });
 });
+
+describe('Table timers', () => {
+    it('should cancel the pending column reorder state save on destroy', async () => {
+        vi.useFakeTimers();
+        try {
+            await TestBed.configureTestingModule({
+                imports: [TableModule],
+                providers: [provideZonelessChangeDetection()]
+            }).compileComponents();
+
+            const fixture = TestBed.createComponent(Table);
+            const table = fixture.componentInstance;
+            const spy = vi.spyOn(table, 'saveState').mockImplementation(() => {});
+            (table as any).colReorderTimeout = setTimeout(() => table.saveState());
+
+            fixture.destroy();
+            vi.runAllTimers();
+
+            expect(spy).not.toHaveBeenCalled();
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+});
+
+describe('Table robustness', () => {
+    const create = async () => {
+        await TestBed.configureTestingModule({
+            imports: [TableModule],
+            providers: [provideZonelessChangeDetection()]
+        }).compileComponents();
+
+        return TestBed.createComponent(Table);
+    };
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+        sessionStorage.clear();
+    });
+
+    it('should clear a corrupt state and keep going on restoreState', async () => {
+        const fixture = await create();
+        const table = fixture.componentInstance;
+        fixture.componentRef.setInput('stateKey', 'corrupt-state');
+        sessionStorage.setItem('corrupt-state', '{not json');
+
+        expect(() => table.restoreState()).not.toThrow();
+        expect(sessionStorage.getItem('corrupt-state')).toBeNull();
+    });
+
+    it('should clear a corrupt state and keep going on restoreColumnOrder', async () => {
+        const fixture = await create();
+        const table = fixture.componentInstance;
+        fixture.componentRef.setInput('stateKey', 'corrupt-order');
+        sessionStorage.setItem('corrupt-order', '{not json');
+
+        expect(() => table.restoreColumnOrder()).not.toThrow();
+        expect(sessionStorage.getItem('corrupt-order')).toBeNull();
+    });
+
+    it('should not throw when the storage refuses the write', async () => {
+        const fixture = await create();
+        const table = fixture.componentInstance;
+        fixture.componentRef.setInput('stateKey', 'full-storage');
+        vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+            throw new DOMException('quota', 'QuotaExceededError');
+        });
+        const saved: any[] = [];
+        table.onStateSave.subscribe((state) => saved.push(state));
+
+        expect(() => table.saveState()).not.toThrow();
+        expect(saved.length).toBe(1);
+    });
+
+    it('should not throw when the storage cannot be read', async () => {
+        const fixture = await create();
+        const table = fixture.componentInstance;
+        fixture.componentRef.setInput('stateKey', 'blocked-storage');
+        vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+            throw new DOMException('denied', 'SecurityError');
+        });
+
+        expect(() => table.restoreState()).not.toThrow();
+        expect(() => table.restoreColumnOrder()).not.toThrow();
+    });
+
+    it('should sort a copy and leave the array of the consumer untouched', async () => {
+        const fixture = await create();
+        const table = fixture.componentInstance;
+        const data = [{ n: 3 }, { n: 1 }, { n: 2 }];
+        const original = [...data];
+        fixture.componentRef.setInput('value', data);
+        fixture.detectChanges();
+
+        table.sort({ field: 'n', order: 1 });
+
+        expect(data).toEqual(original);
+        expect(table.value.map((r: any) => r.n)).toEqual([1, 2, 3]);
+    });
+
+    it('should sort multiple fields on a copy and sort a frozen array', async () => {
+        const fixture = await create();
+        const table = fixture.componentInstance;
+        const data = Object.freeze([{ n: 3 }, { n: 1 }, { n: 2 }]) as any[];
+        fixture.componentRef.setInput('value', data);
+        fixture.componentRef.setInput('sortMode', 'multiple');
+        fixture.detectChanges();
+
+        table.sortMultiple.call(Object.assign(table, { _multiSortMeta: [{ field: 'n', order: -1 }] }));
+
+        expect(data.map((r) => r.n)).toEqual([3, 1, 2]);
+        expect(table.value.map((r: any) => r.n)).toEqual([3, 2, 1]);
+    });
+});

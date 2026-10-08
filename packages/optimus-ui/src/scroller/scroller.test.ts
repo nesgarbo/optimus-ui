@@ -4466,3 +4466,82 @@ describe('Scroller', () => {
         });
     });
 });
+
+@Component({
+    standalone: true,
+    imports: [Scroller],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    template: ` <p-scroller [items]="items" [itemSize]="50" scrollHeight="200px" (onScroll)="seen.push($event)" /> `
+})
+class ObservedScrollerHostComponent {
+    items = Array.from({ length: 100 }, (_, i) => ({ label: `Item ${i}` }));
+    seen: any[] = [];
+}
+
+@Component({
+    standalone: true,
+    imports: [Scroller],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    template: ` <p-scroller [items]="items" [itemSize]="50" scrollHeight="200px" /> `
+})
+class UnobservedScrollerHostComponent {
+    items = Array.from({ length: 100 }, (_, i) => ({ label: `Item ${i}` }));
+}
+
+describe('Scroller native scroll listener', () => {
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] }).compileComponents();
+    });
+
+    it('should not enter the zone nor handle a scroll that changes nothing when nobody listens', async () => {
+        const fixture = TestBed.createComponent(UnobservedScrollerHostComponent);
+        fixture.detectChanges();
+        await fixture.whenStable();
+        const scroller: Scroller = fixture.debugElement.query(By.directive(Scroller)).componentInstance;
+        const spy = vi.spyOn(scroller, 'onContainerScroll');
+        vi.spyOn(scroller, 'onScrollPositionChange').mockReturnValue({ first: 0, last: 10, isRangeChanged: false, scrollPos: 0 } as any);
+
+        scroller.elementViewChild!.nativeElement.dispatchEvent(new Event('scroll'));
+
+        expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('should handle the scroll when the visible range changes', async () => {
+        const fixture = TestBed.createComponent(UnobservedScrollerHostComponent);
+        fixture.detectChanges();
+        await fixture.whenStable();
+        const scroller: Scroller = fixture.debugElement.query(By.directive(Scroller)).componentInstance;
+        const spy = vi.spyOn(scroller, 'onContainerScroll').mockImplementation(() => {});
+        vi.spyOn(scroller, 'onScrollPositionChange').mockReturnValue({ first: 5, last: 15, isRangeChanged: true, scrollPos: 250 } as any);
+
+        scroller.elementViewChild!.nativeElement.dispatchEvent(new Event('scroll'));
+
+        expect(spy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should keep emitting onScroll on every scroll when the output has a listener', async () => {
+        const fixture = TestBed.createComponent(ObservedScrollerHostComponent);
+        fixture.detectChanges();
+        await fixture.whenStable();
+        const scroller: Scroller = fixture.debugElement.query(By.directive(Scroller)).componentInstance;
+        vi.spyOn(scroller, 'onScrollPositionChange').mockReturnValue({ first: 0, last: 10, isRangeChanged: false, scrollPos: 0 } as any);
+
+        scroller.elementViewChild!.nativeElement.dispatchEvent(new Event('scroll'));
+
+        expect(fixture.componentInstance.seen.length).toBe(1);
+    });
+
+    it('should remove the native listener on destroy', async () => {
+        const fixture = TestBed.createComponent(UnobservedScrollerHostComponent);
+        fixture.detectChanges();
+        await fixture.whenStable();
+        const scroller: Scroller = fixture.debugElement.query(By.directive(Scroller)).componentInstance;
+        const el = scroller.elementViewChild!.nativeElement as HTMLElement;
+        const spy = vi.spyOn(scroller, 'onNativeScroll');
+
+        fixture.destroy();
+        el.dispatchEvent(new Event('scroll'));
+
+        expect(spy).not.toHaveBeenCalled();
+    });
+});

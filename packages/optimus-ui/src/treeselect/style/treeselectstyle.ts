@@ -19,6 +19,29 @@ const style = /*css*/ `
         color: dt('treeselect.invalid.placeholder.color');
     }
 
+    button.p-treeselect-icon-button {
+        appearance: none;
+        background: transparent;
+        border: 0;
+        padding: 0;
+        margin: 0;
+        font: inherit;
+        color: dt('treeselect.clear.icon.color');
+        line-height: 0;
+        cursor: pointer;
+        align-self: center;
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    button.p-treeselect-icon-button:focus-visible {
+        outline: 2px solid currentColor;
+        outline-offset: 2px;
+        border-radius: 2px;
+    }
+
     .p-treeselect-clear-icon.p-icon {
         flex-shrink: 0;
     }

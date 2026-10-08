@@ -7,7 +7,6 @@ import {
     ContentChild,
     ContentChildren,
     ElementRef,
-    EventEmitter,
     forwardRef,
     HostListener,
     inject,
@@ -16,8 +15,7 @@ import {
     model,
     NgModule,
     numberAttribute,
-    Optional,
-    Output,
+    output,
     QueryList,
     signal,
     SimpleChanges,
@@ -72,7 +70,7 @@ const TREENODE_INSTANCE = new InjectionToken<UITreeNode>('TREENODE_INSTANCE');
         @if (node) {
             <li
                 [class]="cn(cx('node'), node.styleClass)"
-                [ngStyle]="{ height: itemSize + 'px' }"
+                [style.height.px]="itemSize"
                 [style]="node.style"
                 [attr.aria-label]="node.label"
                 [attr.aria-checked]="checked"
@@ -229,6 +227,23 @@ export class UITreeNode extends BaseComponent<TreePassThrough> {
     tree: Tree = inject(forwardRef(() => Tree));
 
     timeout: any;
+
+    private pendingTimeouts = new Set<ReturnType<typeof setTimeout>>();
+
+    private defer(fn: () => void, delay = 0) {
+        const id = setTimeout(() => {
+            this.pendingTimeouts.delete(id);
+            fn();
+        }, delay);
+        this.pendingTimeouts.add(id);
+        return id;
+    }
+
+    onDestroy() {
+        this.pendingTimeouts.forEach((id) => clearTimeout(id));
+        this.pendingTimeouts.clear();
+        clearTimeout(this.timeout);
+    }
 
     isPrevDropPointHovered = signal<boolean>(false);
 
@@ -488,7 +503,7 @@ export class UITreeNode extends BaseComponent<TreePassThrough> {
 
             event.dataTransfer?.setDragImage(dragEl, 0, 0);
 
-            setTimeout(() => document.body.removeChild(dragEl), 0);
+            this.defer(() => dragEl.remove());
 
             this.tree.dragDropService.startDrag({
                 tree: this,
@@ -631,9 +646,7 @@ export class UITreeNode extends BaseComponent<TreePassThrough> {
             this.expand(event);
             (<HTMLDivElement>event.currentTarget).tabIndex = -1;
 
-            setTimeout(() => {
-                this.onArrowDown(event);
-            }, 1);
+            this.defer(() => this.onArrowDown(event), 1);
         }
         event.preventDefault();
     }
@@ -740,6 +753,7 @@ export class UITreeNode extends BaseComponent<TreePassThrough> {
     }
 
     focusVirtualNode() {
+        clearTimeout(this.timeout);
         this.timeout = setTimeout(() => {
             let node = <any>findSingle(this.tree?.contentViewChild?.nativeElement, `[data-id="${<TreeNode>this.node?.key ?? <TreeNode>this.node?.data}"]`);
             focus(node);
@@ -828,8 +842,7 @@ export class UITreeNode extends BaseComponent<TreePassThrough> {
                         @if (items) {
                             <ul
                                 #content
-                                [class]="cx('rootChildren')"
-                                [ngClass]="scrollerOptions.contentStyleClass"
+                                [class]="cn(cx('rootChildren'), scrollerOptions.contentStyleClass)"
                                 [style]="scrollerOptions.contentStyle"
                                 role="tree"
                                 [attr.aria-label]="ariaLabel"
@@ -1107,67 +1120,67 @@ export class Tree extends BaseComponent<TreePassThrough> implements BlockableUI 
      * @param {TreeNodeSelectEvent} event - Node select event.
      * @group Emits
      */
-    @Output() onNodeSelect: EventEmitter<TreeNodeSelectEvent> = new EventEmitter<TreeNodeSelectEvent>();
+    onNodeSelect = output<TreeNodeSelectEvent>();
     /**
      * Callback to invoke when a node is unselected.
      * @param {TreeNodeUnSelectEvent} event - Node unselect event.
      * @group Emits
      */
-    @Output() onNodeUnselect: EventEmitter<TreeNodeUnSelectEvent> = new EventEmitter<TreeNodeUnSelectEvent>();
+    onNodeUnselect = output<TreeNodeUnSelectEvent>();
     /**
      * Callback to invoke when a node is expanded.
      * @param {TreeNodeExpandEvent} event - Node expand event.
      * @group Emits
      */
-    @Output() onNodeExpand: EventEmitter<TreeNodeExpandEvent> = new EventEmitter<TreeNodeExpandEvent>();
+    onNodeExpand = output<TreeNodeExpandEvent>();
     /**
      * Callback to invoke when a node is collapsed.
      * @param {TreeNodeCollapseEvent} event - Node collapse event.
      * @group Emits
      */
-    @Output() onNodeCollapse: EventEmitter<TreeNodeCollapseEvent> = new EventEmitter<TreeNodeCollapseEvent>();
+    onNodeCollapse = output<TreeNodeCollapseEvent>();
     /**
      * Callback to invoke when a node is selected with right click.
      * @param {onNodeContextMenuSelect} event - Node context menu select event.
      * @group Emits
      */
-    @Output() onNodeContextMenuSelect: EventEmitter<TreeNodeContextMenuSelectEvent> = new EventEmitter<TreeNodeContextMenuSelectEvent>();
+    onNodeContextMenuSelect = output<TreeNodeContextMenuSelectEvent>();
     /**
      * Callback to invoke when a node is double clicked.
      * @param {TreeNodeDoubleClickEvent} event - Node double click event.
      * @group Emits
      */
-    @Output() onNodeDoubleClick: EventEmitter<TreeNodeDoubleClickEvent> = new EventEmitter<TreeNodeDoubleClickEvent>();
+    onNodeDoubleClick = output<TreeNodeDoubleClickEvent>();
     /**
      * Callback to invoke when a node is dropped.
      * @param {TreeNodeDropEvent} event - Node drop event.
      * @group Emits
      */
-    @Output() onNodeDrop: EventEmitter<TreeNodeDropEvent> = new EventEmitter<TreeNodeDropEvent>();
+    onNodeDrop = output<TreeNodeDropEvent>();
     /**
      * Callback to invoke in lazy mode to load new data.
      * @param {TreeLazyLoadEvent} event - Custom lazy load event.
      * @group Emits
      */
-    @Output() onLazyLoad: EventEmitter<TreeLazyLoadEvent> = new EventEmitter<TreeLazyLoadEvent>();
+    onLazyLoad = output<TreeLazyLoadEvent>();
     /**
      * Callback to invoke in virtual scroll mode when scroll position changes.
      * @param {TreeScrollEvent} event - Custom scroll event.
      * @group Emits
      */
-    @Output() onScroll: EventEmitter<TreeScrollEvent> = new EventEmitter<TreeScrollEvent>();
+    onScroll = output<TreeScrollEvent>();
     /**
      * Callback to invoke in virtual scroll mode when scroll position and item's range in view changes.
      * @param {TreeScrollIndexChangeEvent} event - Scroll index change event.
      * @group Emits
      */
-    @Output() onScrollIndexChange: EventEmitter<TreeScrollIndexChangeEvent> = new EventEmitter<TreeScrollIndexChangeEvent>();
+    onScrollIndexChange = output<TreeScrollIndexChangeEvent>();
     /**
      * Callback to invoke when data is filtered.
      * @param {TreeFilterEvent} event - Custom filter event.
      * @group Emits
      */
-    @Output() onFilter: EventEmitter<TreeFilterEvent> = new EventEmitter<TreeFilterEvent>();
+    onFilter = output<TreeFilterEvent>();
     /**
      * Custom filter template.
      * @param {TreeFilterTemplateContext} context - filter context.
@@ -1347,8 +1360,16 @@ export class Tree extends BaseComponent<TreePassThrough> implements BlockableUI 
         this.onDragLeave(event);
     }
 
-    constructor(@Optional() public dragDropService: TreeDragDropService) {
-        super();
+    public dragDropService: TreeDragDropService = inject(TreeDragDropService, { optional: true })!;
+
+    private selectTimeouts = new Set<ReturnType<typeof setTimeout>>();
+
+    private emitSelectLater(event: any, node: TreeNode) {
+        const id = setTimeout(() => {
+            this.selectTimeouts.delete(id);
+            this.onNodeSelect.emit({ originalEvent: event, node: node });
+        });
+        this.selectTimeouts.add(id);
     }
 
     onInit() {
@@ -1494,9 +1515,7 @@ export class Tree extends BaseComponent<TreePassThrough> implements BlockableUI 
                             this.onNodeUnselect.emit({ originalEvent: event, node: node });
                         } else {
                             this.selection.set(node);
-                            setTimeout(() => {
-                                this.onNodeSelect.emit({ originalEvent: event, node: node });
-                            });
+                            this.emitSelectLater(event, node);
                         }
                     } else {
                         if (selected) {
@@ -1504,9 +1523,7 @@ export class Tree extends BaseComponent<TreePassThrough> implements BlockableUI 
                             this.onNodeUnselect.emit({ originalEvent: event, node: node });
                         } else {
                             this.selection.set([...((currentSelection as TreeNode[]) || []), node]);
-                            setTimeout(() => {
-                                this.onNodeSelect.emit({ originalEvent: event, node: node });
-                            });
+                            this.emitSelectLater(event, node);
                         }
                     }
                 }
@@ -1949,6 +1966,8 @@ export class Tree extends BaseComponent<TreePassThrough> implements BlockableUI 
     }
 
     onDestroy() {
+        this.selectTimeouts.forEach((id) => clearTimeout(id));
+        this.selectTimeouts.clear();
         if (this.dragStartSubscription) {
             this.dragStartSubscription.unsubscribe();
         }

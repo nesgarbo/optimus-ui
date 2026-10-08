@@ -8,7 +8,6 @@ import {
     ContentChildren,
     Directive,
     ElementRef,
-    EventEmitter,
     HostListener,
     inject,
     Injectable,
@@ -17,8 +16,9 @@ import {
     NgModule,
     NgZone,
     numberAttribute,
-    Output,
+    output,
     QueryList,
+    signal,
     SimpleChanges,
     TemplateRef,
     ViewChild,
@@ -82,7 +82,7 @@ import {
     TreeTableSortIconTemplateContext,
     TreeTableTogglerIconTemplateContext
 } from '@openng/optimus-ui/types/treetable';
-import { Subject, Subscription } from 'rxjs';
+import { merge, Subject, Subscription } from 'rxjs';
 import { TreeTableStyle } from './style/treetablestyle';
 
 const TREETABLE_INSTANCE = new InjectionToken<TreeTable>('TREETABLE_INSTANCE');
@@ -127,6 +127,7 @@ export class TreeTableService {
  * @group Components
  */
 @Component({
+    // Eager on purpose: items and nodes are often mutated in place, which OnPush cannot see.
     changeDetection: ChangeDetectionStrategy.Eager,
     selector: 'p-treeTable, p-treetable, p-tree-table',
     standalone: false,
@@ -201,7 +202,7 @@ export class TreeTableService {
 
         @if (!scrollable) {
             <div [pBind]="ptm('wrapper')" [class]="cx('wrapper')">
-                <table role="treegrid" [pBind]="ptm('table')" #table [ngClass]="tableStyleClass" [ngStyle]="tableStyle">
+                <table role="treegrid" [pBind]="ptm('table')" #table [class]="tableStyleClass" [style]="tableStyle">
                     <ng-container *ngTemplateOutlet="colGroupTemplate || _colGroupTemplate; context: { $implicit: columns }"></ng-container>
                     <thead role="rowgroup" [class]="cx('thead')" [pBind]="ptm('thead')">
                         <ng-container *ngTemplateOutlet="headerTemplate || _headerTemplate; context: { $implicit: columns }"></ng-container>
@@ -218,12 +219,12 @@ export class TreeTableService {
             <div [pBind]="ptm('scrollableWrapper')" [class]="cx('scrollableWrapper')">
                 @if (frozenColumns || frozenBodyTemplate || _frozenBodyTemplate) {
                     <div
-                        [ngClass]="[cx('scrollableView'), cx('frozenView')]"
+                        [class]="cn(cx('scrollableView'), cx('frozenView'))"
                         #scrollableFrozenView
                         [ttScrollableView]="frozenColumns"
                         [unstyled]="unstyled()"
                         [frozen]="true"
-                        [ngStyle]="{ width: frozenWidth }"
+                        [style.width]="frozenWidth"
                         [scrollHeight]="scrollHeight"
                         [pBind]="ptm('scrollableView')"
                     ></div>
@@ -236,7 +237,8 @@ export class TreeTableService {
                     [unstyled]="unstyled()"
                     [frozen]="false"
                     [scrollHeight]="scrollHeight"
-                    [ngStyle]="{ left: frozenWidth, width: 'calc(100% - ' + frozenWidth + ')' }"
+                    [style.left]="frozenWidth"
+                    [style.width]="'calc(100% - ' + frozenWidth + ')'"
                 ></div>
             </div>
         }
@@ -496,7 +498,14 @@ export class TreeTable extends BaseComponent<TreeTablePassThrough> implements Bl
      * Displays a loader to indicate data load is in progress.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) loading: boolean | undefined;
+    @Input({ transform: booleanAttribute })
+    get loading(): boolean | undefined {
+        return this._loading();
+    }
+    set loading(val: boolean | undefined) {
+        this._loading.set(val);
+    }
+    private _loading = signal<boolean | undefined>(undefined);
     /**
      * The icon to show while indicating data load is in progress.
      * @group Props
@@ -702,115 +711,115 @@ export class TreeTable extends BaseComponent<TreeTablePassThrough> implements Bl
      * @param {TreeTableNode} object - Node instance.
      * @group Emits
      */
-    @Output() selectionChange: EventEmitter<TreeTableNode<any> | TreeTableNode<any>[] | null> = new EventEmitter<TreeTableNode<any> | TreeTableNode<any>[] | null>();
+    selectionChange = output<TreeTableNode<any> | TreeTableNode<any>[] | null>();
     /**
      * Callback to invoke on context menu selection change.
      * @param {TreeTableNode} object - Node instance.
      * @group Emits
      */
-    @Output() contextMenuSelectionChange: EventEmitter<TreeTableNode> = new EventEmitter<TreeTableNode>();
+    contextMenuSelectionChange = output<TreeTableNode>();
     /**
      * Callback to invoke when data is filtered.
      * @param {TreeTableFilterEvent} event - Custom filter event.
      * @group Emits
      */
-    @Output() onFilter: EventEmitter<TreeTableFilterEvent> = new EventEmitter<TreeTableFilterEvent>();
+    onFilter = output<TreeTableFilterEvent>();
     /**
      * Callback to invoke when a node is expanded.
      * @param {TreeTableNodeExpandEvent} event - Node expand event.
      * @group Emits
      */
-    @Output() onNodeExpand: EventEmitter<TreeTableNodeExpandEvent> = new EventEmitter<TreeTableNodeExpandEvent>();
+    onNodeExpand = output<TreeTableNodeExpandEvent>();
     /**
      * Callback to invoke when a node is collapsed.
      * @param {TreeTableNodeCollapseEvent} event - Node collapse event.
      * @group Emits
      */
-    @Output() onNodeCollapse: EventEmitter<TreeTableNodeCollapseEvent> = new EventEmitter<TreeTableNodeCollapseEvent>();
+    onNodeCollapse = output<TreeTableNodeCollapseEvent>();
     /**
      * Callback to invoke when pagination occurs.
      * @param {TreeTablePaginatorState} object - Paginator state.
      * @group Emits
      */
-    @Output() onPage: EventEmitter<TreeTablePaginatorState> = new EventEmitter<TreeTablePaginatorState>();
+    onPage = output<TreeTablePaginatorState>();
     /**
      * Callback to invoke when a column gets sorted.
      * @param {Object} Object - Sort data.
      * @group Emits
      */
-    @Output() onSort: EventEmitter<any> = new EventEmitter<any>();
+    onSort = output<any>();
     /**
      * Callback to invoke when paging, sorting or filtering happens in lazy mode.
      * @param {TreeTableLazyLoadEvent} event - Custom lazy load event.
      * @group Emits
      */
-    @Output() onLazyLoad: EventEmitter<TreeTableLazyLoadEvent> = new EventEmitter<TreeTableLazyLoadEvent>();
+    onLazyLoad = output<TreeTableLazyLoadEvent>();
     /**
      * An event emitter to invoke on custom sorting, refer to sorting section for details.
      * @param {TreeTableSortEvent} event - Custom sort event.
      * @group Emits
      */
-    @Output() sortFunction: EventEmitter<TreeTableSortEvent> = new EventEmitter<TreeTableSortEvent>();
+    sortFunction = output<TreeTableSortEvent>();
     /**
      * Callback to invoke when a column is resized.
      * @param {TreeTableColResizeEvent} event - Custom column resize event.
      * @group Emits
      */
-    @Output() onColResize: EventEmitter<TreeTableColResizeEvent> = new EventEmitter<TreeTableColResizeEvent>();
+    onColResize = output<TreeTableColResizeEvent>();
     /**
      * Callback to invoke when a column is reordered.
      * @param {TreeTableColumnReorderEvent} event - Custom column reorder.
      * @group Emits
      */
-    @Output() onColReorder: EventEmitter<TreeTableColumnReorderEvent> = new EventEmitter<TreeTableColumnReorderEvent>();
+    onColReorder = output<TreeTableColumnReorderEvent>();
     /**
      * Callback to invoke when a node is selected.
      * @param {TreeTableNode} object - Node instance.
      * @group Emits
      */
-    @Output() onNodeSelect: EventEmitter<TreeTableNode> = new EventEmitter<TreeTableNode>();
+    onNodeSelect = output<TreeTableNode>();
     /**
      * Callback to invoke when a node is unselected.
      * @param {TreeTableNodeUnSelectEvent} event - Custom node unselect event.
      * @group Emits
      */
-    @Output() onNodeUnselect: EventEmitter<TreeTableNodeUnSelectEvent> = new EventEmitter<TreeTableNodeUnSelectEvent>();
+    onNodeUnselect = output<TreeTableNodeUnSelectEvent>();
     /**
      * Callback to invoke when a node is selected with right click.
      * @param {TreeTableContextMenuSelectEvent} event - Custom context menu select event.
      * @group Emits
      */
-    @Output() onContextMenuSelect: EventEmitter<TreeTableContextMenuSelectEvent> = new EventEmitter<TreeTableContextMenuSelectEvent>();
+    onContextMenuSelect = output<TreeTableContextMenuSelectEvent>();
     /**
      * Callback to invoke when state of header checkbox changes.
      * @param {TreeTableHeaderCheckboxToggleEvent} event - Custom checkbox toggle event.
      * @group Emits
      */
-    @Output() onHeaderCheckboxToggle: EventEmitter<TreeTableHeaderCheckboxToggleEvent> = new EventEmitter<TreeTableHeaderCheckboxToggleEvent>();
+    onHeaderCheckboxToggle = output<TreeTableHeaderCheckboxToggleEvent>();
     /**
      * Callback to invoke when a cell switches to edit mode.
      * @param {TreeTableEditEvent} event - Custom edit event.
      * @group Emits
      */
-    @Output() onEditInit: EventEmitter<TreeTableEditEvent> = new EventEmitter<TreeTableEditEvent>();
+    onEditInit = output<TreeTableEditEvent>();
     /**
      * Callback to invoke when cell edit is completed.
      * @param {TreeTableEditEvent} event - Custom edit event.
      * @group Emits
      */
-    @Output() onEditComplete: EventEmitter<TreeTableEditEvent> = new EventEmitter<TreeTableEditEvent>();
+    onEditComplete = output<TreeTableEditEvent>();
     /**
      * Callback to invoke when cell edit is cancelled with escape key.
      * @param {TreeTableEditEvent} event - Custom edit event.
      * @group Emits
      */
-    @Output() onEditCancel: EventEmitter<TreeTableEditEvent> = new EventEmitter<TreeTableEditEvent>();
+    onEditCancel = output<TreeTableEditEvent>();
     /**
      * Callback to invoke when selectionKeys are changed.
      * @param {Object} object - updated value of the selectionKeys.
      * @group Emits
      */
-    @Output() selectionKeysChange: EventEmitter<any> = new EventEmitter();
+    selectionKeysChange = output<any>();
 
     @ViewChild('resizeHelper') resizeHelperViewChild: Nullable<ElementRef>;
 
@@ -940,7 +949,14 @@ export class TreeTable extends BaseComponent<TreeTablePassThrough> implements Bl
 
     rowTouched: Nullable<boolean>;
 
-    editingCell: Nullable<Element>;
+    private _editingCell = signal<Nullable<Element>>(undefined);
+
+    get editingCell(): Nullable<Element> {
+        return this._editingCell();
+    }
+    set editingCell(val: Nullable<Element>) {
+        this._editingCell.set(val);
+    }
 
     editingCellData: any | undefined | null;
 
@@ -954,11 +970,18 @@ export class TreeTable extends BaseComponent<TreeTablePassThrough> implements Bl
 
     toggleRowIndex: Nullable<number>;
 
+    private collator = new Intl.Collator(undefined, { numeric: true });
+
+    private serviceSubscription: Nullable<Subscription>;
+
     onInit() {
         if (this.lazy && this.lazyLoadOnInit && !this.virtualScroll) {
             this.onLazyLoad.emit(this.createLazyLoadMetadata());
         }
         this.initialized = true;
+
+        // The service is the single path through which data, sort, selection and context menu state changes, so refresh the OnPush view from it.
+        this.serviceSubscription = merge(this.tableService.uiUpdateSource$, this.tableService.sortSource$, this.tableService.selectionSource$, this.tableService.contextMenuSource$).subscribe(() => this.cd.markForCheck());
     }
 
     @ContentChildren(PrimeTemplate) templates: Nullable<QueryList<PrimeTemplate>>;
@@ -1302,7 +1325,7 @@ export class TreeTable extends BaseComponent<TreeTablePassThrough> implements Bl
                 if (value1 == null && value2 != null) result = -1;
                 else if (value1 != null && value2 == null) result = 1;
                 else if (value1 == null && value2 == null) result = 0;
-                else if (typeof value1 === 'string' && typeof value2 === 'string') result = value1.localeCompare(value2, undefined, { numeric: true });
+                else if (typeof value1 === 'string' && typeof value2 === 'string') result = this.collator.compare(value1, value2);
                 else result = value1 < value2 ? -1 : value1 > value2 ? 1 : 0;
 
                 return this.sortOrder * result;
@@ -1369,8 +1392,8 @@ export class TreeTable extends BaseComponent<TreeTablePassThrough> implements Bl
         else if (value1 != null && value2 == null) result = 1;
         else if (value1 == null && value2 == null) result = 0;
         if (typeof value1 == 'string' || value1 instanceof String) {
-            if (value1.localeCompare && value1 != value2) {
-                return multiSortMeta[index].order * value1.localeCompare(value2, undefined, { numeric: true });
+            if (value1 != value2) {
+                return multiSortMeta[index].order * this.collator.compare(<string>value1, <string>value2);
             }
         } else {
             result = value1 < value2 ? -1 : 1;
@@ -1837,7 +1860,7 @@ export class TreeTable extends BaseComponent<TreeTablePassThrough> implements Bl
                 this.contextMenu.show(event.originalEvent);
                 this.contextMenu.hideCallback = () => {
                     this.contextMenuSelection = null;
-                    this.contextMenuSelectionChange.emit();
+                    this.contextMenuSelectionChange.emit(undefined as unknown as TreeTableNode);
                     this.tableService.onContextMenu(null);
                 };
             };
@@ -2136,8 +2159,9 @@ export class TreeTable extends BaseComponent<TreeTablePassThrough> implements Bl
         }
 
         this.filterTimeout = setTimeout(() => {
-            this._filter();
             this.filterTimeout = null;
+            this._filter();
+            this.cd.markForCheck();
         }, this.filterDelay);
     }
 
@@ -2381,6 +2405,9 @@ export class TreeTable extends BaseComponent<TreeTablePassThrough> implements Bl
     }
 
     onDestroy() {
+        clearTimeout(this.filterTimeout);
+        this.filterTimeout = null;
+        this.serviceSubscription?.unsubscribe();
         this.unbindDocumentEditListener();
         this.editingCell = null;
         this.editingCellField = null;
@@ -2399,6 +2426,7 @@ export class TreeTable extends BaseComponent<TreeTablePassThrough> implements Bl
 }
 
 @Component({
+    // Eager on purpose: items and nodes are often mutated in place, which OnPush cannot see.
     changeDetection: ChangeDetectionStrategy.Eager,
     selector: '[pTreeTableBody]',
     standalone: false,
@@ -2440,14 +2468,16 @@ export class TTBody extends BaseComponent {
 
     subscription: Subscription;
 
-    constructor(
-        public tt: TreeTable,
-        public treeTableService: TreeTableService
-    ) {
+    public tt = inject(TreeTable);
+    public treeTableService = inject(TreeTableService);
+
+    constructor() {
         super();
         this.subscription = this.tt.tableService.uiUpdateSource$.subscribe(() => {
             if (this.tt.virtualScroll) {
                 this.cd.detectChanges();
+            } else {
+                this.cd.markForCheck();
             }
         });
     }
@@ -2481,13 +2511,14 @@ export class TTBody extends BaseComponent {
 }
 
 @Component({
+    // Eager on purpose: items and nodes are often mutated in place, which OnPush cannot see.
     changeDetection: ChangeDetectionStrategy.Eager,
     selector: '[ttScrollableView]',
     standalone: false,
     template: `
         <div #scrollHeader [class]="cx('scrollableHeader')" [pBind]="ptm('scrollableHeader')">
             <div #scrollHeaderBox [class]="cx('scrollableHeaderBox')" [pBind]="ptm('scrollableHeaderBox')">
-                <table [class]="cn(cx('scrollableHeaderTable'), tt.tableStyleClass)" [pBind]="ptm('scrollableHeaderTable')" [ngStyle]="tt.tableStyle">
+                <table [class]="cn(cx('scrollableHeaderTable'), tt.tableStyleClass)" [pBind]="ptm('scrollableHeaderTable')" [style]="tt.tableStyle">
                     <ng-container
                         *ngTemplateOutlet="frozen ? tt.frozenColGroupTemplate || tt._frozenColGroupTemplate || tt.colGroupTemplate || tt._colGroupTemplate : tt.colGroupTemplate || tt._colGroupTemplate; context: { $implicit: columns }"
                     ></ng-container>
@@ -2524,21 +2555,13 @@ export class TTBody extends BaseComponent {
             </p-scroller>
         }
         @if (!tt.virtualScroll) {
-            <div
-                #scrollBody
-                [class]="cx('scrollableBody')"
-                [pBind]="ptm('scrollableBody')"
-                [ngStyle]="{
-                    'max-height': tt.scrollHeight !== 'flex' ? scrollHeight : undefined,
-                    'overflow-y': !frozen && tt.scrollHeight ? 'scroll' : undefined
-                }"
-            >
+            <div #scrollBody [class]="cx('scrollableBody')" [pBind]="ptm('scrollableBody')" [style.max-height]="tt.scrollHeight !== 'flex' ? scrollHeight : undefined" [style.overflow-y]="!frozen && tt.scrollHeight ? 'scroll' : undefined">
                 <ng-container *ngTemplateOutlet="buildInItems; context: { $implicit: serializedValue, options: {} }"></ng-container>
             </div>
         }
 
         <ng-template #buildInItems let-items let-scrollerOptions="options">
-            <table role="treegrid" #scrollTable [pBind]="ptm('table')" [class]="tt.tableStyleClass" [ngClass]="scrollerOptions.contentStyleClass" [ngStyle]="tt.tableStyle" [style]="scrollerOptions.contentStyle">
+            <table role="treegrid" #scrollTable [pBind]="ptm('table')" [class]="cn(tt.tableStyleClass, scrollerOptions.contentStyleClass)" [style]="mergeStyles(tt.tableStyle, scrollerOptions.contentStyle)">
                 <ng-container
                     *ngTemplateOutlet="frozen ? tt.frozenColGroupTemplate || tt._frozenColGroupTemplate || tt.colGroupTemplate || tt._colGroupTemplate : tt.colGroupTemplate || tt._colGroupTemplate; context: { $implicit: columns }"
                 ></ng-container>
@@ -2562,7 +2585,7 @@ export class TTBody extends BaseComponent {
         @if (tt.footerTemplate || tt._footerTemplate) {
             <div #scrollFooter [class]="cx('scrollableFooter')" [pBind]="ptm('scrollableFooter')">
                 <div #scrollFooterBox [class]="cx('scrollableFooterBox')" [pBind]="ptm('scrollableFooterBox')">
-                    <table [class]="cx('scrollableFooterTable')" [ngClass]="tt.tableStyleClass" [ngStyle]="tt.tableStyle" [pBind]="ptm('scrollableFooterTable')">
+                    <table [class]="cn(cx('scrollableFooterTable'), tt.tableStyleClass)" [style]="tt.tableStyle" [pBind]="ptm('scrollableFooterTable')">
                         <ng-container
                             *ngTemplateOutlet="frozen ? tt.frozenColGroupTemplate || tt._frozenColGroupTemplate || tt.colGroupTemplate || tt._colGroupTemplate : tt.colGroupTemplate || tt._colGroupTemplate; context: { $implicit: columns }"
                         ></ng-container>
@@ -2630,12 +2653,8 @@ export class TTScrollableView extends BaseComponent {
         }
     }
 
-    constructor(
-        public tt: TreeTable,
-        public zone: NgZone
-    ) {
-        super();
-    }
+    public tt = inject(TreeTable);
+    public zone = inject(NgZone);
 
     onAfterViewInit() {
         if (isPlatformBrowser(this.platformId)) {
@@ -2722,6 +2741,10 @@ export class TTScrollableView extends BaseComponent {
                 }
             }
         }
+    }
+
+    mergeStyles(a: any, b: any) {
+        return a && b ? { ...a, ...b } : a || b || null;
     }
 
     onHeaderScroll() {
@@ -2829,11 +2852,14 @@ export class TTSortableColumn extends BaseComponent {
         else return 'none';
     }
 
-    constructor(public tt: TreeTable) {
+    public tt = inject(TreeTable);
+
+    constructor() {
         super();
         if (this.isEnabled()) {
-            this.subscription = this.tt.tableService.sortSource$.subscribe((sortMeta) => {
+            this.subscription = this.tt.tableService.sortSource$.subscribe(() => {
                 this.updateSortState();
+                this.cd.markForCheck();
             });
         }
     }
@@ -2920,10 +2946,9 @@ export class TTSortIcon extends BaseComponent {
 
     _componentStyle = inject(TreeTableStyle);
 
-    constructor(
-        public tt: TreeTable,
-        public cd: ChangeDetectorRef
-    ) {
+    public tt = inject(TreeTable);
+
+    constructor() {
         super();
         this.subscription = this.tt.tableService.sortSource$.subscribe((sortMeta) => {
             this.updateSortState();
@@ -2997,12 +3022,8 @@ export class TTResizableColumn extends BaseComponent {
 
     documentMouseUpListener: VoidListener;
 
-    constructor(
-        public tt: TreeTable,
-        public zone: NgZone
-    ) {
-        super();
-    }
+    public tt = inject(TreeTable);
+    public zone = inject(NgZone);
 
     onAfterViewInit() {
         if (isPlatformBrowser(this.platformId)) {
@@ -3086,12 +3107,8 @@ export class TTReorderableColumn extends BaseComponent {
 
     mouseDownListener: VoidListener;
 
-    constructor(
-        public tt: TreeTable,
-        public zone: NgZone
-    ) {
-        super();
-    }
+    public tt = inject(TreeTable);
+    public zone = inject(NgZone);
 
     onAfterViewInit() {
         if (this.isEnabled()) {
@@ -3116,6 +3133,11 @@ export class TTReorderableColumn extends BaseComponent {
             if (this.mouseDownListener) {
                 this.mouseDownListener();
                 this.mouseDownListener = null;
+            }
+
+            if (this.dragStartListener) {
+                this.dragStartListener();
+                this.dragStartListener = null;
             }
 
             if (this.dragOverListener) {
@@ -3192,14 +3214,15 @@ export class TTSelectableRow extends BaseComponent {
 
     _componentStyle = inject(TreeTableStyle);
 
-    constructor(
-        public tt: TreeTable,
-        public tableService: TreeTableService
-    ) {
+    public tt = inject(TreeTable);
+    public tableService = inject(TreeTableService);
+
+    constructor() {
         super();
         if (this.isEnabled()) {
             this.subscription = this.tt.tableService.selectionSource$.subscribe(() => {
                 this.selected = this.tt.isSelected(this.rowNode.node);
+                this.cd.markForCheck();
             });
         }
     }
@@ -3282,14 +3305,15 @@ export class TTSelectableRowDblClick extends BaseComponent {
 
     _componentStyle = inject(TreeTableStyle);
 
-    constructor(
-        public tt: TreeTable,
-        public tableService: TreeTableService
-    ) {
+    public tt = inject(TreeTable);
+    public tableService = inject(TreeTableService);
+
+    constructor() {
         super();
         if (this.isEnabled()) {
             this.subscription = this.tt.tableService.selectionSource$.subscribe(() => {
                 this.selected = this.tt.isSelected(this.rowNode.node);
+                this.cd.markForCheck();
             });
         }
     }
@@ -3341,14 +3365,15 @@ export class TTContextMenuRow extends BaseComponent {
 
     _componentStyle = inject(TreeTableStyle);
 
-    constructor(
-        public tt: TreeTable,
-        public tableService: TreeTableService
-    ) {
+    public tt = inject(TreeTable);
+    public tableService = inject(TreeTableService);
+
+    constructor() {
         super();
         if (this.isEnabled()) {
             this.subscription = this.tt.tableService.contextMenuSource$.subscribe((node) => {
                 this.selected = node ? this.tt.equals(this.rowNode.node, node) : false;
+                this.cd.markForCheck();
             });
         }
     }
@@ -3422,11 +3447,10 @@ export class TTCheckbox extends BaseComponent {
 
     _componentStyle = inject(TreeTableStyle);
 
-    constructor(
-        public tt: TreeTable,
-        public tableService: TreeTableService,
-        public cd: ChangeDetectorRef
-    ) {
+    public tt = inject(TreeTable);
+    public tableService = inject(TreeTableService);
+
+    constructor() {
         super();
         this.subscription = this.tt.tableService.selectionSource$.subscribe(() => {
             if (this.tt.selectionKeys) {
@@ -3509,17 +3533,19 @@ export class TTHeaderCheckbox extends BaseComponent {
 
     valueChangeSubscription: Subscription;
 
-    constructor(
-        public tt: TreeTable,
-        public tableService: TreeTableService
-    ) {
+    public tt = inject(TreeTable);
+    public tableService = inject(TreeTableService);
+
+    constructor() {
         super();
         this.valueChangeSubscription = this.tt.tableService.uiUpdateSource$.subscribe(() => {
             this.checked = this.updateCheckedState();
+            this.cd.markForCheck();
         });
 
         this.selectionChangeSubscription = this.tt.tableService.selectionSource$.subscribe(() => {
             this.checked = this.updateCheckedState();
+            this.cd.markForCheck();
         });
     }
 
@@ -3591,12 +3617,8 @@ export class TTEditableColumn extends BaseComponent {
 
     @Input({ transform: booleanAttribute }) ttEditableColumnDisabled: boolean | undefined;
 
-    constructor(
-        public tt: TreeTable,
-        public zone: NgZone
-    ) {
-        super();
-    }
+    public tt = inject(TreeTable);
+    public zone = inject(NgZone);
 
     onAfterViewInit() {
         if (this.isEnabled()) {
@@ -3631,14 +3653,21 @@ export class TTEditableColumn extends BaseComponent {
         this.el?.nativeElement.setAttribute('data-p-cell-editing', 'true');
         this.tt.onEditInit.emit({ field: this.field, data: this.data });
         this.tt.editingCellClick = true;
+        clearTimeout(this.focusTimeout);
         this.zone.runOutsideAngular(() => {
-            setTimeout(() => {
+            this.focusTimeout = setTimeout(() => {
                 let focusable = <any>findSingle(this.el.nativeElement, 'input, textarea');
                 if (focusable) {
                     focusable.focus();
                 }
             }, 50);
         });
+    }
+
+    private focusTimeout: ReturnType<typeof setTimeout> | undefined;
+
+    onDestroy() {
+        clearTimeout(this.focusTimeout);
     }
 
     closeEditingCell() {
@@ -3767,7 +3796,7 @@ export class TTEditableColumn extends BaseComponent {
 }
 
 @Component({
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'p-treeTableCellEditor, p-treetablecelleditor, p-treetable-cell-editor',
     standalone: false,
     template: `
@@ -3796,12 +3825,8 @@ export class TreeTableCellEditor extends BaseComponent {
 
     outputTemplate: Nullable<TemplateRef<any>>;
 
-    constructor(
-        public tt: TreeTable,
-        public editableColumn: TTEditableColumn
-    ) {
-        super();
-    }
+    public tt = inject(TreeTable);
+    public editableColumn = inject(TTEditableColumn);
 
     onAfterContentInit() {
         (this.templates as QueryList<PrimeTemplate>).forEach((item) => {
@@ -3858,13 +3883,8 @@ export class TTRow extends BaseComponent {
 
     _componentStyle = inject(TreeTableStyle);
 
-    constructor(
-        public tt: TreeTable,
-        public el: ElementRef,
-        public zone: NgZone
-    ) {
-        super();
-    }
+    public tt = inject(TreeTable);
+    public zone = inject(NgZone);
 
     @HostListener('keydown', ['$event'])
     onKeyDown(event: KeyboardEvent) {
@@ -4010,9 +4030,16 @@ export class TTRow extends BaseComponent {
         focus(currentFocusedRow);
     }
 
+    private restoreFocusTimeout: ReturnType<typeof setTimeout> | undefined;
+
+    onDestroy() {
+        clearTimeout(this.restoreFocusTimeout);
+    }
+
     restoreFocus(index?) {
+        clearTimeout(this.restoreFocusTimeout);
         this.zone.runOutsideAngular(() => {
-            setTimeout(() => {
+            this.restoreFocusTimeout = setTimeout(() => {
                 const container = this.tt.el?.nativeElement;
                 const tbody = findSingle(container, '[data-pc-section="tbody"]');
                 const row = tbody?.children?.[<number>index || this.tt.toggleRowIndex || 0];
@@ -4046,7 +4073,7 @@ export class TTRow extends BaseComponent {
 }
 
 @Component({
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'p-treeTableToggler, p-treetabletoggler, p-treetable-toggler',
     standalone: false,
     template: `
@@ -4090,9 +4117,7 @@ export class TreeTableToggler extends BaseComponent {
 
     _componentStyle = inject(TreeTableStyle);
 
-    constructor(public tt: TreeTable) {
-        super();
-    }
+    public tt = inject(TreeTable);
 
     get toggleButtonAriaLabel() {
         return this.config.translation ? (this.rowNode.expanded ? this.config.translation?.aria?.collapseRow : this.config.translation?.aria?.expandRow) : undefined;

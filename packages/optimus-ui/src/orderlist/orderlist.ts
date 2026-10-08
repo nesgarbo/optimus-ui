@@ -1,24 +1,6 @@
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import {
-    booleanAttribute,
-    ChangeDetectionStrategy,
-    Component,
-    ContentChild,
-    ContentChildren,
-    ElementRef,
-    EventEmitter,
-    inject,
-    InjectionToken,
-    Input,
-    NgModule,
-    numberAttribute,
-    Output,
-    QueryList,
-    TemplateRef,
-    ViewChild,
-    ViewEncapsulation
-} from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, ContentChild, ContentChildren, ElementRef, inject, InjectionToken, Input, output, NgModule, numberAttribute, QueryList, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { findIndexInList, setAttribute, uuid } from '@openng/optimus-ui-utils';
 import { FilterService, PrimeTemplate, SharedModule } from '@openng/optimus-ui/api';
@@ -365,42 +347,42 @@ export class OrderList extends BaseComponent<OrderListPassThrough> {
      * @param {*} any - selection instance.
      * @group Emits
      */
-    @Output() selectionChange: EventEmitter<any> = new EventEmitter();
+    selectionChange = output<any>();
 
     /**
      * Callback to invoke when list is reordered.
      * @param {*} any - list instance.
      * @group Emits
      */
-    @Output() onReorder: EventEmitter<any> = new EventEmitter();
+    onReorder = output<any>();
 
     /**
      * Callback to invoke when selection changes.
      * @param {OrderListSelectionChangeEvent} event - Custom change event.
      * @group Emits
      */
-    @Output() onSelectionChange: EventEmitter<OrderListSelectionChangeEvent> = new EventEmitter<OrderListSelectionChangeEvent>();
+    onSelectionChange = output<OrderListSelectionChangeEvent>();
 
     /**
      * Callback to invoke when filtering occurs.
      * @param {OrderListFilterEvent} event - Custom filter event.
      * @group Emits
      */
-    @Output() onFilterEvent: EventEmitter<OrderListFilterEvent> = new EventEmitter<OrderListFilterEvent>();
+    onFilterEvent = output<OrderListFilterEvent>();
 
     /**
      * Callback to invoke when the list is focused
      * @param {Event} event - Browser event.
      * @group Emits
      */
-    @Output() onFocus: EventEmitter<Event> = new EventEmitter<Event>();
+    onFocus = output<Event>();
 
     /**
      * Callback to invoke when the list is blurred
      * @param {Event} event - Browser event.
      * @group Emits
      */
-    @Output() onBlur: EventEmitter<Event> = new EventEmitter<Event>();
+    onBlur = output<Event>();
 
     @ViewChild('listelement') listViewChild!: Listbox;
 
@@ -725,8 +707,9 @@ export class OrderList extends BaseComponent<OrderListPassThrough> {
             }
 
             this.onReorder.emit(this.selection);
-            setTimeout(() => {
-                this.listViewChild.scrollInView(0);
+            this.scrollTimer = setTimeout(() => {
+                this.scrollTimer = undefined;
+                this.listViewChild?.scrollInView(0);
             });
         }
         this.listViewChild?.cd?.markForCheck();
@@ -951,7 +934,11 @@ export class OrderList extends BaseComponent<OrderListPassThrough> {
         }
     }
 
+    /** Pending scroll after moving to the top; cleared on destroy so it never touches a dead view. */
+    private scrollTimer: ReturnType<typeof setTimeout> | undefined;
+
     onDestroy() {
+        if (this.scrollTimer !== undefined) clearTimeout(this.scrollTimer);
         this.destroyStyle();
     }
 }

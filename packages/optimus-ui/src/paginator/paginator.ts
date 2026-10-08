@@ -8,17 +8,16 @@ import {
     ContentChild,
     ContentChildren,
     ElementRef,
-    EventEmitter,
     HostBinding,
     inject,
     InjectionToken,
     input,
     Input,
+    output,
     NgModule,
     numberAttribute,
     OnChanges,
     OnInit,
-    Output,
     QueryList,
     SimpleChanges,
     TemplateRef,
@@ -332,7 +331,7 @@ export class Paginator extends BaseComponent<PaginatorPassThrough> {
      * @param {PaginatorState} event - Paginator state.
      * @group Emits
      */
-    @Output() onPageChange: EventEmitter<PaginatorState> = new EventEmitter<PaginatorState>();
+    onPageChange = output<PaginatorState>();
 
     /**
      * Template for the dropdown icon.

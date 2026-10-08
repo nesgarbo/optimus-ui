@@ -1557,4 +1557,46 @@ describe('TreeSelect', () => {
             expect(root.nativeElement.classList.contains('global-root')).toBe(true);
         });
     });
+
+    describe('Clear button accessibility', () => {
+        it('should render the clear icon inside a labelled button that clears the value', async () => {
+            testComponent.showClear = true;
+            testFixture.changeDetectorRef.markForCheck();
+            await testFixture.whenStable();
+
+            const instance = testFixture.debugElement.query(By.directive(TreeSelect)).componentInstance as TreeSelect;
+            instance.writeValue(mockTreeNodes[0]);
+            instance.cd.markForCheck();
+            await testFixture.whenStable();
+            testFixture.detectChanges();
+
+            const button = testFixture.nativeElement.querySelector('button.p-treeselect-icon-button') as HTMLButtonElement;
+            expect(button).toBeTruthy();
+            expect(button.type).toBe('button');
+            expect(button.getAttribute('aria-label')).toBe('Clear');
+            expect(button.querySelector('.p-treeselect-clear-icon')).toBeTruthy();
+
+            button.click();
+            await testFixture.whenStable();
+            expect(instance.value).toBeNull();
+        });
+
+        it('should not open the overlay when the clear button is pressed', async () => {
+            testComponent.showClear = true;
+            testFixture.changeDetectorRef.markForCheck();
+            await testFixture.whenStable();
+
+            const instance = testFixture.debugElement.query(By.directive(TreeSelect)).componentInstance as TreeSelect;
+            instance.writeValue(mockTreeNodes[0]);
+            instance.cd.markForCheck();
+            await testFixture.whenStable();
+            testFixture.detectChanges();
+
+            const button = testFixture.nativeElement.querySelector('button.p-treeselect-icon-button') as HTMLButtonElement;
+            button.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+            await testFixture.whenStable();
+
+            expect(instance.overlayVisible).toBeFalsy();
+        });
+    });
 });

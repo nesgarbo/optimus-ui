@@ -1,24 +1,5 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import {
-    ChangeDetectionStrategy,
-    Component,
-    ContentChild,
-    ContentChildren,
-    ElementRef,
-    EventEmitter,
-    HostBinding,
-    inject,
-    InjectionToken,
-    Input,
-    NgModule,
-    NgZone,
-    Output,
-    QueryList,
-    SimpleChanges,
-    TemplateRef,
-    ViewChild,
-    ViewEncapsulation
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ContentChild, ContentChildren, ElementRef, HostBinding, inject, InjectionToken, Input, NgModule, NgZone, output, QueryList, SimpleChanges, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { findSingle, getHeight, getWidth, isTouchDevice, isVisible } from '@openng/optimus-ui-utils';
 import { PrimeTemplate, ScrollerOptions, SharedModule } from '@openng/optimus-ui/api';
 import { BaseComponent, PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
@@ -50,7 +31,7 @@ const SCROLLER_INSTANCE = new InjectionToken<Scroller>('SCROLLER_INSTANCE');
     standalone: true,
     template: `
         @if (!_disabled) {
-            <div #element [attr.id]="_id" [attr.tabindex]="tabindex" [ngStyle]="_style" [class]="cn(cx('root'), styleClass)" (scroll)="onContainerScroll($event)" [pBind]="ptm('root')">
+            <div #element [attr.id]="_id" [attr.tabindex]="tabindex" [style]="_style" [class]="cn(cx('root'), styleClass)" [pBind]="ptm('root')">
                 @if (contentTemplate || _contentTemplate) {
                     <ng-container *ngTemplateOutlet="contentTemplate || _contentTemplate; context: { $implicit: loadedItems, options: getContentOptions() }"></ng-container>
                 } @else {
@@ -61,7 +42,7 @@ const SCROLLER_INSTANCE = new InjectionToken<Scroller>('SCROLLER_INSTANCE');
                     </div>
                 }
                 @if (_showSpacer) {
-                    <div [class]="cx('spacer')" [ngStyle]="spacerStyle" [pBind]="ptm('spacer')"></div>
+                    <div [class]="cx('spacer')" [style]="spacerStyle" [pBind]="ptm('spacer')"></div>
                 }
                 @if (!loaderDisabled && _showLoader && d_loading) {
                     <div [class]="cx('loader')" [pBind]="ptm('loader')">
@@ -93,7 +74,7 @@ const SCROLLER_INSTANCE = new InjectionToken<Scroller>('SCROLLER_INSTANCE');
             }
         }
     `,
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
     providers: [ScrollerStyle, { provide: SCROLLER_INSTANCE, useExisting: Scroller }, { provide: PARENT_INSTANCE, useExisting: Scroller }],
     hostDirectives: [Bind]
@@ -366,21 +347,29 @@ export class Scroller extends BaseComponent<VirtualScrollerPassThrough> {
      * @param {ScrollerLazyLoadEvent} event - Custom lazy load event.
      * @group Emits
      */
-    @Output() onLazyLoad: EventEmitter<ScrollerLazyLoadEvent> = new EventEmitter<ScrollerLazyLoadEvent>();
+    onLazyLoad = output<ScrollerLazyLoadEvent>();
     /**
      * Callback to invoke when scroll position changes.
      * @param {ScrollerScrollEvent} event - Custom scroll event.
      * @group Emits
      */
-    @Output() onScroll: EventEmitter<ScrollerScrollEvent> = new EventEmitter<ScrollerScrollEvent>();
+    onScroll = output<ScrollerScrollEvent>();
     /**
      * Callback to invoke when scroll position and item's range in view changes.
      * @param {ScrollerScrollEvent} event - Custom scroll index change event.
      * @group Emits
      */
-    @Output() onScrollIndexChange: EventEmitter<ScrollerScrollIndexChangeEvent> = new EventEmitter<ScrollerScrollIndexChangeEvent>();
+    onScrollIndexChange = output<ScrollerScrollIndexChangeEvent>();
 
-    @ViewChild('element') elementViewChild: Nullable<ElementRef>;
+    private _elementViewChild: Nullable<ElementRef>;
+
+    @ViewChild('element') set elementViewChild(el: Nullable<ElementRef>) {
+        this._elementViewChild = el;
+        this.bindScrollListener();
+    }
+    get elementViewChild(): Nullable<ElementRef> {
+        return this._elementViewChild;
+    }
 
     @ViewChild('content') contentViewChild: Nullable<ElementRef>;
 
@@ -505,11 +494,19 @@ export class Scroller extends BaseComponent<VirtualScrollerPassThrough> {
 
     scrollTimeout: any;
 
+    initTimeout: any;
+
+    private destroyed = false;
+
     resizeTimeout: any;
 
     initialized: boolean = false;
 
     windowResizeListener: VoidListener;
+
+    scrollListener: VoidListener;
+
+    private scrollListenerTarget: Nullable<HTMLElement>;
 
     defaultWidth: number | undefined;
 
@@ -574,9 +571,7 @@ export class Scroller extends BaseComponent<VirtualScrollerPassThrough> {
 
     _componentStyle = inject(ScrollerStyle);
 
-    constructor(private zone: NgZone) {
-        super();
-    }
+    private zone = inject(NgZone);
 
     onInit() {
         this.setInitialState();
@@ -670,14 +665,19 @@ export class Scroller extends BaseComponent<VirtualScrollerPassThrough> {
     }
 
     onDestroy() {
+        this.destroyed = true;
+        clearTimeout(this.scrollTimeout);
+        clearTimeout(this.resizeTimeout);
+        clearTimeout(this.initTimeout);
         this.unbindResizeListener();
+        this.unbindScrollListener();
 
         this.contentEl = null;
         this.initialized = false;
     }
 
     viewInit() {
-        if (isPlatformBrowser(this.platformId) && !this.initialized) {
+        if (isPlatformBrowser(this.platformId) && !this.initialized && !this.destroyed) {
             if (isVisible(this.elementViewChild?.nativeElement)) {
                 this.setInitialState();
                 this.setContentEl(this.contentEl);
@@ -697,7 +697,9 @@ export class Scroller extends BaseComponent<VirtualScrollerPassThrough> {
             this.bindResizeListener();
 
             // wait for the next tick
-            setTimeout(() => {
+            clearTimeout(this.initTimeout);
+            this.initTimeout = setTimeout(() => {
+                if (this.destroyed) return;
                 this.setSpacerSize();
                 this.setSize();
                 this.calculateOptions();
@@ -744,7 +746,7 @@ export class Scroller extends BaseComponent<VirtualScrollerPassThrough> {
 
         if (valid) {
             const first = this.first;
-            const { scrollTop = 0, scrollLeft = 0 } = this.elementViewChild?.nativeElement;
+            const { scrollTop = 0, scrollLeft = 0 } = this.elementViewChild?.nativeElement ?? {};
             const { numToleratedItems } = this.calculateNumItems();
             const contentPos = this.getContentPosition();
             const itemSize = this.itemSize;
@@ -1097,6 +1099,7 @@ export class Scroller extends BaseComponent<VirtualScrollerPassThrough> {
             this.first = first;
             this.last = last;
             this.lastScrollPos = scrollPos;
+            this.cd.markForCheck();
 
             this.handleEvents('onScrollIndexChange', newState);
 
@@ -1110,6 +1113,53 @@ export class Scroller extends BaseComponent<VirtualScrollerPassThrough> {
                 isLazyStateChanged && this.handleEvents('onLazyLoad', lazyLoadState);
                 this.lazyLoadState = lazyLoadState;
             }
+        }
+    }
+
+    bindScrollListener() {
+        const el = this._elementViewChild?.nativeElement as HTMLElement | undefined;
+
+        if (el === this.scrollListenerTarget && this.scrollListener) {
+            return;
+        }
+
+        this.unbindScrollListener();
+
+        if (!el || this.destroyed || !isPlatformBrowser(this.platformId)) {
+            return;
+        }
+
+        this.scrollListenerTarget = el;
+        // Outside the zone: only a scroll that has something to do re-enters it, so a plain scroll does not run change detection.
+        this.zone.runOutsideAngular(() => {
+            this.scrollListener = this.renderer.listen(el, 'scroll', (event: Event) => this.onNativeScroll(event));
+        });
+    }
+
+    unbindScrollListener() {
+        if (this.scrollListener) {
+            this.scrollListener();
+            this.scrollListener = null;
+        }
+        this.scrollListenerTarget = null;
+    }
+
+    private hasScrollObservers(): boolean {
+        if (this.options && (<any>this.options).onScroll) {
+            return true;
+        }
+
+        const emitter = this.onScroll as any;
+
+        // OutputEmitterRef keeps its subscribers in `listeners`; when that cannot be read, assume someone listens.
+        return !('listeners' in emitter) || !!emitter.listeners?.length;
+    }
+
+    onNativeScroll(event: Event) {
+        const needsZone = this.hasScrollObservers() || !!this._delay || (!this.d_loading && this.onScrollPositionChange(event).isRangeChanged);
+
+        if (needsZone) {
+            this.zone.run(() => this.onContainerScroll(event));
         }
     }
 
@@ -1133,6 +1183,7 @@ export class Scroller extends BaseComponent<VirtualScrollerPassThrough> {
             }
 
             this.scrollTimeout = setTimeout(() => {
+                if (this.destroyed) return;
                 this.onScrollChange(event);
 
                 if (this.d_loading && this._showLoader && (!this._lazy || this._loading === undefined)) {
@@ -1171,7 +1222,7 @@ export class Scroller extends BaseComponent<VirtualScrollerPassThrough> {
         }
 
         this.resizeTimeout = setTimeout(() => {
-            if (isVisible(this.elementViewChild?.nativeElement)) {
+            if (!this.destroyed && isVisible(this.elementViewChild?.nativeElement)) {
                 const [width, height] = [getWidth(this.elementViewChild?.nativeElement), getHeight(this.elementViewChild?.nativeElement)];
                 const [isDiffWidth, isDiffHeight] = [width !== this.defaultWidth, height !== this.defaultHeight];
                 const reinit = this.both ? isDiffWidth || isDiffHeight : this.horizontal ? isDiffWidth : this.vertical ? isDiffHeight : false;

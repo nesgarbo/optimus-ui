@@ -9,7 +9,6 @@ import {
     ContentChildren,
     Directive,
     ElementRef,
-    EventEmitter,
     HostListener,
     inject,
     Injectable,
@@ -19,8 +18,7 @@ import {
     NgModule,
     NgZone,
     numberAttribute,
-    Optional,
-    Output,
+    output,
     QueryList,
     signal,
     SimpleChanges,
@@ -28,6 +26,7 @@ import {
     ViewChild,
     ViewEncapsulation
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MotionEvent, MotionOptions } from '@openng/optimus-ui-motion';
 import { absolutePosition, addStyle, appendChild, find, findSingle, getAttribute, isClickable, setAttribute } from '@openng/optimus-ui-utils';
@@ -94,12 +93,14 @@ export class TableService {
     private contextMenuSource = new Subject<any>();
     private valueSource = new Subject<any>();
     private columnsSource = new Subject();
+    private refreshSource = new Subject<void>();
 
     sortSource$ = this.sortSource.asObservable();
     selectionSource$ = this.selectionSource.asObservable();
     contextMenuSource$ = this.contextMenuSource.asObservable();
     valueSource$ = this.valueSource.asObservable();
     columnsSource$ = this.columnsSource.asObservable();
+    refreshSource$ = this.refreshSource.asObservable();
 
     onSort(sortMeta: SortMeta | SortMeta[] | null) {
         this.sortSource.next(sortMeta);
@@ -119,6 +120,13 @@ export class TableService {
 
     onColumnsChange(columns: any[]) {
         this.columnsSource.next(columns);
+    }
+
+    /**
+     * Tells the OnPush parts of the table (cell editors, column filters) that state they read from the table, such as the editing cell or the filters, may have changed.
+     */
+    onRefresh() {
+        this.refreshSource.next();
     }
 }
 /**
@@ -151,7 +159,7 @@ export class TableService {
                 <ng-container *ngTemplateOutlet="captionTemplate || _captionTemplate"></ng-container>
             </div>
         }
-        @if (paginator && (paginatorPosition === 'top' || paginatorPosition == 'both')) {
+        @if (paginator && (paginatorPosition === 'top' || paginatorPosition === 'both')) {
             <p-paginator
                 [rows]="rows"
                 [first]="first"
@@ -204,7 +212,7 @@ export class TableService {
             </p-paginator>
         }
 
-        <div #wrapper [class]="cx('tableContainer')" [ngStyle]="sx('tableContainer')" [pBind]="ptm('tableContainer')" [attr.data-p]="dataP">
+        <div #wrapper [class]="cx('tableContainer')" [style]="sx('tableContainer')" [pBind]="ptm('tableContainer')" [attr.data-p]="dataP">
             @if (virtualScroll) {
                 <p-scroller
                     #scroller
@@ -255,7 +263,7 @@ export class TableService {
             <ng-template #buildInTable let-items let-scrollerOptions="options">
                 <table #table role="table" [class]="cn(cx('table'), tableStyleClass)" [pBind]="ptm('table')" [style]="tableStyle" [attr.id]="id + '-table'">
                     <ng-container *ngTemplateOutlet="colGroupTemplate || _colGroupTemplate; context: { $implicit: scrollerOptions.columns }"></ng-container>
-                    <thead role="rowgroup" #thead [class]="cx('thead')" [ngStyle]="sx('thead')" [pBind]="ptm('thead')">
+                    <thead role="rowgroup" #thead [class]="cx('thead')" [style]="sx('thead')" [pBind]="ptm('thead')">
                         <ng-container
                             *ngTemplateOutlet="
                                 headerGroupedTemplate || headerTemplate || _headerTemplate;
@@ -300,7 +308,7 @@ export class TableService {
                         ></tbody>
                     }
                     @if (footerGroupedTemplate || footerTemplate || _footerTemplate || _footerGroupedTemplate) {
-                        <tfoot role="rowgroup" #tfoot [ngClass]="cx('footer')" [ngStyle]="sx('tfoot')" [pBind]="ptm('tfoot')">
+                        <tfoot role="rowgroup" #tfoot [class]="cx('footer')" [style]="sx('tfoot')" [pBind]="ptm('tfoot')">
                             <ng-container
                                 *ngTemplateOutlet="
                                     footerGroupedTemplate || footerTemplate || _footerTemplate || _footerGroupedTemplate;
@@ -315,7 +323,7 @@ export class TableService {
             </ng-template>
         </div>
 
-        @if (paginator && (paginatorPosition === 'bottom' || paginatorPosition == 'both')) {
+        @if (paginator && (paginatorPosition === 'bottom' || paginatorPosition === 'both')) {
             <p-paginator
                 [rows]="rows"
                 [first]="first"
@@ -369,16 +377,16 @@ export class TableService {
         }
 
         @if (summaryTemplate || _summaryTemplate) {
-            <div [ngClass]="cx('footer')" [pBind]="ptm('footer')">
+            <div [class]="cx('footer')" [pBind]="ptm('footer')">
                 <ng-container *ngTemplateOutlet="summaryTemplate || _summaryTemplate"></ng-container>
             </div>
         }
 
         @if (resizableColumns) {
-            <div #resizeHelper [ngClass]="cx('columnResizeIndicator')" [pBind]="ptm('columnResizeIndicator')" [style.display]="'none'"></div>
+            <div #resizeHelper [class]="cx('columnResizeIndicator')" [pBind]="ptm('columnResizeIndicator')" [style.display]="'none'"></div>
         }
         @if (reorderableColumns) {
-            <span #reorderIndicatorUp [ngClass]="cx('rowReorderIndicatorUp')" [pBind]="ptm('rowReorderIndicatorUp')" [style.display]="'none'">
+            <span #reorderIndicatorUp [class]="cx('rowReorderIndicatorUp')" [pBind]="ptm('rowReorderIndicatorUp')" [style.display]="'none'">
                 @if (!reorderIndicatorUpIconTemplate && !_reorderIndicatorUpIconTemplate) {
                     <svg data-p-icon="arrow-down" [pBind]="ptm('rowReorderIndicatorUp')['icon']" />
                 }
@@ -386,7 +394,7 @@ export class TableService {
             </span>
         }
         @if (reorderableColumns) {
-            <span #reorderIndicatorDown [ngClass]="cx('rowReorderIndicatorDown')" [pBind]="ptm('rowReorderIndicatorDown')" [style.display]="'none'">
+            <span #reorderIndicatorDown [class]="cx('rowReorderIndicatorDown')" [pBind]="ptm('rowReorderIndicatorDown')" [style.display]="'none'">
                 @if (!reorderIndicatorDownIconTemplate && !_reorderIndicatorDownIconTemplate) {
                     <svg data-p-icon="arrow-up" [pBind]="ptm('rowReorderIndicatorDown')['icon']" />
                 }
@@ -395,6 +403,8 @@ export class TableService {
         }
     `,
     providers: [TableService, TableStyle, { provide: TABLE_INSTANCE, useExisting: Table }, { provide: PARENT_INSTANCE, useExisting: Table }],
+    // Eager on purpose: the table renders consumer data that is often mutated in place (rows, selection, expanded or editing keys) and its
+    // templates are consumer-owned; an OnPush table would stop showing those changes. State changed outside of events must call markForCheck.
     changeDetection: ChangeDetectionStrategy.Eager,
     encapsulation: ViewEncapsulation.None,
     host: {
@@ -537,7 +547,7 @@ export class Table<RowData = any> extends BaseComponent<TablePassThrough> implem
      * @param {*} object - row data.
      * @group Emits
      */
-    @Output() contextMenuSelectionChange: EventEmitter<any> = new EventEmitter();
+    contextMenuSelectionChange = output<any>();
     /**
      *  Defines the behavior of context menu selection, in "separate" mode context menu updates contextMenuSelection property whereas in joint mode selection property is used instead so that when row selection is enabled, both row selection and context menu selection use the same property.
      * @group Props
@@ -885,140 +895,139 @@ export class Table<RowData = any> extends BaseComponent<TablePassThrough> implem
      * @param {TableSelectAllChangeEvent} event - custom  all selection change event.
      * @group Emits
      */
-    @Output() selectAllChange: EventEmitter<TableSelectAllChangeEvent> = new EventEmitter<TableSelectAllChangeEvent>();
+    selectAllChange = output<TableSelectAllChangeEvent>();
     /**
      * Callback to invoke on selection changed.
      * @param {any | null} value - selected data.
      * @group Emits
      */
-    @Output() selectionChange: EventEmitter<any | null> = new EventEmitter<any | null>();
+    selectionChange = output<any | null>();
     /**
      * Callback to invoke when a row is selected.
      * @param {TableRowSelectEvent} event - custom select event.
      * @group Emits
      */
-    @Output() onRowSelect: EventEmitter<TableRowSelectEvent<RowData>> = new EventEmitter<TableRowSelectEvent<RowData>>();
+    onRowSelect = output<TableRowSelectEvent<RowData>>();
     /**
      * Callback to invoke when a row is unselected.
      * @param {TableRowUnSelectEvent} event - custom unselect event.
      * @group Emits
      */
-    @Output() onRowUnselect: EventEmitter<TableRowUnSelectEvent<RowData>> = new EventEmitter<TableRowUnSelectEvent<RowData>>();
+    onRowUnselect = output<TableRowUnSelectEvent<RowData>>();
     /**
      * Callback to invoke when pagination occurs.
      * @param {TablePageEvent} event - custom pagination event.
      * @group Emits
      */
-    @Output() onPage: EventEmitter<TablePageEvent> = new EventEmitter<TablePageEvent>();
+    onPage = output<TablePageEvent>();
     /**
      * Callback to invoke when a column gets sorted.
      * @param {Object} object - sort meta.
      * @group Emits
      */
-    @Output() onSort: EventEmitter<{ multisortmeta: SortMeta[] } | any> = new EventEmitter<{ multisortmeta: SortMeta[] } | any>();
+    onSort = output<{ multisortmeta: SortMeta[] } | any>();
     /**
      * Callback to invoke when data is filtered.
      * @param {TableFilterEvent} event - custom filtering event.
      * @group Emits
      */
-    @Output() onFilter: EventEmitter<TableFilterEvent> = new EventEmitter<TableFilterEvent>();
+    onFilter = output<TableFilterEvent>();
     /**
      * Callback to invoke when paging, sorting or filtering happens in lazy mode.
      * @param {TableLazyLoadEvent} event - custom lazy loading event.
      * @group Emits
      */
-    @Output() onLazyLoad: EventEmitter<TableLazyLoadEvent> = new EventEmitter<TableLazyLoadEvent>();
+    onLazyLoad = output<TableLazyLoadEvent>();
     /**
      * Callback to invoke when a row is expanded.
      * @param {TableRowExpandEvent} event - custom row expand event.
      * @group Emits
      */
-    @Output() onRowExpand: EventEmitter<TableRowExpandEvent<RowData>> = new EventEmitter<TableRowExpandEvent<RowData>>();
+    onRowExpand = output<TableRowExpandEvent<RowData>>();
     /**
      * Callback to invoke when a row is collapsed.
      * @param {TableRowCollapseEvent} event - custom row collapse event.
      * @group Emits
      */
-    @Output() onRowCollapse: EventEmitter<TableRowCollapseEvent> = new EventEmitter<TableRowCollapseEvent>();
+    onRowCollapse = output<TableRowCollapseEvent>();
     /**
      * Callback to invoke when a row is selected with right click.
      * @param {TableContextMenuSelectEvent} event - custom context menu select event.
      * @group Emits
      */
-    @Output() onContextMenuSelect: EventEmitter<TableContextMenuSelectEvent<RowData>> = new EventEmitter<TableContextMenuSelectEvent<RowData>>();
+    onContextMenuSelect = output<TableContextMenuSelectEvent<RowData>>();
     /**
      * Callback to invoke when a column is resized.
      * @param {TableColResizeEvent} event - custom column resize event.
      * @group Emits
      */
-    @Output() onColResize: EventEmitter<TableColResizeEvent> = new EventEmitter<TableColResizeEvent>();
+    onColResize = output<TableColResizeEvent>();
     /**
      * Callback to invoke when a column is reordered.
      * @param {TableColumnReorderEvent} event - custom column reorder event.
      * @group Emits
      */
-    @Output() onColReorder: EventEmitter<TableColumnReorderEvent> = new EventEmitter<TableColumnReorderEvent>();
+    onColReorder = output<TableColumnReorderEvent>();
     /**
      * Callback to invoke when a row is reordered.
      * @param {TableRowReorderEvent} event - custom row reorder event.
      * @group Emits
      */
-    @Output() onRowReorder: EventEmitter<TableRowReorderEvent> = new EventEmitter<TableRowReorderEvent>();
+    onRowReorder = output<TableRowReorderEvent>();
     /**
      * Callback to invoke when a cell switches to edit mode.
      * @param {TableEditInitEvent} event - custom edit init event.
      * @group Emits
      */
-    @Output() onEditInit: EventEmitter<TableEditInitEvent> = new EventEmitter<TableEditInitEvent>();
+    onEditInit = output<TableEditInitEvent>();
     /**
      * Callback to invoke when cell edit is completed.
      * @param {TableEditCompleteEvent} event - custom edit complete event.
      * @group Emits
      */
-    @Output() onEditComplete: EventEmitter<TableEditCompleteEvent> = new EventEmitter<TableEditCompleteEvent>();
+    onEditComplete = output<TableEditCompleteEvent>();
     /**
      * Callback to invoke when cell edit is cancelled with escape key.
      * @param {TableEditCancelEvent} event - custom edit cancel event.
      * @group Emits
      */
-    @Output() onEditCancel: EventEmitter<TableEditCancelEvent> = new EventEmitter<TableEditCancelEvent>();
+    onEditCancel = output<TableEditCancelEvent>();
     /**
      * Callback to invoke when state of header checkbox changes.
      * @param {TableHeaderCheckboxToggleEvent} event - custom header checkbox event.
      * @group Emits
      */
-    @Output()
-    onHeaderCheckboxToggle: EventEmitter<TableHeaderCheckboxToggleEvent> = new EventEmitter<TableHeaderCheckboxToggleEvent>();
+    onHeaderCheckboxToggle = output<TableHeaderCheckboxToggleEvent>();
     /**
      * A function to implement custom sorting, refer to sorting section for details.
      * @param {any} any - sort meta.
      * @group Emits
      */
-    @Output() sortFunction: EventEmitter<any> = new EventEmitter<any>();
+    sortFunction = output<any>();
     /**
      * Callback to invoke on pagination.
      * @param {number} number - first element.
      * @group Emits
      */
-    @Output() firstChange: EventEmitter<number> = new EventEmitter<number>();
+    firstChange = output<number>();
     /**
      * Callback to invoke on rows change.
      * @param {number} number - Row count.
      * @group Emits
      */
-    @Output() rowsChange: EventEmitter<number> = new EventEmitter<number>();
+    rowsChange = output<number>();
     /**
      * Callback to invoke table state is saved.
      * @param {TableState} object - table state.
      * @group Emits
      */
-    @Output() onStateSave: EventEmitter<TableState> = new EventEmitter<TableState>();
+    onStateSave = output<TableState>();
     /**
      * Callback to invoke table state is restored.
      * @param {TableState} object - table state.
      * @group Emits
      */
-    @Output() onStateRestore: EventEmitter<TableState> = new EventEmitter<TableState>();
+    onStateRestore = output<TableState>();
 
     @ViewChild('resizeHelper') resizeHelperViewChild: Nullable<ElementRef>;
 
@@ -1196,6 +1205,8 @@ export class Table<RowData = any> extends BaseComponent<TablePassThrough> implem
     rangeRowIndex: number | undefined;
 
     filterTimeout: any;
+
+    private colReorderTimeout: ReturnType<typeof setTimeout> | undefined;
 
     initialized: boolean | undefined | null;
 
@@ -1404,6 +1415,8 @@ export class Table<RowData = any> extends BaseComponent<TablePassThrough> implem
     }
 
     onChanges(simpleChange: SimpleChanges) {
+        this.tableService.onRefresh();
+
         if (simpleChange.totalRecords && simpleChange.totalRecords.firstChange) {
             this._totalRecords = simpleChange.totalRecords.currentValue;
         }
@@ -1556,8 +1569,8 @@ export class Table<RowData = any> extends BaseComponent<TablePassThrough> implem
             this.onLazyLoad.emit(this.createLazyLoadMetadata());
         }
 
-        this.firstChange.emit(this.first);
-        this.rowsChange.emit(this.rows);
+        this.firstChange.emit(this.first as number);
+        this.rowsChange.emit(this.rows as number);
         this.tableService.onValueChange(this.value);
 
         if (this.isStateful()) {
@@ -1663,7 +1676,9 @@ export class Table<RowData = any> extends BaseComponent<TablePassThrough> implem
                         order: order
                     });
                 } else {
-                    this.value.sort((data1, data2) => {
+                    const collator = new Intl.Collator();
+                    const sorted = [...this.value];
+                    sorted.sort((data1, data2) => {
                         let value1 = ObjectUtils.resolveFieldData(data1, field);
                         let value2 = ObjectUtils.resolveFieldData(data2, field);
                         let result: any = null;
@@ -1671,13 +1686,13 @@ export class Table<RowData = any> extends BaseComponent<TablePassThrough> implem
                         if (value1 == null && value2 != null) result = -1;
                         else if (value1 != null && value2 == null) result = 1;
                         else if (value1 == null && value2 == null) result = 0;
-                        else if (typeof value1 === 'string' && typeof value2 === 'string') result = value1.localeCompare(value2);
+                        else if (typeof value1 === 'string' && typeof value2 === 'string') result = collator.compare(value1, value2);
                         else result = value1 < value2 ? -1 : value1 > value2 ? 1 : 0;
 
                         return order * (result || 0);
                     });
 
-                    this._value = [...this.value];
+                    this._value = sorted;
                 }
 
                 if (this.hasFilter()) {
@@ -1711,11 +1726,12 @@ export class Table<RowData = any> extends BaseComponent<TablePassThrough> implem
                         multiSortMeta: this.multiSortMeta
                     });
                 } else {
-                    this.value.sort((data1, data2) => {
+                    const sorted = [...this.value];
+                    sorted.sort((data1, data2) => {
                         return this.multisortField(data1, data2, <SortMeta[]>this.multiSortMeta, 0);
                     });
 
-                    this._value = [...this.value];
+                    this._value = sorted;
                 }
 
                 if (this.hasFilter()) {
@@ -2235,6 +2251,7 @@ export class Table<RowData = any> extends BaseComponent<TablePassThrough> implem
         this.filterTimeout = setTimeout(() => {
             this._filter();
             this.filterTimeout = null;
+            this.cd.markForCheck();
         }, this.filterDelay);
 
         this.anchorRowIndex = null;
@@ -2253,9 +2270,10 @@ export class Table<RowData = any> extends BaseComponent<TablePassThrough> implem
     }
 
     _filter() {
+        this.tableService.onRefresh();
         if (!this.restoringFilter) {
             this.first = 0;
-            this.firstChange.emit(this.first);
+            this.firstChange.emit(this.first as number);
         }
 
         if (this.lazy) {
@@ -2403,11 +2421,12 @@ export class Table<RowData = any> extends BaseComponent<TablePassThrough> implem
         this.tableService.onSort(null);
 
         this.clearFilterValues();
+        this.tableService.onRefresh();
 
         this.filteredValue = null;
 
         this.first = 0;
-        this.firstChange.emit(this.first);
+        this.firstChange.emit(this.first as number);
 
         if (this.lazy) {
             this.onLazyLoad.emit(this.createLazyLoadMetadata());
@@ -2549,6 +2568,7 @@ export class Table<RowData = any> extends BaseComponent<TablePassThrough> implem
 
     updateEditingCell(cell: any, data: any, field: string, index: number) {
         this.editingCell = cell;
+        this.tableService.onRefresh();
         this.editingCellData = data;
         this.editingCellField = field;
         this.editingCellRowIndex = index;
@@ -2566,6 +2586,7 @@ export class Table<RowData = any> extends BaseComponent<TablePassThrough> implem
                     !this.$unstyled() && DomHandler.removeClass(this.editingCell, 'p-cell-editing');
                     setAttribute(this.editingCell as HTMLElement, 'data-p-cell-editing', 'false');
                     this.editingCell = null;
+                    this.tableService.onRefresh();
                     this.onEditComplete.emit({
                         field: this.editingCellField,
                         data: this.editingCellData,
@@ -2598,18 +2619,21 @@ export class Table<RowData = any> extends BaseComponent<TablePassThrough> implem
     initRowEdit(rowData: any) {
         let dataKeyValue = String(ObjectUtils.resolveFieldData(rowData, this.dataKey));
         this.editingRowKeys[dataKeyValue] = true;
+        this.tableService.onRefresh();
     }
 
     saveRowEdit(rowData: any, rowElement: HTMLTableRowElement) {
         if (DomHandler.find(rowElement, '.ng-invalid.ng-dirty').length === 0) {
             let dataKeyValue = String(ObjectUtils.resolveFieldData(rowData, this.dataKey));
             delete this.editingRowKeys[dataKeyValue];
+            this.tableService.onRefresh();
         }
     }
 
     cancelRowEdit(rowData: any) {
         let dataKeyValue = String(ObjectUtils.resolveFieldData(rowData, this.dataKey));
         delete this.editingRowKeys[dataKeyValue];
+        this.tableService.onRefresh();
     }
 
     toggleRow(rowData: any, event?: Event) {
@@ -2810,8 +2834,10 @@ export class Table<RowData = any> extends BaseComponent<TablePassThrough> implem
                 });
 
                 if (this.isStateful()) {
+                    clearTimeout(this.colReorderTimeout);
                     this.zone.runOutsideAngular(() => {
-                        setTimeout(() => {
+                        this.colReorderTimeout = setTimeout(() => {
+                            this.colReorderTimeout = undefined;
                             this.saveState();
                         });
                     });
@@ -2990,7 +3016,11 @@ export class Table<RowData = any> extends BaseComponent<TablePassThrough> implem
             state.expandedRowKeys = this.expandedRowKeys;
         }
 
-        storage.setItem(<string>this.stateKey, JSON.stringify(state));
+        try {
+            storage.setItem(<string>this.stateKey, JSON.stringify(state));
+        } catch {
+            // Quota exceeded, private mode or non serializable state: keep the table working without persistence.
+        }
         this.onStateSave.emit(state);
     }
 
@@ -2998,13 +3028,25 @@ export class Table<RowData = any> extends BaseComponent<TablePassThrough> implem
         const storage = this.getStorage();
 
         if (this.stateKey) {
-            storage.removeItem(this.stateKey);
+            try {
+                storage.removeItem(this.stateKey);
+            } catch {
+                // storage not accessible
+            }
+        }
+    }
+
+    private readStoredState(storage: Storage): string | null {
+        try {
+            return storage.getItem(<string>this.stateKey);
+        } catch {
+            return null;
         }
     }
 
     restoreState() {
         const storage = this.getStorage();
-        const stateString = storage.getItem(<string>this.stateKey);
+        const stateString = this.readStoredState(storage);
         const dateFormat = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/;
         const reviver = function (key: any, value: any) {
             if (typeof value === 'string' && dateFormat.test(value)) {
@@ -3015,17 +3057,23 @@ export class Table<RowData = any> extends BaseComponent<TablePassThrough> implem
         };
 
         if (stateString) {
-            let state: TableState = JSON.parse(stateString, reviver);
+            let state: TableState;
+            try {
+                state = JSON.parse(stateString, reviver);
+            } catch {
+                this.clearState();
+                return;
+            }
 
             if (this.paginator) {
                 if (this.first !== undefined) {
                     this.first = state.first;
-                    this.firstChange.emit(this.first);
+                    this.firstChange.emit(this.first as number);
                 }
 
                 if (this.rows !== undefined) {
                     this.rows = state.rows;
-                    this.rowsChange.emit(this.rows);
+                    this.rowsChange.emit(this.rows as number);
                 }
             }
 
@@ -3133,9 +3181,15 @@ export class Table<RowData = any> extends BaseComponent<TablePassThrough> implem
 
     restoreColumnOrder() {
         const storage = this.getStorage();
-        const stateString = storage.getItem(<string>this.stateKey);
+        const stateString = this.readStoredState(storage);
         if (stateString) {
-            let state: TableState = JSON.parse(stateString);
+            let state: TableState;
+            try {
+                state = JSON.parse(stateString);
+            } catch {
+                this.clearState();
+                return;
+            }
             let columnOrder = state.columnOrder;
 
             if (columnOrder) {
@@ -3238,6 +3292,15 @@ export class Table<RowData = any> extends BaseComponent<TablePassThrough> implem
     }
 
     onDestroy() {
+        if (this.filterTimeout) {
+            clearTimeout(this.filterTimeout);
+            this.filterTimeout = null;
+        }
+        clearTimeout(this.colReorderTimeout);
+        this.colReorderTimeout = undefined;
+        if (this.overlaySubscription) {
+            this.overlaySubscription.unsubscribe();
+        }
         this.unbindDocumentEditListener();
         this.editingCell = null;
         this.initialized = null;
@@ -3430,6 +3493,8 @@ export class Table<RowData = any> extends BaseComponent<TablePassThrough> implem
             <ng-container *ngTemplateOutlet="dataTable.emptyMessageTemplate || dataTable._emptyMessageTemplate; context: { $implicit: columns, frozen: frozen }"></ng-container>
         }
     `,
+    // Eager on purpose: it renders consumer row templates whose context (selection, expansion, editing) is read from the table, and the rows are
+    // mutated in place by consumers. It must be checked every time the table is.
     changeDetection: ChangeDetectionStrategy.Eager,
     encapsulation: ViewEncapsulation.None,
     host: {
@@ -3477,10 +3542,10 @@ export class TableBody extends BaseComponent {
         }
     }
 
-    constructor(
-        public dataTable: Table,
-        public tableService: TableService
-    ) {
+    dataTable = inject(Table);
+    tableService = inject(TableService);
+
+    constructor() {
         super();
         this.subscription = this.dataTable.tableService.valueSource$.subscribe(() => {
             if (this.dataTable.virtualScroll) {
@@ -3590,9 +3655,7 @@ export class TableBody extends BaseComponent {
     providers: [TableStyle]
 })
 export class RowGroupHeader extends BaseComponent {
-    constructor(public dataTable: Table) {
-        super();
-    }
+    dataTable = inject(Table);
 
     _componentStyle = inject(TableStyle);
 
@@ -3635,8 +3698,11 @@ export class FrozenColumn extends BaseComponent {
     bindResizeListener() {
         if (isPlatformBrowser(this.platformId)) {
             if (!this.resizeListener) {
-                this.resizeListener = this.renderer.listen(this.document.defaultView, 'resize', () => {
-                    this.recalculateColumns();
+                // runs outside the zone: it only moves sticky offsets in the DOM, so a window resize must not trigger change detection
+                this.zone.runOutsideAngular(() => {
+                    this.resizeListener = this.renderer.listen(this.document.defaultView, 'resize', () => {
+                        this.recalculateColumns();
+                    });
                 });
             }
         }
@@ -3651,12 +3717,14 @@ export class FrozenColumn extends BaseComponent {
 
     observeChanges() {
         if (isPlatformBrowser(this.platformId)) {
-            const resizeObserver = new ResizeObserver(() => {
-                this.recalculateColumns();
-            });
+            this.zone.runOutsideAngular(() => {
+                const resizeObserver = new ResizeObserver(() => {
+                    this.recalculateColumns();
+                });
 
-            resizeObserver.observe(this.el.nativeElement);
-            this.resizeObserver = resizeObserver;
+                resizeObserver.observe(this.el.nativeElement);
+                this.resizeObserver = resizeObserver;
+            });
         }
     }
 
@@ -3665,10 +3733,16 @@ export class FrozenColumn extends BaseComponent {
         const index = DomHandler.index(this.el.nativeElement);
         const time = (siblings.length - index + 1) * 50;
 
-        setTimeout(() => {
+        clearTimeout(this.stickyTimeout);
+        this.stickyTimeout = setTimeout(() => {
+            this.stickyTimeout = undefined;
             this.updateStickyPosition();
         }, time);
     }
+
+    private stickyTimeout: ReturnType<typeof setTimeout> | undefined;
+
+    private readonly zone = inject(NgZone);
 
     _frozen: boolean = true;
 
@@ -3704,6 +3778,8 @@ export class FrozenColumn extends BaseComponent {
     }
 
     onDestroy() {
+        clearTimeout(this.stickyTimeout);
+        this.stickyTimeout = undefined;
         this.unbindResizeListener();
         if (this.resizeObserver) {
             this.resizeObserver.disconnect();
@@ -3736,7 +3812,9 @@ export class SortableColumn extends BaseComponent {
 
     _componentStyle = inject(TableStyle);
 
-    constructor(public dataTable: Table) {
+    dataTable = inject(Table);
+
+    constructor() {
         super();
         if (this.isEnabled()) {
             this.subscription = this.dataTable.tableService.sortSource$.subscribe((sortMeta) => {
@@ -3845,10 +3923,10 @@ export class SortIcon extends BaseComponent {
 
     _componentStyle = inject(TableStyle);
 
-    constructor(
-        public dataTable: Table,
-        public cd: ChangeDetectorRef
-    ) {
+    dataTable = inject(Table);
+    cd = inject(ChangeDetectorRef);
+
+    constructor() {
         super();
         this.subscription = this.dataTable.tableService.sortSource$.subscribe((sortMeta) => {
             this.updateSortState();
@@ -3931,10 +4009,10 @@ export class SelectableRow extends BaseComponent {
 
     _componentStyle = inject(TableStyle);
 
-    constructor(
-        public dataTable: Table,
-        public tableService: TableService
-    ) {
+    dataTable = inject(Table);
+    tableService = inject(TableService);
+
+    constructor() {
         super();
         if (this.isEnabled()) {
             this.subscription = this.dataTable.tableService.selectionSource$.subscribe(() => {
@@ -4186,10 +4264,10 @@ export class SelectableRowDblClick extends BaseComponent {
 
     _componentStyle = inject(TableStyle);
 
-    constructor(
-        public dataTable: Table,
-        public tableService: TableService
-    ) {
+    dataTable = inject(Table);
+    tableService = inject(TableService);
+
+    constructor() {
         super();
         if (this.isEnabled()) {
             this.subscription = this.dataTable.tableService.selectionSource$.subscribe(() => {
@@ -4248,10 +4326,10 @@ export class ContextMenuRow extends BaseComponent {
 
     _componentStyle = inject(TableStyle);
 
-    constructor(
-        public dataTable: Table,
-        public tableService: TableService
-    ) {
+    dataTable = inject(Table);
+    tableService = inject(TableService);
+
+    constructor() {
         super();
         if (this.isEnabled()) {
             this.subscription = this.dataTable.tableService.contextMenuSource$.subscribe((data) => {
@@ -4294,9 +4372,7 @@ export class RowToggler extends BaseComponent {
 
     @Input({ transform: booleanAttribute }) pRowTogglerDisabled: boolean | undefined;
 
-    constructor(public dataTable: Table) {
-        super();
-    }
+    dataTable = inject(Table);
 
     @HostListener('click', ['$event'])
     onClick(event: Event) {
@@ -4338,12 +4414,8 @@ export class ResizableColumn extends BaseComponent {
 
     _componentStyle = inject(TableStyle);
 
-    constructor(
-        public dataTable: Table,
-        public zone: NgZone
-    ) {
-        super();
-    }
+    dataTable = inject(Table);
+    zone = inject(NgZone);
 
     onAfterViewInit() {
         if (isPlatformBrowser(this.platformId)) {
@@ -4455,13 +4527,9 @@ export class ReorderableColumn extends BaseComponent {
 
     _componentStyle = inject(TableStyle);
 
-    constructor(
-        public dataTable: Table,
-        public el: ElementRef,
-        public zone: NgZone
-    ) {
-        super();
-    }
+    dataTable = inject(Table);
+    el = inject(ElementRef);
+    zone = inject(NgZone);
 
     onAfterViewInit() {
         if (this.isEnabled()) {
@@ -4569,12 +4637,8 @@ export class EditableColumn extends BaseComponent {
 
     overlayEventListener: any;
 
-    constructor(
-        public dataTable: Table,
-        public zone: NgZone
-    ) {
-        super();
-    }
+    dataTable = inject(Table);
+    zone = inject(NgZone);
 
     public onChanges(changes: SimpleChanges): void {
         if (this.el.nativeElement && !changes.data?.firstChange) {
@@ -4608,6 +4672,8 @@ export class EditableColumn extends BaseComponent {
         }
     }
 
+    private focusTimeout: ReturnType<typeof setTimeout> | undefined;
+
     openCell() {
         this.dataTable.updateEditingCell(this.el.nativeElement, this.data, this.field, <number>this.rowIndex);
         !this.$unstyled() && DomHandler.addClass(this.el.nativeElement, 'p-cell-editing');
@@ -4618,8 +4684,9 @@ export class EditableColumn extends BaseComponent {
             data: this.data,
             index: <number>this.rowIndex
         });
+        clearTimeout(this.focusTimeout);
         this.zone.runOutsideAngular(() => {
-            setTimeout(() => {
+            this.focusTimeout = setTimeout(() => {
                 let focusCellSelector = this.pFocusCellSelector || 'input, textarea, select';
                 let focusableElement = DomHandler.findSingle(this.el.nativeElement, focusCellSelector);
 
@@ -4661,6 +4728,7 @@ export class EditableColumn extends BaseComponent {
         !this.$unstyled() && DomHandler.removeClass(this.dataTable.editingCell, 'p-cell-editing');
         setAttribute(this.el.nativeElement, 'data-p-cell-editing', 'false');
         this.dataTable.editingCell = null;
+        this.dataTable.tableService.onRefresh();
         this.dataTable.editingCellData = null;
         this.dataTable.editingCellField = null;
         this.dataTable.unbindDocumentEditListener();
@@ -4896,6 +4964,7 @@ export class EditableColumn extends BaseComponent {
     }
 
     onDestroy() {
+        clearTimeout(this.focusTimeout);
         if (this.dataTable.overlaySubscription) {
             this.dataTable.overlaySubscription.unsubscribe();
         }
@@ -4924,12 +4993,8 @@ export class EditableRow extends BaseComponent {
     }
 })
 export class InitEditableRow extends BaseComponent {
-    constructor(
-        public dataTable: Table,
-        public editableRow: EditableRow
-    ) {
-        super();
-    }
+    dataTable = inject(Table);
+    editableRow = inject(EditableRow);
 
     @HostListener('click', ['$event'])
     onClick(event: Event) {
@@ -4946,12 +5011,8 @@ export class InitEditableRow extends BaseComponent {
     }
 })
 export class SaveEditableRow extends BaseComponent {
-    constructor(
-        public dataTable: Table,
-        public editableRow: EditableRow
-    ) {
-        super();
-    }
+    dataTable = inject(Table);
+    editableRow = inject(EditableRow);
 
     @HostListener('click', ['$event'])
     onClick(event: Event) {
@@ -4969,12 +5030,8 @@ export class SaveEditableRow extends BaseComponent {
     providers: [TableStyle]
 })
 export class CancelEditableRow extends BaseComponent {
-    constructor(
-        public dataTable: Table,
-        public editableRow: EditableRow
-    ) {
-        super();
-    }
+    dataTable = inject(Table);
+    editableRow = inject(EditableRow);
     _componentStyle = inject(TableStyle);
     @HostListener('click', ['$event'])
     onClick(event: Event) {
@@ -4984,7 +5041,7 @@ export class CancelEditableRow extends BaseComponent {
 }
 
 @Component({
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'p-cellEditor',
     standalone: false,
     template: `
@@ -5008,13 +5065,11 @@ export class CellEditor extends BaseComponent {
 
     outputTemplate: Nullable<TemplateRef<any>>;
 
-    constructor(
-        public dataTable: Table,
-        @Optional() public editableColumn: EditableColumn,
-        @Optional() public editableRow: EditableRow
-    ) {
-        super();
-    }
+    dataTable = inject(Table);
+    editableColumn: EditableColumn = inject(EditableColumn, { optional: true }) as EditableColumn;
+    editableRow: EditableRow = inject(EditableRow, { optional: true }) as EditableRow;
+
+    private readonly refreshSubscription = this.dataTable.tableService.refreshSource$.pipe(takeUntilDestroyed()).subscribe(() => this.cd.markForCheck());
 
     onAfterContentInit() {
         (this._templates as QueryList<PrimeTemplate>).forEach((item) => {
@@ -5072,10 +5127,10 @@ export class TableRadioButton extends BaseComponent {
 
     subscription: Subscription;
 
-    constructor(
-        public dataTable: Table,
-        public cd: ChangeDetectorRef
-    ) {
+    dataTable = inject(Table);
+    cd = inject(ChangeDetectorRef);
+
+    constructor() {
         super();
         this.subscription = this.dataTable.tableService.selectionSource$.subscribe(() => {
             this.checked = this.dataTable.isSelected(this.value);
@@ -5152,10 +5207,10 @@ export class TableCheckbox extends BaseComponent {
 
     subscription: Subscription;
 
-    constructor(
-        public dataTable: Table,
-        public tableService: TableService
-    ) {
+    dataTable = inject(Table);
+    tableService = inject(TableService);
+
+    constructor() {
         super();
         this.subscription = this.dataTable.tableService.selectionSource$.subscribe(() => {
             this.checked = this.dataTable.isSelected(this.value);
@@ -5236,10 +5291,10 @@ export class TableHeaderCheckbox extends BaseComponent {
 
     valueChangeSubscription: Subscription;
 
-    constructor(
-        public dataTable: Table,
-        public tableService: TableService
-    ) {
+    dataTable = inject(Table);
+    tableService = inject(TableService);
+
+    constructor() {
         super();
         this.valueChangeSubscription = this.dataTable.tableService.valueSource$.subscribe(() => {
             this.checked = this.updateCheckedState();
@@ -5314,9 +5369,7 @@ export class ReorderableRowHandle extends BaseComponent {
 
     _componentStyle = inject(TableStyle);
 
-    constructor(public el: ElementRef) {
-        super();
-    }
+    el = inject(ElementRef);
 
     onAfterViewInit() {
         // DomHandler.addClass(this.el.nativeElement, 'p-datatable-reorderable-row-handle');
@@ -5353,12 +5406,8 @@ export class ReorderableRow extends BaseComponent {
 
     dropListener: VoidListener;
 
-    constructor(
-        public dataTable: Table,
-        public zone: NgZone
-    ) {
-        super();
-    }
+    dataTable = inject(Table);
+    zone = inject(NgZone);
 
     onAfterViewInit() {
         if (this.isEnabled()) {
@@ -5466,58 +5515,66 @@ export class ReorderableRow extends BaseComponent {
  * @group Components
  */
 @Component({
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'p-columnFilter, p-column-filter, p-columnfilter',
     standalone: false,
     template: `
         <div [class]="cx('filter')">
-            <p-columnFilterFormElement
-                *ngIf="display === 'row'"
-                class="p-fluid"
-                [type]="type"
-                [field]="field"
-                [ariaLabel]="ariaLabel"
-                [filterConstraint]="dataTable.filters[field]"
-                [filterTemplate]="filterTemplate || _filterTemplate"
-                [placeholder]="placeholder"
-                [minFractionDigits]="minFractionDigits"
-                [maxFractionDigits]="maxFractionDigits"
-                [prefix]="prefix"
-                [suffix]="suffix"
-                [locale]="locale"
-                [localeMatcher]="localeMatcher"
-                [currency]="currency"
-                [currencyDisplay]="currencyDisplay"
-                [useGrouping]="useGrouping"
-                [showButtons]="showButtons"
-                [filterOn]="filterOn"
-                [pt]="pt()"
-                [unstyled]="unstyled()"
-            ></p-columnFilterFormElement>
-            <p-button
-                *ngIf="showMenuButton"
-                [styleClass]="cx('pcColumnFilterButton')"
-                [pt]="ptm('pcColumnFilterButton')"
-                [attr.aria-haspopup]="true"
-                [ariaLabel]="filterMenuButtonAriaLabel"
-                [attr.aria-controls]="overlayVisible ? overlayId : null"
-                [attr.aria-expanded]="overlayVisible ?? false"
-                (click)="toggleMenu($event)"
-                (keydown)="onToggleButtonKeyDown($event)"
-                [buttonProps]="filterButtonProps?.filter"
-                #menuButton
-                [unstyled]="unstyled()"
-            >
-                <ng-template #icon>
-                    <ng-container>
-                        <svg data-p-icon="filter" *ngIf="!filterIconTemplate && !_filterIconTemplate && !hasFilter" [pBind]="ptm('pcColumnFilterButton')['icon']" />
-                        <svg data-p-icon="filter-fill" *ngIf="!filterIconTemplate && !_filterIconTemplate && hasFilter" [pBind]="ptm('pcColumnFilterButton')['icon']" />
-                        <span *ngIf="filterIconTemplate || _filterIconTemplate" [pBind]="ptm('pcColumnFilterButton')['icon']" [attr.data-pc-section]="'columnfilterbuttonicon'">
-                            <ng-template *ngTemplateOutlet="filterIconTemplate || _filterIconTemplate; context: { hasFilter: hasFilter }"></ng-template>
-                        </span>
-                    </ng-container>
-                </ng-template>
-            </p-button>
+            @if (display === 'row') {
+                <p-columnFilterFormElement
+                    class="p-fluid"
+                    [type]="type"
+                    [field]="field"
+                    [ariaLabel]="ariaLabel"
+                    [filterConstraint]="dataTable.filters[field]"
+                    [filterTemplate]="filterTemplate || _filterTemplate"
+                    [placeholder]="placeholder"
+                    [minFractionDigits]="minFractionDigits"
+                    [maxFractionDigits]="maxFractionDigits"
+                    [prefix]="prefix"
+                    [suffix]="suffix"
+                    [locale]="locale"
+                    [localeMatcher]="localeMatcher"
+                    [currency]="currency"
+                    [currencyDisplay]="currencyDisplay"
+                    [useGrouping]="useGrouping"
+                    [showButtons]="showButtons"
+                    [filterOn]="filterOn"
+                    [pt]="pt()"
+                    [unstyled]="unstyled()"
+                ></p-columnFilterFormElement>
+            }
+            @if (showMenuButton) {
+                <p-button
+                    [styleClass]="cx('pcColumnFilterButton')"
+                    [pt]="ptm('pcColumnFilterButton')"
+                    [attr.aria-haspopup]="true"
+                    [ariaLabel]="filterMenuButtonAriaLabel"
+                    [attr.aria-controls]="overlayVisible ? overlayId : null"
+                    [attr.aria-expanded]="overlayVisible ?? false"
+                    (click)="toggleMenu($event)"
+                    (keydown)="onToggleButtonKeyDown($event)"
+                    [buttonProps]="filterButtonProps?.filter"
+                    #menuButton
+                    [unstyled]="unstyled()"
+                >
+                    <ng-template #icon>
+                        <ng-container>
+                            @if (!filterIconTemplate && !_filterIconTemplate && !hasFilter) {
+                                <svg data-p-icon="filter" [pBind]="ptm('pcColumnFilterButton')['icon']" />
+                            }
+                            @if (!filterIconTemplate && !_filterIconTemplate && hasFilter) {
+                                <svg data-p-icon="filter-fill" [pBind]="ptm('pcColumnFilterButton')['icon']" />
+                            }
+                            @if (filterIconTemplate || _filterIconTemplate) {
+                                <span [pBind]="ptm('pcColumnFilterButton')['icon']" [attr.data-pc-section]="'columnfilterbuttonicon'">
+                                    <ng-template *ngTemplateOutlet="filterIconTemplate || _filterIconTemplate; context: { hasFilter: hasFilter }"></ng-template>
+                                </span>
+                            }
+                        </ng-container>
+                    </ng-template>
+                </p-button>
+            }
             @if (renderOverlay()) {
                 <div
                     [pMotion]="showMenu && overlayVisible"
@@ -5535,88 +5592,98 @@ export class ReorderableRow extends BaseComponent {
                     (keydown.escape)="onEscape()"
                 >
                     <ng-container *ngTemplateOutlet="headerTemplate || _headerTemplate; context: { $implicit: field }"></ng-container>
-                    <ul *ngIf="display === 'row'; else menu" [class]="cx('filterConstraintList')" [pBind]="ptm('filterConstraintList')">
-                        <li
-                            *ngFor="let matchMode of matchModes; let i = index"
-                            (click)="onRowMatchModeChange(matchMode.value)"
-                            (keydown)="onRowMatchModeKeyDown($event)"
-                            (keydown.enter)="onRowMatchModeChange(matchMode.value)"
-                            [class]="cx('filterConstraint')"
-                            [pBind]="ptm('filterConstraint', ptmFilterConstraintOptions(matchMode))"
-                            [class.p-datatable-filter-constraint-selected]="isRowMatchModeSelected(matchMode.value)"
-                            [attr.tabindex]="i === 0 ? '0' : null"
-                        >
-                            {{ matchMode.label }}
-                        </li>
-                        <li [class]="cx('filterConstraintSeparator')" [pBind]="ptm('filterConstraintSeparator', { context: { index: i } })"></li>
-                        <li [class]="cx('filterConstraint')" [pBind]="ptm('emtpyFilterLabel')" (click)="onRowClearItemClick()" (keydown)="onRowMatchModeKeyDown($event)" (keydown.enter)="onRowClearItemClick()">
-                            {{ noFilterLabel }}
-                        </li>
-                    </ul>
-                    <ng-template #menu>
-                        <div [class]="cx('filterOperator')" [pBind]="ptm('filterOperator')" *ngIf="isShowOperator">
-                            <p-select
-                                [options]="operatorOptions"
-                                [pt]="ptm('pcFilterOperatorDropdown')"
-                                [ngModel]="operator"
-                                [ngModelOptions]="{ standalone: true }"
-                                (ngModelChange)="onOperatorChange($event)"
-                                [styleClass]="cx('pcFilterOperatorDropdown')"
-                                [unstyled]="unstyled()"
-                            ></p-select>
-                        </div>
-                        <div [class]="cx('filterRuleList')" [pBind]="ptm('filterRuleList')">
-                            <div *ngFor="let fieldConstraint of fieldConstraints; let i = index" [ngClass]="cx('filterRule')" [pBind]="ptm('filterRule')">
+                    @if (display === 'row') {
+                        <ul [class]="cx('filterConstraintList')" [pBind]="ptm('filterConstraintList')">
+                            @for (matchMode of matchModes; track matchMode.value; let i = $index) {
+                                <li
+                                    (click)="onRowMatchModeChange(matchMode.value)"
+                                    (keydown)="onRowMatchModeKeyDown($event)"
+                                    (keydown.enter)="onRowMatchModeChange(matchMode.value)"
+                                    [class]="cx('filterConstraint')"
+                                    [pBind]="ptm('filterConstraint', ptmFilterConstraintOptions(matchMode))"
+                                    [class.p-datatable-filter-constraint-selected]="isRowMatchModeSelected(matchMode.value)"
+                                    [attr.tabindex]="i === 0 ? '0' : null"
+                                >
+                                    {{ matchMode.label }}
+                                </li>
+                            }
+                            <li [class]="cx('filterConstraintSeparator')" [pBind]="ptm('filterConstraintSeparator')"></li>
+                            <li [class]="cx('filterConstraint')" [pBind]="ptm('emtpyFilterLabel')" (click)="onRowClearItemClick()" (keydown)="onRowMatchModeKeyDown($event)" (keydown.enter)="onRowClearItemClick()">
+                                {{ noFilterLabel }}
+                            </li>
+                        </ul>
+                    } @else {
+                        @if (isShowOperator) {
+                            <div [class]="cx('filterOperator')" [pBind]="ptm('filterOperator')">
                                 <p-select
-                                    *ngIf="showMatchModes && matchModes"
-                                    [options]="matchModes"
-                                    [ngModel]="fieldConstraint.matchMode"
+                                    [options]="operatorOptions"
+                                    [pt]="ptm('pcFilterOperatorDropdown')"
+                                    [ngModel]="operator"
                                     [ngModelOptions]="{ standalone: true }"
-                                    (ngModelChange)="onMenuMatchModeChange($event, fieldConstraint)"
-                                    [styleClass]="cx('pcFilterConstraintDropdown')"
-                                    [pt]="ptm('pcFilterConstraintDropdown')"
+                                    (ngModelChange)="onOperatorChange($event)"
+                                    [styleClass]="cx('pcFilterOperatorDropdown')"
                                     [unstyled]="unstyled()"
                                 ></p-select>
-                                <p-columnFilterFormElement
-                                    [type]="type"
-                                    [field]="field"
-                                    [filterConstraint]="fieldConstraint"
-                                    [filterTemplate]="filterTemplate || _filterTemplate"
-                                    [placeholder]="placeholder"
-                                    [minFractionDigits]="minFractionDigits"
-                                    [maxFractionDigits]="maxFractionDigits"
-                                    [prefix]="prefix"
-                                    [suffix]="suffix"
-                                    [locale]="locale"
-                                    [localeMatcher]="localeMatcher"
-                                    [currency]="currency"
-                                    [currencyDisplay]="currencyDisplay"
-                                    [useGrouping]="useGrouping"
-                                    [filterOn]="filterOn"
-                                    [pt]="pt()"
-                                    [unstyled]="unstyled()"
-                                ></p-columnFilterFormElement>
-                                <div>
-                                    <p-button
-                                        *ngIf="showRemoveIcon"
-                                        [styleClass]="cx('pcFilterRemoveRuleButton')"
-                                        [pt]="ptm('pcFilterRemoveRuleButton')"
-                                        [text]="true"
-                                        severity="danger"
-                                        size="small"
-                                        (onClick)="removeConstraint(fieldConstraint)"
-                                        [ariaLabel]="removeRuleButtonLabel"
-                                        [label]="removeRuleButtonLabel"
-                                        [buttonProps]="filterButtonProps?.popover?.removeRule"
-                                        [unstyled]="unstyled()"
-                                    >
-                                        <ng-template #icon>
-                                            <svg data-p-icon="trash" *ngIf="!removeRuleIconTemplate && !_removeRuleIconTemplate" [pBind]="ptm('pcFilterRemoveRuleButton')['icon']" />
-                                            <ng-template *ngTemplateOutlet="removeRuleIconTemplate || _removeRuleIconTemplate"></ng-template>
-                                        </ng-template>
-                                    </p-button>
-                                </div>
                             </div>
+                        }
+                        <div [class]="cx('filterRuleList')" [pBind]="ptm('filterRuleList')">
+                            @for (fieldConstraint of fieldConstraints; track fieldConstraint) {
+                                <div [class]="cx('filterRule')" [pBind]="ptm('filterRule')">
+                                    @if (showMatchModes && matchModes) {
+                                        <p-select
+                                            [options]="matchModes"
+                                            [ngModel]="fieldConstraint.matchMode"
+                                            [ngModelOptions]="{ standalone: true }"
+                                            (ngModelChange)="onMenuMatchModeChange($event, fieldConstraint)"
+                                            [styleClass]="cx('pcFilterConstraintDropdown')"
+                                            [pt]="ptm('pcFilterConstraintDropdown')"
+                                            [unstyled]="unstyled()"
+                                        ></p-select>
+                                    }
+                                    <p-columnFilterFormElement
+                                        [type]="type"
+                                        [field]="field"
+                                        [filterConstraint]="fieldConstraint"
+                                        [filterTemplate]="filterTemplate || _filterTemplate"
+                                        [placeholder]="placeholder"
+                                        [minFractionDigits]="minFractionDigits"
+                                        [maxFractionDigits]="maxFractionDigits"
+                                        [prefix]="prefix"
+                                        [suffix]="suffix"
+                                        [locale]="locale"
+                                        [localeMatcher]="localeMatcher"
+                                        [currency]="currency"
+                                        [currencyDisplay]="currencyDisplay"
+                                        [useGrouping]="useGrouping"
+                                        [filterOn]="filterOn"
+                                        [pt]="pt()"
+                                        [unstyled]="unstyled()"
+                                    ></p-columnFilterFormElement>
+                                    <div>
+                                        @if (showRemoveIcon) {
+                                            <p-button
+                                                [styleClass]="cx('pcFilterRemoveRuleButton')"
+                                                [pt]="ptm('pcFilterRemoveRuleButton')"
+                                                [text]="true"
+                                                severity="danger"
+                                                size="small"
+                                                (onClick)="removeConstraint(fieldConstraint)"
+                                                [ariaLabel]="removeRuleButtonLabel"
+                                                [label]="removeRuleButtonLabel"
+                                                [buttonProps]="filterButtonProps?.popover?.removeRule"
+                                                [unstyled]="unstyled()"
+                                            >
+                                                <ng-template #icon>
+                                                    @if (!removeRuleIconTemplate && !_removeRuleIconTemplate) {
+                                                        <svg data-p-icon="trash" [pBind]="ptm('pcFilterRemoveRuleButton')['icon']" />
+                                                    }
+                                                    <ng-template *ngTemplateOutlet="removeRuleIconTemplate || _removeRuleIconTemplate"></ng-template>
+                                                </ng-template>
+                                            </p-button>
+                                        }
+                                    </div>
+                                </div>
+                            }
                         </div>
                         @if (isShowAddConstraint) {
                             <p-button
@@ -5632,35 +5699,39 @@ export class ReorderableRow extends BaseComponent {
                                 [unstyled]="unstyled()"
                             >
                                 <ng-template #icon>
-                                    <svg data-p-icon="plus" *ngIf="!addRuleIconTemplate && !_addRuleIconTemplate" [pBind]="ptm('pcAddRuleButtonLabel')['icon']" />
+                                    @if (!addRuleIconTemplate && !_addRuleIconTemplate) {
+                                        <svg data-p-icon="plus" [pBind]="ptm('pcAddRuleButtonLabel')['icon']" />
+                                    }
                                     <ng-template *ngTemplateOutlet="addRuleIconTemplate || _addRuleIconTemplate"></ng-template>
                                 </ng-template>
                             </p-button>
                         }
                         <div [class]="cx('filterButtonbar')" [pBind]="ptm('filterButtonBar')">
-                            <p-button
-                                #clearBtn
-                                *ngIf="showClearButton"
-                                [outlined]="true"
-                                (onClick)="clearFilter()"
-                                [attr.aria-label]="clearButtonLabel"
-                                [label]="clearButtonLabel"
-                                [buttonProps]="filterButtonProps?.popover?.clear"
-                                [pt]="ptm('pcFilterClearButton')"
-                                [unstyled]="unstyled()"
-                            />
-                            <p-button
-                                *ngIf="showApplyButton"
-                                (onClick)="applyFilter()"
-                                size="small"
-                                [label]="applyButtonLabel"
-                                [attr.aria-label]="applyButtonLabel"
-                                [buttonProps]="filterButtonProps?.popover?.apply"
-                                [pt]="ptm('pcFilterApplyButton')"
-                                [unstyled]="unstyled()"
-                            />
+                            @if (showClearButton) {
+                                <p-button
+                                    #clearBtn
+                                    [outlined]="true"
+                                    (onClick)="clearFilter()"
+                                    [attr.aria-label]="clearButtonLabel"
+                                    [label]="clearButtonLabel"
+                                    [buttonProps]="filterButtonProps?.popover?.clear"
+                                    [pt]="ptm('pcFilterClearButton')"
+                                    [unstyled]="unstyled()"
+                                />
+                            }
+                            @if (showApplyButton) {
+                                <p-button
+                                    (onClick)="applyFilter()"
+                                    size="small"
+                                    [label]="applyButtonLabel"
+                                    [attr.aria-label]="applyButtonLabel"
+                                    [buttonProps]="filterButtonProps?.popover?.apply"
+                                    [pt]="ptm('pcFilterApplyButton')"
+                                    [unstyled]="unstyled()"
+                                />
+                            }
                         </div>
-                    </ng-template>
+                    }
                     <ng-container *ngTemplateOutlet="footerTemplate || _footerTemplate; context: { $implicit: field }"></ng-container>
                 </div>
             }
@@ -5672,6 +5743,8 @@ export class ReorderableRow extends BaseComponent {
 })
 export class ColumnFilter extends BaseComponent {
     hostName = 'Table';
+
+    private readonly zone = inject(NgZone);
 
     bindDirectiveInstance = inject(Bind, { self: true });
 
@@ -5869,17 +5942,13 @@ export class ColumnFilter extends BaseComponent {
      * @param {AnimationEvent} originalEvent - animation event.
      * @group Emits
      */
-    @Output() onShow: EventEmitter<{ originalEvent: AnimationEvent }> = new EventEmitter<{
-        originalEvent: AnimationEvent;
-    }>();
+    onShow = output<{ originalEvent: AnimationEvent }>();
     /**
      * Callback to invoke on overlay is hidden.
      * @param {AnimationEvent} originalEvent - animation event.
      * @group Emits
      */
-    @Output() onHide: EventEmitter<{ originalEvent: AnimationEvent }> = new EventEmitter<{
-        originalEvent: AnimationEvent;
-    }>();
+    onHide = output<{ originalEvent: AnimationEvent }>();
 
     @ViewChild(Button, { static: false, read: ElementRef }) icon: ElementRef | undefined;
 
@@ -6022,6 +6091,8 @@ export class ColumnFilter extends BaseComponent {
     dataTable = inject(Table);
 
     overlayService = inject(OverlayService);
+
+    private readonly refreshSubscription = this.dataTable.tableService.refreshSource$.pipe(takeUntilDestroyed()).subscribe(() => this.cd.markForCheck());
 
     onInit() {
         this.overlayId = UniqueComponentId();
@@ -6393,11 +6464,15 @@ export class ColumnFilter extends BaseComponent {
 
     bindScrollListener() {
         if (!this.scrollHandler) {
-            this.scrollHandler = new ConnectedOverlayScrollHandler(this.icon?.nativeElement, () => {
-                if (this.overlayVisible) {
-                    this.hide();
-                }
-            });
+            this.scrollHandler = new ConnectedOverlayScrollHandler(
+                this.icon?.nativeElement,
+                () => {
+                    if (this.overlayVisible) {
+                        this.hide();
+                    }
+                },
+                this.zone
+            );
         }
 
         this.scrollHandler.bindScrollListener();
@@ -6460,7 +6535,7 @@ export class ColumnFilter extends BaseComponent {
 }
 
 @Component({
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'p-columnFilterFormElement',
     standalone: false,
     template: `
@@ -6607,12 +6682,10 @@ export class ColumnFilterFormElement extends BaseComponent<ColumnFilterPassThrou
 
     filterCallback: any;
 
-    constructor(
-        public dataTable: Table,
-        private colFilter: ColumnFilter
-    ) {
-        super();
-    }
+    dataTable = inject(Table);
+    private colFilter = inject(ColumnFilter);
+
+    private readonly refreshSubscription = this.dataTable.tableService.refreshSource$.pipe(takeUntilDestroyed()).subscribe(() => this.cd.markForCheck());
 
     onInit() {
         this.filterCallback = (value: any) => {

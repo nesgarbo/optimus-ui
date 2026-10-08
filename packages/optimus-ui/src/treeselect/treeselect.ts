@@ -7,7 +7,6 @@ import {
     ContentChild,
     ContentChildren,
     ElementRef,
-    EventEmitter,
     forwardRef,
     HostListener,
     inject,
@@ -15,7 +14,7 @@ import {
     input,
     Input,
     NgModule,
-    Output,
+    output,
     QueryList,
     TemplateRef,
     ViewChild,
@@ -24,7 +23,7 @@ import {
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MotionOptions } from '@openng/optimus-ui-motion';
 import { focus, getFirstFocusableElement, getFocusableElements, getLastFocusableElement, isNotEmpty, uuid } from '@openng/optimus-ui-utils';
-import { OverlayOptions, PrimeTemplate, ScrollerOptions, SharedModule, TreeNode } from '@openng/optimus-ui/api';
+import { OverlayOptions, PrimeTemplate, ScrollerOptions, SharedModule, TranslationKeys, TreeNode } from '@openng/optimus-ui/api';
 import { AutoFocus } from '@openng/optimus-ui/autofocus';
 import { PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { BaseEditableHolder } from '@openng/optimus-ui/baseeditableholder';
@@ -87,7 +86,7 @@ const TREESELECT_INSTANCE = new InjectionToken<TreeSelect>('TREESELECT_INSTANCE'
             />
         </div>
         <div [class]="cx('labelContainer')" [pBind]="ptm('labelContainer')">
-            <div [class]="cn(cx('label'), labelStyleClass)" [ngStyle]="labelStyle" [pBind]="ptm('label')">
+            <div [class]="cn(cx('label'), labelStyleClass)" [style]="labelStyle" [pBind]="ptm('label')">
                 @if (valueTemplate || _valueTemplate) {
                     <ng-container *ngTemplateOutlet="valueTemplate || _valueTemplate; context: { $implicit: value, placeholder: placeholder }"></ng-container>
                 } @else {
@@ -107,14 +106,15 @@ const TREESELECT_INSTANCE = new InjectionToken<TreeSelect>('TREESELECT_INSTANCE'
             </div>
         </div>
         @if (checkValue() && !$disabled() && showClear) {
-            @if (!clearIconTemplate && !_clearIconTemplate) {
-                <svg data-p-icon="times" [class]="cx('clearIcon')" (click)="clear($event)" [pBind]="ptm('clearIcon')" />
-            }
-            @if (clearIconTemplate || clearIconTemplate) {
-                <span [class]="cx('clearIcon')" (click)="clear($event)" [pBind]="ptm('clearIcon')">
-                    <ng-template *ngTemplateOutlet="clearIconTemplate || _clearIconTemplate"></ng-template>
-                </span>
-            }
+            <button type="button" class="p-treeselect-icon-button" [attr.aria-label]="clearLabel" (click)="clear($event)">
+                @if (!clearIconTemplate && !_clearIconTemplate) {
+                    <svg data-p-icon="times" [class]="cx('clearIcon')" [pBind]="ptm('clearIcon')" />
+                } @else {
+                    <span [class]="cx('clearIcon')" [pBind]="ptm('clearIcon')">
+                        <ng-template *ngTemplateOutlet="clearIconTemplate || _clearIconTemplate"></ng-template>
+                    </span>
+                }
+            </button>
         }
         <div [class]="cx('dropdown')" role="button" aria-haspopup="tree" [attr.aria-expanded]="overlayVisible ?? false" [attr.aria-label]="'treeselect trigger'" [pBind]="ptm('dropdown')">
             @if (!triggerIconTemplate && !_triggerIconTemplate && !dropdownIconTemplate && !_dropdownIconTemplate) {
@@ -142,7 +142,7 @@ const TREESELECT_INSTANCE = new InjectionToken<TreeSelect>('TREESELECT_INSTANCE'
             (onHide)="hide($event)"
         >
             <ng-template #content>
-                <div #panel [attr.id]="listId" [class]="cn(cx('panel'), panelStyleClass, panelClass)" [ngStyle]="panelStyle" [pBind]="ptm('panel')">
+                <div #panel [attr.id]="listId" [class]="cn(cx('panel'), panelStyleClass, panelClass)" [style]="panelStyle" [pBind]="ptm('panel')">
                     <span
                         #firstHiddenFocusableEl
                         role="presentation"
@@ -155,7 +155,7 @@ const TREESELECT_INSTANCE = new InjectionToken<TreeSelect>('TREESELECT_INSTANCE'
                     >
                     </span>
                     <ng-container *ngTemplateOutlet="headerTemplate || _headerTemplate; context: { $implicit: value, options: options }"></ng-container>
-                    <div [class]="cx('treeContainer')" [ngStyle]="{ 'max-height': scrollHeight }" [pBind]="ptm('treeContainer')">
+                    <div [class]="cx('treeContainer')" [style.max-height]="scrollHeight" [pBind]="ptm('treeContainer')">
                         <p-tree
                             #tree
                             [value]="options"
@@ -196,9 +196,11 @@ const TREESELECT_INSTANCE = new InjectionToken<TreeSelect>('TREESELECT_INSTANCE'
                                     <ng-container *ngTemplateOutlet="itemTogglerIconTemplate || _itemTogglerIconTemplate; context: { $implicit: expanded }"></ng-container>
                                 </ng-template>
                             }
-                            <ng-template #checkboxicon let-selected let-partialSelected="partialSelected" *ngIf="itemCheckboxIconTemplate || _itemCheckboxIconTemplate">
-                                <ng-container *ngTemplateOutlet="itemCheckboxIconTemplate || _itemCheckboxIconTemplate; context: { $implicit: selected, partialSelected: partialSelected }"></ng-container>
-                            </ng-template>
+                            @if (itemCheckboxIconTemplate || _itemCheckboxIconTemplate) {
+                                <ng-template #checkboxicon let-selected let-partialSelected="partialSelected">
+                                    <ng-container *ngTemplateOutlet="itemCheckboxIconTemplate || _itemCheckboxIconTemplate; context: { $implicit: selected, partialSelected: partialSelected }"></ng-container>
+                                </ng-template>
+                            }
                             @if (itemLoadingIconTemplate || _itemLoadingIconTemplate) {
                                 <ng-template #loadingicon>
                                     <ng-container *ngTemplateOutlet="itemLoadingIconTemplate || _itemLoadingIconTemplate"></ng-container>
@@ -253,6 +255,21 @@ export class TreeSelect extends BaseEditableHolder<TreeSelectPassThrough> {
     bindDirectiveInstance = inject(Bind, { self: true });
 
     _componentStyle = inject(TreeSelectStyle);
+
+    private alignTimeout: ReturnType<typeof setTimeout> | undefined;
+
+    private virtualScrollResizeObserver: ResizeObserver | undefined;
+
+    private alignOverlayLater() {
+        clearTimeout(this.alignTimeout);
+        this.alignTimeout = setTimeout(() => this.overlayViewChild?.alignOverlay());
+    }
+
+    onDestroy() {
+        clearTimeout(this.alignTimeout);
+        this.virtualScrollResizeObserver?.disconnect();
+        this.virtualScrollResizeObserver = undefined;
+    }
 
     onAfterViewChecked(): void {
         this.bindDirectiveInstance.setAttrs(this.ptms(['host', 'root']));
@@ -476,59 +493,59 @@ export class TreeSelect extends BaseEditableHolder<TreeSelectPassThrough> {
      * @param {TreeSelectNodeExpandEvent} event - Custom node expand event.
      * @group Emits
      */
-    @Output() onNodeExpand: EventEmitter<TreeSelectNodeExpandEvent> = new EventEmitter<TreeSelectNodeExpandEvent>();
+    onNodeExpand = output<TreeSelectNodeExpandEvent>();
     /**
      * Callback to invoke when a node is collapsed.
      * @param {TreeSelectNodeCollapseEvent} event - Custom node collapse event.
      * @group Emits
      */
-    @Output() onNodeCollapse: EventEmitter<TreeSelectNodeCollapseEvent> = new EventEmitter<TreeSelectNodeCollapseEvent>();
+    onNodeCollapse = output<TreeSelectNodeCollapseEvent>();
     /**
      * Callback to invoke when the overlay is shown.
      * @param {Event} event - Browser event.
      * @group Emits
      */
-    @Output() onShow: EventEmitter<any> = new EventEmitter<any>();
+    onShow = output<any>();
     /**
      * Callback to invoke when the overlay is hidden.
      * @param {Event} event - Browser event.
      * @group Emits
      */
-    @Output() onHide: EventEmitter<Event> = new EventEmitter<Event>();
+    onHide = output<Event>();
     /**
      * Callback to invoke when input field is cleared.
      * @group Emits
      */
-    @Output() onClear: EventEmitter<any> = new EventEmitter<any>();
+    onClear = output<any>();
     /**
      * Callback to invoke when data is filtered.
      * @group Emits
      */
-    @Output() onFilter: EventEmitter<TreeFilterEvent> = new EventEmitter<TreeFilterEvent>();
+    onFilter = output<TreeFilterEvent>();
     /**
      * Callback to invoke when treeselect gets focus.
      * @param {Event} event - Browser event.
      * @group Emits
      */
-    @Output() onFocus: EventEmitter<Event> = new EventEmitter<Event>();
+    onFocus = output<Event>();
     /**
      * Callback to invoke when treeselect loses focus.
      * @param {Event} event - Browser event.
      * @group Emits
      */
-    @Output() onBlur: EventEmitter<Event> = new EventEmitter<Event>();
+    onBlur = output<Event>();
     /**
      * Callback to invoke when a node is unselected.
      * @param {TreeNodeUnSelectEvent} event - node unselect event.
      * @group Emits
      */
-    @Output() onNodeUnselect: EventEmitter<TreeNodeUnSelectEvent> = new EventEmitter<TreeNodeUnSelectEvent>();
+    onNodeUnselect = output<TreeNodeUnSelectEvent>();
     /**
      * Callback to invoke when a node is selected.
      * @param {TreeNodeSelectEvent} event - node select event.
      * @group Emits
      */
-    @Output() onNodeSelect: EventEmitter<TreeNodeSelectEvent> = new EventEmitter<TreeNodeSelectEvent>();
+    onNodeSelect = output<TreeNodeSelectEvent>();
 
     $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
 
@@ -768,17 +785,21 @@ export class TreeSelect extends BaseEditableHolder<TreeSelectPassThrough> {
         const panelElement = this.panelEl?.nativeElement;
         if (this.virtualScroll && panelElement) {
             let lastHeight = panelElement.offsetHeight;
-            const virtualScrollResizeObserver = new ResizeObserver((entries) => {
+            this.virtualScrollResizeObserver?.disconnect();
+            const virtualScrollResizeObserver = (this.virtualScrollResizeObserver = new ResizeObserver((entries) => {
                 const newHeight = entries[0].contentRect.height;
                 if (newHeight !== lastHeight) {
                     lastHeight = newHeight;
                     this.overlayViewChild?.alignOverlay();
                 }
-            });
+            }));
             virtualScrollResizeObserver.observe(panelElement);
 
             // clean up when overlay closes, not after first callback
-            this.overlayViewChild?.onHide.pipe(take(1)).subscribe(() => virtualScrollResizeObserver.disconnect());
+            this.overlayViewChild?.onHide.pipe(take(1)).subscribe(() => {
+                virtualScrollResizeObserver.disconnect();
+                if (this.virtualScrollResizeObserver === virtualScrollResizeObserver) this.virtualScrollResizeObserver = undefined;
+            });
         }
     }
 
@@ -798,6 +819,9 @@ export class TreeSelect extends BaseEditableHolder<TreeSelectPassThrough> {
 
     onClick(event: any) {
         if (this.$disabled()) {
+            return;
+        }
+        if (event.target?.closest?.('.p-treeselect-icon-button')) {
             return;
         }
         const section = event.target?.getAttribute?.('data-pc-section');
@@ -859,9 +883,7 @@ export class TreeSelect extends BaseEditableHolder<TreeSelectPassThrough> {
             filter: this.filterValue,
             filteredValue: this.treeViewChild?.filteredNodes
         });
-        setTimeout(() => {
-            this.overlayViewChild?.alignOverlay();
-        });
+        this.alignOverlayLater();
     }
 
     onArrowDown(event: KeyboardEvent) {
@@ -899,12 +921,16 @@ export class TreeSelect extends BaseEditableHolder<TreeSelectPassThrough> {
         this.cd.markForCheck();
     }
 
+    get clearLabel(): string {
+        return this.config.getTranslation(TranslationKeys.CLEAR) || 'Clear';
+    }
+
     clear(event: Event) {
         this.value = null;
         this.resetExpandedNodes();
         this.resetPartialSelected();
         this.onModelChange(this.value);
-        this.onClear.emit();
+        this.onClear.emit(undefined);
 
         event.stopPropagation();
     }
@@ -979,17 +1005,13 @@ export class TreeSelect extends BaseEditableHolder<TreeSelectPassThrough> {
     nodeExpand(event: { originalEvent: Event; node: TreeNode }) {
         this.onNodeExpand.emit(event);
         this.expandedNodes.push(event.node);
-        setTimeout(() => {
-            this.overlayViewChild?.alignOverlay();
-        });
+        this.alignOverlayLater();
     }
 
     nodeCollapse(event: { originalEvent: Event; node: TreeNode }) {
         this.onNodeCollapse.emit(event);
         this.expandedNodes.splice(this.expandedNodes.indexOf(event.node), 1);
-        setTimeout(() => {
-            this.overlayViewChild?.alignOverlay();
-        });
+        this.alignOverlayLater();
     }
 
     resetExpandedNodes() {
