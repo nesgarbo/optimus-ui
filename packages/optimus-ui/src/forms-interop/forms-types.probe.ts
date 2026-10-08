@@ -5,6 +5,7 @@ import { CheckboxModule } from '@openng/optimus-ui/checkbox';
 import { DatePickerModule } from '@openng/optimus-ui/datepicker';
 import { InputNumberModule } from '@openng/optimus-ui/inputnumber';
 import { InputTextModule } from '@openng/optimus-ui/inputtext';
+import { KnobModule } from '@openng/optimus-ui/knob';
 import { MultiSelectModule } from '@openng/optimus-ui/multiselect';
 import { PasswordModule } from '@openng/optimus-ui/password';
 import { RatingModule } from '@openng/optimus-ui/rating';
@@ -19,7 +20,7 @@ import { ToggleSwitchModule } from '@openng/optimus-ui/toggleswitch';
  */
 @Component({
     standalone: true,
-    imports: [FormField, InputTextModule, TextareaModule, PasswordModule, InputNumberModule, SelectModule, MultiSelectModule, AutoCompleteModule, DatePickerModule, CheckboxModule, ToggleSwitchModule, SliderModule, RatingModule],
+    imports: [FormField, InputTextModule, TextareaModule, PasswordModule, InputNumberModule, SelectModule, MultiSelectModule, AutoCompleteModule, DatePickerModule, CheckboxModule, ToggleSwitchModule, SliderModule, RatingModule, KnobModule],
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
         <input pInputText [formField]="f.text" />
@@ -34,10 +35,12 @@ import { ToggleSwitchModule } from '@openng/optimus-ui/toggleswitch';
         <p-checkbox [binary]="true" [formField]="f.flag" />
         <p-toggleswitch [formField]="f.flag" />
         <p-slider [formField]="f.num" />
+        <p-slider [range]="true" [formField]="f.list2" />
+        <p-knob [formField]="f.num" />
         <p-rating [formField]="f.num" />
     `
 })
 export class FormsTypesProbe {
-    readonly model = signal({ text: '', num: null as number | null, flag: false, date: null as Date | null, list: [] as string[] });
+    readonly model = signal({ text: '', num: null as number | null, flag: false, date: null as Date | null, list: [] as string[], list2: [1, 2] as number[] });
     readonly f = form(this.model);
 }
