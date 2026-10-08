@@ -11,8 +11,9 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
     template: `
         <app-docsectiontext>
             <p>
-                Every paragraph, heading, list, to-do, quote, code block or picture is a block. Type <i>/</i> to turn a line into another kind, select text for bold, italic, strikethrough, code and links, and press Alt + the arrow keys to move the
-                block the cursor is in. The value is the document as a tree of nodes, the same JSON Tiptap writes, so it can be stored and brought back with <i>[(value)]</i>. <i>format="html"</i> holds it as HTML instead.
+                Every paragraph, heading, list, to-do, quote, code block or picture is a block. Type <i>/</i> to turn a line into another kind, select text for bold, italic, strikethrough, code and links, and drag the handle that shows by a block to
+                move it, or press Alt + the arrow keys to move the block the cursor is in. The value is the document as a tree of nodes, the same JSON Tiptap writes, so it can be stored and brought back with <i>[(value)]</i>.
+                <i>format="html"</i> holds it as HTML instead.
             </p>
         </app-docsectiontext>
         <div class="card flex flex-col gap-4">

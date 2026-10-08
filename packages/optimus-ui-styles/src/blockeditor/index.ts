@@ -24,6 +24,7 @@ export const style = /*css*/ `
     .p-blockeditor-content {
         min-height: dt('blockeditor.min.height');
         padding: dt('blockeditor.padding');
+        padding-inline-start: calc(dt('blockeditor.padding') + 0.75rem);
     }
 
     .p-blockeditor-content .ProseMirror {
@@ -255,5 +256,44 @@ export const style = /*css*/ `
     .p-blockeditor-slash-empty {
         padding: 0.5rem;
         opacity: 0.65;
+    }
+
+    .p-blockeditor-handle {
+        position: absolute;
+        inset-inline-start: 0.125rem;
+        z-index: 5;
+        width: 1.25rem;
+        height: 1.5rem;
+        padding: 0;
+        color: inherit;
+        background: transparent;
+        border: 0;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        line-height: 1;
+        letter-spacing: -0.15em;
+        opacity: 0.45;
+        cursor: grab;
+        touch-action: none;
+    }
+
+    .p-blockeditor-handle:hover,
+    .p-blockeditor-handle:focus-visible {
+        opacity: 1;
+        background: dt('blockeditor.item.hover.background');
+    }
+
+    .p-blockeditor-handle:active {
+        cursor: grabbing;
+    }
+
+    .p-blockeditor-drop {
+        position: absolute;
+        inset-inline: 0.5rem;
+        z-index: 5;
+        height: 2px;
+        margin-top: -1px;
+        pointer-events: none;
+        background: dt('blockeditor.focus.border.color');
     }
 `;

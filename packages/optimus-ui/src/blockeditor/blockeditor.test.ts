@@ -261,6 +261,86 @@ describe('BlockEditor', () => {
         expect(ed().getText()).toBe('Hello\n\nWorld');
     });
 
+    describe('drag handle', () => {
+        const names = () => ed().getText().split('\n\n');
+
+        beforeEach(async () => {
+            host.value.set(doc(p('one'), p('two'), p('three')));
+            await settle();
+        });
+
+        it('moves a block before another, counting the blocks as they are now', async () => {
+            ed().moveBlockTo(0, 3);
+            expect(names()).toEqual(['two', 'three', 'one']);
+
+            ed().moveBlockTo(2, 0);
+            expect(names()).toEqual(['one', 'two', 'three']);
+
+            ed().moveBlockTo(1, 3);
+            expect(names()).toEqual(['one', 'three', 'two']);
+
+            // Where it already is, and out of range, nothing moves.
+            ed().moveBlockTo(1, 1);
+            ed().moveBlockTo(1, 2);
+            ed().moveBlockTo(9, 0);
+            expect(names()).toEqual(['one', 'three', 'two']);
+            await settle();
+            expect(JSON.stringify(host.value())).toContain('"three"');
+        });
+
+        it('shows a handle by the block under the pointer', async () => {
+            const blocks = [...root().querySelectorAll('.ProseMirror > p')] as HTMLElement[];
+            const box = blocks[1].getBoundingClientRect();
+
+            root()
+                .querySelector('p-blockeditor')!
+                .dispatchEvent(new PointerEvent('pointermove', { clientX: box.left + 5, clientY: box.top + 3, bubbles: true }));
+            await settle();
+
+            const handle = root().querySelector('.p-blockeditor-handle') as HTMLElement;
+
+            expect(handle).not.toBeNull();
+            expect(Math.abs(handle.getBoundingClientRect().top - box.top)).toBeLessThan(12);
+        });
+
+        it('drags a block by its handle and drops it where the line shows', async () => {
+            const blocks = [...root().querySelectorAll('.ProseMirror > p')] as HTMLElement[];
+            const first = blocks[0].getBoundingClientRect();
+            const last = blocks[2].getBoundingClientRect();
+
+            root()
+                .querySelector('p-blockeditor')!
+                .dispatchEvent(new PointerEvent('pointermove', { clientX: first.left + 5, clientY: first.top + 3, bubbles: true }));
+            await settle();
+
+            const handle = root().querySelector('.p-blockeditor-handle') as HTMLElement;
+
+            handle.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId: 1, clientX: 5, clientY: first.top + 3 }));
+            handle.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, pointerId: 1, clientX: 5, clientY: last.bottom + 10 }));
+            await settle();
+            expect(root().querySelector('.p-blockeditor-drop')).not.toBeNull();
+
+            handle.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerId: 1 }));
+            await settle();
+
+            expect(names()).toEqual(['two', 'three', 'one']);
+            expect(root().querySelector('.p-blockeditor-drop')).toBeNull();
+        });
+
+        it('does not show a handle when it is read only', async () => {
+            host.locked.set(true);
+            await settle();
+
+            const box = (root().querySelector('.ProseMirror > p') as HTMLElement).getBoundingClientRect();
+
+            root()
+                .querySelector('p-blockeditor')!
+                .dispatchEvent(new PointerEvent('pointermove', { clientX: box.left + 5, clientY: box.top + 3, bubbles: true }));
+            await settle();
+            expect(root().querySelector('.p-blockeditor-handle')).toBeNull();
+        });
+    });
+
     it('adds a picture from a file, through the uploader, and tells the app first', async () => {
         await ed().addImageFile(new File(['x'], 'cat.png', { type: 'image/png' }));
         await settle();

@@ -74,6 +74,25 @@ const EMPTY_DOC: BlockContent = { type: 'doc', content: [{ type: 'paragraph' }] 
     imports: [SharedModule],
     template: `
         <div #content [class]="cx('content')" [attr.aria-label]="ariaLabel() || 'Editor'" role="textbox" aria-multiline="true"></div>
+        @if (handle(); as h) {
+            <button
+                type="button"
+                class="p-blockeditor-handle"
+                aria-label="Drag to move the block"
+                title="Drag to move the block"
+                [style.top.px]="h.y"
+                (pointerdown)="onHandleDown($event)"
+                (pointermove)="onHandleMove($event)"
+                (pointerup)="onHandleUp($event)"
+                (pointercancel)="onHandleUp($event)"
+                (keydown)="onHandleKey($event)"
+            >
+                ⋮⋮
+            </button>
+        }
+        @if (dropLine() !== null) {
+            <div class="p-blockeditor-drop" [style.top.px]="dropLine()"></div>
+        }
         @if (bubble(); as b) {
             <div [class]="cx('bubble')" role="toolbar" aria-label="Format" [style.left.px]="b.x" [style.top.px]="b.y" (mousedown)="$event.preventDefault()">
                 @if (linking()) {
@@ -113,7 +132,7 @@ const EMPTY_DOC: BlockContent = { type: 'doc', content: [{ type: 'paragraph' }] 
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
     providers: [BlockEditorStyle, BLOCKEDITOR_VALUE_ACCESSOR, { provide: PARENT_INSTANCE, useExisting: BlockEditor }],
-    host: { '[class]': 'cx("root")', 'data-scope': 'blockeditor', 'data-part': 'root' },
+    host: { '[class]': 'cx("root")', 'data-scope': 'blockeditor', 'data-part': 'root', '(pointermove)': 'onHostMove($event)', '(pointerleave)': 'onHostLeave()' },
     hostDirectives: [Bind]
 })
 export class BlockEditor extends BaseEditableHolder<BlockEditorPassThrough> {
@@ -222,6 +241,8 @@ export class BlockEditor extends BaseEditableHolder<BlockEditorPassThrough> {
 
     protected readonly bubble = signal<BubbleState | null>(null);
     protected readonly slash = signal<SlashState | null>(null);
+    protected readonly handle = signal<{ index: number; y: number } | null>(null);
+    protected readonly dropLine = signal<number | null>(null);
     protected readonly linking = signal(false);
     protected readonly linkValue = signal('');
     protected readonly activeMarks = signal({ bold: false, italic: false, strike: false, code: false, link: false });
@@ -229,6 +250,7 @@ export class BlockEditor extends BaseEditableHolder<BlockEditorPassThrough> {
     private editor: Editor | null = null;
     /** What was last put into `value` by the editor, so that it is not put back into the editor. */
     private lastEmitted: BlockValue | undefined = undefined;
+    private drag: { from: number; to: number } | null = null;
     private slashCommand: ((item: BlockCommand) => void) | null = null;
 
     constructor() {
@@ -667,6 +689,142 @@ export class BlockEditor extends BaseEditableHolder<BlockEditorPassThrough> {
         view.dispatch(tr.scrollIntoView());
 
         return true;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // Drag handle
+    // ---------------------------------------------------------------------------------------------
+
+    /** The box of each top level block, in pixels of the screen. */
+    private blockBoxes(): { top: number; bottom: number }[] {
+        const editor = this.editor;
+
+        if (!editor) return [];
+
+        const boxes: { top: number; bottom: number }[] = [];
+
+        editor.state.doc.forEach((_node, offset) => {
+            const dom = editor.view.nodeDOM(offset) as HTMLElement | null;
+            const r = dom?.getBoundingClientRect?.();
+
+            boxes.push(r ? { top: r.top, bottom: r.bottom } : { top: 0, bottom: 0 });
+        });
+
+        return boxes;
+    }
+
+    protected onHostMove(event: PointerEvent): void {
+        if (this.drag || this.locked() || !this.editor) return;
+
+        const host = (this.el.nativeElement as HTMLElement).getBoundingClientRect();
+        const boxes = this.blockBoxes();
+        // The block under the pointer, or the nearest when it is in a gap between two.
+        let index = boxes.findIndex((b) => event.clientY >= b.top && event.clientY <= b.bottom);
+
+        if (index < 0) index = boxes.findIndex((b) => event.clientY < b.top);
+
+        if (index < 0 || index >= boxes.length) return this.handle.set(null);
+
+        const box = boxes[index];
+
+        this.handle.set({ index, y: box.top - host.top + Math.min(4, (box.bottom - box.top) / 4) });
+    }
+
+    protected onHostLeave(): void {
+        if (!this.drag) this.handle.set(null);
+    }
+
+    protected onHandleDown(event: PointerEvent): void {
+        const h = this.handle();
+
+        if (!h) return;
+
+        event.preventDefault();
+
+        try {
+            (event.currentTarget as Element).setPointerCapture(event.pointerId);
+        } catch {
+            // A pointer that is not active, such as one made by a script, cannot be captured.
+        }
+
+        this.drag = { from: h.index, to: h.index };
+    }
+
+    protected onHandleMove(event: PointerEvent): void {
+        const d = this.drag;
+
+        if (!d) return;
+
+        const boxes = this.blockBoxes();
+        const host = (this.el.nativeElement as HTMLElement).getBoundingClientRect();
+        // The block goes before the first block whose middle is below the pointer; past them all, it goes last.
+        let to = boxes.findIndex((b) => event.clientY < (b.top + b.bottom) / 2);
+
+        if (to < 0) to = boxes.length;
+
+        d.to = to;
+        this.dropLine.set(to >= boxes.length ? boxes[boxes.length - 1].bottom - host.top : boxes[to].top - host.top);
+    }
+
+    protected onHandleUp(event: PointerEvent): void {
+        const d = this.drag;
+
+        this.drag = null;
+        this.dropLine.set(null);
+
+        try {
+            (event.currentTarget as Element).releasePointerCapture(event.pointerId);
+        } catch {
+            // As above.
+        }
+
+        if (d && d.to !== d.from) this.moveBlockTo(d.from, d.to);
+
+        this.handle.set(null);
+    }
+
+    protected onHandleKey(event: KeyboardEvent): void {
+        const h = this.handle();
+
+        if (!h || !event.altKey || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) return;
+
+        event.preventDefault();
+        this.moveBlockTo(h.index, event.key === 'ArrowUp' ? h.index - 1 : h.index + 2);
+    }
+
+    /**
+     * Moves the top level block at a position to before the block at another, counting the blocks as they are now: `moveBlockTo(0, 3)`
+     * puts the first block after the third, and `moveBlockTo(2, 0)` puts the third first. A position past the last means the end.
+     */
+    moveBlockTo(from: number, before: number): void {
+        const editor = this.editor;
+
+        if (!editor || this.locked()) return;
+
+        const { state, view } = editor;
+        const doc = state.doc;
+        const count = doc.childCount;
+        const target = Math.min(Math.max(before, 0), count);
+
+        if (from < 0 || from >= count || target === from || target === from + 1) return;
+
+        const offsets: number[] = [];
+
+        doc.forEach((_n, offset) => offsets.push(offset));
+
+        const node = doc.child(from);
+        const start = offsets[from];
+        const end = start + node.nodeSize;
+        const tr = state.tr.delete(start, end);
+        // Deleting moves what was after the block up by its size.
+        const at = (target >= count ? doc.content.size : offsets[target]) - (target > from ? node.nodeSize : 0);
+
+        tr.insert(at, node);
+
+        const selectionClass = state.selection.constructor as unknown as { near: (pos: ReturnType<typeof tr.doc.resolve>) => typeof state.selection };
+
+        tr.setSelection(selectionClass.near(tr.doc.resolve(Math.min(at + 1, tr.doc.content.size))));
+        view.dispatch(tr.scrollIntoView());
     }
 
     /** Moves the block with the cursor up. */
