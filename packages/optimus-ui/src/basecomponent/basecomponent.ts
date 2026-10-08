@@ -76,11 +76,18 @@ export class BaseComponent<PT = any> implements Lifecycle {
     $attrSelector = uuid('pc');
 
     get $name() {
-        return this['componentName'] || 'UnknownComponent';
+        return this.$read('componentName') || 'UnknownComponent';
     }
 
     private get $hostName() {
-        return this['hostName'];
+        return this.$read('hostName');
+    }
+
+    /** A component declares `hostName` and `componentName` as a plain string or as an input (a signal): read the value of both. */
+    private $read(key: string): any {
+        const value = this[key];
+
+        return isFunction(value) ? value() : value;
     }
 
     get $el() {

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Directive, Input, NgModule, TemplateRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Directive, NgModule, TemplateRef, input } from '@angular/core';
 
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -17,19 +17,23 @@ export class Header {}
 })
 export class Footer {}
 
+/**
+ * Template marker. Final 3.0 shape (stable, consumers use `contentChildren(PrimeTemplate)`):
+ * `tpl.type()` (input `type`), `tpl.name()` (input aliased `pTemplate`), `tpl.template` (TemplateRef), `tpl.getType()` (= `name()`).
+ */
 @Directive({
     selector: '[pTemplate]',
     standalone: true
 })
 export class PrimeTemplate {
-    @Input() type: string | undefined;
+    readonly type = input<string | undefined>(undefined);
 
-    @Input('pTemplate') name: string | undefined;
+    readonly name = input<string | undefined>(undefined, { alias: 'pTemplate' });
 
     constructor(public template: TemplateRef<any>) {}
 
     getType(): string {
-        return this.name!;
+        return this.name()!;
     }
 }
 
