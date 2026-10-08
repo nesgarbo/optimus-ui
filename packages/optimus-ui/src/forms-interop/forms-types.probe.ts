@@ -5,6 +5,8 @@ import { CheckboxModule } from '@openng/optimus-ui/checkbox';
 import { CascadeSelectModule } from '@openng/optimus-ui/cascadeselect';
 import { ColorPickerModule } from '@openng/optimus-ui/colorpicker';
 import { DatePickerModule } from '@openng/optimus-ui/datepicker';
+import { EditorModule } from '@openng/optimus-ui/editor';
+import { InputMaskModule } from '@openng/optimus-ui/inputmask';
 import { InputNumberModule } from '@openng/optimus-ui/inputnumber';
 import { InputTextModule } from '@openng/optimus-ui/inputtext';
 import { KnobModule } from '@openng/optimus-ui/knob';
@@ -50,6 +52,8 @@ import { ToggleSwitchModule } from '@openng/optimus-ui/toggleswitch';
         CascadeSelectModule,
         TreeSelectModule,
         ColorPickerModule,
+        EditorModule,
+        InputMaskModule,
         TextEditorModule
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -74,6 +78,9 @@ import { ToggleSwitchModule } from '@openng/optimus-ui/toggleswitch';
         <p-datepicker selectionMode="multiple" [formField]="f.dates" />
         <p-datepicker selectionMode="range" [formField]="f.range" />
         <p-colorpicker [formField]="f.text" />
+        <p-editor [formField]="f.text" />
+        <input pInputMask="99-99" [formField]="f.text" />
+        <p-inputmask mask="99-99" [formField]="f.text" />
         <p-text-editor-root [formField]="f.text"><p-text-editor-content /></p-text-editor-root>
         <p-checkbox [binary]="true" [formField]="f.flag" />
         <p-checkbox value="a" [formField]="f.list" />

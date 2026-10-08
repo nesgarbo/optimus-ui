@@ -342,7 +342,6 @@ export class Editor extends BaseEditableHolder<EditorPassThrough> {
                 });
 
                 this.onModelChange(html);
-                this.onModelTouched();
             }
         });
 
@@ -370,6 +369,7 @@ export class Editor extends BaseEditableHolder<EditorPassThrough> {
         };
 
         this.blurListener = () => {
+            this.onModelTouched();
             this.onBlur.emit({
                 source: 'user'
             });
