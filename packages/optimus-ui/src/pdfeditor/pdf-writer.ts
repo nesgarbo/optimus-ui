@@ -75,17 +75,72 @@ export function pageInfos(doc: PDFDocument): PdfPageInfo[] {
 // Text
 // -------------------------------------------------------------------------------------------------
 
-/** Measures text in one of the standard fonts, in points. */
-export type TextMeasurer = (text: string, size: number, family: PdfFontFamily) => number;
+/** What the measurer can tell about text: how wide it is, and how far its first line rises above the baseline. */
+export interface TextMeasurer {
+    (text: string, size: number, family: PdfFontFamily): number;
+    /** The height of the first line above its baseline, in points. */
+    ascent(text: string, size: number, family: PdfFontFamily): number;
+}
 
-/** Builds a measurer from the real metrics of the standard fonts, so that the screen wraps text as the file does. */
-export async function createTextMeasurer(): Promise<TextMeasurer> {
+/** The characters a standard font has besides Latin-1: the ones of Windows-1252 that sit in the 0x80-0x9F range. */
+const WIN_ANSI_EXTRA = new Set('€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ');
+
+/** Whether text has a character that the standard fonts do not, so that it needs a font of its own. */
+export function needsUnicode(text: string): boolean {
+    for (const char of text) {
+        const code = char.codePointAt(0)!;
+
+        if (code === 10 || code === 13 || (code >= 32 && code < 127) || (code >= 160 && code <= 255)) continue;
+        if (WIN_ANSI_EXTRA.has(char)) continue;
+
+        return true;
+    }
+
+    return false;
+}
+
+/** Embeds fontkit, which reads TrueType and OpenType files, in a document. */
+async function useFontkit(doc: PDFDocument): Promise<void> {
+    const fontkit = (await import('@pdf-lib/fontkit')).default;
+
+    doc.registerFontkit(fontkit);
+}
+
+/**
+ * Builds a measurer from the real metrics of the standard fonts, so that the screen wraps text as the file does. With a font of
+ * its own -- a TrueType or OpenType file -- it measures the text the standard fonts cannot show with that font.
+ */
+export async function createTextMeasurer(unicodeFont?: ArrayBuffer | Uint8Array | null): Promise<TextMeasurer> {
     const doc = await PDFDocument.create();
     const fonts = {} as Record<PdfFontFamily, PDFFont>;
 
     for (const family of Object.keys(FONT_FILES) as PdfFontFamily[]) fonts[family] = await doc.embedFont(FONT_FILES[family]);
 
-    return (text, size, family) => fonts[family].widthOfTextAtSize(safeText(fonts[family], text), size);
+    let custom: PDFFont | null = null;
+
+    if (unicodeFont) {
+        try {
+            await useFontkit(doc);
+            custom = await doc.embedFont(unicodeFont, { subset: false });
+        } catch {
+            // A file that is not a font is as good as none.
+        }
+    }
+
+    const pick = (text: string, family: PdfFontFamily) => (custom && needsUnicode(text) ? custom : fonts[family]);
+    const measure = ((text: string, size: number, family: PdfFontFamily) => {
+        const font = pick(text, family);
+
+        return font.widthOfTextAtSize(font === custom ? text : safeText(font, text), size);
+    }) as TextMeasurer;
+
+    measure.ascent = (text, size, family) => {
+        const font = pick(text, family);
+
+        return font === custom ? font.heightAtSize(size, { descender: false }) : ASCENT[family] * size;
+    };
+
+    return measure;
 }
 
 /** Replaces what a standard font cannot show -- it has the characters of Latin-1 and a few more -- with a question mark. */
@@ -152,7 +207,7 @@ function dataUrlBytes(url: string): { bytes: Uint8Array; mime: string } {
 }
 
 /** Writes annotations into the pages of a document, as page content. They are no longer annotations after that: they are part of the page. */
-export async function drawAnnotations(doc: PDFDocument, annotations: readonly PdfAnnotation[]): Promise<void> {
+export async function drawAnnotations(doc: PDFDocument, annotations: readonly PdfAnnotation[], options: { unicodeFont?: ArrayBuffer | Uint8Array | null } = {}): Promise<void> {
     if (!annotations.length) return;
 
     const pages = doc.getPages();
@@ -163,6 +218,24 @@ export async function drawAnnotations(doc: PDFDocument, annotations: readonly Pd
         return fonts.get(family)!;
     };
     const images = new Map<string, Awaited<ReturnType<PDFDocument['embedPng']>>>();
+    let custom: PDFFont | null | undefined;
+    // The font of its own is embedded once, and only if some text needs it.
+    const unicode = async (): Promise<PDFFont | null> => {
+        if (custom !== undefined) return custom;
+
+        custom = null;
+
+        if (options.unicodeFont) {
+            try {
+                await useFontkit(doc);
+                custom = await doc.embedFont(options.unicodeFont, { subset: true });
+            } catch {
+                custom = null;
+            }
+        }
+
+        return custom;
+    };
 
     for (const a of annotations) {
         const page = pages[a.page];
@@ -254,15 +327,17 @@ export async function drawAnnotations(doc: PDFDocument, annotations: readonly Pd
                     break;
                 }
                 case 'text': {
-                    const f = await font(a.fontFamily);
+                    const own = needsUnicode(a.text) ? await unicode() : null;
+                    const f = own ?? (await font(a.fontFamily));
                     const c = parseColor(a.color);
-                    const lines = wrapText(a.text, Math.max(a.width - TEXT_PADDING * 2, 1), (t) => f.widthOfTextAtSize(safeText(f, t), a.fontSize));
-                    const ascent = ASCENT[a.fontFamily] * a.fontSize;
+                    const clean = (s: string) => (own ? s : safeText(f, s));
+                    const lines = wrapText(a.text, Math.max(a.width - TEXT_PADDING * 2, 1), (t) => f.widthOfTextAtSize(clean(t), a.fontSize));
+                    const ascent = own ? own.heightAtSize(a.fontSize, { descender: false }) : ASCENT[a.fontFamily] * a.fontSize;
 
                     lines.forEach((text, i) => {
                         const baseline = up(a.y + TEXT_PADDING) - ascent - i * a.fontSize * LINE_HEIGHT;
 
-                        if (text) page.drawText(safeText(f, text), { x: a.x + TEXT_PADDING, y: baseline, size: a.fontSize, font: f, color: rgb(c.r, c.g, c.b) });
+                        if (text) page.drawText(clean(text), { x: a.x + TEXT_PADDING, y: baseline, size: a.fontSize, font: f, color: rgb(c.r, c.g, c.b) });
                     });
                     break;
                 }
@@ -494,6 +569,8 @@ export interface ExportOptions {
     formValues?: PdfFormValues;
     /** Makes the form part of the pages. */
     flatten?: boolean;
+    /** A TrueType or OpenType font for the text that the standard fonts cannot show. */
+    unicodeFont?: ArrayBuffer | Uint8Array | null;
 }
 
 /** Makes the new file: the document with its form filled in and the annotations written into its pages. */
@@ -504,7 +581,7 @@ export async function exportPdf(bytes: ArrayBuffer | Uint8Array, options: Export
     // The form is drawn before the annotations so that what is written over a field stays over it.
     if (options.flatten) flattenForm(doc);
 
-    await drawAnnotations(doc, options.annotations ?? []);
+    await drawAnnotations(doc, options.annotations ?? [], { unicodeFont: options.unicodeFont });
 
     return doc.save();
 }

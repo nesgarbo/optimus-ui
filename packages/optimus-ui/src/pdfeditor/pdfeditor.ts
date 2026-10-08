@@ -552,6 +552,11 @@ export class PdfEditor extends BaseComponent<PdfEditorPassThrough> {
      */
     readonly workerSrc = input('');
     /**
+     * A TrueType or OpenType font (`.ttf`, `.otf`) for the text that the standard fonts cannot show: Cyrillic, Greek, Asian scripts and the like. A URL, a `Blob` or the bytes of the file. Needs the `@pdf-lib/fontkit` package. Without it, such a character is saved as `?`.
+     * @group Props
+     */
+    readonly unicodeFont = input<PdfSource>(null);
+    /**
      * Folder with the `cmaps`, `standard_fonts` and `wasm` folders of `pdfjs-dist`. Without it, a font that is not in the file is drawn in a similar one.
      * @group Props
      */
@@ -692,7 +697,15 @@ export class PdfEditor extends BaseComponent<PdfEditorPassThrough> {
         super();
 
         afterNextRender(() => {
-            void createTextMeasurer().then((m) => this.measurer.set(m));
+            // The measurer follows the font of its own, once it has been read.
+            effect(
+                () => {
+                    const source = this.unicodeFont();
+
+                    untracked(() => void this.loadUnicodeFont(source));
+                },
+                { injector: this.injector }
+            );
 
             // A new source opens a new document.
             effect(
@@ -1047,8 +1060,26 @@ export class PdfEditor extends BaseComponent<PdfEditorPassThrough> {
         return CSS_FONTS[family] ?? CSS_FONTS.helvetica;
     }
 
-    protected ascent(a: { fontFamily: PdfFontFamily; fontSize: number }): number {
-        return ASCENT[a.fontFamily] * a.fontSize;
+    protected ascent(a: { fontFamily: PdfFontFamily; fontSize: number; text?: string }): number {
+        return this.measurer()?.ascent(a.text ?? '', a.fontSize, a.fontFamily) ?? ASCENT[a.fontFamily] * a.fontSize;
+    }
+
+    private unicodeBytes: Uint8Array | null = null;
+
+    private async loadUnicodeFont(source: PdfSource): Promise<void> {
+        let bytes: Uint8Array | null = null;
+
+        try {
+            if (source == null || source === '') bytes = null;
+            else if (typeof source === 'string' || source instanceof URL) bytes = new Uint8Array(await (await fetch(source)).arrayBuffer());
+            else if (source instanceof Blob) bytes = new Uint8Array(await source.arrayBuffer());
+            else bytes = source instanceof Uint8Array ? source.slice() : new Uint8Array(source.slice(0));
+        } catch {
+            bytes = null;
+        }
+
+        this.unicodeBytes = bytes;
+        this.measurer.set(await createTextMeasurer(bytes));
     }
 
     private measure(text: string, size: number, family: PdfFontFamily): number {
@@ -1680,7 +1711,7 @@ export class PdfEditor extends BaseComponent<PdfEditorPassThrough> {
         if (!this.bytes) throw new Error('There is no document');
 
         // Only the values that were set are written: a field the user did not touch keeps what the file has.
-        const out = await exportPdf(this.bytes, { annotations: this.annotations(), formValues: this.formValues(), flatten: this.flatten() });
+        const out = await exportPdf(this.bytes, { annotations: this.annotations(), formValues: this.formValues(), flatten: this.flatten(), unicodeFont: this.unicodeBytes });
 
         this.saved.emit(out);
 

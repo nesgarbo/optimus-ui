@@ -2,10 +2,10 @@ import { ChangeDetectionStrategy, Component, provideZonelessChangeDetection, sig
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PDFDocument, StandardFonts } from 'pdf-lib';
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { PdfAnnotation, PdfFormValues } from '@openng/optimus-ui/types/pdfeditor';
+import type { PdfAnnotation, PdfFormValues, PdfTextAnnotation } from '@openng/optimus-ui/types/pdfeditor';
 import { openDocument, renderPage } from './pdf-render';
 import { PdfEditor } from './pdfeditor';
-import { exportPdf, loadPdf, readForm, rotatePage } from './pdf-writer';
+import { createTextMeasurer, exportPdf, loadPdf, needsUnicode, readForm, rotatePage } from './pdf-writer';
 
 const wait = (ms = 120) => new Promise((r) => setTimeout(r, ms));
 
@@ -527,3 +527,71 @@ describe('annotations on the page as it is shown', () => {
         expect(near(await pixel(out, 0, 125, 125), [0, 255, 0, 255])).toBe(true);
     });
 });
+
+describe('text the standard fonts cannot show', () => {
+    const fontUrl = new URL('../../node_modules/pdfjs-dist/standard_fonts/LiberationSans-Regular.ttf', import.meta.url).href;
+    const note = (text: string): PdfTextAnnotation => ({ id: 't', page: 0, type: 'text', x: 20, y: 100, width: 250, height: 40, text, fontSize: 20, fontFamily: 'helvetica', color: '#000000' });
+    const textOf = async (bytes: Uint8Array) => {
+        const doc = await openDocument(bytes);
+        const page = await doc.getPage(1);
+        const content = await page.getTextContent();
+
+        await doc.loadingTask.destroy();
+
+        return content.items.map((i: any) => i.str).join('');
+    };
+
+    it('is saved as ? without a font of its own', async () => {
+        const out = await exportPdf(await makePdf(1), { annotations: [note('Привет')] });
+
+        expect(await textOf(out)).toContain('??????');
+    });
+
+    it('is saved in the font that is given, and can be read back from the file', async () => {
+        const font = new Uint8Array(await (await fetch(fontUrl)).arrayBuffer());
+        const out = await exportPdf(await makePdf(1), { annotations: [note('Привет мир'), { ...note('plain'), id: 'p', y: 200 }], unicodeFont: font });
+        const text = await textOf(out);
+
+        expect(text).toContain('Привет мир');
+        expect(text).toContain('plain');
+    });
+
+    it('is measured with that font by the editor, and drawn by save', async () => {
+        const font = new Uint8Array(await (await fetch(fontUrl)).arrayBuffer());
+        const measure = await createTextMeasurer(font);
+
+        // A Cyrillic letter is as wide as the font says, not as a question mark in Helvetica would be.
+        expect(measure('Ж', 20, 'helvetica')).toBeGreaterThan(measure('?', 20, 'helvetica'));
+        expect(measure('abc', 20, 'helvetica')).toBe((await createTextMeasurer())('abc', 20, 'helvetica'));
+        expect(needsUnicode('Привет')).toBe(true);
+        expect(needsUnicode('café — “ok” €')).toBe(false);
+    });
+
+    it('is saved by the editor with the font it was given', async () => {
+        await TestBed.configureTestingModule({ imports: [Host], providers: [provideZonelessChangeDetection()] }).compileComponents();
+
+        const fixture = TestBed.createComponent(HostWithFont);
+
+        fixture.componentInstance.src.set(await makePdf(1));
+        fixture.componentInstance.annotations.set([note('Привет')]);
+        document.body.appendChild(fixture.nativeElement);
+        await fixture.whenStable();
+        await wait(1200);
+        await fixture.whenStable();
+
+        expect(await textOf(await fixture.componentInstance.editor().save())).toContain('Привет');
+    });
+});
+
+@Component({
+    standalone: true,
+    imports: [PdfEditor],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    template: `<p-pdfeditor [src]="src()" [(annotations)]="annotations" [unicodeFont]="font" style="height: 400px" />`
+})
+class HostWithFont {
+    readonly editor = viewChild.required(PdfEditor);
+    readonly src = signal<Uint8Array | null>(null);
+    annotations = signal<PdfAnnotation[]>([]);
+    font = new URL('../../node_modules/pdfjs-dist/standard_fonts/LiberationSans-Regular.ttf', import.meta.url).href;
+}
