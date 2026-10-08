@@ -13,12 +13,12 @@ import { InputTextModule } from '@openng/optimus-ui/inputtext';
     template: `
         <app-docsectiontext>
             <p>
-                A signal form marks a field invalid as soon as a rule fails, even before the user touches it. A component bound with <i>[formField]</i> therefore shows the invalid style only after the field is <i>touched</i>, which the component
-                reports when it loses the focus. Without <i>[formField]</i>, the <i>invalid</i> input is used as it is.
+                A signal form marks a field invalid as soon as a rule fails, even before the user touches it. A component bound with <i>[formField]</i> therefore shows the invalid style only once the user interacts with it: as soon as the user
+                changes the value, so the error follows the typing in real time, or when the user leaves the field. A value set by the code does not count. Without <i>[formField]</i>, the <i>invalid</i> input is used as it is.
             </p>
             <p>
                 The <i>pFieldError</i> directive adds the error message after a control, with no markup. It works with <i>[formField]</i>, <i>formControl</i>, <i>formControlName</i> and <i>ngModel</i>, on a native input and on any component. It shows
-                the first error once the field is touched, links the input to the message with <i>aria-describedby</i> and takes the text from the message of the rule, or from the translation of the configuration.
+                the first error as soon as the user changes the field or leaves it, links the input to the message with <i>aria-describedby</i> and takes the text from the message of the rule, or from the translation of the configuration.
             </p>
         </app-docsectiontext>
         <div class="card flex flex-col gap-4 max-w-sm">
@@ -30,7 +30,8 @@ import { InputTextModule } from '@openng/optimus-ui/inputtext';
         <app-docsectiontext class="mt-6">
             <p>
                 The same message is the <i>p-fielderror</i> component, for a layout where the message does not go right after the control. Pass it a signal form field with <i>[field]</i>, or a classic control with <i>[control]</i>.
-                <i>showWhen</i> chooses <i>touched</i>, <i>dirty</i> or <i>always</i>, and <i>messages</i> overrides the text by error kind. <i>{{ '{0}' }}</i> in a text is replaced with the limit of the rule.
+                <i>showWhen</i> chooses <i>interacted</i> (the default: changed or left), <i>touched</i> (only after leaving), <i>dirty</i> (only after changing) or <i>always</i>, and <i>messages</i> overrides the text by error kind.
+                <i>{{ '{0}' }}</i> in a text is replaced with the limit of the rule.
             </p>
             <p>
                 The default texts are in <i>translation.validation</i> of the configuration, by error kind: <i>required</i>, <i>email</i>, <i>min</i>, <i>max</i>, <i>minLength</i>, <i>maxLength</i>, <i>pattern</i>, <i>minDate</i>, <i>maxDate</i> and

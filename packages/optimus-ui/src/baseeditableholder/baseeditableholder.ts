@@ -48,11 +48,15 @@ export class BaseEditableHolder<PT = any> extends BaseModelHolder<PT> implements
 
     $disabled = computed(() => this.disabled() || this._disabled());
 
+    /** Whether the user changed the value, which is told to the form through `onModelChange`. */
+    private readonly edited = signal(false);
+
     /**
      * The invalid state to render. The `invalid` input is the field state when the component is bound with `[formField]`, which is true from the start,
-     * so the error waits for `touched`, as `ng-invalid.ng-touched` does with `formControl`. Without `[formField]`, `invalid` is used as is.
+     * so the error waits for the user to interact: to change the value, which shows it while typing, or to leave the field (`touched`).
+     * Without `[formField]`, `invalid` is used as is.
      */
-    $invalid = computed(() => (this.formField ? !!this.invalid() && !!this.touched() : !!this.invalid()));
+    $invalid = computed(() => (this.formField ? !!this.invalid() && (!!this.touched() || this.edited()) : !!this.invalid()));
 
     onModelChange: Function = () => {};
 
@@ -72,7 +76,11 @@ export class BaseEditableHolder<PT = any> extends BaseModelHolder<PT> implements
     }
 
     registerOnChange(fn: Function) {
-        this.onModelChange = fn;
+        this.onModelChange = (value: any) => {
+            this.edited.set(true);
+
+            return fn(value);
+        };
     }
 
     registerOnTouched(fn: Function) {

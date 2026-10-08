@@ -3,6 +3,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { email, form, FormField, maxLength, minLength, required, validate } from '@angular/forms/signals';
 import { provideOptimus } from '@openng/optimus-ui/config';
+import { FloatLabelModule } from '@openng/optimus-ui/floatlabel';
+import { IconFieldModule } from '@openng/optimus-ui/iconfield';
+import { InputIconModule } from '@openng/optimus-ui/inputicon';
 import { InputTextModule } from '@openng/optimus-ui/inputtext';
 import { SelectModule } from '@openng/optimus-ui/select';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -273,5 +276,120 @@ describe('FieldError with classic forms', () => {
         host.control.markAsTouched();
         await settle();
         expect(el('control').getAttribute('aria-describedby')).toBe(next('control')?.id);
+    });
+});
+
+@Component({
+    standalone: true,
+    imports: [FormField, ReactiveFormsModule, InputTextModule, FieldErrorModule, IconFieldModule, InputIconModule, FloatLabelModule],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    template: `
+        <input id="live" pInputText [formField]="f.live" pFieldError />
+        <input id="blurOnly" pInputText [formField]="f.blurOnly" pFieldError="touched" />
+        <input id="swap" pInputText [formControl]="current()" pFieldError />
+        <p-iconfield id="wrapper"><input id="inWrapper" pInputText [formField]="f.wrapped" pFieldError /></p-iconfield>
+        <p-floatlabel id="floatWrapper"><input id="inFloat" pInputText [formField]="f.floated" pFieldError /></p-floatlabel>
+    `
+})
+class RealtimeHost {
+    readonly first = new FormControl('', Validators.required);
+    readonly second = new FormControl('x', Validators.email);
+    readonly current = signal(this.first);
+    readonly model = signal({ live: '', blurOnly: '', wrapped: '', floated: '' });
+    readonly f = form(this.model, (p) => {
+        for (const field of [p.live, p.blurOnly, p.wrapped, p.floated]) {
+            validate(field, ({ value }) => (value() === 'ok' ? null : { kind: 'required' }));
+        }
+    });
+}
+
+describe('FieldError in real time and placement', () => {
+    let fixture: ComponentFixture<RealtimeHost>;
+    let host: RealtimeHost;
+
+    const el = (id: string) => fixture.nativeElement.querySelector(`#${id}`) as HTMLElement;
+    const next = (id: string) => el(id).nextElementSibling as HTMLElement | null;
+    const messages = (target: Element | null) => Array.from(target?.querySelectorAll('p-message') ?? []).map((m) => m.textContent?.trim());
+    const settle = async () => {
+        for (let i = 0; i < 2; i++) {
+            fixture.detectChanges();
+            await fixture.whenStable();
+        }
+    };
+    const type = async (id: string, value: string) => {
+        const input = el(id) as HTMLInputElement;
+
+        input.focus();
+        input.value = value;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        await settle();
+    };
+
+    beforeEach(async () => {
+        TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+        fixture = TestBed.createComponent(RealtimeHost);
+        host = fixture.componentInstance;
+        await settle();
+    });
+
+    it('shows no error before the user touches the field, and not for a value set by the code', async () => {
+        expect(messages(next('live'))).toEqual([]);
+        host.f.live().value.set('set by code');
+        await settle();
+        expect(messages(next('live'))).toEqual([]);
+    });
+
+    it('shows the error while the user types, without leaving the field', async () => {
+        await type('live', 'o');
+        expect(host.f.live().touched()).toBe(false);
+        expect(messages(next('live'))).toEqual(['This field is required']);
+        expect(el('live').classList).toContain('p-invalid');
+
+        await type('live', 'ok');
+        expect(messages(next('live'))).toEqual([]);
+        expect(el('live').classList).not.toContain('p-invalid');
+    });
+
+    it('waits for the blur with pFieldError="touched"', async () => {
+        await type('blurOnly', 'o');
+        expect(messages(next('blurOnly'))).toEqual([]);
+
+        el('blurOnly').dispatchEvent(new Event('blur'));
+        await settle();
+        expect(messages(next('blurOnly'))).toEqual(['This field is required']);
+    });
+
+    it('shows the error of a classic control while the user types', async () => {
+        await type('swap', 'a');
+        expect(host.first.touched).toBe(false);
+        expect(host.first.dirty).toBe(true);
+        host.first.setValue('');
+        await settle();
+        expect(messages(next('swap'))).toEqual(['This field is required']);
+    });
+
+    it('follows a formControl that is replaced', async () => {
+        host.first.markAsDirty();
+        await settle();
+        expect(messages(next('swap'))).toEqual(['This field is required']);
+
+        host.current.set(host.second);
+        await settle();
+        expect(messages(next('swap'))).toEqual([]);
+
+        host.second.markAsDirty();
+        await settle();
+        expect(messages(next('swap'))).toEqual(['Enter a valid email address']);
+    });
+
+    it('puts the message after the wrapper of a control inside p-iconfield or p-floatlabel', async () => {
+        await type('inWrapper', 'o');
+        await type('inFloat', 'o');
+
+        expect(el('wrapper').querySelector('p-fielderror')).toBeNull();
+        expect(next('wrapper')?.tagName.toLowerCase()).toBe('p-fielderror');
+        expect(messages(next('wrapper'))).toEqual(['This field is required']);
+        expect(el('floatWrapper').querySelector('p-fielderror')).toBeNull();
+        expect(next('floatWrapper')?.tagName.toLowerCase()).toBe('p-fielderror');
     });
 });

@@ -1,15 +1,16 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { booleanAttribute, ChangeDetectionStrategy, Component, computed, Directive, effect, ElementRef, inject, input, NgModule, OnDestroy, signal, TemplateRef, ViewContainerRef, ViewEncapsulation } from '@angular/core';
+import { afterNextRender, booleanAttribute, ChangeDetectionStrategy, Component, computed, Directive, DoCheck, effect, ElementRef, inject, input, NgModule, OnDestroy, signal, TemplateRef, ViewContainerRef, ViewEncapsulation } from '@angular/core';
 import { AbstractControl, NgControl } from '@angular/forms';
 import { FORM_FIELD } from '@angular/forms/signals';
 import { Optimus } from '@openng/optimus-ui/config';
 import { MessageModule } from '@openng/optimus-ui/message';
 
 /**
- * When the errors of the field are shown: after the user left the field (`touched`), after the user changed it (`dirty`), or always.
+ * When the errors of the field are shown: once the user changed the field or left it (`interacted`, in real time while typing),
+ * only after the user left it (`touched`), only after the user changed it (`dirty`), or always.
  * @group Types
  */
-export type FieldErrorShowWhen = 'touched' | 'dirty' | 'always';
+export type FieldErrorShowWhen = 'interacted' | 'touched' | 'dirty' | 'always';
 
 /**
  * An error of a field, with the same shape for a signal form and for a classic form (`formControl`, `formControlName`, `ngModel`).
@@ -60,6 +61,9 @@ const CLASSIC_RULES: Record<string, [kind: string, limit?: string]> = {
     pattern: ['pattern']
 };
 
+/** Elements that wrap a control together with an icon, an addon or a label. */
+const FIELD_WRAPPERS = 'p-iconfield, p-iconField, p-icon-field, p-inputgroup, p-inputGroup, p-input-group, p-floatlabel, p-floatLabel, p-float-label, p-iftalabel, p-iftaLabel, p-ifta-label';
+
 let nextId = 0;
 
 function formatLimit(limit: unknown): string {
@@ -67,7 +71,7 @@ function formatLimit(limit: unknown): string {
 }
 
 /**
- * FieldError shows the validation errors of a form field with a message, once the user has touched the field.
+ * FieldError shows the validation errors of a form field with a message, once the user has changed the field or left it.
  * It reads a signal form field (`[field]`) or a classic control (`[control]`), and the `pFieldError` directive adds it after a control.
  * @group Components
  */
@@ -111,10 +115,10 @@ export class FieldError {
     control = input<AbstractControl | NgControl | null>();
     /**
      * When the errors are shown.
-     * @defaultValue 'touched'
+     * @defaultValue 'interacted'
      * @group Props
      */
-    showWhen = input<FieldErrorShowWhen>('touched');
+    showWhen = input<FieldErrorShowWhen>('interacted');
     /**
      * Shows every error of the field. The first one is shown by default.
      * @defaultValue false
@@ -169,7 +173,7 @@ export class FieldError {
 
     private readonly shown = computed<FieldErrorItem[]>(() => {
         const when = this.showWhen();
-        const isShown = (invalid: boolean, touched: boolean, dirty: boolean) => invalid && (when === 'always' || (when === 'touched' ? touched : dirty));
+        const isShown = (invalid: boolean, touched: boolean, dirty: boolean) => invalid && (when === 'always' || (when === 'touched' ? touched : when === 'dirty' ? dirty : touched || dirty));
         const field = this.field();
         let errors: FieldErrorItem[] = [];
 
@@ -235,16 +239,18 @@ export class FieldError {
         '[attr.aria-describedby]': 'describedBy()'
     }
 })
-export class FieldErrorDirective implements OnDestroy {
+export class FieldErrorDirective implements DoCheck, OnDestroy {
     private readonly formField = inject(FORM_FIELD, { self: true, optional: true });
     private readonly ngControl = inject(NgControl, { self: true, optional: true });
     private readonly container = inject(ViewContainerRef);
-    private readonly native = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement.matches('input, textarea, select');
+    private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    private readonly native = this.host.matches('input, textarea, select');
+    private lastControl: AbstractControl | null | undefined;
     private readonly errorId = `p-fielderror-${++nextId}`;
 
     /**
-     * When the errors are shown. An empty value means `touched`.
-     * @defaultValue 'touched'
+     * When the errors are shown. An empty value means `interacted`.
+     * @defaultValue 'interacted'
      * @group Props
      */
     pFieldError = input<FieldErrorShowWhen | ''>('');
@@ -280,13 +286,31 @@ export class FieldErrorDirective implements OnDestroy {
     constructor() {
         effect(() => {
             if (this.formField) this.ref.setInput('field', this.formField.field());
-            else this.ref.setInput('control', this.ngControl);
 
-            this.ref.setInput('showWhen', this.pFieldError() || 'touched');
+            this.ref.setInput('showWhen', this.pFieldError() || 'interacted');
             this.ref.setInput('messages', this.pFieldErrorMessages());
             this.ref.setInput('showAll', this.pFieldErrorAll());
             this.ref.setInput('template', this.pFieldErrorTemplate());
         });
+
+        afterNextRender(() => {
+            // A control inside one of these wrappers shares its box with an icon or a label, so the message goes after the wrapper.
+            const wrapper = this.host.closest(FIELD_WRAPPERS);
+
+            if (wrapper) wrapper.after(this.ref.location.nativeElement);
+        });
+    }
+
+    /** A classic control can be replaced at any time (`[formControl]="other"`), and it is not a signal. */
+    ngDoCheck(): void {
+        if (this.formField) return;
+
+        const control = this.ngControl?.control ?? null;
+
+        if (control !== this.lastControl) {
+            this.lastControl = control;
+            this.ref.setInput('control', control);
+        }
     }
 
     ngOnDestroy(): void {

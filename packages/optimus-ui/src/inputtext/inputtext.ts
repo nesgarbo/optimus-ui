@@ -1,4 +1,4 @@
-import { booleanAttribute, computed, Directive, effect, Injector, HostListener, inject, InjectionToken, input, Input, NgModule } from '@angular/core';
+import { booleanAttribute, computed, Directive, effect, HostListener, inject, InjectionToken, input, Input, NgModule, signal } from '@angular/core';
 import { NgControl } from '@angular/forms';
 import { FORM_FIELD } from '@angular/forms/signals';
 import { PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
@@ -87,8 +87,11 @@ export class InputText extends BaseModelHolder<InputTextPassThrough> {
      */
     touched = input(undefined, { transform: booleanAttribute });
 
-    /** The invalid state to render: with `[formField]`, the field state counts only once the field is touched. */
-    $invalid = computed(() => (this.injector.get(FORM_FIELD, null, { optional: true, self: true }) ? !!this.invalid() && !!this.touched() : !!this.invalid()));
+    /** Whether the user typed in the field. */
+    private readonly edited = signal(false);
+
+    /** The invalid state to render: with `[formField]`, the field state counts once the user typed or left the field. */
+    $invalid = computed(() => (this.injector.get(FORM_FIELD, null, { optional: true, self: true }) ? !!this.invalid() && (!!this.touched() || this.edited()) : !!this.invalid()));
 
     $variant = computed(() => this.variant() || this.config.inputStyle() || this.config.inputVariant());
 
@@ -121,6 +124,7 @@ export class InputText extends BaseModelHolder<InputTextPassThrough> {
 
     @HostListener('input')
     onInput() {
+        this.edited.set(true);
         this.writeModelValue(this.ngControl?.value ?? this.el.nativeElement.value);
     }
 
