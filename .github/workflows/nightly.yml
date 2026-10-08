@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   nightly:
-    if: github.repository == 'openng-fundation/open-prime' && github.ref == 'refs/heads/main'
+    if: github.repository == 'openng-org/optimus-ui' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     name: Node ${{ matrix.node-version }}
 
