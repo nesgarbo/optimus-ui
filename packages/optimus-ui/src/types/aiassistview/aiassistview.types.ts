@@ -553,7 +553,7 @@ export interface AssistSuggestion {
 /**
  * One saved conversation, for the history surface.
  *
- * Beyond the Syncfusion surface: an assistant that keeps nothing is a demo, and every product that
+ * Beyond the basics: an assistant that keeps nothing is a demo, and every product that
  * ships one ends up writing the same list.
  *
  * @group Interface

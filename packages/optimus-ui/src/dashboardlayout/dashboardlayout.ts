@@ -68,10 +68,10 @@ let nextId = 0;
  * resize it, and the others make way. With the keyboard, Alt and the arrow keys move the focused panel and
  * Shift and the arrow keys resize it.
  *
- * The API follows Syncfusion's DashboardLayout: `columns`, `cellSpacing`, `cellAspectRatio`, `allowDragging`,
+ * The API covers `columns`, `cellSpacing`, `cellAspectRatio`, `allowDragging`,
  * `allowResizing`, `allowFloating`, `draggableHandle`, `resizableHandles`, `mediaQuery`, `panels`, the `created`,
  * `dragStart`, `drag`, `dragStop`, `resizeStart`, `resize` and `resizeStop` events, and the `addPanel`, `removePanel`, `removeAll`,
- * `movePanel`, `resizePanel`, `updatePanel`, `serialize` and `refresh` methods. Syncfusion's `change` event is `layoutChanged`
+ * `movePanel`, `resizePanel`, `updatePanel`, `serialize` and `refresh` methods. The `change` event is `layoutChanged`
  * here, so that it does not collide with the browser's own.
  *
  * @group Components
@@ -639,7 +639,7 @@ export class DashboardLayout extends BaseComponent<DashboardLayoutPassThrough> {
     // Methods
     // ---------------------------------------------------------------------------------------------
 
-    /** Adds a panel. Without a `row` and a `col` it goes in the first free place. Mirrors Syncfusion's `addPanel`. */
+    /** Adds a panel. Without a `row` and a `col` it goes in the first free place. */
     addPanel(panel: Omit<PanelModel, 'row' | 'col'> & Partial<Pick<PanelModel, 'row' | 'col'>>): void {
         const cols = this.cols();
         const current = this.settled();
@@ -653,7 +653,7 @@ export class DashboardLayout extends BaseComponent<DashboardLayoutPassThrough> {
         );
     }
 
-    /** Removes a panel. Mirrors Syncfusion's `removePanel`. */
+    /** Removes a panel. */
     removePanel(id: string): void {
         const panel = this.panels().find((p) => p.id === id);
 
@@ -670,12 +670,12 @@ export class DashboardLayout extends BaseComponent<DashboardLayoutPassThrough> {
         );
     }
 
-    /** Removes every panel. Mirrors Syncfusion's `removeAll`. */
+    /** Removes every panel. */
     removeAll(): void {
         this.commit([], 'clear');
     }
 
-    /** Moves a panel. Mirrors Syncfusion's `movePanel`. */
+    /** Moves a panel. */
     movePanel(id: string, row: number, col: number): void {
         if (!this.panels().some((p) => p.id === id)) return;
 
@@ -688,7 +688,7 @@ export class DashboardLayout extends BaseComponent<DashboardLayoutPassThrough> {
         );
     }
 
-    /** Resizes a panel. Mirrors Syncfusion's `resizePanel`. */
+    /** Resizes a panel. */
     resizePanel(id: string, sizeX: number, sizeY: number): void {
         const panel = this.settled().find((p) => p.id === id);
 
@@ -703,7 +703,7 @@ export class DashboardLayout extends BaseComponent<DashboardLayoutPassThrough> {
         );
     }
 
-    /** Changes properties of a panel: header, content, limits, anything but its identity. Mirrors Syncfusion's `updatePanel`. */
+    /** Changes properties of a panel: header, content, limits, anything but its identity. */
     updatePanel(patch: Partial<PanelModel> & { id: string }): void {
         if (!this.panels().some((p) => p.id === patch.id)) return;
 
@@ -721,12 +721,12 @@ export class DashboardLayout extends BaseComponent<DashboardLayoutPassThrough> {
         );
     }
 
-    /** The layout as it is on screen, ready to store. Mirrors Syncfusion's `serialize`. */
+    /** The layout as it is on screen, ready to store. */
     serialize(): PanelModel[] {
         return this.settled().map((p) => ({ ...p }));
     }
 
-    /** Measures the dashboard again. Mirrors Syncfusion's `refresh`. */
+    /** Measures the dashboard again. */
     refresh(): void {
         this.measure();
     }

@@ -35,7 +35,7 @@ export interface Node {
     resourceIds: string[];
 }
 
-/** The fields, with Syncfusion's names where the caller names none. */
+/** The fields, with the default names where the caller names none. */
 export const DEFAULT_FIELDS: Required<Pick<GanttTaskFields, 'id' | 'name' | 'startDate' | 'endDate' | 'duration' | 'progress' | 'dependency' | 'parentID' | 'child'>> = {
     id: 'id',
     name: 'name',

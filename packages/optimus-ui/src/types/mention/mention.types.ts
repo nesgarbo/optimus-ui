@@ -1,7 +1,7 @@
 import type { PassThrough, PassThroughOption } from '@openng/optimus-ui/api';
 
 /**
- * Where the text, value and extras of an item live. Mirrors Syncfusion's `fields`.
+ * Where the text, value and extras of an item live.
  * @group Types
  */
 export interface MentionFields {

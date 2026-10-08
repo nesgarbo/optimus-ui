@@ -55,7 +55,7 @@ export const QUERYBUILDER_VALUE_ACCESSOR: any = {
  * QueryBuilder lets the user compose a tree of conditions over a set of columns, and reads it out
  * as SQL, a MongoDB filter, a FeathersJS query or a JavaScript predicate.
  *
- * The API follows Syncfusion's QueryBuilder: `columns`, `rule`, `maxGroupCount`, `enableNotCondition`,
+ * The API covers `columns`, `rule`, `maxGroupCount`, `enableNotCondition`,
  * `showButtons`, `allowValidation`, `displayMode`, and the `getRules`, `setRules`, `getSqlFromRules`,
  * `setRulesFromSql`, `getValidRules`, `addRules`, `addGroups`, `deleteRule`, `deleteGroup` and `reset` methods.
  * Where Angular has a better idiom the idiom wins: the tree is a two-way `[(rule)]` and a form value.
@@ -92,7 +92,7 @@ export class QueryBuilder extends BaseEditableHolder<QueryBuilderPassThrough> im
     constructor() {
         super();
 
-        // `rule` is the Syncfusion spelling of the initial tree: a change to it replaces the value.
+        // `rule` seeds the initial tree: a change to it replaces the value.
         effect(() => {
             const seed = this.rule();
 
@@ -120,7 +120,7 @@ export class QueryBuilder extends BaseEditableHolder<QueryBuilderPassThrough> im
      */
     readonly value = model<RuleModel>(createGroup('and'));
     /**
-     * Initial tree, under the name Syncfusion's QueryBuilder gives it. Each time it changes it replaces `value`.
+     * Initial tree, as `rule`. Each time it changes it replaces `value`.
      * @group Props
      */
     readonly rule = input<RuleModel | undefined>(undefined);
@@ -367,17 +367,17 @@ export class QueryBuilder extends BaseEditableHolder<QueryBuilderPassThrough> im
     // Methods
     // ---------------------------------------------------------------------------------------------
 
-    /** The current tree. Mirrors Syncfusion's `getRules`. */
+    /** The current tree. */
     getRules(): RuleModel {
         return this.value();
     }
 
-    /** Replaces the tree. Mirrors Syncfusion's `setRules`. */
+    /** Replaces the tree. */
     setRules(rule: RuleModel): void {
         this.commit(rule && Array.isArray(rule.rules) ? rule : createGroup('and'), 'set');
     }
 
-    /** The tree without its invalid leaves. Mirrors Syncfusion's `getValidRules`. */
+    /** The tree without its invalid leaves. */
     getValidRules(): RuleModel {
         return getValidRules(this.value(), this.columns());
     }
@@ -387,27 +387,27 @@ export class QueryBuilder extends BaseEditableHolder<QueryBuilderPassThrough> im
         return JSON.stringify(this.getValidRules()) === JSON.stringify(this.value());
     }
 
-    /** The tree as SQL. Mirrors Syncfusion's `getSqlFromRules`. */
+    /** The tree as SQL. */
     getSqlFromRules(rule: RuleModel = this.value(), options?: ToSqlOptions): string {
         return toSql(rule, { columns: this.columns(), ...options });
     }
 
-    /** The tree as SQL with `?` placeholders. Mirrors Syncfusion's `getParameterizedSql`. */
+    /** The tree as SQL with `?` placeholders. */
     getParameterizedSql(rule: RuleModel = this.value(), options?: ToSqlOptions): QueryBuilderParameterizedSql {
         return toParameterizedSql(rule, { columns: this.columns(), ...options });
     }
 
-    /** Reads SQL into the tree. Mirrors Syncfusion's `setRulesFromSql`. Throws a `QueryBuilderParseError`. */
+    /** Reads SQL into the tree. Throws a `QueryBuilderParseError`. */
     setRulesFromSql(sql: string): void {
         this.setRules(fromSql(sql, this.columns()));
     }
 
-    /** The tree as a MongoDB filter. Mirrors Syncfusion's `getMongoQuery`. */
+    /** The tree as a MongoDB filter. */
     getMongoQuery(rule: RuleModel = this.value()): Record<string, any> {
         return toMongo(rule);
     }
 
-    /** Reads a MongoDB filter into the tree. Mirrors Syncfusion's `setMongoQuery`. */
+    /** Reads a MongoDB filter into the tree. */
     setMongoQuery(query: Record<string, any>): void {
         this.setRules(fromMongo(query, this.columns()));
     }
@@ -417,12 +417,12 @@ export class QueryBuilder extends BaseEditableHolder<QueryBuilderPassThrough> im
         return toFeathers(rule);
     }
 
-    /** A predicate for `Array.prototype.filter`. Mirrors Syncfusion's `getPredicate`. */
+    /** A predicate for `Array.prototype.filter`. */
     getPredicate(rule: RuleModel = this.value()): (row: any) => boolean {
         return toPredicate(rule);
     }
 
-    /** Adds conditions to a group (the root by default). Mirrors Syncfusion's `addRules`. */
+    /** Adds conditions to a group (the root by default). */
     addRules(rules: RuleModel[], groupPath: QueryBuilderPath = []): void {
         this.commit(
             rules.reduce((root, rule) => insertNode(root, groupPath, rule), this.value()),
@@ -431,7 +431,7 @@ export class QueryBuilder extends BaseEditableHolder<QueryBuilderPassThrough> im
         );
     }
 
-    /** Adds groups to a group (the root by default). Mirrors Syncfusion's `addGroups`. */
+    /** Adds groups to a group (the root by default). */
     addGroups(groups: RuleModel[], groupPath: QueryBuilderPath = []): void {
         this.commit(
             groups.reduce((root, group) => insertNode(root, groupPath, group), this.value()),
@@ -440,17 +440,17 @@ export class QueryBuilder extends BaseEditableHolder<QueryBuilderPassThrough> im
         );
     }
 
-    /** Removes a condition. Mirrors Syncfusion's `deleteRule`. */
+    /** Removes a condition. */
     deleteRule(path: QueryBuilderPath): void {
         this.commit(removeNode(this.value(), path), 'deleteRule', path);
     }
 
-    /** Removes a group. Mirrors Syncfusion's `deleteGroup`. */
+    /** Removes a group. */
     deleteGroup(path: QueryBuilderPath): void {
         this.commit(removeNode(this.value(), path), 'deleteGroup', path);
     }
 
-    /** Empties the tree. Mirrors Syncfusion's `reset`. */
+    /** Empties the tree. */
     reset(): void {
         this.commit(createGroup('and'), 'reset');
     }

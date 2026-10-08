@@ -66,7 +66,7 @@ const round = (n: number) => Math.round(n * 100) / 100;
 /**
  * LinearGauge shows one or more values on a straight scale, in a container: a bar that fills, or a marker that moves.
  *
- * The API follows Syncfusion's LinearGauge: `orientation`, `container` (`normal`, `thermometer` or `roundedRectangle`), and `axes` (each with
+ * The API covers `orientation`, `container` (`normal`, `thermometer` or `roundedRectangle`), and `axes` (each with
  * `minimum`, `maximum`, `lineStyle`, `majorTicks`, `minorTicks`, `labelStyle`, `ranges`, `pointers`, `opposedPosition` and `isInversed`).
  * A gauge with a single pointer needs no `axes`: `value`, `minimum`, `maximum` and `ranges` describe it.
  *
@@ -477,7 +477,7 @@ export class LinearGauge extends GaugeBase {
         this.pointerChange.emit({ axisIndex, pointerIndex, value, dragging });
     }
 
-    /** Sets the value of a pointer. Mirrors Syncfusion's `setPointerValue`. */
+    /** Sets the value of a pointer. */
     setPointerValue(axisIndex: number, pointerIndex: number, value: number): void {
         this.setValue(axisIndex, pointerIndex, value, false);
     }

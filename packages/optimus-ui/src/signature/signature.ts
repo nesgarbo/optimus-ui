@@ -69,7 +69,7 @@ const loadImage = (url: string, signal?: AbortSignal): Promise<HTMLImageElement>
 /**
  * Signature captures a handwritten signature from a mouse, a pen or a finger.
  *
- * The API follows Syncfusion's Signature: `backgroundColor`, `backgroundImage`, `strokeColor`,
+ * The API covers `backgroundColor`, `backgroundImage`, `strokeColor`,
  * `minStrokeWidth`, `maxStrokeWidth`, `velocity`, `saveWithBackground`, and the `clear`, `undo`, `redo`,
  * `canUndo`, `canRedo`, `isEmpty`, `save`, `saveAsBlob`, `getSignature`, `loadSignature` and `draw` methods.
  * The value is the signature as a PNG data URL, so it binds to a signal form with `[formField]`, to a
@@ -168,7 +168,7 @@ export class Signature extends BaseEditableHolder<SignaturePassThrough> {
      */
     readonly readonly = input(false, { transform: booleanAttribute });
     /**
-     * Syncfusion's spelling of `readonly`.
+     * Alias of `readonly`.
      * @group Props
      */
     readonly isReadOnly = input(false, { transform: booleanAttribute });
@@ -660,7 +660,7 @@ export class Signature extends BaseEditableHolder<SignaturePassThrough> {
     // Methods
     // ---------------------------------------------------------------------------------------------
 
-    /** Empties the pad. Mirrors Syncfusion's `clear`. */
+    /** Empties the pad. */
     clear(): void {
         if (this.isEmpty() || this.locked()) return;
 
@@ -672,7 +672,7 @@ export class Signature extends BaseEditableHolder<SignaturePassThrough> {
         this.cleared = taken;
     }
 
-    /** Takes the last stroke back. Mirrors Syncfusion's `undo`. */
+    /** Takes the last stroke back. */
     undo(): void {
         const strokes = this.strokes();
 
@@ -697,7 +697,7 @@ export class Signature extends BaseEditableHolder<SignaturePassThrough> {
         this.commit('undo');
     }
 
-    /** Puts back the stroke `undo` took. Mirrors Syncfusion's `redo`. */
+    /** Puts back the stroke `undo` took. */
     redo(): void {
         const undone = this.undone();
 
@@ -708,27 +708,27 @@ export class Signature extends BaseEditableHolder<SignaturePassThrough> {
         this.commit('redo');
     }
 
-    /** `true` when there is a stroke to take back. Mirrors Syncfusion's `canUndo`. */
+    /** `true` when there is a stroke to take back. */
     canUndo(): boolean {
         return this.strokes().length > 0 || (!!this.cleared && this.isEmpty());
     }
 
-    /** `true` when there is a stroke to put back. Mirrors Syncfusion's `canRedo`. */
+    /** `true` when there is a stroke to put back. */
     canRedo(): boolean {
         return this.undone().length > 0;
     }
 
-    /** The signature as a data URL. Mirrors Syncfusion's `getSignature`. */
+    /** The signature as a data URL. */
     getSignature(type: SignatureFileType = 'png'): string {
         return this.toDataUrl(type, this.saveWithBackground());
     }
 
-    /** The signature as a `Blob`. Mirrors Syncfusion's `saveAsBlob`. */
+    /** The signature as a `Blob`. */
     async saveAsBlob(type: SignatureFileType = 'png'): Promise<Blob> {
         return (await fetch(this.getSignature(type))).blob();
     }
 
-    /** Downloads the signature. Mirrors Syncfusion's `save`. Returns the data URL, or `null` when cancelled. */
+    /** Downloads the signature. Returns the data URL, or `null` when cancelled. */
     save(type: SignatureFileType = 'png', fileName = 'Signature'): string | null {
         if (!this.browser) return null;
 
@@ -749,7 +749,7 @@ export class Signature extends BaseEditableHolder<SignaturePassThrough> {
         return dataUrl;
     }
 
-    /** Draws an image over the pad, replacing what was on it. Mirrors Syncfusion's `loadSignature`. */
+    /** Draws an image over the pad, replacing what was on it. */
     async loadSignature(url: string): Promise<void> {
         const token = ++this.loadToken;
         const image = await loadImage(url);
@@ -763,7 +763,7 @@ export class Signature extends BaseEditableHolder<SignaturePassThrough> {
         this.commit('load');
     }
 
-    /** Writes `text` as a typed signature, replacing what was on the pad. Mirrors Syncfusion's `draw`. */
+    /** Writes `text` as a typed signature, replacing what was on the pad. */
     draw(text: string, fontFamily = 'Brush Script MT, cursive', fontSize = 36): void {
         if (!text || !this.width || !this.browser) return;
 

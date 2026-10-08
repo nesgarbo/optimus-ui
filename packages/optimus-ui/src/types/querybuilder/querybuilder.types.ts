@@ -14,7 +14,7 @@ export type QueryBuilderCondition = 'and' | 'or';
 export type QueryBuilderFieldType = 'string' | 'number' | 'boolean' | 'date' | 'datetime';
 
 /**
- * The operator keys the builder understands. The keys match the ones Syncfusion's QueryBuilder uses.
+ * The operator keys the builder understands. The keys are the usual SQL-style operator names.
  * @group Types
  */
 export type QueryBuilderOperatorKey =
@@ -49,7 +49,7 @@ export interface QueryBuilderValidation {
 }
 
 /**
- * A field the user can build a rule on. Mirrors Syncfusion's `ColumnsModel`.
+ * A field the user can build a rule on.
  * @group Types
  */
 export interface QueryBuilderColumn {
@@ -77,7 +77,7 @@ export interface QueryBuilderColumn {
 
 /**
  * The rule tree. A leaf has `field`, `operator` and `value`; a group has `condition` and `rules`.
- * Mirrors Syncfusion's `RuleModel`.
+ *
  * @group Types
  */
 export interface RuleModel {

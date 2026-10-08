@@ -1,7 +1,7 @@
 import type { PassThrough, PassThroughOption } from '@openng/optimus-ui/api';
 
 /**
- * One tile of the dashboard. Mirrors Syncfusion's `PanelModel`.
+ * One tile of the dashboard.
  * @group Types
  */
 export interface PanelModel {

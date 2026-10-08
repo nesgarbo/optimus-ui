@@ -11,7 +11,7 @@ import { ASSIST_STATE } from './aiassistview-state';
 /**
  * One strip of toolbar entries: the header's, a prompt's, a response's or the composer's.
  *
- * The same component for all four, and every entry is a real `p-button`. Syncfusion drives four
+ * The same component for all four, and every entry is a real `p-button`. A common approach drives four
  * settings objects into an imperative `Toolbar` instance per strip; here the difference between the
  * strips is only which entries go in and what a click means, and the entries themselves are the same
  * buttons the rest of the library uses — same severities, same focus ring, same ripple.

@@ -3,7 +3,7 @@ import type { AssistResponseBlock } from '@openng/optimus-ui/types/aiassistview'
 /**
  * The markdown a model actually emits, and nothing else.
  *
- * Syncfusion reaches for a converter package here. A dependency is the wrong trade for this surface:
+ * Other libraries reach for a converter package here. A dependency is the wrong trade for this surface:
  * the subset a chat answer uses is small and closed — headings, emphasis, lists, links, quotes,
  * tables, rules and fenced code — and a general converter brings a parser, an HTML passthrough mode
  * and a sanitiser question along with it.

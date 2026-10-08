@@ -263,7 +263,7 @@ export function getValidRules(root: RuleModel, columns: QueryBuilderColumn[] = [
 
 /** Options of {@link evaluate}. */
 export interface EvaluateOptions {
-    /** Compare strings without regard to case. Default `true`, like Syncfusion's predicates. */
+    /** Compare strings without regard to case. Default `true`. */
     ignoreCase?: boolean;
 }
 
@@ -372,7 +372,7 @@ export function evaluate(row: any, root: RuleModel, options: EvaluateOptions = {
     return walk(root);
 }
 
-/** A predicate for `Array.prototype.filter`. Mirrors Syncfusion's `getPredicate`. */
+/** A predicate for `Array.prototype.filter`. */
 export const toPredicate = (root: RuleModel, options?: EvaluateOptions) => (row: any) => evaluate(row, root, options);
 
 // ---------------------------------------------------------------------------------------------
@@ -487,7 +487,7 @@ function buildSql(root: RuleModel, options: ToSqlOptions, bind?: (value: any) =>
     return group(root);
 }
 
-/** The tree as a SQL `WHERE` expression. Mirrors Syncfusion's `getSqlFromRules`. */
+/** The tree as a SQL `WHERE` expression. */
 export function toSql(root: RuleModel, options: ToSqlOptions = {}): string {
     return buildSql(root, options);
 }
@@ -605,7 +605,7 @@ function tokenize(sql: string): Token[] {
 type Parsed = { node: RuleModel; paren: boolean };
 
 /**
- * Reads a SQL `WHERE` expression into a rule tree. Mirrors Syncfusion's `setRulesFromSql`.
+ * Reads a SQL `WHERE` expression into a rule tree.
  *
  * It reads what {@link toSql} writes and the ordinary hand-written forms: `AND`, `OR`, `NOT`,
  * parentheses, the six comparisons, `LIKE` with a leading and/or trailing `%`, `IN`, `BETWEEN`
@@ -865,7 +865,7 @@ function mongoLeaf(rule: RuleModel): Record<string, any> {
     }
 }
 
-/** The tree as a MongoDB filter document. Mirrors Syncfusion's `getMongoQuery`. */
+/** The tree as a MongoDB filter document. */
 export function toMongo(root: RuleModel): Record<string, any> {
     const group = (node: RuleModel): Record<string, any> => {
         const parts = (node.rules ?? []).map((child) => (isGroup(child) ? group(child) : mongoLeaf(child))).filter((part) => Object.keys(part).length);

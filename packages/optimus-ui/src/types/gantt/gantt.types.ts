@@ -2,7 +2,7 @@ import type { TemplateRef } from '@angular/core';
 import type { PassThrough, PassThroughOption } from '@openng/optimus-ui/api';
 
 /**
- * Which field of a data item feeds which part of a task. Mirrors Syncfusion's `taskFields`.
+ * Which field of a data item feeds which part of a task.
  * @group Types
  */
 export interface GanttTaskFields {
@@ -132,7 +132,7 @@ export interface GanttTier {
 }
 
 /**
- * The timeline header and zoom. Mirrors Syncfusion's `timelineSettings`.
+ * The timeline header and zoom.
  * @group Types
  */
 export interface GanttTimelineSettings {
@@ -155,7 +155,7 @@ export interface GanttSplitterSettings {
 }
 
 /**
- * What the user may change. Mirrors Syncfusion's `editSettings`.
+ * What the user may change.
  * @group Types
  */
 export interface GanttEditSettings {
@@ -170,7 +170,7 @@ export interface GanttEditSettings {
 }
 
 /**
- * Names of the fields shown beside a bar. Mirrors Syncfusion's `labelSettings`.
+ * Names of the fields shown beside a bar.
  * @group Types
  */
 export interface GanttLabelSettings {

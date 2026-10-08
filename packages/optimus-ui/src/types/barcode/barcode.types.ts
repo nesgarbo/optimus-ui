@@ -49,7 +49,7 @@ export interface BarcodeMargin {
 }
 
 /**
- * The text printed with the symbol. Mirrors Syncfusion's `displayText`.
+ * The text printed with the symbol.
  * @group Types
  */
 export interface BarcodeDisplayText {

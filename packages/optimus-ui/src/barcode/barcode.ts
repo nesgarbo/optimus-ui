@@ -297,7 +297,7 @@ export abstract class BarcodeBase extends BaseComponent<BarcodePassThrough> {
         return layout ? layoutToSvg(layout, this.foreColor(), this.backgroundColor(), this.textColor()) : '';
     }
 
-    /** The symbol as a data URL. Mirrors Syncfusion's `exportAsBase64Image`. */
+    /** The symbol as a data URL. */
     exportAsBase64(format: BarcodeExportFormat = 'png', scale = 2): string {
         const layout = this.layout();
 
@@ -324,7 +324,7 @@ export abstract class BarcodeBase extends BaseComponent<BarcodePassThrough> {
         }
     }
 
-    /** Downloads the symbol. Mirrors Syncfusion's `exportImage`. Returns the data URL. */
+    /** Downloads the symbol. Returns the data URL. */
     exportImage(fileName = 'barcode', format: BarcodeExportFormat = 'png'): string {
         if (!this.browser) return '';
 
@@ -367,7 +367,7 @@ const TEMPLATE = `
 /**
  * Barcode draws a value as a one-dimensional barcode: Code 128, Code 39, EAN-13, EAN-8 or UPC-A.
  *
- * The API follows Syncfusion's BarcodeGenerator: `type`, `value`, `width`, `height`, `mode`,
+ * The API covers `type`, `value`, `width`, `height`, `mode`,
  * `displayText`, `foreColor`, `backgroundColor`, `margin`, `enableCheckSum`, the `invalid` and `loaded` events
  * and the `exportImage` and `exportAsBase64` methods. Besides those it writes Code 11, Codabar and Code 39 Extended.
  *
@@ -415,7 +415,7 @@ export class Barcode extends BarcodeBase {
 /**
  * QRCode draws a value as a QR Code.
  *
- * The API follows Syncfusion's QRCodeGenerator: `value`, `width`, `height`, `mode`, `displayText`, `foreColor`, `backgroundColor`,
+ * The API covers `value`, `width`, `height`, `mode`, `displayText`, `foreColor`, `backgroundColor`,
  * `margin`, `errorCorrectionLevel`, `version`, `xDimension`, the `invalid` and `loaded` events and the
  * `exportImage` and `exportAsBase64` methods, and takes a `logo` for the middle.
  *
@@ -483,7 +483,7 @@ export class QRCode extends BarcodeBase {
 /**
  * DataMatrix draws a value as a Data Matrix (ECC 200), the small square symbol of parts and labels.
  *
- * The API follows Syncfusion's DataMatrixGenerator: `value`, `width`, `height`, `mode`, `displayText`, `foreColor`, `backgroundColor`,
+ * The API covers `value`, `width`, `height`, `mode`, `displayText`, `foreColor`, `backgroundColor`,
  * `margin`, the `invalid` and `loaded` events and the `exportImage` and `exportAsBase64` methods. Square sizes from 10 by 10 to
  * 144 by 144 are written, in the ASCII encoding.
  *

@@ -17,7 +17,7 @@ import type {
 /**
  * The template definitions.
  *
- * Syncfusion's equivalents are `string | Function` inputs: a template is either an HTML string the
+ * The usual approach is `string | Function` inputs: a template is either an HTML string the
  * component parses, or a factory the component calls. Both give up Angular's type checking, its
  * change detection and its content projection at once.
  *

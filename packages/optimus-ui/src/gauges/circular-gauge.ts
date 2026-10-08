@@ -98,7 +98,7 @@ const DEFAULT_AXIS: Required<Pick<CircularAxis, 'minimum' | 'maximum' | 'startAn
  * CircularGauge shows one or more values on a dial: a needle, a marker or a filled bar over an axis with
  * ticks, labels and colored ranges.
  *
- * The API follows Syncfusion's CircularGauge: `axes` (each with `minimum`, `maximum`, `startAngle`, `endAngle`, `radius`,
+ * The API covers `axes` (each with `minimum`, `maximum`, `startAngle`, `endAngle`, `radius`,
  * `lineStyle`, `majorTicks`, `minorTicks`, `labelStyle`, `ranges`, `pointers` and `annotations`), `enablePointerDrag`, `title`,
  * the `loaded`, `animationComplete` and `pointerChange` events and the `setPointerValue` method. A gauge with a single needle needs
  * no `axes`: `value`, `minimum`, `maximum`, `startAngle`, `endAngle` and `ranges` describe it.
@@ -555,7 +555,7 @@ export class CircularGauge extends GaugeBase {
         this.pointerChange.emit({ axisIndex, pointerIndex, value, dragging });
     }
 
-    /** Sets the value of a pointer. Mirrors Syncfusion's `setPointerValue`. */
+    /** Sets the value of a pointer. */
     setPointerValue(axisIndex: number, pointerIndex: number, value: number): void {
         this.setValue(axisIndex, pointerIndex, value, false);
     }

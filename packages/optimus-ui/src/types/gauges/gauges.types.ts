@@ -73,7 +73,7 @@ export interface GaugeAnimation {
 }
 
 /**
- * A colored band on the axis. Mirrors Syncfusion's gauge `Range`.
+ * A colored band on the axis.
  * @group Types
  */
 export interface GaugeRange {
@@ -113,7 +113,7 @@ export interface GaugeNeedleTail {
 }
 
 /**
- * A pointer of a circular axis. Mirrors Syncfusion's `Pointer`.
+ * A pointer of a circular axis.
  * @group Types
  */
 export interface CircularPointer {
@@ -152,7 +152,7 @@ export interface CircularAnnotation {
 }
 
 /**
- * An axis of a circular gauge. Mirrors Syncfusion's `Axis`.
+ * An axis of a circular gauge.
  * @group Types
  */
 export interface CircularAxis {

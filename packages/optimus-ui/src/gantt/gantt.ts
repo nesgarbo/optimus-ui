@@ -160,11 +160,11 @@ let nextId = 0;
  * working calendar with a work week and holidays, and a critical path. The user moves and resizes bars, drags their progress,
  * expands and collapses parents, and indents and outdents tasks, with the pointer or the keyboard.
  *
- * The API follows Syncfusion's Gantt: `dataSource`, `taskFields`, `columns`, `timelineSettings`, `splitterSettings`, `editSettings`,
+ * The API covers `dataSource`, `taskFields`, `columns`, `timelineSettings`, `splitterSettings`, `editSettings`,
  * `labelSettings`, `workWeek`, `holidays`, `enableCriticalPath`, `height`, the `created`, `actionBegin`, `actionComplete`,
  * `taskbarEditing`, `taskbarEdited`, `rowSelected`, `expanding`, `expanded`, `collapsing` and `collapsed` events, and the `addRecord`,
  * `updateRecordByID`, `deleteRecord`, `indent`, `outdent`, `expandAll`, `collapseAll`, `zoomIn`, `zoomOut`, `zoomToFit`, `scrollToTask`
- * and `setSplitterPosition` methods. Durations count worked time, in days, hours or minutes (`durationUnit`). Beyond Syncfusion's core it
+ * and `setSplitterPosition` methods. Durations count worked time, in days, hours or minutes (`durationUnit`). Beyond the core it
  * has a baseline, resources with an over-allocation check, cell and dialog editing, and CSV, SVG, PNG and PDF export.
  *
  * @group Components
@@ -1457,7 +1457,7 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
         return task.resources.some((r) => String(r.id) === String(resource.id));
     }
 
-    /** Opens the form that edits a whole task. Mirrors Syncfusion's `openEditDialog`. */
+    /** Opens the form that edits a whole task. */
     openEditDialog(id: string): void {
         if (this.project().byId.has(String(id))) this.dialogTaskId.set(String(id));
     }
@@ -1538,7 +1538,7 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
         setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 
-    /** The grid as CSV: every task, parents included, in the order of the tree. Downloads it unless `download` is false. Mirrors Syncfusion's `csvExport`. */
+    /** The grid as CSV: every task, parents included, in the order of the tree. Downloads it unless `download` is false. */
     exportToCsv(options: { fileName?: string; download?: boolean } = {}): string {
         const cols = this.columnList();
         const header = cols.map((c) => c.headerText ?? c.field);
@@ -1620,7 +1620,7 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
         };
     }
 
-    /** The whole gantt, grid and chart, as an SVG document. Mirrors Syncfusion's export in a format a vector tool can open. */
+    /** The whole gantt, grid and chart, as an SVG document. It writes a format a vector tool can open. */
     exportToSvg(options: { fileName?: string; download?: boolean } = {}): string {
         const svg = snapshotToSvg(this.snapshot());
 
@@ -1661,7 +1661,7 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
         return blob;
     }
 
-    /** The whole gantt as a one-page PDF, holding a picture of it. Resolves to the file. Mirrors Syncfusion's `pdfExport`. */
+    /** The whole gantt as a one-page PDF, holding a picture of it. Resolves to the file. */
     async exportToPdf(options: { fileName?: string; scale?: number; download?: boolean } = {}): Promise<Blob> {
         const snap = this.snapshot();
         const jpeg = await this.exportToImage({ format: 'jpeg', scale: options.scale ?? 2, download: false });
@@ -1922,7 +1922,7 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
         return n ? this.mk(n, !this.collapsedIds().has(n.id)) : undefined;
     }
 
-    /** The tasks as they are shown: the parents that are collapsed hide theirs. Mirrors Syncfusion's `getCurrentViewRecords`. */
+    /** The tasks as they are shown: the parents that are collapsed hide theirs. */
     getCurrentViewRecords(): GanttTask[] {
         return this.rows().map((r) => r.task);
     }
@@ -1934,7 +1934,7 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
             .map((n) => this.mk(n, !this.collapsedIds().has(n.id)));
     }
 
-    /** Adds a data item. Under `parentId` when given, at the top otherwise; `index` places it among its siblings. Mirrors Syncfusion's `addRecord`. */
+    /** Adds a data item. Under `parentId` when given, at the top otherwise; `index` places it among its siblings. */
     addRecord(record: any, parentId?: string, index?: number): void {
         const begin: GanttActionEvent = { requestType: 'add', data: record, cancel: false };
 
@@ -1949,7 +1949,7 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
         this.actionComplete.emit({ requestType: 'add', data: record, cancel: false });
     }
 
-    /** Changes the fields of the task with the id the data carries. Mirrors Syncfusion's `updateRecordByID`. */
+    /** Changes the fields of the task with the id the data carries. */
     updateRecordByID(data: any): void {
         const id = data?.[this.fields().id];
         const node = this.nodeOf(id);
@@ -1966,7 +1966,7 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
         this.actionComplete.emit({ requestType: 'save', data, cancel: false });
     }
 
-    /** Removes a task and its children. Mirrors Syncfusion's `deleteRecord`. */
+    /** Removes a task and its children. */
     deleteRecord(id: string): void {
         const node = this.nodeOf(id);
 
@@ -1985,7 +1985,7 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
         this.actionComplete.emit({ requestType: 'delete', data: node.data, cancel: false });
     }
 
-    /** Makes a task a child of the one above it. Mirrors Syncfusion's `indent`. */
+    /** Makes a task a child of the one above it. */
     indent(id?: string): void {
         const node = this.nodeOf(id);
 
@@ -2021,7 +2021,7 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
         this.actionComplete.emit({ requestType: 'indent', data: node.data, cancel: false });
     }
 
-    /** Makes a task a sibling of its parent. Mirrors Syncfusion's `outdent`. */
+    /** Makes a task a sibling of its parent. */
     outdent(id?: string): void {
         const node = this.nodeOf(id);
 
@@ -2041,7 +2041,7 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
         this.actionComplete.emit({ requestType: 'outdent', data: node.data, cancel: false });
     }
 
-    /** Expands a parent. Mirrors Syncfusion's `expandByID`. */
+    /** Expands a parent. */
     expandByID(id: string): void {
         const node = this.nodeOf(id);
 
@@ -2063,7 +2063,7 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
         this.expanded.emit({ task: this.mk(node, true), cancel: false });
     }
 
-    /** Collapses a parent. Mirrors Syncfusion's `collapseByID`. */
+    /** Collapses a parent. */
     collapseByID(id: string): void {
         const node = this.nodeOf(id);
 
@@ -2085,12 +2085,12 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
         this.collapsed.emit({ task: this.mk(node, false), cancel: false });
     }
 
-    /** Expands every parent. Mirrors Syncfusion's `expandAll`. */
+    /** Expands every parent. */
     expandAll(): void {
         this.collapsedIds.set(new Set());
     }
 
-    /** Collapses every parent. Mirrors Syncfusion's `collapseAll`. */
+    /** Collapses every parent. */
     collapseAll(): void {
         this.collapsedIds.set(
             new Set(
@@ -2111,7 +2111,7 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
         if (this.browser) requestAnimationFrame(() => (el.scrollLeft = Math.max((centerDay - this.range().from) * this.dayWidth() - (el.clientWidth - this.gridWidth()) / 2, 0)));
     }
 
-    /** Widens the days. Mirrors Syncfusion's `zoomIn`. */
+    /** Widens the days. */
     zoomIn(): void {
         const i = nearestZoom(this.dayWidth());
         const next = ZOOM_LEVELS[ZOOM_LEVELS[i].dayWidth > this.dayWidth() * 1.02 ? i : Math.min(i + 1, ZOOM_LEVELS.length - 1)];
@@ -2119,7 +2119,7 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
         this.setDayWidth(next.dayWidth);
     }
 
-    /** Narrows the days. Mirrors Syncfusion's `zoomOut`. */
+    /** Narrows the days. */
     zoomOut(): void {
         const i = nearestZoom(this.dayWidth());
         const next = ZOOM_LEVELS[ZOOM_LEVELS[i].dayWidth < this.dayWidth() * 0.98 ? i : Math.max(i - 1, 0)];
@@ -2127,7 +2127,7 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
         this.setDayWidth(next.dayWidth);
     }
 
-    /** Fits the whole project in the width of the chart. Mirrors Syncfusion's `zoomToFit`. */
+    /** Fits the whole project in the width of the chart. */
     zoomToFit(): void {
         const nodes = this.project().nodes;
 
@@ -2148,7 +2148,7 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
         el.scrollTo({ left: Math.max((day - this.range().from) * this.dayWidth(), 0), behavior: 'auto' });
     }
 
-    /** Scrolls the chart to a task and selects it. Mirrors Syncfusion's `scrollToTask`. */
+    /** Scrolls the chart to a task and selects it. */
     scrollToTask(id: string): void {
         const index = this.rows().findIndex((r) => r.task.id === String(id));
 
@@ -2171,12 +2171,12 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
         if (day !== null && this.browser) this.scrollToDay(day - 3);
     }
 
-    /** Selects a row. Mirrors Syncfusion's `selectRow`. */
+    /** Selects a row. */
     selectRow(index: number): void {
         this.select(index);
     }
 
-    /** Sets the width of the grid, in pixels or as a percentage. Mirrors Syncfusion's `setSplitterPosition`. */
+    /** Sets the width of the grid, in pixels or as a percentage. */
     setSplitterPosition(position: string | number): void {
         const total = this.viewportWidth();
         const px = typeof position === 'number' ? position : position.endsWith('%') ? (parseFloat(position) / 100) * total : parseFloat(position);
@@ -2184,7 +2184,7 @@ export class Gantt extends BaseComponent<GanttPassThrough> {
         this.gridWidthOverride.set(this.clampGrid(px));
     }
 
-    /** Measures the gantt again. Mirrors Syncfusion's `refresh`. */
+    /** Measures the gantt again. */
     refresh(): void {
         const el = this.scroller().nativeElement;
 

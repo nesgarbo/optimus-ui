@@ -48,7 +48,7 @@ let nextId = 0;
  * Mention opens a list of items when the user types a trigger character, `@` by default, into a
  * `textarea`, an `input` or a `contenteditable` element, and writes the pick back into the text.
  *
- * The API follows Syncfusion's Mention: `dataSource`, `fields`, `mentionChar`, `suggestionCount`, `minLength`,
+ * The API covers `dataSource`, `fields`, `mentionChar`, `suggestionCount`, `minLength`,
  * `allowSpaces`, `showMentionChar`, `ignoreCase`, `searchPattern`, `sortOrder`, `popupWidth`, `popupHeight`,
  * `target`, the `filtering`, `opened`, `closed` and `beforeOpen` events and the `showPopup` and `hidePopup`
  * methods. The `select` event is called `itemSelect` here, so that it does not collide with the browser's own.
@@ -726,12 +726,12 @@ export class Mention extends BaseComponent<MentionPassThrough> {
     // Methods
     // ---------------------------------------------------------------------------------------------
 
-    /** Opens the list for the mention at the caret, if there is one. Mirrors Syncfusion's `showPopup`. */
+    /** Opens the list for the mention at the caret, if there is one. */
     showPopup(): void {
         this.evaluate(true);
     }
 
-    /** Closes the list. Mirrors Syncfusion's `hidePopup`. */
+    /** Closes the list. */
     hidePopup(): void {
         this.close();
     }
