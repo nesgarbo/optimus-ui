@@ -4,21 +4,19 @@ import {
     ChangeDetectionStrategy,
     Component,
     computed,
-    ContentChild,
-    ContentChildren,
     ElementRef,
     inject,
     InjectionToken,
-    Input,
     input,
     NgModule,
     NgZone,
     numberAttribute,
     output,
-    QueryList,
     TemplateRef,
     ViewEncapsulation,
-    ViewRef
+    ViewRef,
+    contentChild,
+    contentChildren
 } from '@angular/core';
 import { MotionEvent, MotionOptions } from '@openng/optimus-ui-motion';
 import { $dt } from '@openng/optimus-ui-styled';
@@ -53,13 +51,13 @@ const POPOVER_INSTANCE = new InjectionToken<Popover>('POPOVER_INSTANCE');
         @if (render) {
             <div
                 [pBind]="ptm('root')"
-                [class]="cn(cx('root'), styleClass)"
+                [class]="cn(cx('root'), styleClass())"
                 [style]="rootStyles"
                 (click)="onOverlayClick($event)"
                 role="dialog"
                 [attr.aria-modal]="overlayVisible"
-                [attr.aria-label]="ariaLabel"
-                [attr.aria-labelledBy]="ariaLabelledBy"
+                [attr.aria-label]="ariaLabel()"
+                [attr.aria-labelledBy]="ariaLabelledBy()"
                 [pMotion]="overlayVisible"
                 pMotionName="p-anchored-overlay"
                 [pMotionAppear]="true"
@@ -69,7 +67,7 @@ const POPOVER_INSTANCE = new InjectionToken<Popover>('POPOVER_INSTANCE');
             >
                 <div [pBind]="ptm('content')" [class]="cx('content')" (click)="onContentClick($event)" (mousedown)="onContentClick($event)">
                     <ng-content></ng-content>
-                    <ng-container *ngTemplateOutlet="contentTemplate || _contentTemplate; context: { closeCallback: onCloseClick.bind(this) }"></ng-container>
+                    <ng-container *ngTemplateOutlet="contentTemplate() || _contentTemplate; context: { closeCallback: onCloseClick.bind(this) }"></ng-container>
                 </div>
             </div>
         }
@@ -92,27 +90,33 @@ export class Popover extends BaseComponent<PopoverPassThrough> {
      * Defines a string that labels the input for accessibility.
      * @group Props
      */
-    @Input() ariaLabel: string | undefined;
+    readonly ariaLabel = input<string | undefined>(undefined);
     /**
      * Establishes relationships between the component and label(s) where its value should be one or more element IDs.
      * @group Props
      */
-    @Input() ariaLabelledBy: string | undefined;
+    readonly ariaLabelledBy = input<string | undefined>(undefined);
     /**
      * Enables to hide the overlay when outside is clicked.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) dismissable: boolean = true;
+    readonly dismissable = input<boolean, unknown>(true, { transform: booleanAttribute });
     /**
      * Inline style of the component.
      * @group Props
      */
-    @Input() style: { [klass: string]: any } | null | undefined;
+    readonly style = input<
+        | {
+              [klass: string]: any;
+          }
+        | null
+        | undefined
+    >(undefined);
     /**
      * Style class of the component.
      * @group Props
      */
-    @Input() styleClass: string | undefined;
+    readonly styleClass = input<string | undefined>(undefined);
     /**
      * Target element to attach the overlay, valid values are "body" or a local ng-template variable of another element (note: use binding with brackets for template variables, e.g. [appendTo]="mydiv" for a div element having #mydiv as variable name).
      * @defaultValue 'self'
@@ -123,34 +127,34 @@ export class Popover extends BaseComponent<PopoverPassThrough> {
      * Whether to automatically manage layering.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) autoZIndex: boolean = true;
+    readonly autoZIndex = input<boolean, unknown>(true, { transform: booleanAttribute });
     /**
      * Aria label of the close icon.
      * @group Props
      */
-    @Input() ariaCloseLabel: string | undefined;
+    readonly ariaCloseLabel = input<string | undefined>(undefined);
     /**
      * Base zIndex value to use in layering.
      * @group Props
      */
-    @Input({ transform: numberAttribute }) baseZIndex: number = 0;
+    readonly baseZIndex = input<number, unknown>(0, { transform: numberAttribute });
     /**
      * When enabled, first button receives focus on show.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) focusOnShow: boolean = true;
+    readonly focusOnShow = input<boolean, unknown>(true, { transform: booleanAttribute });
     /**
      * Transition options of the show animation.
      * @group Props
      * @deprecated since v21.0.0. Use `motionOptions` instead.
      */
-    @Input() showTransitionOptions: string = '.12s cubic-bezier(0, 0, 0.2, 1)';
+    readonly showTransitionOptions = input<string>('.12s cubic-bezier(0, 0, 0.2, 1)');
     /**
      * Transition options of the hide animation.
      * @group Props
      * @deprecated since v21.0.0. Use `motionOptions` instead.
      */
-    @Input() hideTransitionOptions: string = '.1s linear';
+    readonly hideTransitionOptions = input<string>('.1s linear');
     /**
      * The motion options.
      * @group Props
@@ -200,9 +204,9 @@ export class Popover extends BaseComponent<PopoverPassThrough> {
      * @see {@link PopoverContentTemplateContext}
      * @group Templates
      */
-    @ContentChild('content', { descendants: false }) contentTemplate: Nullable<TemplateRef<PopoverContentTemplateContext>>;
+    readonly contentTemplate = contentChild<Nullable<TemplateRef<PopoverContentTemplateContext>>>('content', { descendants: false });
 
-    @ContentChildren(PrimeTemplate) templates!: QueryList<PrimeTemplate>;
+    readonly templates = contentChildren(PrimeTemplate);
 
     _contentTemplate: TemplateRef<PopoverContentTemplateContext> | undefined;
 
@@ -221,11 +225,11 @@ export class Popover extends BaseComponent<PopoverPassThrough> {
     private focusTimeout: ReturnType<typeof setTimeout> | undefined;
 
     get rootStyles() {
-        return { ...this.sx('root'), ...this.style };
+        return { ...this.sx('root'), ...this.style() };
     }
 
     onAfterContentInit() {
-        this.templates.forEach((item) => {
+        this.templates().forEach((item) => {
             switch (item.getType()) {
                 case 'content':
                     this._contentTemplate = item.template;
@@ -243,7 +247,7 @@ export class Popover extends BaseComponent<PopoverPassThrough> {
                 // Outside the zone: `hide()` marks the view for check, so only a real dismiss repaints.
                 this.zone.runOutsideAngular(() => {
                     this.documentClickListener = this.renderer.listen(documentTarget, documentEvent, (event) => {
-                        if (!this.dismissable) {
+                        if (!this.dismissable()) {
                             return;
                         }
 
@@ -340,8 +344,8 @@ export class Popover extends BaseComponent<PopoverPassThrough> {
     }
 
     setZIndex() {
-        if (this.autoZIndex) {
-            ZIndexUtils.set('overlay', this.container, this.baseZIndex + this.config.zIndex.overlay);
+        if (this.autoZIndex()) {
+            ZIndexUtils.set('overlay', this.container, this.baseZIndex() + this.config.zIndex.overlay);
         }
     }
 
@@ -376,7 +380,7 @@ export class Popover extends BaseComponent<PopoverPassThrough> {
         this.bindDocumentResizeListener();
         this.bindScrollListener();
 
-        if (this.focusOnShow) {
+        if (this.focusOnShow()) {
             this.focus();
         }
 
@@ -402,7 +406,7 @@ export class Popover extends BaseComponent<PopoverPassThrough> {
                 this.overlaySubscription.unsubscribe();
             }
 
-            if (this.autoZIndex) {
+            if (this.autoZIndex()) {
                 ZIndexUtils.clear(this.container);
             }
 
@@ -506,7 +510,7 @@ export class Popover extends BaseComponent<PopoverPassThrough> {
             this.scrollHandler = null;
         }
 
-        if (this.container && this.autoZIndex) {
+        if (this.container && this.autoZIndex()) {
             ZIndexUtils.clear(this.container);
         }
 

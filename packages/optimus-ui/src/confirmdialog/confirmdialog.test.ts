@@ -321,12 +321,12 @@ describe('ConfirmDialog', () => {
         });
 
         it('should have correct default values', () => {
-            expect(confirmDialogInstance.acceptVisible).toBe(true);
-            expect(confirmDialogInstance.rejectVisible).toBe(true);
-            expect(confirmDialogInstance.closeOnEscape).toBe(true);
-            expect(confirmDialogInstance.blockScroll).toBe(true);
-            expect(confirmDialogInstance.draggable).toBe(true);
-            expect(confirmDialogInstance.position).toBe('center');
+            expect(confirmDialogInstance.acceptVisible()).toBe(true);
+            expect(confirmDialogInstance.rejectVisible()).toBe(true);
+            expect(confirmDialogInstance.closeOnEscape()).toBe(true);
+            expect(confirmDialogInstance.blockScroll()).toBe(true);
+            expect(confirmDialogInstance.draggable()).toBe(true);
+            expect(confirmDialogInstance.position()).toBe('center');
         });
 
         it('should render p-dialog component', () => {
@@ -346,7 +346,7 @@ describe('ConfirmDialog', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
 
-            expect(confirmDialogInstance.header).toBe('Updated Header');
+            expect(confirmDialogInstance.header()).toBe('Updated Header');
         });
 
         it('should update message property', async () => {
@@ -354,7 +354,7 @@ describe('ConfirmDialog', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
 
-            expect(confirmDialogInstance.message).toBe('Updated message');
+            expect(confirmDialogInstance.message()).toBe('Updated message');
         });
 
         it('should update icon property', async () => {
@@ -362,7 +362,7 @@ describe('ConfirmDialog', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
 
-            expect(confirmDialogInstance.icon).toBe('pi pi-info');
+            expect(confirmDialogInstance.icon()).toBe('pi pi-info');
         });
 
         it('should update visible property', async () => {
@@ -370,7 +370,7 @@ describe('ConfirmDialog', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
 
-            expect(confirmDialogInstance.visible).toBe(true);
+            expect(confirmDialogInstance.visible()).toBe(true);
         });
 
         it('should update position property', async () => {
@@ -378,7 +378,7 @@ describe('ConfirmDialog', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
 
-            expect(confirmDialogInstance.position).toBe('top');
+            expect(confirmDialogInstance.position()).toBe('top');
         });
 
         it('should update style and styleClass properties', async () => {
@@ -387,8 +387,8 @@ describe('ConfirmDialog', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
 
-            expect(confirmDialogInstance.style).toEqual({ width: '400px' });
-            expect(confirmDialogInstance.styleClass).toBe('custom-dialog');
+            expect(confirmDialogInstance.style()).toEqual({ width: '400px' });
+            expect(confirmDialogInstance.styleClass()).toBe('custom-dialog');
         });
 
         it('should update button properties', async () => {
@@ -399,10 +399,10 @@ describe('ConfirmDialog', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
 
-            expect(confirmDialogInstance.acceptLabel).toBe('Accept');
-            expect(confirmDialogInstance.rejectLabel).toBe('Reject');
-            expect(confirmDialogInstance.acceptIcon).toBe('pi pi-check');
-            expect(confirmDialogInstance.rejectIcon).toBe('pi pi-times');
+            expect(confirmDialogInstance.acceptLabel()).toBe('Accept');
+            expect(confirmDialogInstance.rejectLabel()).toBe('Reject');
+            expect(confirmDialogInstance.acceptIcon()).toBe('pi pi-check');
+            expect(confirmDialogInstance.rejectIcon()).toBe('pi pi-times');
         });
 
         it('should update button visibility properties', async () => {
@@ -411,8 +411,8 @@ describe('ConfirmDialog', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
 
-            expect(confirmDialogInstance.acceptVisible).toBe(false);
-            expect(confirmDialogInstance.rejectVisible).toBe(false);
+            expect(confirmDialogInstance.acceptVisible()).toBe(false);
+            expect(confirmDialogInstance.rejectVisible()).toBe(false);
         });
 
         it('should update button style class properties', async () => {
@@ -421,8 +421,8 @@ describe('ConfirmDialog', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
 
-            expect(confirmDialogInstance.acceptButtonStyleClass).toBe('custom-accept');
-            expect(confirmDialogInstance.rejectButtonStyleClass).toBe('custom-reject');
+            expect(confirmDialogInstance.acceptButtonStyleClass()).toBe('custom-accept');
+            expect(confirmDialogInstance.rejectButtonStyleClass()).toBe('custom-reject');
         });
 
         it('should update accessibility properties', async () => {
@@ -432,9 +432,9 @@ describe('ConfirmDialog', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
 
-            expect(confirmDialogInstance.acceptAriaLabel).toBe('Accept action');
-            expect(confirmDialogInstance.rejectAriaLabel).toBe('Reject action');
-            expect(confirmDialogInstance.closeAriaLabel).toBe('Close dialog');
+            expect(confirmDialogInstance.acceptAriaLabel()).toBe('Accept action');
+            expect(confirmDialogInstance.rejectAriaLabel()).toBe('Reject action');
+            expect(confirmDialogInstance.closeAriaLabel()).toBe('Close dialog');
         });
 
         it('should update behavior properties', async () => {
@@ -445,10 +445,10 @@ describe('ConfirmDialog', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
 
-            expect(confirmDialogInstance.closeOnEscape).toBe(false);
-            expect(confirmDialogInstance.dismissableMask).toBe(true);
-            expect(confirmDialogInstance.blockScroll).toBe(false);
-            expect(confirmDialogInstance.draggable).toBe(false);
+            expect(confirmDialogInstance.closeOnEscape()).toBe(false);
+            expect(confirmDialogInstance.dismissableMask()).toBe(true);
+            expect(confirmDialogInstance.blockScroll()).toBe(false);
+            expect(confirmDialogInstance.draggable()).toBe(false);
         });
     });
 
@@ -493,7 +493,7 @@ describe('ConfirmDialog', () => {
             await fixture.whenStable();
             await new Promise((resolve) => setTimeout(resolve, 0));
 
-            const acceptButton = fixture.debugElement.queryAll(By.css('p-button')).find((btn) => btn.nativeElement.textContent?.includes('Yes') || btn.componentInstance.ariaLabel?.includes('accept'));
+            const acceptButton = fixture.debugElement.queryAll(By.css('p-button')).find((btn) => btn.nativeElement.textContent?.includes('Yes') || btn.componentInstance.ariaLabel?.()?.includes('accept'));
 
             expect(acceptButton).toBeTruthy();
         });
@@ -506,7 +506,7 @@ describe('ConfirmDialog', () => {
             await new Promise((resolve) => setTimeout(resolve, 0));
 
             const buttons = fixture.debugElement.queryAll(By.css('p-button'));
-            const acceptButton = buttons.find((btn) => btn.componentInstance.ariaLabel?.includes('accept') || btn.nativeElement.textContent?.includes('Yes'));
+            const acceptButton = buttons.find((btn) => btn.componentInstance.ariaLabel?.()?.includes('accept') || btn.nativeElement.textContent?.includes('Yes'));
 
             expect(acceptButton).toBeFalsy();
         });
@@ -518,7 +518,7 @@ describe('ConfirmDialog', () => {
             await fixture.whenStable();
             await new Promise((resolve) => setTimeout(resolve, 0));
 
-            const rejectButton = fixture.debugElement.queryAll(By.css('p-button')).find((btn) => btn.nativeElement.textContent?.includes('No') || btn.componentInstance.ariaLabel?.includes('reject'));
+            const rejectButton = fixture.debugElement.queryAll(By.css('p-button')).find((btn) => btn.nativeElement.textContent?.includes('No') || btn.componentInstance.ariaLabel?.()?.includes('reject'));
 
             expect(rejectButton).toBeTruthy();
         });
@@ -531,7 +531,7 @@ describe('ConfirmDialog', () => {
             await new Promise((resolve) => setTimeout(resolve, 0));
 
             const buttons = fixture.debugElement.queryAll(By.css('p-button'));
-            const rejectButton = buttons.find((btn) => btn.componentInstance.ariaLabel?.includes('reject') || btn.nativeElement.textContent?.includes('No'));
+            const rejectButton = buttons.find((btn) => btn.componentInstance.ariaLabel?.()?.includes('reject') || btn.nativeElement.textContent?.includes('No'));
 
             expect(rejectButton).toBeFalsy();
         });
@@ -652,7 +652,7 @@ describe('ConfirmDialog', () => {
                 expect(() => confirmDialogInstance.ngAfterContentInit()).not.toThrow();
 
                 // Test that headerTemplate property exists (ContentChild)
-                expect(confirmDialogInstance.headerTemplate).toBeDefined();
+                expect(confirmDialogInstance.headerTemplate()).toBeDefined();
             });
 
             it("should process headerTemplate from @ContentChild('header')", async () => {
@@ -664,8 +664,8 @@ describe('ConfirmDialog', () => {
                 const confirmDialogInstance = contentTemplateFixture.debugElement.query(By.directive(ConfirmDialog)).componentInstance;
 
                 // @ContentChild('header') should set headerTemplate
-                expect(confirmDialogInstance.headerTemplate).toBeDefined();
-                expect(confirmDialogInstance.headerTemplate?.constructor.name).toBe('TemplateRef');
+                expect(confirmDialogInstance.headerTemplate()).toBeDefined();
+                expect(confirmDialogInstance.headerTemplate()?.constructor.name).toBe('TemplateRef');
             });
 
             it("should process messageTemplate from @ContentChild('message')", async () => {
@@ -677,8 +677,8 @@ describe('ConfirmDialog', () => {
                 const confirmDialogInstance = contentTemplateFixture.debugElement.query(By.directive(ConfirmDialog)).componentInstance;
 
                 // @ContentChild('message') should set messageTemplate
-                expect(confirmDialogInstance.messageTemplate).toBeDefined();
-                expect(confirmDialogInstance.messageTemplate?.constructor.name).toBe('TemplateRef');
+                expect(confirmDialogInstance.messageTemplate()).toBeDefined();
+                expect(confirmDialogInstance.messageTemplate()?.constructor.name).toBe('TemplateRef');
             });
 
             it("should process iconTemplate from @ContentChild('icon')", async () => {
@@ -690,8 +690,8 @@ describe('ConfirmDialog', () => {
                 const confirmDialogInstance = contentTemplateFixture.debugElement.query(By.directive(ConfirmDialog)).componentInstance;
 
                 // @ContentChild('icon') should set iconTemplate
-                expect(confirmDialogInstance.iconTemplate).toBeDefined();
-                expect(confirmDialogInstance.iconTemplate?.constructor.name).toBe('TemplateRef');
+                expect(confirmDialogInstance.iconTemplate()).toBeDefined();
+                expect(confirmDialogInstance.iconTemplate()?.constructor.name).toBe('TemplateRef');
             });
 
             it("should process footerTemplate from @ContentChild('footer')", async () => {
@@ -703,8 +703,8 @@ describe('ConfirmDialog', () => {
                 const confirmDialogInstance = contentTemplateFixture.debugElement.query(By.directive(ConfirmDialog)).componentInstance;
 
                 // @ContentChild('footer') should set footerTemplate
-                expect(confirmDialogInstance.footerTemplate).toBeDefined();
-                expect(confirmDialogInstance.footerTemplate?.constructor.name).toBe('TemplateRef');
+                expect(confirmDialogInstance.footerTemplate()).toBeDefined();
+                expect(confirmDialogInstance.footerTemplate()?.constructor.name).toBe('TemplateRef');
             });
 
             it("should process rejectIconTemplate from @ContentChild('rejecticon')", async () => {
@@ -716,8 +716,8 @@ describe('ConfirmDialog', () => {
                 const confirmDialogInstance = contentTemplateFixture.debugElement.query(By.directive(ConfirmDialog)).componentInstance;
 
                 // @ContentChild('rejecticon') should set rejectIconTemplate
-                expect(confirmDialogInstance.rejectIconTemplate).toBeDefined();
-                expect(confirmDialogInstance.rejectIconTemplate?.constructor.name).toBe('TemplateRef');
+                expect(confirmDialogInstance.rejectIconTemplate()).toBeDefined();
+                expect(confirmDialogInstance.rejectIconTemplate()?.constructor.name).toBe('TemplateRef');
             });
 
             it("should process acceptIconTemplate from @ContentChild('accepticon')", async () => {
@@ -729,8 +729,8 @@ describe('ConfirmDialog', () => {
                 const confirmDialogInstance = contentTemplateFixture.debugElement.query(By.directive(ConfirmDialog)).componentInstance;
 
                 // @ContentChild('accepticon') should set acceptIconTemplate
-                expect(confirmDialogInstance.acceptIconTemplate).toBeDefined();
-                expect(confirmDialogInstance.acceptIconTemplate?.constructor.name).toBe('TemplateRef');
+                expect(confirmDialogInstance.acceptIconTemplate()).toBeDefined();
+                expect(confirmDialogInstance.acceptIconTemplate()?.constructor.name).toBe('TemplateRef');
             });
 
             it("should process headlessTemplate from @ContentChild('headless')", async () => {
@@ -742,8 +742,8 @@ describe('ConfirmDialog', () => {
                 const confirmDialogInstance = contentTemplateFixture.debugElement.query(By.directive(ConfirmDialog)).componentInstance;
 
                 // @ContentChild('headless') should set headlessTemplate
-                expect(confirmDialogInstance.headlessTemplate).toBeDefined();
-                expect(confirmDialogInstance.headlessTemplate?.constructor.name).toBe('TemplateRef');
+                expect(confirmDialogInstance.headlessTemplate()).toBeDefined();
+                expect(confirmDialogInstance.headlessTemplate()?.constructor.name).toBe('TemplateRef');
             });
         });
 
@@ -768,7 +768,7 @@ describe('ConfirmDialog', () => {
                 await new Promise((resolve) => setTimeout(resolve, 10));
 
                 const contentTemplateConfirmDialog = contentTemplateFixture.debugElement.query(By.directive(ConfirmDialog)).componentInstance;
-                expect(contentTemplateConfirmDialog.headerTemplate).toBeDefined();
+                expect(contentTemplateConfirmDialog.headerTemplate()).toBeDefined();
             });
 
             it('should use default templates when custom ones are not provided', () => {
@@ -860,7 +860,7 @@ describe('ConfirmDialog', () => {
         it('should not copy confirmation keys onto the component instance', async () => {
             await showConfirmation({ message: 'First', closable: false, acceptButtonProps: { severity: 'danger' } });
 
-            expect(confirmDialogInstance.closable).toBe(true);
+            expect(confirmDialogInstance.closable()).toBe(true);
             expect((confirmDialogInstance as any).acceptButtonProps).toBeUndefined();
         });
 
@@ -886,7 +886,7 @@ describe('ConfirmDialog', () => {
             await serviceFixture.whenStable();
 
             const confirmDialogInstance = serviceFixture.debugElement.query(By.directive(ConfirmDialog)).componentInstance;
-            expect(confirmDialogInstance.visible).toBe(true);
+            expect(confirmDialogInstance.visible()).toBe(true);
         });
 
         it('should handle accept callback from ConfirmationService', async () => {
@@ -946,9 +946,9 @@ describe('ConfirmDialog', () => {
             await new Promise((resolve) => setTimeout(resolve, 0));
 
             const confirmDialogInstance = accessibilityFixture.debugElement.query(By.directive(ConfirmDialog)).componentInstance;
-            expect(confirmDialogInstance.acceptAriaLabel).toBe('Accept confirmation');
-            expect(confirmDialogInstance.rejectAriaLabel).toBe('Reject confirmation');
-            expect(confirmDialogInstance.closeAriaLabel).toBe('Close dialog');
+            expect(confirmDialogInstance.acceptAriaLabel()).toBe('Accept confirmation');
+            expect(confirmDialogInstance.rejectAriaLabel()).toBe('Reject confirmation');
+            expect(confirmDialogInstance.closeAriaLabel()).toBe('Close dialog');
         });
 
         it('should handle focus management', async () => {
@@ -990,7 +990,7 @@ describe('ConfirmDialog', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
 
-            expect(confirmDialogInstance.styleClass).toBe('my-custom-dialog');
+            expect(confirmDialogInstance.styleClass()).toBe('my-custom-dialog');
         });
 
         it('should apply button style classes', async () => {
@@ -1000,8 +1000,8 @@ describe('ConfirmDialog', () => {
             await new Promise((resolve) => setTimeout(resolve, 0));
 
             const confirmDialogInstance = buttonPropsFixture.debugElement.query(By.directive(ConfirmDialog)).componentInstance;
-            expect(confirmDialogInstance.acceptButtonStyleClass).toBe('custom-accept');
-            expect(confirmDialogInstance.rejectButtonStyleClass).toBe('custom-reject');
+            expect(confirmDialogInstance.acceptButtonStyleClass()).toBe('custom-accept');
+            expect(confirmDialogInstance.rejectButtonStyleClass()).toBe('custom-reject');
         });
     });
 
@@ -1014,9 +1014,9 @@ describe('ConfirmDialog', () => {
             await fixture.whenStable();
 
             const dialog = fixture.debugElement.query(By.directive(Dialog));
-            expect(dialog.componentInstance.visible).toBe(true);
-            expect(dialog.componentInstance.draggable).toBe(false);
-            expect(dialog.componentInstance.blockScroll).toBe(false);
+            expect(dialog.componentInstance.visible()).toBe(true);
+            expect(dialog.componentInstance.draggable()).toBe(false);
+            expect(dialog.componentInstance.blockScroll()).toBe(false);
         });
 
         it('should handle dialog visibility changes', async () => {
@@ -1045,9 +1045,9 @@ describe('ConfirmDialog', () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
 
-            expect(confirmDialogInstance.header).toBe('' as any);
-            expect(confirmDialogInstance.message).toBe('' as any);
-            expect(confirmDialogInstance.icon).toBe('' as any);
+            expect(confirmDialogInstance.header()).toBe('' as any);
+            expect(confirmDialogInstance.message()).toBe('' as any);
+            expect(confirmDialogInstance.icon()).toBe('' as any);
         });
 
         it('should handle undefined properties gracefully', async () => {
@@ -1098,7 +1098,7 @@ describe('ConfirmDialog', () => {
         });
 
         it('should have option method for accessing properties', () => {
-            confirmDialogInstance.message = 'test message';
+            vi.spyOn(confirmDialogInstance, 'message').mockReturnValue('test message');
 
             expect(confirmDialogInstance.option('message')).toBe('test message');
         });
@@ -1319,13 +1319,13 @@ describe('ConfirmDialog', () => {
                 pt = {
                     pcDialog: ({ instance }: any) => {
                         return {
-                            class: instance?.visible ? 'VISIBLE_CLASS' : 'HIDDEN_CLASS'
+                            class: instance?.visible() ? 'VISIBLE_CLASS' : 'HIDDEN_CLASS'
                         };
                     },
                     message: ({ instance }: any) => {
                         return {
                             style: {
-                                color: instance?.visible ? 'black' : 'gray'
+                                color: instance?.visible() ? 'black' : 'gray'
                             }
                         };
                     }

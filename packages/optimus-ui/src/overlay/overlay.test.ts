@@ -167,7 +167,7 @@ describe('Overlay', () => {
 
                 fixture.componentRef.setInput('pt', {
                     root: ({ instance }: any) => ({
-                        class: instance?.visible ? 'VISIBLE_CLASS' : 'HIDDEN_CLASS'
+                        class: instance?.visible() ? 'VISIBLE_CLASS' : 'HIDDEN_CLASS'
                     })
                 });
                 fixture.changeDetectorRef.markForCheck();
@@ -269,7 +269,7 @@ describe('Overlay', () => {
                 let emitterAccessed = false;
                 fixture.componentRef.setInput('pt', {
                     root: ({ instance }: any) => {
-                        if (instance.visibleChange) {
+                        if (instance.visible?.subscribe) {
                             emitterAccessed = true;
                         }
                         return {};

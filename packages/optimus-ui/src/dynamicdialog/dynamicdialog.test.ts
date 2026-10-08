@@ -800,9 +800,9 @@ describe('DynamicDialog', () => {
                 }))
             };
 
-            component.insertionPoint = {
+            vi.spyOn(component, 'insertionPoint').mockReturnValue({
                 viewContainerRef: mockViewContainer as any
-            } as any;
+            } as any);
 
             component.loadChildComponent(TestDialogContentComponent);
 
@@ -819,7 +819,7 @@ describe('DynamicDialog', () => {
             };
 
             component.childComponentType = BoundContentComponent;
-            component.insertionPoint = { viewContainerRef: mockViewContainer as any } as any;
+            vi.spyOn(component, 'insertionPoint').mockReturnValue({ viewContainerRef: mockViewContainer as any } as any);
             component.bindings = bindings;
             component.directives = directives;
 
@@ -836,7 +836,7 @@ describe('DynamicDialog', () => {
             };
 
             component.childComponentType = BoundContentComponent;
-            component.insertionPoint = { viewContainerRef: mockViewContainer as any } as any;
+            vi.spyOn(component, 'insertionPoint').mockReturnValue({ viewContainerRef: mockViewContainer as any } as any);
             component.bindings = bindings;
             component.inputValues = { subtitle: 'From inputValues' };
 

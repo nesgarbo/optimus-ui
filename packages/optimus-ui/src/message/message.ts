@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { booleanAttribute, ChangeDetectionStrategy, Component, computed, ContentChild, ContentChildren, inject, InjectionToken, Input, input, NgModule, output, QueryList, signal, TemplateRef, ViewEncapsulation } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, computed, inject, InjectionToken, input, NgModule, output, signal, TemplateRef, ViewEncapsulation, contentChild, contentChildren } from '@angular/core';
 import { MotionOptions } from '@openng/optimus-ui-motion';
 import { PrimeTemplate, SharedModule } from '@openng/optimus-ui/api';
 import { BaseComponent, PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
@@ -23,25 +23,25 @@ const MESSAGE_INSTANCE = new InjectionToken<Message>('MESSAGE_INSTANCE');
     template: `
         <div [pBind]="ptm('contentWrapper')" [class]="cx('contentWrapper')" [attr.data-p]="dataP">
             <div [pBind]="ptm('content')" [class]="cx('content')" [attr.data-p]="dataP">
-                @if (iconTemplate || _iconTemplate) {
-                    <ng-container *ngTemplateOutlet="iconTemplate || _iconTemplate"></ng-container>
+                @if (iconTemplate() || _iconTemplate) {
+                    <ng-container *ngTemplateOutlet="iconTemplate() || _iconTemplate"></ng-container>
                 }
-                @if (icon) {
-                    <i [pBind]="ptm('icon')" [class]="cn(cx('icon'), icon)" [attr.data-p]="dataP"></i>
+                @if (icon()) {
+                    <i [pBind]="ptm('icon')" [class]="cn(cx('icon'), icon())" [attr.data-p]="dataP"></i>
                 }
 
-                @if (containerTemplate || _containerTemplate) {
-                    <ng-container *ngTemplateOutlet="containerTemplate || _containerTemplate; context: { closeCallback: closeCallback }"></ng-container>
+                @if (containerTemplate() || _containerTemplate) {
+                    <ng-container *ngTemplateOutlet="containerTemplate() || _containerTemplate; context: { closeCallback: closeCallback }"></ng-container>
                 } @else {
-                    @if (!escape) {
+                    @if (!escape()) {
                         <div>
-                            @if (!escape) {
-                                <span [pBind]="ptm('text')" [class]="cx('text')" [innerHTML]="text" [attr.data-p]="dataP"></span>
+                            @if (!escape()) {
+                                <span [pBind]="ptm('text')" [class]="cx('text')" [innerHTML]="text()" [attr.data-p]="dataP"></span>
                             }
                         </div>
                     } @else {
-                        @if (escape && text) {
-                            <span [pBind]="ptm('text')" [class]="cx('text')" [attr.data-p]="dataP">{{ text }}</span>
+                        @if (escape() && text()) {
+                            <span [pBind]="ptm('text')" [class]="cx('text')" [attr.data-p]="dataP">{{ text() }}</span>
                         }
                     }
 
@@ -49,15 +49,15 @@ const MESSAGE_INSTANCE = new InjectionToken<Message>('MESSAGE_INSTANCE');
                         <ng-content></ng-content>
                     </span>
                 }
-                @if (closable) {
+                @if (closable()) {
                     <button [pBind]="ptm('closeButton')" pRipple type="button" [class]="cx('closeButton')" (click)="close($event)" [attr.aria-label]="closeAriaLabel" [attr.data-p]="dataP">
-                        @if (closeIcon) {
-                            <i [pBind]="ptm('closeIcon')" [class]="cn(cx('closeIcon'), closeIcon)" [attr.data-p]="dataP"></i>
+                        @if (closeIcon()) {
+                            <i [pBind]="ptm('closeIcon')" [class]="cn(cx('closeIcon'), closeIcon())" [attr.data-p]="dataP"></i>
                         }
-                        @if (closeIconTemplate || _closeIconTemplate) {
-                            <ng-container *ngTemplateOutlet="closeIconTemplate || _closeIconTemplate"></ng-container>
+                        @if (closeIconTemplate() || _closeIconTemplate) {
+                            <ng-container *ngTemplateOutlet="closeIconTemplate() || _closeIconTemplate"></ng-container>
                         }
-                        @if (!closeIconTemplate && !_closeIconTemplate && !closeIcon) {
+                        @if (!closeIconTemplate() && !_closeIconTemplate && !closeIcon()) {
                             <svg [pBind]="ptm('closeIcon')" data-p-icon="times" [class]="cx('closeIcon')" [attr.data-p]="dataP" />
                         }
                     </button>
@@ -73,7 +73,7 @@ const MESSAGE_INSTANCE = new InjectionToken<Message>('MESSAGE_INSTANCE');
         '[attr.data-p]': 'dataP',
         role: 'alert',
         'aria-live': 'polite',
-        '[class]': 'cn(cx("root"), styleClass)',
+        '[class]': 'cn(cx("root"), styleClass())',
         '[animate.enter]': '"p-message-enter-active"',
         '[animate.leave]': '"p-message-leave-active"',
         '[class.p-message-leave-active]': '!visible()'
@@ -97,76 +97,82 @@ export class Message extends BaseComponent<MessagePassThrough> {
      * @defaultValue 'info'
      * @group Props
      */
-    @Input() severity: MessageSeverity | undefined | null = 'info';
+    readonly severity = input<MessageSeverity | undefined | null>('info');
     /**
      * Text content.
      * @deprecated since v20.0.0. Use content projection instead '<p-message>Content</p-message>'.
      * @group Props
      */
-    @Input() text: string | undefined;
+    readonly text = input<string | undefined>(undefined);
     /**
      * Whether displaying messages would be escaped or not.
      * @deprecated since v20.0.0. Use content projection instead '<p-message>Content</p-message>'.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) escape: boolean = true;
+    readonly escape = input<boolean, unknown>(true, { transform: booleanAttribute });
     /**
      * Inline style of the component.
      * @group Props
      */
-    @Input() style: { [klass: string]: any } | null | undefined;
+    readonly style = input<
+        | {
+              [klass: string]: any;
+          }
+        | null
+        | undefined
+    >(undefined);
     /**
      * Style class of the component.
      * @group Props
      */
-    @Input() styleClass: string | undefined;
+    readonly styleClass = input<string | undefined>(undefined);
     /**
      * Whether the message can be closed manually using the close icon.
      * @group Props
      * @defaultValue false
      */
-    @Input({ transform: booleanAttribute }) closable: boolean = false;
+    readonly closable = input<boolean, unknown>(false, { transform: booleanAttribute });
     /**
      * Icon to display in the message.
      * @group Props
      * @defaultValue undefined
      */
-    @Input() icon: string | undefined;
+    readonly icon = input<string | undefined>(undefined);
     /**
      * Icon to display in the message close button.
      * @group Props
      * @defaultValue undefined
      */
-    @Input() closeIcon: string | undefined;
+    readonly closeIcon = input<string | undefined>(undefined);
     /**
      * Delay in milliseconds to close the message automatically.
      * @defaultValue undefined
      */
-    @Input() life: number | undefined;
+    readonly life = input<number | undefined>(undefined);
     /**
      * Transition options of the show animation.
      * @defaultValue '300ms ease-out'
      * @group Props
      * @deprecated since v21.0.0, use `motionOptions` instead.
      */
-    @Input() showTransitionOptions: string = '300ms ease-out';
+    readonly showTransitionOptions = input<string>('300ms ease-out');
     /**
      * Transition options of the hide animation.
      * @defaultValue '200ms cubic-bezier(0.86, 0, 0.07, 1)'
      * @group Props
      * @deprecated since v21.0.0, use `motionOptions` instead.
      */
-    @Input() hideTransitionOptions: string = '200ms cubic-bezier(0.86, 0, 0.07, 1)';
+    readonly hideTransitionOptions = input<string>('200ms cubic-bezier(0.86, 0, 0.07, 1)');
     /**
      * Defines the size of the component.
      * @group Props
      */
-    @Input() size: 'large' | 'small' | undefined;
+    readonly size = input<'large' | 'small' | undefined>(undefined);
     /**
      * Specifies the input variant of the component.
      * @group Props
      */
-    @Input() variant: 'outlined' | 'text' | 'simple' | undefined;
+    readonly variant = input<'outlined' | 'text' | 'simple' | undefined>(undefined);
     /**
      * The motion options.
      * @group Props
@@ -198,21 +204,21 @@ export class Message extends BaseComponent<MessagePassThrough> {
      * @see {@link MessageContainerTemplateContext}
      * @group Templates
      */
-    @ContentChild('container', { descendants: false }) containerTemplate: TemplateRef<MessageContainerTemplateContext> | undefined;
+    readonly containerTemplate = contentChild<TemplateRef<MessageContainerTemplateContext>>('container', { descendants: false });
 
     /**
      * Custom template of the message icon.
      * @group Templates
      */
-    @ContentChild('icon', { descendants: false }) iconTemplate: TemplateRef<void> | undefined;
+    readonly iconTemplate = contentChild<TemplateRef<void>>('icon', { descendants: false });
 
     /**
      * Custom template of the close icon.
      * @group Templates
      */
-    @ContentChild('closeicon', { descendants: false }) closeIconTemplate: TemplateRef<void> | undefined;
+    readonly closeIconTemplate = contentChild<TemplateRef<void>>('closeicon', { descendants: false });
 
-    @ContentChildren(PrimeTemplate) templates: QueryList<PrimeTemplate> | undefined;
+    readonly templates = contentChildren(PrimeTemplate);
 
     _containerTemplate: TemplateRef<MessageContainerTemplateContext> | undefined;
 
@@ -227,11 +233,12 @@ export class Message extends BaseComponent<MessagePassThrough> {
     private lifeTimeout: ReturnType<typeof setTimeout> | undefined;
 
     onInit() {
-        if (this.life) {
+        const life = this.life();
+        if (life) {
             this.lifeTimeout = setTimeout(() => {
                 this.lifeTimeout = undefined;
                 this.visible.set(false);
-            }, this.life);
+            }, life);
         }
     }
 
@@ -240,7 +247,7 @@ export class Message extends BaseComponent<MessagePassThrough> {
     }
 
     onAfterContentInit() {
-        this.templates?.forEach((item) => {
+        this.templates()?.forEach((item) => {
             switch (item.getType()) {
                 case 'container':
                     this._containerTemplate = item.template;
@@ -269,10 +276,10 @@ export class Message extends BaseComponent<MessagePassThrough> {
 
     get dataP() {
         return this.cn({
-            outlined: this.variant === 'outlined',
-            simple: this.variant === 'simple',
-            [this.severity as string]: this.severity,
-            [this.size as string]: this.size
+            outlined: this.variant() === 'outlined',
+            simple: this.variant() === 'simple',
+            [this.severity() as string]: this.severity(),
+            [this.size() as string]: this.size()
         });
     }
 }

@@ -173,7 +173,7 @@ describe('FocusTrap', () => {
         });
 
         it('should have default values', () => {
-            expect(directive.pFocusTrapDisabled).toBe(false);
+            expect(directive.pFocusTrapDisabled()).toBe(false);
         });
 
         it('should inject platform ID and document', () => {

@@ -1,5 +1,5 @@
 import { isPlatformBrowser } from '@angular/common';
-import { booleanAttribute, computed, Directive, effect, ElementRef, EmbeddedViewRef, inject, InjectionToken, input, Input, NgModule, NgZone, numberAttribute, SecurityContext, SimpleChanges, TemplateRef, ViewContainerRef } from '@angular/core';
+import { booleanAttribute, computed, Directive, effect, ElementRef, EmbeddedViewRef, inject, InjectionToken, input, NgModule, NgZone, numberAttribute, SecurityContext, SimpleChanges, TemplateRef, ViewContainerRef } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { appendChild, createElement, fadeIn, findSingle, getOuterHeight, getOuterWidth, getViewport, getWindowScrollLeft, getWindowScrollTop, hasClass, removeChild, uuid } from '@openng/optimus-ui-utils';
 import { TooltipOptions } from '@openng/optimus-ui/api';
@@ -32,99 +32,93 @@ export class Tooltip extends BaseComponent<TooltipPassThroughOptions> {
      * Position of the tooltip.
      * @group Props
      */
-    @Input() tooltipPosition: 'right' | 'left' | 'top' | 'bottom' | string | undefined;
+    readonly tooltipPosition = input<'right' | 'left' | 'top' | 'bottom' | string | undefined>(undefined);
     /**
      * Event to show the tooltip.
      * @group Props
      */
-    @Input() tooltipEvent: 'hover' | 'focus' | 'both' = 'hover';
+    readonly tooltipEvent = input<'hover' | 'focus' | 'both'>('hover');
     /**
      * Type of CSS position.
      * @group Props
      */
-    @Input() positionStyle: string | undefined;
+    readonly positionStyle = input<string | undefined>(undefined);
     /**
      * Style class of the tooltip.
      * @group Props
      */
-    @Input() tooltipStyleClass: string | undefined;
+    readonly tooltipStyleClass = input<string | undefined>(undefined);
     /**
      * Whether the z-index should be managed automatically to always go on top or have a fixed value.
      * @group Props
      */
-    @Input() tooltipZIndex: string | undefined;
+    readonly tooltipZIndex = input<string | undefined>(undefined);
     /**
      * By default the tooltip contents are rendered as text. Set to false to support html tags in the content.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) escape: boolean = true;
+    readonly escape = input<boolean, unknown>(true, { transform: booleanAttribute });
     /**
      * Delay to show the tooltip in milliseconds.
      * @group Props
      */
-    @Input({ transform: numberAttribute }) showDelay: number | undefined;
+    readonly showDelay = input<number | undefined, unknown>(undefined, { transform: numberAttribute });
     /**
      * Delay to hide the tooltip in milliseconds.
      * @group Props
      */
-    @Input({ transform: numberAttribute }) hideDelay: number | undefined;
+    readonly hideDelay = input<number | undefined, unknown>(undefined, { transform: numberAttribute });
     /**
      * Time to wait in milliseconds to hide the tooltip even it is active.
      * @group Props
      */
-    @Input({ transform: numberAttribute }) life: number | undefined;
+    readonly life = input<number | undefined, unknown>(undefined, { transform: numberAttribute });
     /**
      * Specifies the additional vertical offset of the tooltip from its default position.
      * @group Props
      */
-    @Input({ transform: numberAttribute }) positionTop: number | undefined;
+    readonly positionTop = input<number | undefined, unknown>(undefined, { transform: numberAttribute });
     /**
      * Specifies the additional horizontal offset of the tooltip from its default position.
      * @group Props
      */
-    @Input({ transform: numberAttribute }) positionLeft: number | undefined;
+    readonly positionLeft = input<number | undefined, unknown>(undefined, { transform: numberAttribute });
     /**
      * Whether to hide tooltip when hovering over tooltip content.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) autoHide: boolean = true;
+    readonly autoHide = input<boolean, unknown>(true, { transform: booleanAttribute });
     /**
      * Automatically adjusts the element position when there is not enough space on the selected position.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) fitContent: boolean = true;
+    readonly fitContent = input<boolean, unknown>(true, { transform: booleanAttribute });
     /**
      * Whether to hide tooltip on escape key press.
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) hideOnEscape: boolean = true;
+    readonly hideOnEscape = input<boolean, unknown>(true, { transform: booleanAttribute });
     /**
      * Whether to show the tooltip only when the target text overflows (e.g., ellipsis is active).
      * @group Props
      */
-    @Input({ transform: booleanAttribute }) showOnEllipsis: boolean = false;
+    readonly showOnEllipsis = input<boolean, unknown>(false, { transform: booleanAttribute });
     /**
      * Content of the tooltip.
      * @group Props
      */
-    @Input('pTooltip') content: string | TemplateRef<HTMLElement> | undefined;
+    readonly content = input<string | TemplateRef<HTMLElement> | undefined>(undefined, { alias: 'pTooltip' });
     /**
      * When present, it specifies that the component should be disabled.
      * @defaultValue false
      * @group Props
      */
-    @Input('tooltipDisabled') get disabled(): boolean {
-        return this._disabled as boolean;
-    }
-    set disabled(val: boolean) {
-        this._disabled = val;
-        this.deactivate();
-    }
+    readonly disabled = input<boolean | undefined>(undefined, { alias: 'tooltipDisabled' });
     /**
      * Specifies the tooltip configuration options for the component.
      * @group Props
      */
-    @Input() tooltipOptions: TooltipOptions | undefined;
+    readonly tooltipOptions = input<TooltipOptions | undefined>(undefined);
     /**
      * Target element to attach the overlay, valid values are "body" or a local ng-template variable of another element (note: use binding with brackets for template variables, e.g. [appendTo]="mydiv" for a div element having #mydiv as variable name).
      * @defaultValue 'self'
@@ -154,8 +148,6 @@ export class Tooltip extends BaseComponent<TooltipPassThroughOptions> {
         showOnEllipsis: false,
         id: uuid('pn_id_') + '_tooltip'
     };
-
-    _disabled: boolean | undefined;
 
     container: any;
 
@@ -339,6 +331,7 @@ export class Tooltip extends BaseComponent<TooltipPassThroughOptions> {
 
         if (simpleChange.disabled) {
             this.setOption({ disabled: simpleChange.disabled.currentValue });
+            this.deactivate();
         }
 
         if (simpleChange.content) {
@@ -555,7 +548,7 @@ export class Tooltip extends BaseComponent<TooltipPassThroughOptions> {
 
         this.container.style.display = 'none';
 
-        if (this.fitContent) {
+        if (this.fitContent()) {
             this.container.style.width = 'fit-content';
         }
 
@@ -758,8 +751,8 @@ export class Tooltip extends BaseComponent<TooltipPassThroughOptions> {
         this._tooltipOptions = { ...this._tooltipOptions, ...option };
     }
 
-    getOption(option: string) {
-        return this._tooltipOptions[option as keyof typeof this.tooltipOptions];
+    getOption(option: string): any {
+        return (this._tooltipOptions as any)[option];
     }
 
     getTarget(el: Element) {
