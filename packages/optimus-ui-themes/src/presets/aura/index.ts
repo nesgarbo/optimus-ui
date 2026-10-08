@@ -6,7 +6,9 @@ import aiassistview from '@openng/optimus-ui-themes/aura/aiassistview';
 import autocomplete from '@openng/optimus-ui-themes/aura/autocomplete';
 import avatar from '@openng/optimus-ui-themes/aura/avatar';
 import badge from '@openng/optimus-ui-themes/aura/badge';
+import barcode from '@openng/optimus-ui-themes/aura/barcode';
 import base from '@openng/optimus-ui-themes/aura/base';
+import blockeditor from '@openng/optimus-ui-themes/aura/blockeditor';
 import blockui from '@openng/optimus-ui-themes/aura/blockui';
 import breadcrumb from '@openng/optimus-ui-themes/aura/breadcrumb';
 import button from '@openng/optimus-ui-themes/aura/button';
@@ -20,7 +22,9 @@ import colorpicker from '@openng/optimus-ui-themes/aura/colorpicker';
 import confirmdialog from '@openng/optimus-ui-themes/aura/confirmdialog';
 import confirmpopup from '@openng/optimus-ui-themes/aura/confirmpopup';
 import contextmenu from '@openng/optimus-ui-themes/aura/contextmenu';
+import cropper from '@openng/optimus-ui-themes/aura/cropper';
 import css from '@openng/optimus-ui-themes/aura/css';
+import dashboardlayout from '@openng/optimus-ui-themes/aura/dashboardlayout';
 import datatable from '@openng/optimus-ui-themes/aura/datatable';
 import dataview from '@openng/optimus-ui-themes/aura/dataview';
 import datepicker from '@openng/optimus-ui-themes/aura/datepicker';
@@ -33,6 +37,8 @@ import fieldset from '@openng/optimus-ui-themes/aura/fieldset';
 import fileupload from '@openng/optimus-ui-themes/aura/fileupload';
 import floatlabel from '@openng/optimus-ui-themes/aura/floatlabel';
 import galleria from '@openng/optimus-ui-themes/aura/galleria';
+import gantt from '@openng/optimus-ui-themes/aura/gantt';
+import gauge from '@openng/optimus-ui-themes/aura/gauge';
 import iconfield from '@openng/optimus-ui-themes/aura/iconfield';
 import iftalabel from '@openng/optimus-ui-themes/aura/iftalabel';
 import image from '@openng/optimus-ui-themes/aura/image';
@@ -46,7 +52,9 @@ import inputotp from '@openng/optimus-ui-themes/aura/inputotp';
 import inputtext from '@openng/optimus-ui-themes/aura/inputtext';
 import knob from '@openng/optimus-ui-themes/aura/knob';
 import listbox from '@openng/optimus-ui-themes/aura/listbox';
+import map from '@openng/optimus-ui-themes/aura/map';
 import megamenu from '@openng/optimus-ui-themes/aura/megamenu';
+import mention from '@openng/optimus-ui-themes/aura/mention';
 import menu from '@openng/optimus-ui-themes/aura/menu';
 import menubar from '@openng/optimus-ui-themes/aura/menubar';
 import message from '@openng/optimus-ui-themes/aura/message';
@@ -59,21 +67,25 @@ import paginator from '@openng/optimus-ui-themes/aura/paginator';
 import panel from '@openng/optimus-ui-themes/aura/panel';
 import panelmenu from '@openng/optimus-ui-themes/aura/panelmenu';
 import password from '@openng/optimus-ui-themes/aura/password';
+import pdfeditor from '@openng/optimus-ui-themes/aura/pdfeditor';
 import picklist from '@openng/optimus-ui-themes/aura/picklist';
 import popover from '@openng/optimus-ui-themes/aura/popover';
 import progressbar from '@openng/optimus-ui-themes/aura/progressbar';
 import progressspinner from '@openng/optimus-ui-themes/aura/progressspinner';
+import querybuilder from '@openng/optimus-ui-themes/aura/querybuilder';
 import radiobutton from '@openng/optimus-ui-themes/aura/radiobutton';
 import rating from '@openng/optimus-ui-themes/aura/rating';
 import ripple from '@openng/optimus-ui-themes/aura/ripple';
 import scrollpanel from '@openng/optimus-ui-themes/aura/scrollpanel';
 import select from '@openng/optimus-ui-themes/aura/select';
 import selectbutton from '@openng/optimus-ui-themes/aura/selectbutton';
+import signature from '@openng/optimus-ui-themes/aura/signature';
 import skeleton from '@openng/optimus-ui-themes/aura/skeleton';
 import slider from '@openng/optimus-ui-themes/aura/slider';
 import speeddial from '@openng/optimus-ui-themes/aura/speeddial';
 import splitbutton from '@openng/optimus-ui-themes/aura/splitbutton';
 import splitter from '@openng/optimus-ui-themes/aura/splitter';
+import spreadsheet from '@openng/optimus-ui-themes/aura/spreadsheet';
 import stepper from '@openng/optimus-ui-themes/aura/stepper';
 import steps from '@openng/optimus-ui-themes/aura/steps';
 import tabmenu from '@openng/optimus-ui-themes/aura/tabmenu';
@@ -105,6 +117,8 @@ export default {
         autocomplete,
         avatar,
         badge,
+        barcode,
+        blockeditor,
         blockui,
         breadcrumb,
         button,
@@ -118,6 +132,8 @@ export default {
         confirmdialog,
         confirmpopup,
         contextmenu,
+        cropper,
+        dashboardlayout,
         datatable,
         dataview,
         datepicker,
@@ -130,6 +146,8 @@ export default {
         fileupload,
         floatlabel,
         galleria,
+        gantt,
+        gauge,
         iconfield,
         iftalabel,
         image,
@@ -143,7 +161,9 @@ export default {
         inputtext,
         knob,
         listbox,
+        map,
         megamenu,
+        mention,
         menu,
         menubar,
         message,
@@ -156,21 +176,25 @@ export default {
         panel,
         panelmenu,
         password,
+        pdfeditor,
         picklist,
         popover,
         progressbar,
         progressspinner,
+        querybuilder,
         radiobutton,
         rating,
         ripple,
         scrollpanel,
         select,
         selectbutton,
+        signature,
         skeleton,
         slider,
         speeddial,
         splitbutton,
         splitter,
+        spreadsheet,
         stepper,
         steps,
         tabmenu,

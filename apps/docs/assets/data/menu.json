@@ -89,15 +89,6 @@
                             "routerLink": "/datepicker"
                         },
                         {
-                            "name": "Editor",
-                            "routerLink": "/editor"
-                        },
-                        {
-                            "name": "TextEditor",
-                            "routerLink": "/texteditor",
-                            "badge": "New"
-                        },
-                        {
                             "name": "FloatLabel",
                             "routerLink": "/floatlabel"
                         },
@@ -142,12 +133,22 @@
                             "routerLink": "/listbox"
                         },
                         {
+                            "name": "Mention",
+                            "routerLink": "/mention",
+                            "badge": "New"
+                        },
+                        {
                             "name": "MultiSelect",
                             "routerLink": "/multiselect"
                         },
                         {
                             "name": "Password",
                             "routerLink": "/password"
+                        },
+                        {
+                            "name": "QueryBuilder",
+                            "routerLink": "/querybuilder",
+                            "badge": "New"
                         },
                         {
                             "name": "RadioButton",
@@ -164,6 +165,11 @@
                         {
                             "name": "SelectButton",
                             "routerLink": "/selectbutton"
+                        },
+                        {
+                            "name": "Signature",
+                            "routerLink": "/signature",
+                            "badge": "New"
                         },
                         {
                             "name": "Slider",
@@ -188,6 +194,35 @@
                     ]
                 },
                 {
+                    "name": "Editors",
+                    "children": [
+                        {
+                            "name": "BlockEditor",
+                            "routerLink": "/blockeditor",
+                            "badge": "New"
+                        },
+                        {
+                            "name": "Editor",
+                            "routerLink": "/editor"
+                        },
+                        {
+                            "name": "PdfEditor",
+                            "routerLink": "/pdfeditor",
+                            "badge": "New"
+                        },
+                        {
+                            "name": "Spreadsheet",
+                            "routerLink": "/spreadsheet",
+                            "badge": "New"
+                        },
+                        {
+                            "name": "TextEditor",
+                            "routerLink": "/texteditor",
+                            "badge": "New"
+                        }
+                    ]
+                },
+                {
                     "name": "Button",
                     "children": [
                         {
@@ -208,8 +243,18 @@
                     "name": "Data",
                     "children": [
                         {
+                            "name": "DashboardLayout",
+                            "routerLink": "/dashboardlayout",
+                            "badge": "New"
+                        },
+                        {
                             "name": "DataView",
                             "routerLink": "/dataview"
+                        },
+                        {
+                            "name": "Gantt",
+                            "routerLink": "/gantt",
+                            "badge": "New"
                         },
                         {
                             "name": "OrderList",
@@ -391,6 +436,11 @@
                             "routerLink": "/chart"
                         },
                         {
+                            "name": "Gauges",
+                            "routerLink": "/gauges",
+                            "badge": "New"
+                        },
+                        {
                             "name": "Charts (SVG & Canvas)",
                             "routerLink": "/charts",
                             "badge": "New"
@@ -424,8 +474,18 @@
                     "name": "Media",
                     "children": [
                         {
+                            "name": "Barcode",
+                            "routerLink": "/barcode",
+                            "badge": "New"
+                        },
+                        {
                             "name": "Carousel",
                             "routerLink": "/carousel"
+                        },
+                        {
+                            "name": "Cropper",
+                            "routerLink": "/cropper",
+                            "badge": "New"
                         },
                         {
                             "name": "Galleria",
@@ -438,6 +498,11 @@
                         {
                             "name": "ImageCompare",
                             "routerLink": "/imagecompare"
+                        },
+                        {
+                            "name": "Map",
+                            "routerLink": "/map",
+                            "badge": "New"
                         }
                     ]
                 },

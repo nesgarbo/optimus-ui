@@ -6,7 +6,9 @@ import aiassistview from '@openng/optimus-ui-themes/lara/aiassistview';
 import autocomplete from '@openng/optimus-ui-themes/lara/autocomplete';
 import avatar from '@openng/optimus-ui-themes/lara/avatar';
 import badge from '@openng/optimus-ui-themes/lara/badge';
+import barcode from '@openng/optimus-ui-themes/lara/barcode';
 import base from '@openng/optimus-ui-themes/lara/base';
+import blockeditor from '@openng/optimus-ui-themes/lara/blockeditor';
 import blockui from '@openng/optimus-ui-themes/lara/blockui';
 import breadcrumb from '@openng/optimus-ui-themes/lara/breadcrumb';
 import button from '@openng/optimus-ui-themes/lara/button';
@@ -20,6 +22,8 @@ import colorpicker from '@openng/optimus-ui-themes/lara/colorpicker';
 import confirmdialog from '@openng/optimus-ui-themes/lara/confirmdialog';
 import confirmpopup from '@openng/optimus-ui-themes/lara/confirmpopup';
 import contextmenu from '@openng/optimus-ui-themes/lara/contextmenu';
+import cropper from '@openng/optimus-ui-themes/lara/cropper';
+import dashboardlayout from '@openng/optimus-ui-themes/lara/dashboardlayout';
 import datatable from '@openng/optimus-ui-themes/lara/datatable';
 import dataview from '@openng/optimus-ui-themes/lara/dataview';
 import datepicker from '@openng/optimus-ui-themes/lara/datepicker';
@@ -32,6 +36,8 @@ import fieldset from '@openng/optimus-ui-themes/lara/fieldset';
 import fileupload from '@openng/optimus-ui-themes/lara/fileupload';
 import floatlabel from '@openng/optimus-ui-themes/lara/floatlabel';
 import galleria from '@openng/optimus-ui-themes/lara/galleria';
+import gantt from '@openng/optimus-ui-themes/lara/gantt';
+import gauge from '@openng/optimus-ui-themes/lara/gauge';
 import iconfield from '@openng/optimus-ui-themes/lara/iconfield';
 import iftalabel from '@openng/optimus-ui-themes/lara/iftalabel';
 import image from '@openng/optimus-ui-themes/lara/image';
@@ -45,7 +51,9 @@ import inputotp from '@openng/optimus-ui-themes/lara/inputotp';
 import inputtext from '@openng/optimus-ui-themes/lara/inputtext';
 import knob from '@openng/optimus-ui-themes/lara/knob';
 import listbox from '@openng/optimus-ui-themes/lara/listbox';
+import map from '@openng/optimus-ui-themes/lara/map';
 import megamenu from '@openng/optimus-ui-themes/lara/megamenu';
+import mention from '@openng/optimus-ui-themes/lara/mention';
 import menu from '@openng/optimus-ui-themes/lara/menu';
 import menubar from '@openng/optimus-ui-themes/lara/menubar';
 import message from '@openng/optimus-ui-themes/lara/message';
@@ -58,21 +66,25 @@ import paginator from '@openng/optimus-ui-themes/lara/paginator';
 import panel from '@openng/optimus-ui-themes/lara/panel';
 import panelmenu from '@openng/optimus-ui-themes/lara/panelmenu';
 import password from '@openng/optimus-ui-themes/lara/password';
+import pdfeditor from '@openng/optimus-ui-themes/lara/pdfeditor';
 import picklist from '@openng/optimus-ui-themes/lara/picklist';
 import popover from '@openng/optimus-ui-themes/lara/popover';
 import progressbar from '@openng/optimus-ui-themes/lara/progressbar';
 import progressspinner from '@openng/optimus-ui-themes/lara/progressspinner';
+import querybuilder from '@openng/optimus-ui-themes/lara/querybuilder';
 import radiobutton from '@openng/optimus-ui-themes/lara/radiobutton';
 import rating from '@openng/optimus-ui-themes/lara/rating';
 import ripple from '@openng/optimus-ui-themes/lara/ripple';
 import scrollpanel from '@openng/optimus-ui-themes/lara/scrollpanel';
 import select from '@openng/optimus-ui-themes/lara/select';
 import selectbutton from '@openng/optimus-ui-themes/lara/selectbutton';
+import signature from '@openng/optimus-ui-themes/lara/signature';
 import skeleton from '@openng/optimus-ui-themes/lara/skeleton';
 import slider from '@openng/optimus-ui-themes/lara/slider';
 import speeddial from '@openng/optimus-ui-themes/lara/speeddial';
 import splitbutton from '@openng/optimus-ui-themes/lara/splitbutton';
 import splitter from '@openng/optimus-ui-themes/lara/splitter';
+import spreadsheet from '@openng/optimus-ui-themes/lara/spreadsheet';
 import stepper from '@openng/optimus-ui-themes/lara/stepper';
 import steps from '@openng/optimus-ui-themes/lara/steps';
 import tabmenu from '@openng/optimus-ui-themes/lara/tabmenu';
@@ -104,9 +116,13 @@ export default {
         autocomplete,
         avatar,
         badge,
+        barcode,
+        blockeditor,
         blockui,
         breadcrumb,
         button,
+        cropper,
+        dashboardlayout,
         datepicker,
         card,
         carousel,
@@ -127,6 +143,8 @@ export default {
         editor,
         fieldset,
         fileupload,
+        gantt,
+        gauge,
         iftalabel,
         floatlabel,
         galleria,
@@ -142,7 +160,9 @@ export default {
         inputtext,
         knob,
         listbox,
+        map,
         megamenu,
+        mention,
         menu,
         menubar,
         message,
@@ -151,6 +171,7 @@ export default {
         orderlist,
         organizationchart,
         overlaybadge,
+        pdfeditor,
         popover,
         paginator,
         password,
@@ -159,17 +180,20 @@ export default {
         picklist,
         progressbar,
         progressspinner,
+        querybuilder,
         radiobutton,
         rating,
         ripple,
         scrollpanel,
         select,
         selectbutton,
+        signature,
         skeleton,
         slider,
         speeddial,
         splitter,
         splitbutton,
+        spreadsheet,
         stepper,
         steps,
         tabmenu,

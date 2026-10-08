@@ -63,9 +63,22 @@
         "@angular-devkit/schematics": "^22.1.6",
         "@angular/build": "catalog:angular22",
         "@schematics/angular": "^22.1.6",
+        "@tiptap/core": "^3.31.4",
+        "@tiptap/extension-image": "^3.31.4",
+        "@tiptap/extension-list": "^3.31.4",
+        "@tiptap/extensions": "^3.31.4",
+        "@tiptap/pm": "^3.31.4",
+        "@tiptap/starter-kit": "^3.31.4",
+        "@tiptap/suggestion": "^3.31.4",
         "@types/node": "^26.2.0",
+        "@univerjs/preset-sheets-core": "^1.0.3",
+        "@univerjs/presets": "^1.0.3",
         "@vitest/browser-playwright": "^4.1.11",
         "@vitest/coverage-v8": "^4.1.11",
+        "cropperjs": "2.3.0",
+        "maplibre-gl": "^6.13.0",
+        "pdf-lib": "^1.17.1",
+        "pdfjs-dist": "^6.4.299",
         "prosemirror-commands": "1.7.2",
         "prosemirror-dropcursor": "1.8.3",
         "prosemirror-gapcursor": "1.4.1",
@@ -89,7 +102,20 @@
         "@angular/forms": "catalog:angular22",
         "@angular/platform-browser": "catalog:angular22",
         "@angular/router": "catalog:angular22",
+        "@tiptap/core": "^3.0.0",
+        "@tiptap/extension-image": "^3.0.0",
+        "@tiptap/extension-list": "^3.0.0",
+        "@tiptap/extensions": "^3.0.0",
+        "@tiptap/pm": "^3.0.0",
+        "@tiptap/starter-kit": "^3.0.0",
+        "@tiptap/suggestion": "^3.0.0",
         "chart.js": "^4.0.0",
+        "@univerjs/preset-sheets-core": "^1.0.0",
+        "@univerjs/presets": "^1.0.0",
+        "cropperjs": "^2.0.0",
+        "maplibre-gl": "^6.0.0",
+        "pdf-lib": "^1.17.1",
+        "pdfjs-dist": "^6.0.0",
         "prosemirror-commands": "^1.7.2",
         "prosemirror-dropcursor": "^1.8.3",
         "prosemirror-gapcursor": "^1.4.1",
@@ -111,7 +137,46 @@
         "@openng/optimus-ui-utils": "workspace:*"
     },
     "peerDependenciesMeta": {
+        "@univerjs/preset-sheets-core": {
+            "optional": true
+        },
+        "@univerjs/presets": {
+            "optional": true
+        },
+        "@tiptap/core": {
+            "optional": true
+        },
+        "@tiptap/extension-image": {
+            "optional": true
+        },
+        "@tiptap/extension-list": {
+            "optional": true
+        },
+        "@tiptap/extensions": {
+            "optional": true
+        },
+        "@tiptap/pm": {
+            "optional": true
+        },
+        "@tiptap/starter-kit": {
+            "optional": true
+        },
+        "@tiptap/suggestion": {
+            "optional": true
+        },
         "chart.js": {
+            "optional": true
+        },
+        "cropperjs": {
+            "optional": true
+        },
+        "maplibre-gl": {
+            "optional": true
+        },
+        "pdf-lib": {
+            "optional": true
+        },
+        "pdfjs-dist": {
             "optional": true
         },
         "prosemirror-commands": {

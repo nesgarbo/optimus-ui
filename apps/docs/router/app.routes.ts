@@ -9,6 +9,17 @@ export const routes: Routes = [
         component: AppMainComponent,
         children: [
             { path: 'accessibility', redirectTo: 'guides/accessibility', pathMatch: 'full' },
+            { path: 'barcode', loadChildren: () => import('@/pages/barcode/routes') },
+            { path: 'blockeditor', loadChildren: () => import('@/pages/blockeditor/routes') },
+            { path: 'cropper', loadChildren: () => import('@/pages/cropper/routes') },
+            { path: 'dashboardlayout', loadChildren: () => import('@/pages/dashboardlayout/routes') },
+            { path: 'gantt', loadChildren: () => import('@/pages/gantt/routes') },
+            { path: 'gauges', loadChildren: () => import('@/pages/gauges/routes') },
+            { path: 'map', loadChildren: () => import('@/pages/map/routes') },
+            { path: 'mention', loadChildren: () => import('@/pages/mention/routes') },
+            { path: 'pdfeditor', loadChildren: () => import('@/pages/pdfeditor/routes') },
+            { path: 'signature', loadChildren: () => import('@/pages/signature/routes') },
+            { path: 'spreadsheet', loadChildren: () => import('@/pages/spreadsheet/routes') },
             { path: 'theming', redirectTo: 'theming/styled', pathMatch: 'full' },
             { path: 'autocomplete', loadChildren: () => import('@/pages/autocomplete/routes') },
             {
@@ -208,6 +219,7 @@ export const routes: Routes = [
                 path: 'progressspinner',
                 loadChildren: () => import('@/pages/progressspinner/routes')
             },
+            { path: 'querybuilder', loadChildren: () => import('@/pages/querybuilder/routes') },
             {
                 path: 'radiobutton',
                 loadChildren: () => import('@/pages/radiobutton/routes')

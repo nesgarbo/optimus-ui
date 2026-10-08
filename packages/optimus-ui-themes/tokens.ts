@@ -15,6 +15,8 @@ export interface Tokens {
     autocomplete: TokenMetaData;
     avatar: TokenMetaData;
     badge: TokenMetaData;
+    barcode: TokenMetaData;
+    blockeditor: TokenMetaData;
     blockui: TokenMetaData;
     breadcrumb: TokenMetaData;
     button: TokenMetaData;
@@ -28,6 +30,8 @@ export interface Tokens {
     confirmdialog: TokenMetaData;
     confirmpopup: TokenMetaData;
     contextmenu: TokenMetaData;
+    cropper: TokenMetaData;
+    dashboardlayout: TokenMetaData;
     datatable: TokenMetaData;
     dataview: TokenMetaData;
     datepicker: TokenMetaData;
@@ -40,6 +44,8 @@ export interface Tokens {
     fileupload: TokenMetaData;
     floatlabel: TokenMetaData;
     galleria: TokenMetaData;
+    gantt: TokenMetaData;
+    gauge: TokenMetaData;
     iconfield: TokenMetaData;
     iftalabel: TokenMetaData;
     image: TokenMetaData;
@@ -54,7 +60,9 @@ export interface Tokens {
     inputtext: TokenMetaData;
     knob: TokenMetaData;
     listbox: TokenMetaData;
+    map: TokenMetaData;
     megamenu: TokenMetaData;
+    mention: TokenMetaData;
     menu: TokenMetaData;
     menubar: TokenMetaData;
     message: TokenMetaData;
@@ -67,10 +75,12 @@ export interface Tokens {
     panel: TokenMetaData;
     panelmenu: TokenMetaData;
     password: TokenMetaData;
+    pdfeditor: TokenMetaData;
     picklist: TokenMetaData;
     popover: TokenMetaData;
     progressbar: TokenMetaData;
     progressspinner: TokenMetaData;
+    querybuilder: TokenMetaData;
     radiobutton: TokenMetaData;
     rating: TokenMetaData;
     ripple: TokenMetaData;
@@ -78,11 +88,13 @@ export interface Tokens {
     scrollpanel: TokenMetaData;
     select: TokenMetaData;
     selectbutton: TokenMetaData;
+    signature: TokenMetaData;
     skeleton: TokenMetaData;
     slider: TokenMetaData;
     speeddial: TokenMetaData;
     splitbutton: TokenMetaData;
     splitter: TokenMetaData;
+    spreadsheet: TokenMetaData;
     stepper: TokenMetaData;
     steps: TokenMetaData;
     tabmenu: TokenMetaData;
@@ -1467,6 +1479,136 @@ export default {
                 token: 'badge.contrast.color',
                 variable: '--p-badge-contrast-color',
                 description: 'Color of contrast'
+            }
+        ]
+    },
+    barcode: {
+        description: 'Barcode Design Tokens',
+        tokens: [
+            {
+                name: 'barcode.root.borderRadius',
+                token: 'barcode.border.radius',
+                variable: '--p-barcode-border-radius',
+                description: 'Border radius of the symbol box'
+            },
+            {
+                name: 'barcode.root.invalidBorderColor',
+                token: 'barcode.invalid.border.color',
+                variable: '--p-barcode-invalid-border-color',
+                description: 'Outline color of the box while the value cannot be written'
+            }
+        ]
+    },
+    blockeditor: {
+        description: 'BlockEditor Design Tokens',
+        tokens: [
+            {
+                name: 'blockeditor.root.background',
+                token: 'blockeditor.background',
+                variable: '--p-blockeditor-background',
+                description: 'Background of root'
+            },
+            {
+                name: 'blockeditor.root.color',
+                token: 'blockeditor.color',
+                variable: '--p-blockeditor-color',
+                description: 'Color of root'
+            },
+            {
+                name: 'blockeditor.root.borderColor',
+                token: 'blockeditor.border.color',
+                variable: '--p-blockeditor-border-color',
+                description: 'Border color of root'
+            },
+            {
+                name: 'blockeditor.root.borderRadius',
+                token: 'blockeditor.border.radius',
+                variable: '--p-blockeditor-border-radius',
+                description: 'Border radius of root'
+            },
+            {
+                name: 'blockeditor.root.disabledOpacity',
+                token: 'blockeditor.disabled.opacity',
+                variable: '--p-blockeditor-disabled-opacity',
+                description: 'Opacity of root while disabled'
+            },
+            {
+                name: 'blockeditor.root.minHeight',
+                token: 'blockeditor.min.height',
+                variable: '--p-blockeditor-min-height',
+                description: 'Least height of the document'
+            },
+            {
+                name: 'blockeditor.root.padding',
+                token: 'blockeditor.padding',
+                variable: '--p-blockeditor-padding',
+                description: 'Padding of the document'
+            },
+            {
+                name: 'blockeditor.focus.borderColor',
+                token: 'blockeditor.focus.border.color',
+                variable: '--p-blockeditor-focus-border-color',
+                description: 'Border color of root while focused'
+            },
+            {
+                name: 'blockeditor.invalid.borderColor',
+                token: 'blockeditor.invalid.border.color',
+                variable: '--p-blockeditor-invalid-border-color',
+                description: 'Border color of root while invalid'
+            },
+            {
+                name: 'blockeditor.placeholder.color',
+                token: 'blockeditor.placeholder.color',
+                variable: '--p-blockeditor-placeholder-color',
+                description: 'Color of the placeholder'
+            },
+            {
+                name: 'blockeditor.quote.borderColor',
+                token: 'blockeditor.quote.border.color',
+                variable: '--p-blockeditor-quote-border-color',
+                description: 'Color of the bar of a quote'
+            },
+            {
+                name: 'blockeditor.code.background',
+                token: 'blockeditor.code.background',
+                variable: '--p-blockeditor-code-background',
+                description: 'Background of code'
+            },
+            {
+                name: 'blockeditor.link.color',
+                token: 'blockeditor.link.color',
+                variable: '--p-blockeditor-link-color',
+                description: 'Color of a link'
+            },
+            {
+                name: 'blockeditor.overlay.background',
+                token: 'blockeditor.overlay.background',
+                variable: '--p-blockeditor-overlay-background',
+                description: 'Background of the slash menu and the toolbar over a selection'
+            },
+            {
+                name: 'blockeditor.overlay.shadow',
+                token: 'blockeditor.overlay.shadow',
+                variable: '--p-blockeditor-overlay-shadow',
+                description: 'Shadow of the slash menu and the toolbar over a selection'
+            },
+            {
+                name: 'blockeditor.item.hoverBackground',
+                token: 'blockeditor.item.hover.background',
+                variable: '--p-blockeditor-item-hover-background',
+                description: 'Background of an entry on hover'
+            },
+            {
+                name: 'blockeditor.item.activeBackground',
+                token: 'blockeditor.item.active.background',
+                variable: '--p-blockeditor-item-active-background',
+                description: 'Background of a button that is on'
+            },
+            {
+                name: 'blockeditor.item.activeColor',
+                token: 'blockeditor.item.active.color',
+                variable: '--p-blockeditor-item-active-color',
+                description: 'Color of a button that is on'
             }
         ]
     },
@@ -4175,6 +4317,166 @@ export default {
             }
         ]
     },
+    cropper: {
+        description: 'Cropper Design Tokens',
+        tokens: [
+            {
+                name: 'cropper.root.background',
+                token: 'cropper.background',
+                variable: '--p-cropper-background',
+                description: 'Background of root'
+            },
+            {
+                name: 'cropper.root.borderColor',
+                token: 'cropper.border.color',
+                variable: '--p-cropper-border-color',
+                description: 'Border color of root'
+            },
+            {
+                name: 'cropper.root.borderRadius',
+                token: 'cropper.border.radius',
+                variable: '--p-cropper-border-radius',
+                description: 'Border radius of root'
+            },
+            {
+                name: 'cropper.root.height',
+                token: 'cropper.height',
+                variable: '--p-cropper-height',
+                description: 'Height of root'
+            },
+            {
+                name: 'cropper.root.disabledOpacity',
+                token: 'cropper.disabled.opacity',
+                variable: '--p-cropper-disabled-opacity',
+                description: 'Opacity of root while disabled'
+            },
+            {
+                name: 'cropper.selection.color',
+                token: 'cropper.selection.color',
+                variable: '--p-cropper-selection-color',
+                description: 'Color of the crop box and its handles'
+            },
+            {
+                name: 'cropper.invalid.borderColor',
+                token: 'cropper.invalid.border.color',
+                variable: '--p-cropper-invalid-border-color',
+                description: 'Border color of root while invalid'
+            }
+        ]
+    },
+    dashboardlayout: {
+        description: 'DashboardLayout Design Tokens',
+        tokens: [
+            {
+                name: 'dashboardlayout.panel.background',
+                token: 'dashboardlayout.panel.background',
+                variable: '--p-dashboardlayout-panel-background',
+                description: 'Background of a panel'
+            },
+            {
+                name: 'dashboardlayout.panel.color',
+                token: 'dashboardlayout.panel.color',
+                variable: '--p-dashboardlayout-panel-color',
+                description: 'Color of a panel'
+            },
+            {
+                name: 'dashboardlayout.panel.borderColor',
+                token: 'dashboardlayout.panel.border.color',
+                variable: '--p-dashboardlayout-panel-border-color',
+                description: 'Border color of a panel'
+            },
+            {
+                name: 'dashboardlayout.panel.borderRadius',
+                token: 'dashboardlayout.panel.border.radius',
+                variable: '--p-dashboardlayout-panel-border-radius',
+                description: 'Border radius of a panel'
+            },
+            {
+                name: 'dashboardlayout.panel.shadow',
+                token: 'dashboardlayout.panel.shadow',
+                variable: '--p-dashboardlayout-panel-shadow',
+                description: 'Shadow of a panel at rest'
+            },
+            {
+                name: 'dashboardlayout.panel.dragShadow',
+                token: 'dashboardlayout.panel.drag.shadow',
+                variable: '--p-dashboardlayout-panel-drag-shadow',
+                description: 'Shadow of a panel while it is dragged'
+            },
+            {
+                name: 'dashboardlayout.header.background',
+                token: 'dashboardlayout.header.background',
+                variable: '--p-dashboardlayout-header-background',
+                description: 'Background of a panel header'
+            },
+            {
+                name: 'dashboardlayout.header.color',
+                token: 'dashboardlayout.header.color',
+                variable: '--p-dashboardlayout-header-color',
+                description: 'Color of a panel header'
+            },
+            {
+                name: 'dashboardlayout.header.borderColor',
+                token: 'dashboardlayout.header.border.color',
+                variable: '--p-dashboardlayout-header-border-color',
+                description: 'Border color under a panel header'
+            },
+            {
+                name: 'dashboardlayout.header.padding',
+                token: 'dashboardlayout.header.padding',
+                variable: '--p-dashboardlayout-header-padding',
+                description: 'Padding of a panel header'
+            },
+            {
+                name: 'dashboardlayout.header.fontWeight',
+                token: 'dashboardlayout.header.font.weight',
+                variable: '--p-dashboardlayout-header-font-weight',
+                description: 'Font weight of a panel header'
+            },
+            {
+                name: 'dashboardlayout.content.padding',
+                token: 'dashboardlayout.content.padding',
+                variable: '--p-dashboardlayout-content-padding',
+                description: 'Padding of a panel body'
+            },
+            {
+                name: 'dashboardlayout.placeholder.background',
+                token: 'dashboardlayout.placeholder.background',
+                variable: '--p-dashboardlayout-placeholder-background',
+                description: 'Background of the drop placeholder'
+            },
+            {
+                name: 'dashboardlayout.placeholder.borderColor',
+                token: 'dashboardlayout.placeholder.border.color',
+                variable: '--p-dashboardlayout-placeholder-border-color',
+                description: 'Border color of the drop placeholder'
+            },
+            {
+                name: 'dashboardlayout.placeholder.borderRadius',
+                token: 'dashboardlayout.placeholder.border.radius',
+                variable: '--p-dashboardlayout-placeholder-border-radius',
+                description: 'Border radius of the drop placeholder'
+            },
+            {
+                name: 'dashboardlayout.handle.color',
+                token: 'dashboardlayout.handle.color',
+                variable: '--p-dashboardlayout-handle-color',
+                description: 'Color of the resize corner mark'
+            },
+            {
+                name: 'dashboardlayout.focus.ringColor',
+                token: 'dashboardlayout.focus.ring.color',
+                variable: '--p-dashboardlayout-focus-ring-color',
+                description: 'Color of the focus ring of a panel'
+            },
+            {
+                name: 'dashboardlayout.focus.ringWidth',
+                token: 'dashboardlayout.focus.ring.width',
+                variable: '--p-dashboardlayout-focus-ring-width',
+                description: 'Width of the focus ring of a panel'
+            }
+        ]
+    },
     datatable: {
         description: 'DataTable Design Tokens',
         tokens: [
@@ -6653,6 +6955,316 @@ export default {
             }
         ]
     },
+    gantt: {
+        description: 'Gantt Design Tokens',
+        tokens: [
+            {
+                name: 'gantt.root.background',
+                token: 'gantt.background',
+                variable: '--p-gantt-background',
+                description: 'Background of the gantt'
+            },
+            {
+                name: 'gantt.root.color',
+                token: 'gantt.color',
+                variable: '--p-gantt-color',
+                description: 'Color of the text'
+            },
+            {
+                name: 'gantt.root.borderColor',
+                token: 'gantt.border.color',
+                variable: '--p-gantt-border-color',
+                description: 'Border color of the gantt'
+            },
+            {
+                name: 'gantt.root.borderRadius',
+                token: 'gantt.border.radius',
+                variable: '--p-gantt-border-radius',
+                description: 'Border radius of the gantt'
+            },
+            {
+                name: 'gantt.header.background',
+                token: 'gantt.header.background',
+                variable: '--p-gantt-header-background',
+                description: 'Background of the headers'
+            },
+            {
+                name: 'gantt.header.color',
+                token: 'gantt.header.color',
+                variable: '--p-gantt-header-color',
+                description: 'Color of the headers'
+            },
+            {
+                name: 'gantt.header.fontWeight',
+                token: 'gantt.header.font.weight',
+                variable: '--p-gantt-header-font-weight',
+                description: 'Font weight of the headers'
+            },
+            {
+                name: 'gantt.header.borderColor',
+                token: 'gantt.header.border.color',
+                variable: '--p-gantt-header-border-color',
+                description: 'Border color of the headers'
+            },
+            {
+                name: 'gantt.row.selectedBackground',
+                token: 'gantt.row.selected.background',
+                variable: '--p-gantt-row-selected-background',
+                description: 'Background of the selected row'
+            },
+            {
+                name: 'gantt.row.selectedColor',
+                token: 'gantt.row.selected.color',
+                variable: '--p-gantt-row-selected-color',
+                description: 'Color of the selected row'
+            },
+            {
+                name: 'gantt.row.hoverBackground',
+                token: 'gantt.row.hover.background',
+                variable: '--p-gantt-row-hover-background',
+                description: 'Background of a row under the pointer'
+            },
+            {
+                name: 'gantt.row.borderColor',
+                token: 'gantt.row.border.color',
+                variable: '--p-gantt-row-border-color',
+                description: 'Line between rows'
+            },
+            {
+                name: 'gantt.cell.padding',
+                token: 'gantt.cell.padding',
+                variable: '--p-gantt-cell-padding',
+                description: 'Padding of a cell'
+            },
+            {
+                name: 'gantt.chart.lineColor',
+                token: 'gantt.chart.line.color',
+                variable: '--p-gantt-chart-line-color',
+                description: 'Color of the vertical lines of the chart'
+            },
+            {
+                name: 'gantt.chart.shadeBackground',
+                token: 'gantt.chart.shade.background',
+                variable: '--p-gantt-chart-shade-background',
+                description: 'Background of days with no work'
+            },
+            {
+                name: 'gantt.chart.todayColor',
+                token: 'gantt.chart.today.color',
+                variable: '--p-gantt-chart-today-color',
+                description: 'Color of the line of today'
+            },
+            {
+                name: 'gantt.chart.markerColor',
+                token: 'gantt.chart.marker.color',
+                variable: '--p-gantt-chart-marker-color',
+                description: 'Color of an event marker'
+            },
+            {
+                name: 'gantt.taskbar.background',
+                token: 'gantt.taskbar.background',
+                variable: '--p-gantt-taskbar-background',
+                description: 'Background of a bar'
+            },
+            {
+                name: 'gantt.taskbar.progressBackground',
+                token: 'gantt.taskbar.progress.background',
+                variable: '--p-gantt-taskbar-progress-background',
+                description: 'Color of the finished part of a bar'
+            },
+            {
+                name: 'gantt.taskbar.borderRadius',
+                token: 'gantt.taskbar.border.radius',
+                variable: '--p-gantt-taskbar-border-radius',
+                description: 'Border radius of a bar'
+            },
+            {
+                name: 'gantt.taskbar.parentBackground',
+                token: 'gantt.taskbar.parent.background',
+                variable: '--p-gantt-taskbar-parent-background',
+                description: 'Background of the bar of a parent'
+            },
+            {
+                name: 'gantt.taskbar.milestoneBackground',
+                token: 'gantt.taskbar.milestone.background',
+                variable: '--p-gantt-taskbar-milestone-background',
+                description: 'Color of a milestone'
+            },
+            {
+                name: 'gantt.taskbar.criticalBackground',
+                token: 'gantt.taskbar.critical.background',
+                variable: '--p-gantt-taskbar-critical-background',
+                description: 'Background of a bar on the critical path'
+            },
+            {
+                name: 'gantt.taskbar.criticalProgressBackground',
+                token: 'gantt.taskbar.critical.progress.background',
+                variable: '--p-gantt-taskbar-critical-progress-background',
+                description: 'Finished part of a bar on the critical path'
+            },
+            {
+                name: 'gantt.taskbar.labelColor',
+                token: 'gantt.taskbar.label.color',
+                variable: '--p-gantt-taskbar-label-color',
+                description: 'Color of the text inside a bar'
+            },
+            {
+                name: 'gantt.taskbar.baselineBackground',
+                token: 'gantt.taskbar.baseline.background',
+                variable: '--p-gantt-taskbar-baseline-background',
+                description: 'Color of the plan drawn under a bar'
+            },
+            {
+                name: 'gantt.link.color',
+                token: 'gantt.link.color',
+                variable: '--p-gantt-link-color',
+                description: 'Color of a dependency line'
+            },
+            {
+                name: 'gantt.link.criticalColor',
+                token: 'gantt.link.critical.color',
+                variable: '--p-gantt-link-critical-color',
+                description: 'Color of a dependency line on the critical path'
+            },
+            {
+                name: 'gantt.splitter.background',
+                token: 'gantt.splitter.background',
+                variable: '--p-gantt-splitter-background',
+                description: 'Background of the splitter'
+            },
+            {
+                name: 'gantt.splitter.hoverBackground',
+                token: 'gantt.splitter.hover.background',
+                variable: '--p-gantt-splitter-hover-background',
+                description: 'Background of the splitter under the pointer'
+            },
+            {
+                name: 'gantt.focus.ringColor',
+                token: 'gantt.focus.ring.color',
+                variable: '--p-gantt-focus-ring-color',
+                description: 'Color of the focus ring'
+            },
+            {
+                name: 'gantt.focus.ringWidth',
+                token: 'gantt.focus.ring.width',
+                variable: '--p-gantt-focus-ring-width',
+                description: 'Width of the focus ring'
+            }
+        ]
+    },
+    gauge: {
+        description: 'Gauge Design Tokens',
+        tokens: [
+            {
+                name: 'gauge.root.color',
+                token: 'gauge.color',
+                variable: '--p-gauge-color',
+                description: 'Color of text on the gauge'
+            },
+            {
+                name: 'gauge.root.fontFamily',
+                token: 'gauge.font.family',
+                variable: '--p-gauge-font-family',
+                description: 'Font of the labels'
+            },
+            {
+                name: 'gauge.title.color',
+                token: 'gauge.title.color',
+                variable: '--p-gauge-title-color',
+                description: 'Color of the title'
+            },
+            {
+                name: 'gauge.title.fontSize',
+                token: 'gauge.title.font.size',
+                variable: '--p-gauge-title-font-size',
+                description: 'Font size of the title'
+            },
+            {
+                name: 'gauge.title.fontWeight',
+                token: 'gauge.title.font.weight',
+                variable: '--p-gauge-title-font-weight',
+                description: 'Font weight of the title'
+            },
+            {
+                name: 'gauge.title.padding',
+                token: 'gauge.title.padding',
+                variable: '--p-gauge-title-padding',
+                description: 'Space under the title'
+            },
+            {
+                name: 'gauge.line.color',
+                token: 'gauge.line.color',
+                variable: '--p-gauge-line-color',
+                description: 'Color of an axis line'
+            },
+            {
+                name: 'gauge.tick.color',
+                token: 'gauge.tick.color',
+                variable: '--p-gauge-tick-color',
+                description: 'Color of a tick'
+            },
+            {
+                name: 'gauge.label.color',
+                token: 'gauge.label.color',
+                variable: '--p-gauge-label-color',
+                description: 'Color of a label'
+            },
+            {
+                name: 'gauge.range.color',
+                token: 'gauge.range.color',
+                variable: '--p-gauge-range-color',
+                description: 'Color of a range that sets none'
+            },
+            {
+                name: 'gauge.pointer.color',
+                token: 'gauge.pointer.color',
+                variable: '--p-gauge-pointer-color',
+                description: 'Color of a pointer that sets none'
+            },
+            {
+                name: 'gauge.pointer.focusRingColor',
+                token: 'gauge.pointer.focus.ring.color',
+                variable: '--p-gauge-pointer-focus-ring-color',
+                description: 'Color of the focus ring of an interactive gauge'
+            },
+            {
+                name: 'gauge.pointer.focusRingWidth',
+                token: 'gauge.pointer.focus.ring.width',
+                variable: '--p-gauge-pointer-focus-ring-width',
+                description: 'Width of the focus ring'
+            },
+            {
+                name: 'gauge.container.background',
+                token: 'gauge.container.background',
+                variable: '--p-gauge-container-background',
+                description: 'Background of a linear gauge container'
+            },
+            {
+                name: 'gauge.container.borderColor',
+                token: 'gauge.container.border.color',
+                variable: '--p-gauge-container-border-color',
+                description: 'Border color of a linear gauge container'
+            },
+            {
+                name: 'gauge.annotation.color',
+                token: 'gauge.annotation.color',
+                variable: '--p-gauge-annotation-color',
+                description: 'Color of an annotation'
+            },
+            {
+                name: 'gauge.annotation.fontSize',
+                token: 'gauge.annotation.font.size',
+                variable: '--p-gauge-annotation-font-size',
+                description: 'Font size of an annotation'
+            },
+            {
+                name: 'gauge.annotation.fontWeight',
+                token: 'gauge.annotation.font.weight',
+                variable: '--p-gauge-annotation-font-weight',
+                description: 'Font weight of an annotation'
+            }
+        ]
+    },
     iconfield: {
         description: 'IconField Design Tokens',
         tokens: [
@@ -7952,6 +8564,41 @@ export default {
             }
         ]
     },
+    map: {
+        description: 'Map Design Tokens',
+        tokens: [
+            {
+                name: 'map.root.background',
+                token: 'map.background',
+                variable: '--p-map-background',
+                description: 'Background of root, seen until the tiles arrive'
+            },
+            {
+                name: 'map.root.color',
+                token: 'map.color',
+                variable: '--p-map-color',
+                description: 'Color of the message shown when the map cannot start'
+            },
+            {
+                name: 'map.root.borderColor',
+                token: 'map.border.color',
+                variable: '--p-map-border-color',
+                description: 'Border color of root'
+            },
+            {
+                name: 'map.root.borderRadius',
+                token: 'map.border.radius',
+                variable: '--p-map-border-radius',
+                description: 'Border radius of root'
+            },
+            {
+                name: 'map.root.height',
+                token: 'map.height',
+                variable: '--p-map-height',
+                description: 'Height of root'
+            }
+        ]
+    },
     megamenu: {
         description: 'MegaMenu Design Tokens',
         tokens: [
@@ -8260,6 +8907,137 @@ export default {
                 token: 'megamenu.mobile.button.focus.ring.shadow',
                 variable: '--p-megamenu-mobile-button-focus-ring-shadow',
                 description: 'Focus ring shadow of mobile button'
+            }
+        ]
+    },
+    mention: {
+        description: 'Mention Design Tokens',
+        tokens: [
+            {
+                name: 'mention.root.background',
+                token: 'mention.background',
+                variable: '--p-mention-background',
+                description: 'Background of the list'
+            },
+            {
+                name: 'mention.root.color',
+                token: 'mention.color',
+                variable: '--p-mention-color',
+                description: 'Color of the list'
+            },
+            {
+                name: 'mention.root.borderColor',
+                token: 'mention.border.color',
+                variable: '--p-mention-border-color',
+                description: 'Border color of the list'
+            },
+            {
+                name: 'mention.root.borderRadius',
+                token: 'mention.border.radius',
+                variable: '--p-mention-border-radius',
+                description: 'Border radius of the list'
+            },
+            {
+                name: 'mention.root.shadow',
+                token: 'mention.shadow',
+                variable: '--p-mention-shadow',
+                description: 'Shadow of the list'
+            },
+            {
+                name: 'mention.root.padding',
+                token: 'mention.padding',
+                variable: '--p-mention-padding',
+                description: 'Padding of the list'
+            },
+            {
+                name: 'mention.root.gap',
+                token: 'mention.gap',
+                variable: '--p-mention-gap',
+                description: 'Gap between the rows'
+            },
+            {
+                name: 'mention.item.focusBackground',
+                token: 'mention.item.focus.background',
+                variable: '--p-mention-item-focus-background',
+                description: 'Background of the highlighted row'
+            },
+            {
+                name: 'mention.item.focusColor',
+                token: 'mention.item.focus.color',
+                variable: '--p-mention-item-focus-color',
+                description: 'Color of the highlighted row'
+            },
+            {
+                name: 'mention.item.padding',
+                token: 'mention.item.padding',
+                variable: '--p-mention-item-padding',
+                description: 'Padding of a row'
+            },
+            {
+                name: 'mention.item.borderRadius',
+                token: 'mention.item.border.radius',
+                variable: '--p-mention-item-border-radius',
+                description: 'Border radius of a row'
+            },
+            {
+                name: 'mention.item.gap',
+                token: 'mention.item.gap',
+                variable: '--p-mention-item-gap',
+                description: 'Gap between the icon and the text of a row'
+            },
+            {
+                name: 'mention.group.color',
+                token: 'mention.group.color',
+                variable: '--p-mention-group-color',
+                description: 'Color of a group heading'
+            },
+            {
+                name: 'mention.group.fontWeight',
+                token: 'mention.group.font.weight',
+                variable: '--p-mention-group-font-weight',
+                description: 'Font weight of a group heading'
+            },
+            {
+                name: 'mention.group.padding',
+                token: 'mention.group.padding',
+                variable: '--p-mention-group-padding',
+                description: 'Padding of a group heading'
+            },
+            {
+                name: 'mention.empty.color',
+                token: 'mention.empty.color',
+                variable: '--p-mention-empty-color',
+                description: 'Color of the no-records text'
+            },
+            {
+                name: 'mention.empty.padding',
+                token: 'mention.empty.padding',
+                variable: '--p-mention-empty-padding',
+                description: 'Padding of the no-records text'
+            },
+            {
+                name: 'mention.chip.background',
+                token: 'mention.chip.background',
+                variable: '--p-mention-chip-background',
+                description: 'Background of the inserted chip'
+            },
+            {
+                name: 'mention.chip.color',
+                token: 'mention.chip.color',
+                variable: '--p-mention-chip-color',
+                description: 'Color of the inserted chip'
+            },
+            {
+                name: 'mention.chip.borderRadius',
+                token: 'mention.chip.border.radius',
+                variable: '--p-mention-chip-border-radius',
+                description: 'Border radius of the inserted chip'
+            },
+            {
+                name: 'mention.chip.padding',
+                token: 'mention.chip.padding',
+                variable: '--p-mention-chip-padding',
+                description: 'Padding of the inserted chip'
             }
         ]
     },
@@ -10225,6 +11003,101 @@ export default {
             }
         ]
     },
+    pdfeditor: {
+        description: 'PdfEditor Design Tokens',
+        tokens: [
+            {
+                name: 'pdfeditor.root.background',
+                token: 'pdfeditor.background',
+                variable: '--p-pdfeditor-background',
+                description: 'Background of root'
+            },
+            {
+                name: 'pdfeditor.root.color',
+                token: 'pdfeditor.color',
+                variable: '--p-pdfeditor-color',
+                description: 'Color of root'
+            },
+            {
+                name: 'pdfeditor.root.borderColor',
+                token: 'pdfeditor.border.color',
+                variable: '--p-pdfeditor-border-color',
+                description: 'Border color of root and its dividers'
+            },
+            {
+                name: 'pdfeditor.root.borderRadius',
+                token: 'pdfeditor.border.radius',
+                variable: '--p-pdfeditor-border-radius',
+                description: 'Border radius of root'
+            },
+            {
+                name: 'pdfeditor.root.height',
+                token: 'pdfeditor.height',
+                variable: '--p-pdfeditor-height',
+                description: 'Height of root'
+            },
+            {
+                name: 'pdfeditor.toolbar.background',
+                token: 'pdfeditor.toolbar.background',
+                variable: '--p-pdfeditor-toolbar-background',
+                description: 'Background of the toolbar and the sidebar'
+            },
+            {
+                name: 'pdfeditor.toolbar.gap',
+                token: 'pdfeditor.toolbar.gap',
+                variable: '--p-pdfeditor-toolbar-gap',
+                description: 'Gap between the buttons of the toolbar'
+            },
+            {
+                name: 'pdfeditor.toolbar.padding',
+                token: 'pdfeditor.toolbar.padding',
+                variable: '--p-pdfeditor-toolbar-padding',
+                description: 'Padding of the toolbar'
+            },
+            {
+                name: 'pdfeditor.button.borderRadius',
+                token: 'pdfeditor.button.border.radius',
+                variable: '--p-pdfeditor-button-border-radius',
+                description: 'Border radius of a button'
+            },
+            {
+                name: 'pdfeditor.button.hoverBackground',
+                token: 'pdfeditor.button.hover.background',
+                variable: '--p-pdfeditor-button-hover-background',
+                description: 'Background of a button on hover'
+            },
+            {
+                name: 'pdfeditor.button.activeBackground',
+                token: 'pdfeditor.button.active.background',
+                variable: '--p-pdfeditor-button-active-background',
+                description: 'Background of the tool that is on'
+            },
+            {
+                name: 'pdfeditor.button.activeColor',
+                token: 'pdfeditor.button.active.color',
+                variable: '--p-pdfeditor-button-active-color',
+                description: 'Color of the tool that is on'
+            },
+            {
+                name: 'pdfeditor.sidebar.width',
+                token: 'pdfeditor.sidebar.width',
+                variable: '--p-pdfeditor-sidebar-width',
+                description: 'Width of the sidebar of thumbnails'
+            },
+            {
+                name: 'pdfeditor.stage.background',
+                token: 'pdfeditor.stage.background',
+                variable: '--p-pdfeditor-stage-background',
+                description: 'Background around the page'
+            },
+            {
+                name: 'pdfeditor.selection.color',
+                token: 'pdfeditor.selection.color',
+                variable: '--p-pdfeditor-selection-color',
+                description: 'Color of the selection, its handles and the focus rings'
+            }
+        ]
+    },
     picklist: {
         description: 'PickList Design Tokens',
         tokens: [
@@ -10368,6 +11241,101 @@ export default {
                 token: 'progressspinner.color.four',
                 variable: '--p-progressspinner-color-four',
                 description: 'Color four of root'
+            }
+        ]
+    },
+    querybuilder: {
+        description: 'QueryBuilder Design Tokens',
+        tokens: [
+            {
+                name: 'querybuilder.root.background',
+                token: 'querybuilder.background',
+                variable: '--p-querybuilder-background',
+                description: 'Background of root'
+            },
+            {
+                name: 'querybuilder.root.color',
+                token: 'querybuilder.color',
+                variable: '--p-querybuilder-color',
+                description: 'Color of root'
+            },
+            {
+                name: 'querybuilder.root.gap',
+                token: 'querybuilder.gap',
+                variable: '--p-querybuilder-gap',
+                description: 'Gap between the parts of root'
+            },
+            {
+                name: 'querybuilder.group.background',
+                token: 'querybuilder.group.background',
+                variable: '--p-querybuilder-group-background',
+                description: 'Background of a group'
+            },
+            {
+                name: 'querybuilder.group.borderColor',
+                token: 'querybuilder.group.border.color',
+                variable: '--p-querybuilder-group-border-color',
+                description: 'Border color of a group'
+            },
+            {
+                name: 'querybuilder.group.borderRadius',
+                token: 'querybuilder.group.border.radius',
+                variable: '--p-querybuilder-group-border-radius',
+                description: 'Border radius of a group'
+            },
+            {
+                name: 'querybuilder.group.padding',
+                token: 'querybuilder.group.padding',
+                variable: '--p-querybuilder-group-padding',
+                description: 'Padding of a group'
+            },
+            {
+                name: 'querybuilder.group.gap',
+                token: 'querybuilder.group.gap',
+                variable: '--p-querybuilder-group-gap',
+                description: 'Gap between the children of a group'
+            },
+            {
+                name: 'querybuilder.header.gap',
+                token: 'querybuilder.header.gap',
+                variable: '--p-querybuilder-header-gap',
+                description: 'Gap between the controls of a group header'
+            },
+            {
+                name: 'querybuilder.rule.gap',
+                token: 'querybuilder.rule.gap',
+                variable: '--p-querybuilder-rule-gap',
+                description: 'Gap between the parts of a condition'
+            },
+            {
+                name: 'querybuilder.rule.padding',
+                token: 'querybuilder.rule.padding',
+                variable: '--p-querybuilder-rule-padding',
+                description: 'Padding of a condition'
+            },
+            {
+                name: 'querybuilder.error.color',
+                token: 'querybuilder.error.color',
+                variable: '--p-querybuilder-error-color',
+                description: 'Color of a validation message'
+            },
+            {
+                name: 'querybuilder.error.fontSize',
+                token: 'querybuilder.error.font.size',
+                variable: '--p-querybuilder-error-font-size',
+                description: 'Font size of a validation message'
+            },
+            {
+                name: 'querybuilder.empty.color',
+                token: 'querybuilder.empty.color',
+                variable: '--p-querybuilder-empty-color',
+                description: 'Color of the empty-group hint'
+            },
+            {
+                name: 'querybuilder.empty.padding',
+                token: 'querybuilder.empty.padding',
+                variable: '--p-querybuilder-empty-padding',
+                description: 'Padding of the empty-group hint'
             }
         ]
     },
@@ -11528,6 +12496,59 @@ export default {
             }
         ]
     },
+    signature: {
+        description: 'Signature Design Tokens',
+        tokens: [
+            {
+                name: 'signature.root.background',
+                token: 'signature.background',
+                variable: '--p-signature-background',
+                description: 'Background of root'
+            },
+            {
+                name: 'signature.root.color',
+                token: 'signature.color',
+                variable: '--p-signature-color',
+                description: 'Color of the pen, when no stroke color is set'
+            },
+            {
+                name: 'signature.root.borderColor',
+                token: 'signature.border.color',
+                variable: '--p-signature-border-color',
+                description: 'Border color of root'
+            },
+            {
+                name: 'signature.root.borderRadius',
+                token: 'signature.border.radius',
+                variable: '--p-signature-border-radius',
+                description: 'Border radius of root'
+            },
+            {
+                name: 'signature.root.height',
+                token: 'signature.height',
+                variable: '--p-signature-height',
+                description: 'Height of root'
+            },
+            {
+                name: 'signature.root.disabledOpacity',
+                token: 'signature.disabled.opacity',
+                variable: '--p-signature-disabled-opacity',
+                description: 'Opacity of root while disabled'
+            },
+            {
+                name: 'signature.focus.borderColor',
+                token: 'signature.focus.border.color',
+                variable: '--p-signature-focus-border-color',
+                description: 'Border color of root while focused'
+            },
+            {
+                name: 'signature.invalid.borderColor',
+                token: 'signature.invalid.border.color',
+                variable: '--p-signature-invalid-border-color',
+                description: 'Border color of root while invalid'
+            }
+        ]
+    },
     skeleton: {
         description: 'Skeleton Design Tokens',
         tokens: [
@@ -11802,6 +12823,47 @@ export default {
                 token: 'splitter.handle.focus.ring.shadow',
                 variable: '--p-splitter-handle-focus-ring-shadow',
                 description: 'Focus ring shadow of handle'
+            }
+        ]
+    },
+    spreadsheet: {
+        description: 'Spreadsheet Design Tokens',
+        tokens: [
+            {
+                name: 'spreadsheet.root.background',
+                token: 'spreadsheet.background',
+                variable: '--p-spreadsheet-background',
+                description: 'Background of root, seen until the sheet is drawn'
+            },
+            {
+                name: 'spreadsheet.root.borderColor',
+                token: 'spreadsheet.border.color',
+                variable: '--p-spreadsheet-border-color',
+                description: 'Border color of root'
+            },
+            {
+                name: 'spreadsheet.root.borderRadius',
+                token: 'spreadsheet.border.radius',
+                variable: '--p-spreadsheet-border-radius',
+                description: 'Border radius of root'
+            },
+            {
+                name: 'spreadsheet.root.height',
+                token: 'spreadsheet.height',
+                variable: '--p-spreadsheet-height',
+                description: 'Height of root'
+            },
+            {
+                name: 'spreadsheet.root.disabledOpacity',
+                token: 'spreadsheet.disabled.opacity',
+                variable: '--p-spreadsheet-disabled-opacity',
+                description: 'Opacity of root while disabled'
+            },
+            {
+                name: 'spreadsheet.invalid.borderColor',
+                token: 'spreadsheet.invalid.border.color',
+                variable: '--p-spreadsheet-invalid-border-color',
+                description: 'Border color of root while invalid'
             }
         ]
     },

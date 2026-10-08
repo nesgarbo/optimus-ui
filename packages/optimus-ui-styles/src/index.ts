@@ -13,8 +13,14 @@ export * as AvatarStyle from '@openng/optimus-ui-styles/avatar';
 // Badge
 export * as BadgeStyle from '@openng/optimus-ui-styles/badge';
 
+// Barcode
+export * as BarcodeStyle from '@openng/optimus-ui-styles/barcode';
+
 // Base
 export * as BaseStyle from '@openng/optimus-ui-styles/base';
+
+// BlockEditor
+export * as BlockEditorStyle from '@openng/optimus-ui-styles/blockeditor';
 
 // BlockUI
 export * as BlockUIStyle from '@openng/optimus-ui-styles/blockui';
@@ -58,6 +64,12 @@ export * as ConfirmPopupStyle from '@openng/optimus-ui-styles/confirmpopup';
 // ContextMenu
 export * as ContextMenuStyle from '@openng/optimus-ui-styles/contextmenu';
 
+// Cropper
+export * as CropperStyle from '@openng/optimus-ui-styles/cropper';
+
+// DashboardLayout
+export * as DashboardLayoutStyle from '@openng/optimus-ui-styles/dashboardlayout';
+
 // DataTable
 export * as DataTableStyle from '@openng/optimus-ui-styles/datatable';
 
@@ -93,6 +105,12 @@ export * as FloatLabelStyle from '@openng/optimus-ui-styles/floatlabel';
 
 // Galleria
 export * as GalleriaStyle from '@openng/optimus-ui-styles/galleria';
+
+// Gantt
+export * as GanttStyle from '@openng/optimus-ui-styles/gantt';
+
+// Gauge
+export * as GaugeStyle from '@openng/optimus-ui-styles/gauge';
 
 // IconField
 export * as IconFieldStyle from '@openng/optimus-ui-styles/iconfield';
@@ -133,8 +151,14 @@ export * as KnobStyle from '@openng/optimus-ui-styles/knob';
 // Listbox
 export * as ListboxStyle from '@openng/optimus-ui-styles/listbox';
 
+// Map
+export * as MapStyle from '@openng/optimus-ui-styles/map';
+
 // MegaMenu
 export * as MegaMenuStyle from '@openng/optimus-ui-styles/megamenu';
+
+// Mention
+export * as MentionStyle from '@openng/optimus-ui-styles/mention';
 
 // Menu
 export * as MenuStyle from '@openng/optimus-ui-styles/menu';
@@ -172,6 +196,9 @@ export * as PanelMenuStyle from '@openng/optimus-ui-styles/panelmenu';
 // Password
 export * as PasswordStyle from '@openng/optimus-ui-styles/password';
 
+// PdfEditor
+export * as PdfEditorStyle from '@openng/optimus-ui-styles/pdfeditor';
+
 // PickList
 export * as PickListStyle from '@openng/optimus-ui-styles/picklist';
 
@@ -183,6 +210,9 @@ export * as ProgressBarStyle from '@openng/optimus-ui-styles/progressbar';
 
 // ProgressSpinner
 export * as ProgressSpinnerStyle from '@openng/optimus-ui-styles/progressspinner';
+
+// QueryBuilder
+export * as QueryBuilderStyle from '@openng/optimus-ui-styles/querybuilder';
 
 // RadioButton
 export * as RadioButtonStyle from '@openng/optimus-ui-styles/radiobutton';
@@ -208,6 +238,9 @@ export * as SelectStyle from '@openng/optimus-ui-styles/select';
 // SelectButton
 export * as SelectButtonStyle from '@openng/optimus-ui-styles/selectbutton';
 
+// Signature
+export * as SignatureStyle from '@openng/optimus-ui-styles/signature';
+
 // Skeleton
 export * as SkeletonStyle from '@openng/optimus-ui-styles/skeleton';
 
@@ -222,6 +255,9 @@ export * as SplitButtonStyle from '@openng/optimus-ui-styles/splitbutton';
 
 // Splitter
 export * as SplitterStyle from '@openng/optimus-ui-styles/splitter';
+
+// Spreadsheet
+export * as SpreadsheetStyle from '@openng/optimus-ui-styles/spreadsheet';
 
 // Stepper
 export * as StepperStyle from '@openng/optimus-ui-styles/stepper';

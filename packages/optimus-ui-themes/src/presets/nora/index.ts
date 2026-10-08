@@ -6,7 +6,9 @@ import aiassistview from '@openng/optimus-ui-themes/nora/aiassistview';
 import autocomplete from '@openng/optimus-ui-themes/nora/autocomplete';
 import avatar from '@openng/optimus-ui-themes/nora/avatar';
 import badge from '@openng/optimus-ui-themes/nora/badge';
+import barcode from '@openng/optimus-ui-themes/nora/barcode';
 import base from '@openng/optimus-ui-themes/nora/base';
+import blockeditor from '@openng/optimus-ui-themes/nora/blockeditor';
 import blockui from '@openng/optimus-ui-themes/nora/blockui';
 import breadcrumb from '@openng/optimus-ui-themes/nora/breadcrumb';
 import button from '@openng/optimus-ui-themes/nora/button';
@@ -20,6 +22,8 @@ import colorpicker from '@openng/optimus-ui-themes/nora/colorpicker';
 import confirmdialog from '@openng/optimus-ui-themes/nora/confirmdialog';
 import confirmpopup from '@openng/optimus-ui-themes/nora/confirmpopup';
 import contextmenu from '@openng/optimus-ui-themes/nora/contextmenu';
+import cropper from '@openng/optimus-ui-themes/nora/cropper';
+import dashboardlayout from '@openng/optimus-ui-themes/nora/dashboardlayout';
 import datatable from '@openng/optimus-ui-themes/nora/datatable';
 import dataview from '@openng/optimus-ui-themes/nora/dataview';
 import datepicker from '@openng/optimus-ui-themes/nora/datepicker';
@@ -32,6 +36,8 @@ import fieldset from '@openng/optimus-ui-themes/nora/fieldset';
 import fileupload from '@openng/optimus-ui-themes/nora/fileupload';
 import floatlabel from '@openng/optimus-ui-themes/nora/floatlabel';
 import galleria from '@openng/optimus-ui-themes/nora/galleria';
+import gantt from '@openng/optimus-ui-themes/nora/gantt';
+import gauge from '@openng/optimus-ui-themes/nora/gauge';
 import iconfield from '@openng/optimus-ui-themes/nora/iconfield';
 import iftalabel from '@openng/optimus-ui-themes/nora/iftalabel';
 import image from '@openng/optimus-ui-themes/nora/image';
@@ -45,7 +51,9 @@ import inputotp from '@openng/optimus-ui-themes/nora/inputotp';
 import inputtext from '@openng/optimus-ui-themes/nora/inputtext';
 import knob from '@openng/optimus-ui-themes/nora/knob';
 import listbox from '@openng/optimus-ui-themes/nora/listbox';
+import map from '@openng/optimus-ui-themes/nora/map';
 import megamenu from '@openng/optimus-ui-themes/nora/megamenu';
+import mention from '@openng/optimus-ui-themes/nora/mention';
 import menu from '@openng/optimus-ui-themes/nora/menu';
 import menubar from '@openng/optimus-ui-themes/nora/menubar';
 import message from '@openng/optimus-ui-themes/nora/message';
@@ -58,21 +66,25 @@ import paginator from '@openng/optimus-ui-themes/nora/paginator';
 import panel from '@openng/optimus-ui-themes/nora/panel';
 import panelmenu from '@openng/optimus-ui-themes/nora/panelmenu';
 import password from '@openng/optimus-ui-themes/nora/password';
+import pdfeditor from '@openng/optimus-ui-themes/nora/pdfeditor';
 import picklist from '@openng/optimus-ui-themes/nora/picklist';
 import popover from '@openng/optimus-ui-themes/nora/popover';
 import progressbar from '@openng/optimus-ui-themes/nora/progressbar';
 import progressspinner from '@openng/optimus-ui-themes/nora/progressspinner';
+import querybuilder from '@openng/optimus-ui-themes/nora/querybuilder';
 import radiobutton from '@openng/optimus-ui-themes/nora/radiobutton';
 import rating from '@openng/optimus-ui-themes/nora/rating';
 import ripple from '@openng/optimus-ui-themes/nora/ripple';
 import scrollpanel from '@openng/optimus-ui-themes/nora/scrollpanel';
 import select from '@openng/optimus-ui-themes/nora/select';
 import selectbutton from '@openng/optimus-ui-themes/nora/selectbutton';
+import signature from '@openng/optimus-ui-themes/nora/signature';
 import skeleton from '@openng/optimus-ui-themes/nora/skeleton';
 import slider from '@openng/optimus-ui-themes/nora/slider';
 import speeddial from '@openng/optimus-ui-themes/nora/speeddial';
 import splitbutton from '@openng/optimus-ui-themes/nora/splitbutton';
 import splitter from '@openng/optimus-ui-themes/nora/splitter';
+import spreadsheet from '@openng/optimus-ui-themes/nora/spreadsheet';
 import stepper from '@openng/optimus-ui-themes/nora/stepper';
 import steps from '@openng/optimus-ui-themes/nora/steps';
 import tabmenu from '@openng/optimus-ui-themes/nora/tabmenu';
@@ -104,9 +116,13 @@ export default {
         autocomplete,
         avatar,
         badge,
+        barcode,
+        blockeditor,
         blockui,
         breadcrumb,
         button,
+        cropper,
+        dashboardlayout,
         datepicker,
         card,
         carousel,
@@ -127,6 +143,8 @@ export default {
         editor,
         fieldset,
         fileupload,
+        gantt,
+        gauge,
         iftalabel,
         floatlabel,
         galleria,
@@ -142,7 +160,9 @@ export default {
         inputtext,
         knob,
         listbox,
+        map,
         megamenu,
+        mention,
         menu,
         menubar,
         message,
@@ -151,6 +171,7 @@ export default {
         orderlist,
         organizationchart,
         overlaybadge,
+        pdfeditor,
         popover,
         paginator,
         password,
@@ -159,17 +180,20 @@ export default {
         picklist,
         progressbar,
         progressspinner,
+        querybuilder,
         radiobutton,
         rating,
         ripple,
         scrollpanel,
         select,
         selectbutton,
+        signature,
         skeleton,
         slider,
         speeddial,
         splitter,
         splitbutton,
+        spreadsheet,
         stepper,
         steps,
         tabmenu,
