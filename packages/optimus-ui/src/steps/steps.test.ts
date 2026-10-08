@@ -183,9 +183,7 @@ describe('Steps', () => {
     });
 
     describe('router links', () => {
-        // Skipped on purpose: a component bug. The template binds `[routerLinkActiveOptions]` on the link without a `routerLinkActive`
-        // directive that declares it, so a step with a `routerLink` throws NG0303 as soon as it is drawn interactive.
-        it.skip('should draw a router link for a step that has one when it is not readonly', async () => {
+        it('should draw a router link for a step that has one when it is not readonly', async () => {
             component.readonly = false;
             component.model = [
                 { label: 'A', routerLink: '/a' },

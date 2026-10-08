@@ -37,7 +37,6 @@ import { StepsStyle } from './style/stepsstyle';
                                     role="link"
                                     [routerLink]="item.routerLink"
                                     [queryParams]="item.queryParams"
-                                    [routerLinkActiveOptions]="item.routerLinkActiveOptions || { exact: false }"
                                     [class]="cx('itemLink')"
                                     (click)="onItemClick($event, item, i)"
                                     (keydown)="onItemKeydown($event, item, i)"

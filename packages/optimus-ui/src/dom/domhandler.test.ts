@@ -55,6 +55,13 @@ describe('DomHandler', () => {
             DomHandler.removeMultipleClasses(a, ['one two', undefined, 'three']);
             expect(a.className).toBe('a');
         });
+
+        it('skips the empty tokens of a list with several spaces in a row', () => {
+            const a = host.querySelector('.a')!;
+
+            expect(() => DomHandler.addMultipleClasses(a, 'one  two\t\tthree')).not.toThrow();
+            expect(['one', 'two', 'three'].every((c) => a.classList.contains(c))).toBe(true);
+        });
     });
 
     describe('queries', () => {

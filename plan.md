@@ -349,9 +349,9 @@ Auditado el 2026-10-08: 4 hechos, 3 parciales y 2 sin hacer de 9 ítems. Queda, 
 
 ### Bugs de componentes encontrados y no arreglados
 
-- [ ] `steps`: la plantilla enlaza `[routerLinkActiveOptions]` sin la directiva `routerLinkActive`. Un step con `routerLink` en modo no readonly lanza NG0303 (su test sigue en `it.skip`).
-- [ ] `DomHandler.addMultipleClasses` lanza `DOMTokenList.add` con un token vacío si el texto lleva dos espacios seguidos.
-- [ ] Los hooks de passthrough (`hooks.*`) se resuelven llamando a la función y luego llamando a lo que devolvió: un hook que devuelve un valor truthy lanza "selfHook is not a function".
+- [x] `steps` (arreglado: se quitó el binding sin directiva y el test está activo): la plantilla enlazaba `[routerLinkActiveOptions]` sin la directiva `routerLinkActive`. Un step con `routerLink` en modo no readonly lanza NG0303 (su test sigue en `it.skip`).
+- [x] `DomHandler.addMultipleClasses` (arreglado: filtra los tokens vacíos) lanzaba `DOMTokenList.add` con un token vacío si el texto lleva dos espacios seguidos.
+- [x] Los hooks de passthrough (arreglado: solo se llama a lo que devuelve la función si es una función) (`hooks.*`) se resuelven llamando a la función y luego llamando a lo que devolvió: un hook que devuelve un valor truthy lanza "selfHook is not a function".
 - [ ] Los tests de `map` imprimen un NG0953 en dos casos (pasan).
 - [x] `TTScrollableView` no recibía el `pt` del TreeTable (arreglado con `[pt]="pt()"` en las dos vistas).
 

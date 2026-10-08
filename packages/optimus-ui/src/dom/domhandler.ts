@@ -27,12 +27,12 @@ export class DomHandler {
     public static addMultipleClasses(element: any, className: string): void {
         if (element && className) {
             if (element.classList) {
-                let styles: string[] = className.trim().split(' ');
+                let styles: string[] = className.split(/\s+/).filter(Boolean);
                 for (let i = 0; i < styles.length; i++) {
                     element.classList.add(styles[i]);
                 }
             } else {
-                let styles: string[] = className.split(' ');
+                let styles: string[] = className.split(/\s+/).filter(Boolean);
                 for (let i = 0; i < styles.length; i++) {
                     element.className += ' ' + styles[i];
                 }

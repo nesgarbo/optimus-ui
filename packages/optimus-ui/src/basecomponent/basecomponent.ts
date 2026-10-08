@@ -309,8 +309,9 @@ export class BaseComponent<PT = any> implements Lifecycle {
             const selfHook = this._usePT(this._getPT(this.$pt(), this.$name), this._getOptionValue, `hooks.${hookName}`);
             const defaultHook = this._useDefaultPT(this._getOptionValue, `hooks.${hookName}`);
 
-            selfHook?.(...args);
-            defaultHook?.(...args);
+            // The resolver already ran the hook of the pt, so only what it gave back as a function is a hook to call.
+            if (typeof selfHook === 'function') selfHook(...args);
+            if (typeof defaultHook === 'function') defaultHook(...args);
         }
     }
 
