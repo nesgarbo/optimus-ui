@@ -85,20 +85,20 @@ export const AUTOCOMPLETE_VALUE_ACCESSOR: any = {
             [attr.type]="type"
             [attr.value]="inputValue()"
             [variant]="$variant()"
-            [invalid]="invalid()"
+            [invalid]="$invalid()"
             [attr.id]="inputId"
             [attr.autocomplete]="autocomplete"
             aria-autocomplete="list"
             role="combobox"
             [attr.placeholder]="placeholder"
             [attr.name]="name()"
-            [attr.minlength]="minlength()"
+            [attr.minlength]="$minlength()"
             [pSize]="size()"
-            [attr.min]="min()"
-            [attr.max]="max()"
-            [attr.pattern]="pattern()"
+            [attr.min]="$min()"
+            [attr.max]="$max()"
+            [attr.pattern]="$pattern()"
             [attr.size]="inputSize()"
-            [attr.maxlength]="maxlength()"
+            [attr.maxlength]="$maxlength()"
             [attr.tabindex]="!$disabled() ? tabindex : -1"
             [attr.required]="required() ? '' : undefined"
             [attr.readonly]="readonly ? '' : undefined"
@@ -184,12 +184,12 @@ export const AUTOCOMPLETE_VALUE_ACCESSOR: any = {
                     [attr.id]="inputId"
                     [attr.autocomplete]="autocomplete"
                     [attr.name]="name()"
-                    [attr.minlength]="minlength()"
-                    [attr.maxlength]="maxlength()"
+                    [attr.minlength]="$minlength()"
+                    [attr.maxlength]="$maxlength()"
                     [attr.size]="size()"
-                    [attr.min]="min()"
-                    [attr.max]="max()"
-                    [attr.pattern]="pattern()"
+                    [attr.min]="$min()"
+                    [attr.max]="$max()"
+                    [attr.pattern]="$pattern()"
                     role="combobox"
                     [attr.placeholder]="!$filled() ? placeholder : null"
                     aria-autocomplete="list"
@@ -344,12 +344,6 @@ export class AutoComplete<T = any> extends BaseInput<AutoCompletePassThrough> {
 
     bindDirectiveInstance = inject(Bind, { self: true });
 
-    /**
-     * Minimum number of characters to initiate a search.
-     * @deprecated since v20.0.0, use `minQueryLength` instead.
-     * @group Props
-     */
-    @Input({ transform: numberAttribute }) minLength: number = 1;
     /**
      * Minimum number of characters to initiate a search.
      * @group Props
@@ -1205,15 +1199,15 @@ export class AutoComplete<T = any> extends BaseInput<AutoCompletePassThrough> {
 
     onInput(event) {
         if (this.typeahead) {
-            const _minLength = this.minQueryLength || this.minLength;
+            const _minLength = this.minQueryLength ?? 1;
 
             if (this.searchTimeout) {
                 clearTimeout(this.searchTimeout);
             }
 
             let query = event.target.value;
-            if (this.maxlength() !== null) {
-                query = query.split('').slice(0, this.maxlength()).join('');
+            if (this.$maxlength() !== null) {
+                query = query.split('').slice(0, this.$maxlength()).join('');
             }
 
             if (!this.multiple && !this.forceSelection) {
@@ -1711,7 +1705,7 @@ export class AutoComplete<T = any> extends BaseInput<AutoCompletePassThrough> {
             return;
         }
 
-        const _minLength = this.minQueryLength ?? this.minLength;
+        const _minLength = this.minQueryLength ?? 1;
 
         if (!inputCleared && input.value.length < _minLength) {
             return;
@@ -1911,7 +1905,7 @@ export class AutoComplete<T = any> extends BaseInput<AutoCompletePassThrough> {
 
     get inputMultipleDataP() {
         return this.cn({
-            invalid: this.invalid(),
+            invalid: this.$invalid(),
             disabled: this.$disabled(),
             focus: this.focused,
             fluid: this.hasFluid,

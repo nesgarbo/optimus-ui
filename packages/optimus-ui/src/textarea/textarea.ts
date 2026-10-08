@@ -1,5 +1,6 @@
 import { booleanAttribute, computed, Directive, effect, EventEmitter, HostListener, inject, InjectionToken, input, Input, NgModule, Output } from '@angular/core';
 import { NgControl } from '@angular/forms';
+import { FORM_FIELD } from '@angular/forms/signals';
 import { PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
 import { BaseModelHolder } from '@openng/optimus-ui/basemodelholder';
 import { Bind } from '@openng/optimus-ui/bind';
@@ -71,6 +72,15 @@ export class Textarea extends BaseModelHolder<TextareaPassThrough> {
      * @group Props
      */
     invalid = input(undefined, { transform: booleanAttribute });
+    /**
+     * Whether the user has interacted with the field. A signal form (`[formField]`) sets it, so the invalid state shows only after the field is touched.
+     * @defaultValue undefined
+     * @group Props
+     */
+    touched = input(undefined, { transform: booleanAttribute });
+
+    /** The invalid state to render: with `[formField]`, the field state counts only once the field is touched. */
+    $invalid = computed(() => (this.injector.get(FORM_FIELD, null, { optional: true, self: true }) ? !!this.invalid() && !!this.touched() : !!this.invalid()));
 
     $variant = computed(() => this.variant() || this.config.inputStyle() || this.config.inputVariant());
     /**
@@ -106,7 +116,7 @@ export class Textarea extends BaseModelHolder<TextareaPassThrough> {
 
     onInit() {
         if (this.ngControl) {
-            this.ngControlSubscription = (this.ngControl as any).valueChanges.subscribe(() => {
+            this.ngControlSubscription = (this.ngControl as any).valueChanges?.subscribe(() => {
                 this.updateState();
             });
         }

@@ -62,7 +62,7 @@ export { InputOtpChangeEvent, InputOtpInputTemplateContext, InputOtpTemplateEven
                     [class]="cn(cx('pcInputText'), styleClass)"
                     [pSize]="size()"
                     [variant]="$variant()"
-                    [invalid]="invalid()"
+                    [invalid]="$invalid()"
                     [attr.inputmode]="inputMode"
                     [attr.name]="name()"
                     [attr.tabindex]="tabindex"

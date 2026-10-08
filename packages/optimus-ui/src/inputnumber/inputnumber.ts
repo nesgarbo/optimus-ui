@@ -59,9 +59,9 @@ export const INPUTNUMBER_VALUE_ACCESSOR: any = {
             [value]="formattedValue()"
             [ngStyle]="inputStyle"
             [variant]="$variant()"
-            [invalid]="invalid()"
-            [attr.aria-valuemin]="min()"
-            [attr.aria-valuemax]="max()"
+            [invalid]="$invalid()"
+            [attr.aria-valuemin]="$min()"
+            [attr.aria-valuemax]="$max()"
             [attr.aria-valuenow]="value"
             [attr.placeholder]="placeholder"
             [attr.aria-label]="ariaLabel"
@@ -72,12 +72,12 @@ export const INPUTNUMBER_VALUE_ACCESSOR: any = {
             [attr.size]="inputSize()"
             [attr.name]="name()"
             [attr.autocomplete]="autocomplete"
-            [attr.maxlength]="maxlength()"
-            [attr.minlength]="minlength()"
+            [attr.maxlength]="$maxlength()"
+            [attr.minlength]="$minlength()"
             [attr.tabindex]="tabindex"
             [attr.aria-required]="ariaRequired"
-            [attr.min]="min()"
-            [attr.max]="max()"
+            [attr.min]="$min()"
+            [attr.max]="$max()"
             [attr.step]="step() ?? 1"
             [attr.required]="required() ? '' : undefined"
             [attr.readonly]="readonly ? '' : undefined"
@@ -734,7 +734,7 @@ export class InputNumber extends BaseInput<InputNumberPassThrough> {
         let step = (this.step() ?? 1) * dir;
         let currentValue = this.parseValue(this.input?.nativeElement.value) || 0;
         let newValue = this.validateValue((currentValue as number) + step);
-        const max = this.maxlength();
+        const max = this.$maxlength();
         if (max && max < this.formatValue(newValue).length) {
             return;
         }
@@ -983,15 +983,15 @@ export class InputNumber extends BaseInput<InputNumberPassThrough> {
                 break;
 
             case 'Home':
-                if (this.min()) {
-                    this.updateModel(event, this.min());
+                if (this.$min()) {
+                    this.updateModel(event, this.$min());
                     event.preventDefault();
                 }
                 break;
 
             case 'End':
-                if (this.max()) {
-                    this.updateModel(event, this.max());
+                if (this.$max()) {
+                    this.updateModel(event, this.$max());
                     event.preventDefault();
                 }
                 break;
@@ -1035,7 +1035,7 @@ export class InputNumber extends BaseInput<InputNumberPassThrough> {
             return;
         }
 
-        const max = this.maxlength();
+        const max = this.$maxlength();
 
         if (max && newValueStr.length > max) {
             return;
@@ -1054,8 +1054,8 @@ export class InputNumber extends BaseInput<InputNumberPassThrough> {
                 return;
             }
             if (data) {
-                if (this.maxlength()) {
-                    data = data.toString().substring(0, this.maxlength());
+                if (this.$maxlength()) {
+                    data = data.toString().substring(0, this.$maxlength());
                 }
 
                 let filteredData = this.parseValue(data);
@@ -1067,7 +1067,7 @@ export class InputNumber extends BaseInput<InputNumberPassThrough> {
     }
 
     allowMinusSign() {
-        const min = this.min();
+        const min = this.$min();
 
         return min == null || min < 0;
     }
@@ -1320,11 +1320,11 @@ export class InputNumber extends BaseInput<InputNumberPassThrough> {
         if (value === '-' || value == null) {
             return null;
         }
-        const min = this.min();
-        const max = this.max();
+        const min = this.$min();
+        const max = this.$max();
 
         if (min != null && (value as number) < min) {
-            return this.min();
+            return this.$min();
         }
 
         if (max != null && (value as number) > max) {
@@ -1354,7 +1354,7 @@ export class InputNumber extends BaseInput<InputNumberPassThrough> {
         } else {
             let selectionStart: any = this.input.nativeElement.selectionStart;
             let selectionEnd: any = this.input.nativeElement.selectionEnd;
-            const maxlength = this.maxlength();
+            const maxlength = this.$maxlength();
             if (maxlength && newValue.length > maxlength) {
                 newValue = newValue.slice(0, maxlength);
                 selectionStart = Math.min(selectionStart, maxlength);
@@ -1499,7 +1499,7 @@ export class InputNumber extends BaseInput<InputNumberPassThrough> {
 
     get dataP() {
         return this.cn({
-            invalid: this.invalid(),
+            invalid: this.$invalid(),
             disabled: this.$disabled(),
             focus: this.focused,
             fluid: this.hasFluid,

@@ -452,11 +452,11 @@ export const Password_VALUE_ACCESSOR: any = {
             [value]="value"
             [variant]="$variant()"
             [attr.name]="name()"
-            [attr.maxlength]="maxlength() || maxLength"
-            [attr.minlength]="minlength()"
+            [attr.maxlength]="$maxlength()"
+            [attr.minlength]="$minlength()"
             [attr.required]="required() ? '' : undefined"
             [attr.disabled]="$disabled() ? '' : undefined"
-            [invalid]="invalid()"
+            [invalid]="$invalid()"
             (input)="onInput($event)"
             (focus)="onInputFocus($event)"
             (blur)="onInputBlur($event)"
@@ -577,12 +577,6 @@ export class Password extends BaseInput<PasswordPassThrough> {
      * @group Props
      */
     @Input() mediumLabel: string | undefined;
-    /**
-     * specifies the maximum number of characters allowed in the input element.
-     * @deprecated since v20.0.0, use maxlength instead.
-     * @group Props
-     */
-    @Input({ transform: numberAttribute }) maxLength: number | undefined;
     /**
      * Text for a strong password. Defaults to Optimus I18N API configuration.
      * @group Props

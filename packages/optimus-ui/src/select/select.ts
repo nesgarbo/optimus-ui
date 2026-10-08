@@ -235,12 +235,12 @@ export class SelectItem extends BaseComponent {
             (focus)="onInputFocus($event)"
             (blur)="onInputBlur($event)"
             [attr.name]="name()"
-            [attr.minlength]="minlength()"
-            [attr.min]="min()"
-            [attr.max]="max()"
-            [attr.pattern]="pattern()"
+            [attr.minlength]="$minlength()"
+            [attr.min]="$min()"
+            [attr.max]="$max()"
+            [attr.pattern]="$pattern()"
             [attr.size]="inputSize()"
-            [attr.maxlength]="maxlength()"
+            [attr.maxlength]="$maxlength()"
             [attr.required]="required() ? '' : undefined"
             [attr.readonly]="readonly ? '' : undefined"
             [attr.disabled]="$disabled() ? '' : undefined"
@@ -1983,7 +1983,7 @@ export class Select extends BaseInput<SelectPassThrough> implements AfterViewIni
 
     get containerDataP() {
         return this.cn({
-            invalid: this.invalid(),
+            invalid: this.$invalid(),
             disabled: this.$disabled(),
             focus: this.focused,
             fluid: this.hasFluid,

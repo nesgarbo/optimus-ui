@@ -1,4 +1,4 @@
-import { booleanAttribute, computed, Directive, inject, input } from '@angular/core';
+import { booleanAttribute, computed, Directive, inject, input, numberAttribute } from '@angular/core';
 import { BaseEditableHolder } from '@openng/optimus-ui/baseeditableholder';
 import { Fluid } from '@openng/optimus-ui/fluid';
 
@@ -35,19 +35,19 @@ export class BaseInput<PT = any> extends BaseEditableHolder<PT> {
      * @defaultValue undefined
      * @group Props
      */
-    pattern = input<string | null | undefined>();
+    pattern = input<string | RegExp | readonly RegExp[] | null | undefined>();
     /**
      * The value must be greater than or equal to the value.
      * @defaultValue undefined
      * @group Props
      */
-    min = input<number | null | undefined>();
+    min = input<number | string | Date | null | undefined>();
     /**
      * The value must be less than or equal to the value.
      * @defaultValue undefined
      * @group Props
      */
-    max = input<number | null | undefined>();
+    max = input<number | string | Date | null | undefined>();
     /**
      * Unless the step is set to the any literal, the value must be min + an integral multiple of the step.
      * @defaultValue undefined
@@ -66,10 +66,55 @@ export class BaseInput<PT = any> extends BaseEditableHolder<PT> {
      * @group Props
      */
     maxlength = input<number | null | undefined>();
+    /**
+     * Same as `minlength`, with the name a signal form (`[formField]`) binds.
+     * @defaultValue undefined
+     * @group Props
+     */
+    minLength = input<number | null | undefined, unknown>(undefined, { transform: nullableNumber });
+    /**
+     * Same as `maxlength`, with the name a signal form (`[formField]`) binds.
+     * @defaultValue undefined
+     * @group Props
+     */
+    maxLength = input<number | null | undefined, unknown>(undefined, { transform: nullableNumber });
+
+    /** `min` as a number, or null when it is not numeric (a signal form binds the field type, such as a `Date`). */
+    $min = computed(() => toNumber(this.min()));
+
+    /** `max` as a number, or null when it is not numeric. */
+    $max = computed(() => toNumber(this.max()));
+
+    /** `pattern` as the string of the native attribute: the first regular expression of a signal form. */
+    $pattern = computed(() => {
+        const pattern = this.pattern();
+        const first = Array.isArray(pattern) ? pattern[0] : pattern;
+
+        return first instanceof RegExp ? first.source : ((first as string | null | undefined) ?? null);
+    });
+
+    $minlength = computed(() => this.minlength() ?? this.minLength() ?? null);
+
+    $maxlength = computed(() => this.maxlength() ?? this.maxLength() ?? null);
 
     $variant = computed(() => this.variant() || this.config.inputStyle() || this.config.inputVariant());
 
     get hasFluid() {
         return this.fluid() ?? !!this.pcFluid;
     }
+}
+
+function nullableNumber(value: unknown): number | null | undefined {
+    return value == null ? (value as null | undefined) : numberAttribute(value);
+}
+
+function toNumber(value: number | string | Date | null | undefined): number | null {
+    if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+    if (typeof value === 'string' && value.trim() !== '') {
+        const parsed = Number(value);
+
+        return Number.isFinite(parsed) ? parsed : null;
+    }
+
+    return null;
 }
