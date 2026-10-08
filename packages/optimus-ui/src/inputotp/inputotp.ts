@@ -313,6 +313,7 @@ export class InputOtp extends BaseEditableHolder<InputOtpPassThrough> implements
     }
 
     onInputBlur(event) {
+        this.onModelTouched();
         this.onBlur.emit(event);
     }
 

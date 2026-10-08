@@ -456,6 +456,7 @@ export const Password_VALUE_ACCESSOR: any = {
             [attr.minlength]="$minlength()"
             [attr.required]="required() ? '' : undefined"
             [attr.disabled]="$disabled() ? '' : undefined"
+            [attr.readonly]="readonly() ? '' : undefined"
             [invalid]="$invalid()"
             (input)="onInput($event)"
             (focus)="onInputFocus($event)"
@@ -552,6 +553,12 @@ export class Password extends BaseInput<PasswordPassThrough> {
      * @group Props
      */
     @Input() label: string | undefined;
+    /**
+     * When present, the value is visible but the user cannot edit it. A signal form (`[formField]`) sets it from the field state.
+     * @defaultValue false
+     * @group Props
+     */
+    readonly = input(false, { transform: booleanAttribute });
     /**
      * Text to prompt password entry. Defaults to Optimus I18N API configuration.
      * @group Props
