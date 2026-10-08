@@ -11,7 +11,7 @@ import { InputNumberModule } from '@openng/optimus-ui/inputnumber';
     imports: [FormsModule, RouterModule, InputNumberModule, AppCodeModule, AppDocSectionText],
     template: `
         <app-docsectiontext>
-            <p>When <i>showClear</i> is enabled, a clear icon is displayed to clear the value.</p>
+            <p>When <i>showClear</i> is enabled, a clear icon is displayed to clear the value. The icon takes the focus with <i>tab</i>, has the <i>button</i> role and an <i>aria-label</i>, and <i>enter</i> or <i>space</i> clear the value.</p>
         </app-docsectiontext>
         <div class="card flex justify-center">
             <p-inputnumber [(ngModel)]="value" inputId="price_input" mode="currency" currency="USD" locale="en-US" [showClear]="true" inputStyleClass="w-56" />

@@ -11,7 +11,10 @@ import { samplePicture } from './sample';
     imports: [Cropper, FormField, AppCode, AppDocSectionText],
     template: `
         <app-docsectiontext>
-            <p>Cropper is a value control for signal forms, bound with <i>[formField]</i>: the field holds the cropped picture. It also works with <i>formControlName</i>, <i>formControl</i>, <i>ngModel</i> and two-way <i>[(value)]</i>.</p>
+            <p>
+                Cropper is a value control for signal forms, bound with <i>[formField]</i>: the field holds the cropped picture. It also works with <i>formControlName</i>, <i>formControl</i>, <i>ngModel</i> and two-way <i>[(value)]</i>. With
+                <i>autoValue</i> (the default) the value is encoded about 100 ms after the last gesture, so a wheel zoom or a drag makes one value and not one per step.
+            </p>
         </app-docsectiontext>
         <div class="card">
             <p-cropper [src]="src" [aspectRatio]="1" [formField]="f.avatar" />

@@ -12,7 +12,9 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
         <app-docsectiontext>
             <p>
                 <i>getCell</i> and <i>setCell</i> read and write a cell by its address, <i>getRows</i> and <i>setRows</i> a range or a table, and <i>toCsv</i> a sheet as CSV. <i>getApi</i> and <i>getWorkbook</i> give Univer's own API for the rest.
-                <i>readonly</i> lets the workbook be read and not changed, and <i>locale</i> and <i>darkMode</i> set the language and the colours.
+                <i>readonly</i> lets the workbook be read and not changed, and <i>locale</i> and <i>darkMode</i> set the language and the colours. A new <i>locale</i> starts the engine again, so what the user typed since the last <i>value</i> is
+                lost: save before changing it. <i>toCsv</i> writes a text that starts with <i>=</i>, <i>+</i>, <i>-</i> or <i>@</i> with a leading quote, so that a spreadsheet does not run it as a formula, and <i>toCsvBlob</i> adds the byte order
+                mark so that Excel reads the file as UTF-8. If Univer cannot start, the component shows <i>startErrorMessage</i> (<i>The spreadsheet could not be started</i>): set it to translate it.
             </p>
         </app-docsectiontext>
         <div class="card flex flex-col gap-4">

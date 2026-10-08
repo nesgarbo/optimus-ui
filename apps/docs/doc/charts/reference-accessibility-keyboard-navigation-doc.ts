@@ -17,6 +17,10 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 <i>false</i> to allow landing on null data points. Set <i>rememberPointFocus</i> to <i>true</i> to restore the last focused point index when switching back to a series. Set <i>pointNavigationEnabledThreshold</i> to disable per-point
                 navigation when a series exceeds a given size. Set <i>keyboardNavigation.wrapAround</i> to <i>false</i> to stop at the last point instead of cycling back to the first.
             </p>
+            <p>
+                Once a point has focus, <i>right arrow</i> and <i>left arrow</i> move the hover to the next or the previous point, <i>up arrow</i> and <i>down arrow</i> move it between series, <i>home</i> and <i>end</i> go to the first or the last
+                point, and <i>escape</i> clears the hover.
+            </p>
         </app-docsectiontext>
         @defer (on viewport) {
             <div class="card">

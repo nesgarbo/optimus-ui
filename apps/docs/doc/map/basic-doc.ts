@@ -13,7 +13,9 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
         <app-docsectiontext>
             <p>
                 <i>center</i>, <i>zoom</i>, <i>bearing</i> and <i>pitch</i> are models: bind them with <i>[(center)]</i> to follow the user and to move the map. <i>mapStyle</i> takes the URL of a style or the style itself; this one uses the tiles of
-                OpenStreetMap, which is fine to try the map and not for a product. A <i>p-map-marker</i> puts a pin; its <i>popupText</i> opens when it is clicked, and with <i>draggable</i> and <i>[(lngLat)]</i> the pin can be moved.
+                OpenStreetMap, which is fine to try the map and not for a product. A <i>p-map-marker</i> puts a pin; its <i>popupText</i> opens when it is clicked, and with <i>draggable</i> and <i>[(lngLat)]</i> the pin can be moved. A marker takes
+                the focus with the keyboard and is a button: <i>enter</i> and <i>space</i> do what a click does, and <i>aria-label</i> comes from <i>label</i> or <i>popupText</i>. MapLibre cannot change the <i>anchor</i> of a pin, so changing it
+                makes the pin again.
             </p>
         </app-docsectiontext>
         <div class="card flex flex-col gap-4">

@@ -11,7 +11,10 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
     imports: [CommonModule, GalleriaModule, AppCode, AppDocSectionText],
     template: `
         <app-docsectiontext>
-            <p>A slideshow implementation is defined by adding <i>circular</i> and <i>autoPlay</i> properties.</p>
+            <p>
+                A slideshow implementation is defined by adding <i>circular</i> and <i>autoPlay</i> properties. The slideshow timer is cleared when the component is destroyed or when the slideshow starts again, so it never keeps running behind the
+                page.
+            </p>
         </app-docsectiontext>
         <div class="card">
             <p-galleria [(value)]="images" [autoPlay]="true" [circular]="true" [responsiveOptions]="responsiveOptions" [numVisible]="5" [containerStyle]="{ 'max-width': '640px' }">

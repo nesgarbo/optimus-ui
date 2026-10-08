@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { AppDoc } from '@/components/doc/app.doc';
 import { BasicDoc } from '@/doc/dashboardlayout/basic-doc';
+import { LabelsDoc } from '@/doc/dashboardlayout/labels-doc';
 import { ImportDoc } from '@/doc/dashboardlayout/import-doc';
 import { MethodsDoc } from '@/doc/dashboardlayout/methods-doc';
 import { ResizeDoc } from '@/doc/dashboardlayout/resize-doc';
@@ -24,6 +25,7 @@ export class DashboardLayoutDemo {
         { id: 'basic', label: 'Basic', component: BasicDoc },
         { id: 'resize', label: 'Resizing', component: ResizeDoc },
         { id: 'methods', label: 'Adding, Removing and Saving', component: MethodsDoc },
-        { id: 'responsive', label: 'Responsive', component: ResponsiveDoc }
+        { id: 'responsive', label: 'Responsive', component: ResponsiveDoc },
+        { id: 'labels', label: 'Labels and Announcements', component: LabelsDoc }
     ];
 }

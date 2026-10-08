@@ -13,6 +13,7 @@ import { ChartsModule } from '@openng/optimus-ui/charts';
                 Charts auto-generate screen reader descriptions from data when no <i>ChartAccessibility</i> component is mounted. Add <i>ChartAccessibility</i> to override descriptions, adjust verbosity, configure keyboard navigation, and style focus
                 indicators.
             </p>
+            <p>The chart figure takes its accessible name from the <i>ariaLabel</i> input. Left unset, a name in English is generated from the series, so set <i>ariaLabel</i> to give it in the language of the page.</p>
         </app-docsectiontext>
         @defer (on viewport) {
             <div class="card">

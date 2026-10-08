@@ -164,7 +164,7 @@ export class AppDocSectionNav implements OnInit {
     }
 
     getThreshold(label: Element) {
-        if (typeof document !== undefined) {
+        if (typeof document !== 'undefined') {
             if (!this.topbarHeight) {
                 const topbar = DomHandler.findSingle(document.body, '.layout-topbar');
 
@@ -176,7 +176,7 @@ export class AppDocSectionNav implements OnInit {
     }
 
     scrollToLabelById(id: string) {
-        if (typeof document !== undefined) {
+        if (typeof document !== 'undefined') {
             const label = document.getElementById(id);
             this.location.go(this.location.path().split('#')[0] + '#' + id);
             setTimeout(() => {

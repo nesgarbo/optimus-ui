@@ -38,7 +38,7 @@ export class ListDoc {
     ngOnInit() {
         this.icons = IconData.icons.sort((icon1, icon2) => {
             if (icon1.properties.name < icon2.properties.name) return -1;
-            else if (icon1.properties.name < icon2.properties.name) return 1;
+            else if (icon1.properties.name > icon2.properties.name) return 1;
             else return 0;
         });
         this.filteredIcons = IconData.icons;

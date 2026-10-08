@@ -3,6 +3,7 @@ import { AppDoc } from '@/components/doc/app.doc';
 import { BasicDoc } from '@/doc/mention/basic-doc';
 import { EditableDoc } from '@/doc/mention/editable-doc';
 import { FieldsDoc } from '@/doc/mention/fields-doc';
+import { LabelsDoc } from '@/doc/mention/labels-doc';
 import { ImportDoc } from '@/doc/mention/import-doc';
 import { RemoteDoc } from '@/doc/mention/remote-doc';
 
@@ -24,6 +25,7 @@ export class MentionDemo {
         { id: 'basic', label: 'Basic', component: BasicDoc },
         { id: 'fields', label: 'Fields, Groups and Templates', component: FieldsDoc },
         { id: 'editable', label: 'Contenteditable', component: EditableDoc },
-        { id: 'remote', label: 'Remote Data', component: RemoteDoc }
+        { id: 'remote', label: 'Remote Data', component: RemoteDoc },
+        { id: 'labels', label: 'Labels', component: LabelsDoc }
     ];
 }

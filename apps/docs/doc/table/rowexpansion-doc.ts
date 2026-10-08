@@ -155,7 +155,11 @@ export class RowExpansionDoc {
     }
 
     expandAll() {
-        this.expandedRows = this.products.reduce((acc, p) => (acc[p.id] = true) && acc, {});
+        this.expandedRows = this.products.reduce((acc, p) => {
+            acc[p.id] = true;
+
+            return acc;
+        }, {});
     }
 
     collapseAll() {

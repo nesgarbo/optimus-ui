@@ -10,7 +10,7 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
     imports: [FormsModule, InputMaskModule, AppCodeModule, AppDocSectionText],
     template: `
         <app-docsectiontext>
-            <p>When <i>showClear</i> is enabled, a clear icon is displayed to clear the value.</p>
+            <p>When <i>showClear</i> is enabled, a clear icon is displayed to clear the value. The icon is a <i>button</i> that takes the focus with <i>tab</i> and has an <i>aria-label</i> from the <i>clear</i> translation.</p>
         </app-docsectiontext>
         <div class="card flex justify-center">
             <p-inputmask mask="99-999999" [(ngModel)]="value" placeholder="99-999999" [showClear]="true" />

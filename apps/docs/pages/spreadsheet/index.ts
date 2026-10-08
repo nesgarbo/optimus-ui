@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { usePageStyle } from '@/utils/page-style';
 import { AppDoc } from '@/components/doc/app.doc';
 import { ApiDoc } from '@/doc/spreadsheet/api-doc';
 import { BasicDoc } from '@/doc/spreadsheet/basic-doc';
@@ -18,6 +19,10 @@ import { ImportDoc } from '@/doc/spreadsheet/import-doc';
     imports: [AppDoc]
 })
 export class SpreadsheetDemo {
+    constructor() {
+        usePageStyle('univer.css');
+    }
+
     docs = [
         { id: 'import', label: 'Import', component: ImportDoc },
         { id: 'basic', label: 'Basic', component: BasicDoc },

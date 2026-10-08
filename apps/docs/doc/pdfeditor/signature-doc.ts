@@ -13,7 +13,8 @@ import { samplePdf } from './sample';
         <app-docsectiontext>
             <p>
                 A signature is a picture. Draw one with <i>p-signature</i>, pass its value as <i>signature</i>, pick the signature tool and click where it goes. With no <i>signature</i> set, the tool emits <i>signatureRequested</i> so that the app
-                can ask for one. <i>placePicture</i> puts any PNG or JPEG on the page from code.
+                can ask for one. <i>placePicture</i> puts any PNG or JPEG on the page from code. A picture of more than about 21 MB, or of more than 40 million pixels, or one that cannot be read or placed, is not put on the page: <i>failed</i> emits
+                with the reason.
             </p>
         </app-docsectiontext>
         <div class="card flex flex-col gap-4">

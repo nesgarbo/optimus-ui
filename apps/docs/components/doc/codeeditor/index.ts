@@ -23,7 +23,7 @@ const useCodeSandbox = (props: Props) => {
         body: JSON.stringify({ files: files, sourceFileName: 'components/layout/app.component.ts' })
     })
         .then((response) => response.json())
-        .then((data) => typeof window !== undefined && window.open(`https://codesandbox.io/s/${data.sandbox_id}`, '_blank'));
+        .then((data) => typeof window !== 'undefined' && window.open(`https://codesandbox.io/s/${data.sandbox_id}`, '_blank'));
 };
 
 const useStackBlitz = (props: Props) => {

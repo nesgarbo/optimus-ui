@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { AppDoc } from '@/components/doc/app.doc';
 import { BasicDoc } from '@/doc/signature/basic-doc';
 import { FormsDoc } from '@/doc/signature/forms-doc';
+import { LabelsDoc } from '@/doc/signature/labels-doc';
 import { ImportDoc } from '@/doc/signature/import-doc';
 import { StyleDoc } from '@/doc/signature/style-doc';
 import { TypedDoc } from '@/doc/signature/typed-doc';
@@ -24,6 +25,7 @@ export class SignatureDemo {
         { id: 'basic', label: 'Basic', component: BasicDoc },
         { id: 'style', label: 'Pen and Background', component: StyleDoc },
         { id: 'typed', label: 'Typed and Loaded', component: TypedDoc },
-        { id: 'forms', label: 'Forms', component: FormsDoc }
+        { id: 'forms', label: 'Forms', component: FormsDoc },
+        { id: 'labels', label: 'Labels, Debounce and Undo', component: LabelsDoc }
     ];
 }

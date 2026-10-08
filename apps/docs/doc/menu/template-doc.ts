@@ -18,6 +18,10 @@ import { Ripple } from '@openng/optimus-ui/ripple';
                 Menu offers item customization with the <i>item</i> template that receives the menuitem instance from the model as a parameter. The submenu header has its own <i>submenuheader</i> template, additional slots named <i>start</i> and
                 <i>end</i> are provided to embed content before or after the menu.
             </p>
+            <p>
+                An item whose <i>escape</i> is <i>false</i> writes its <i>label</i> as HTML. That HTML now goes through Angular's sanitizer: <i>style</i> attributes, <i>&lt;script&gt;</i> and the <i>on*</i> handlers are removed. Use the <i>item</i>
+                template for markup that needs them.
+            </p>
         </app-docsectiontext>
         <div class="card">
             <p-menu [model]="items" class="flex justify-center" styleClass="w-full md:w-60">

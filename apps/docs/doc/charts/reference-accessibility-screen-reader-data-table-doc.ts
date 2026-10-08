@@ -16,7 +16,10 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
                 Set <i>dataTableMaxRows</i> to cap how many rows are rendered in the hidden table. The default cap is <i>200</i>; when more rows exist, a summary row reports how many rows were omitted. Set <i>dataTableCellFormatter</i> to format each
                 rendered table cell. The formatter also applies to CSV export, so downloaded values can match the accessible table text.
             </p>
-            <p>CSV export uses the same data-table columns and formatter, but exports every chart row instead of applying the screen reader row cap.</p>
+            <p>
+                CSV export uses the same data-table columns and formatter, but exports every chart row instead of applying the screen reader row cap. A label or a series name that starts with <i>=</i>, <i>+</i>, <i>-</i> or <i>@</i> is written with a
+                leading quote, so a spreadsheet does not run it as a formula when the file is opened. A plain number is left as it is.
+            </p>
         </app-docsectiontext>
         <app-code></app-code>
     `,

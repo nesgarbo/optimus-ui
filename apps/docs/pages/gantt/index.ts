@@ -8,6 +8,7 @@ import { DependenciesDoc } from '@/doc/gantt/dependencies-doc';
 import { EditingDoc } from '@/doc/gantt/editing-doc';
 import { ExportDoc } from '@/doc/gantt/export-doc';
 import { HoursDoc } from '@/doc/gantt/hours-doc';
+import { MessagesDoc } from '@/doc/gantt/messages-doc';
 import { ImportDoc } from '@/doc/gantt/import-doc';
 import { PlanningDoc } from '@/doc/gantt/planning-doc';
 import { TimelineDoc } from '@/doc/gantt/timeline-doc';
@@ -36,6 +37,7 @@ export class GanttDemo {
         { id: 'planning', label: 'Baseline and Resources', component: PlanningDoc },
         { id: 'hours', label: 'Hours and Minutes', component: HoursDoc },
         { id: 'export', label: 'Export', component: ExportDoc },
+        { id: 'messages', label: 'Translating the Text', component: MessagesDoc },
         { id: 'accessibility', label: 'Accessibility', component: AccessibilityDoc }
     ];
 }

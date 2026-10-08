@@ -11,7 +11,8 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
         <app-docsectiontext>
             <p>
                 <i>p-map-layer</i> draws GeoJSON. <i>type</i> is <i>fill</i>, <i>line</i>, <i>circle</i>, <i>symbol</i>, <i>heatmap</i> or <i>fill-extrusion</i>, and <i>paint</i> and <i>layout</i> are the properties of MapLibre's style specification,
-                so they can use data-driven expressions. <i>layerClick</i> says which feature was clicked, and a new <i>data</i> redraws the layer.
+                so they can use data-driven expressions. <i>layerClick</i> says which feature was clicked, and a new <i>data</i> redraws the layer. MapLibre cannot change the <i>id</i>, the <i>type</i> or the <i>cluster</i> of a layer in place, so
+                changing any of them removes the layer and adds it again.
             </p>
         </app-docsectiontext>
         <div class="card flex flex-col gap-4">

@@ -14,7 +14,7 @@ import { samplePdf } from './sample';
             <p>
                 The thumbnails are the pages: click one to go to it and drag one onto another to move it. The toolbar and the methods <i>rotateCurrentPage</i>, <i>deleteCurrentPage</i>, <i>movePage</i>, <i>addBlankPage</i>, <i>merge</i> and
                 <i>extract</i> turn, delete, move, add, merge and take pages out. What is drawn on a page goes with it, and every change can be undone. <i>save</i> makes the new file, <i>saveAsBlob</i> a <i>Blob</i> and <i>download</i> hands it to
-                the browser.
+                the browser. The thumbnails are drawn as they come into view, so a long file opens fast. The undo history is kept up to about 96 MB of different files; past that the oldest steps are dropped.
             </p>
         </app-docsectiontext>
         <div class="card flex flex-col gap-4">

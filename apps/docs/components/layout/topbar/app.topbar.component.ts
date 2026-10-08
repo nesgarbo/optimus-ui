@@ -6,7 +6,7 @@ import { CommonModule, DOCUMENT, NgOptimizedImage } from '@angular/common';
 import { afterNextRender, booleanAttribute, Component, computed, ElementRef, Inject, Input, OnDestroy, Renderer2 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import docsearch from '@docsearch/js';
+import docsearch from '@docsearch/js/docsearch';
 import { DomHandler } from '@openng/optimus-ui/dom';
 import { StyleClass } from '@openng/optimus-ui/styleclass';
 import { SelectModule } from '@openng/optimus-ui/select';
@@ -146,7 +146,7 @@ export class AppTopBarComponent implements OnDestroy {
         docsearch({
             appId: 'X3M9GFEM8Z',
             apiKey: 'ce715b53658d2e2190d8751fad64e8e9',
-            indexName: 'Optimus UI Documentation',
+            indices: ['Optimus UI Documentation'],
             container: '#docsearch'
         });
     }

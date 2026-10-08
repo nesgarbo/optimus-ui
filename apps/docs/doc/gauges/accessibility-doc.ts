@@ -13,6 +13,11 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
                 is an <i>img</i> and each pointer carries a <i>title</i> with its value or its <i>description</i>. With <i>enablePointerDrag</i> it is a <i>slider</i> and takes focus. Name it with <i>title</i> or <i>aria-label</i>, and give a range a
                 <i>legendText</i> to say what it means beyond its color.
             </p>
+            <p>
+                The texts that a gauge writes itself are inputs: <i>defaultLabel</i> names the gauge when there is no <i>title</i> or <i>aria-label</i> (<i>Gauge</i>), and <i>rangeText</i> is the legend of a range without a <i>legendText</i> (<i
+                    >&#123;start&#125; to &#123;end&#125;</i
+                >). Set them to translate what a screen reader says.
+            </p>
             <h3>Keyboard Support</h3>
             <div class="doc-tablewrapper">
                 <table class="doc-table">
