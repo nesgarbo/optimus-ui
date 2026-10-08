@@ -223,6 +223,7 @@ export class TreeTableService {
                         #scrollableFrozenView
                         [ttScrollableView]="frozenColumns"
                         [unstyled]="unstyled()"
+                        [pt]="pt()"
                         [frozen]="true"
                         [style.width]="frozenWidth"
                         [scrollHeight]="scrollHeight"
@@ -235,6 +236,7 @@ export class TreeTableService {
                     #scrollableView
                     [ttScrollableView]="columns"
                     [unstyled]="unstyled()"
+                    [pt]="pt()"
                     [frozen]="false"
                     [scrollHeight]="scrollHeight"
                     [style.left]="frozenWidth"

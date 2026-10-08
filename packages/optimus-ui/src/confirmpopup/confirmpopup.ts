@@ -631,7 +631,8 @@ export class ConfirmPopup extends BaseComponent<ConfirmPopupPassThrough> {
     }
 
     onDestroy() {
-        cancelAnimationFrame(this.alignFrame!);
+        // The frame only exists in the browser, so the server never reaches cancelAnimationFrame.
+        if (this.alignFrame != null) cancelAnimationFrame(this.alignFrame);
         this.scrollHandler?.destroy();
         this.scrollHandler = null;
         this.restoreAppend();
