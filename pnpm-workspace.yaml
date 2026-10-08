@@ -3,8 +3,6 @@ packages:
   - 'apps/*'
   - 'apps/tailwind-playgrounds/*'
 
-shamefullyHoist: true
-
 allowBuilds:
   '@parcel/watcher': true
   core-js: true
@@ -16,8 +14,46 @@ allowBuilds:
 
 catalog:
   '@openng/icons': ^1.0.0
+  cross-env: ^10.1.0
+  fs-extra: ^11.4.1
+  glob: ^13.0.6
+  prettier: ^3.9.9
+  rimraf: ^6.1.3
+  tsdown: ^0.23.0
+  typedoc: 0.28.20
 
 catalogs:
+  # Runtime libraries shared by `apps/docs` and `packages/optimus-ui` (dev/peer tooling).
+  # Pinned exactly on purpose: tiptap and prosemirror must move together.
+  libs:
+    '@pdf-lib/fontkit': 1.1.1
+    '@tiptap/core': 3.31.4
+    '@tiptap/extension-image': 3.31.4
+    '@tiptap/extension-list': 3.31.4
+    '@tiptap/extensions': 3.31.4
+    '@tiptap/pm': 3.31.4
+    '@tiptap/starter-kit': 3.31.4
+    '@tiptap/suggestion': 3.31.4
+    '@univerjs/preset-sheets-core': 1.0.3
+    '@univerjs/presets': 1.0.3
+    chart.js: 4.5.1
+    cropperjs: 2.3.0
+    maplibre-gl: 6.13.0
+    pdf-lib: 1.17.1
+    pdfjs-dist: 6.4.299
+    prosemirror-commands: 1.7.2
+    prosemirror-dropcursor: 1.8.4
+    prosemirror-gapcursor: 1.4.1
+    prosemirror-history: 1.5.1
+    prosemirror-inputrules: 1.5.1
+    prosemirror-keymap: 1.2.3
+    prosemirror-model: 1.25.12
+    prosemirror-schema-list: 1.5.1
+    prosemirror-state: 1.4.4
+    prosemirror-tables: 1.8.5
+    prosemirror-transform: 1.12.2
+    prosemirror-view: 1.42.6
+    quill: 2.0.3
   angular22:
     "@angular-devkit/build-angular": ^22.2.2
     "@angular/animations": ^22.2.1

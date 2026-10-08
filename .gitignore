@@ -4,8 +4,6 @@
 /dist
 /tmp
 /out-tsc
-/components
-/resources
 /aot
 dist
 
@@ -47,7 +45,6 @@ Thumbs.db
 api-generator/typedoc.json
 api-generator/themedoc.json
 .vercel
-.nx
 
 # primeng packages
 packages/optimus-ui/src/package.json
@@ -80,3 +77,15 @@ apps/docs/public/llms
 # The demo code catalogue and the per-component files it is split into are build output.
 apps/docs/.demos/
 apps/docs/public/demos/
+
+# pnpm publish report written by `pnpm run release*`
+pnpm-publish-summary.json
+
+# TypeScript incremental build info
+*.tsbuildinfo
+
+# local environment files
+.env
+.env.*
+!.env.example
+.eslintcache

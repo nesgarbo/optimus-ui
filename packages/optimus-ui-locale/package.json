@@ -1,14 +1,13 @@
 {
     "name": "@openng/optimus-ui-locale",
     "version": "2.0.2",
-    "author": "OpenNg",
+    "author": "OpenNG",
     "description": "i18n and l7n locales for Optimus UI components",
-    "homepage": "https://www.openng.org/",
     "license": "MIT",
     "type": "module",
     "repository": {
         "type": "git",
-        "url": "https://github.com/openng-org/optimus-ui.git",
+        "url": "git+https://github.com/openng-org/optimus-ui.git",
         "directory": "packages/optimus-ui-locale"
     },
     "bugs": {
@@ -71,6 +70,8 @@
         "dev:link": "pnpm link --global && npm link"
     },
     "devDependencies": {
+        "cross-env": "catalog:",
+        "fs-extra": "catalog:",
         "typescript": "catalog:angular22"
     }
 }

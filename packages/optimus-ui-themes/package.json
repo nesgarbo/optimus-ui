@@ -3,6 +3,7 @@
     "version": "2.0.2",
     "author": "OpenNG",
     "description": "Themes for Optimus UI Libraries",
+    "homepage": "https://www.openng.org/",
     "keywords": [
         "themes",
         "css",
@@ -35,7 +36,7 @@
             "types": "./types/*/index.d.ts"
         },
         "./tokens": {
-            "types": "./tokens/index.d.ts",
+            "types": "./tokens/index.d.mts",
             "import": "./tokens/index.mjs",
             "default": "./tokens/index.mjs"
         },
@@ -71,6 +72,10 @@
         "@openng/optimus-ui-styled": "workspace:*"
     },
     "devDependencies": {
-        "typedoc": "0.28.20"
+        "cross-env": "catalog:",
+        "glob": "catalog:",
+        "prettier": "catalog:",
+        "tsdown": "catalog:",
+        "typedoc": "catalog:"
     }
 }

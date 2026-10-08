@@ -5,8 +5,15 @@ pre-commit:
       glob:
         - "packages/**/*.{js,mjs,ts,mts,d.ts,html}"
         - "apps/**/*.{js,mjs,ts,mts,d.ts,html}"
+        - "scripts/**/*.{js,mjs,ts,mts}"
       run: npx --no-install prettier --write {staged_files}
       stage_fixed: true
+    eslint:
+      glob:
+        - "packages/**/*.{ts,mts,js,mjs,html}"
+        - "apps/**/*.{ts,mts,js,mjs,html}"
+      # Only errors fail the commit: the modernization warnings are too many to gate on.
+      run: npx --no-install eslint --no-warn-ignored {staged_files}
 
 commit-msg:
   commands:

@@ -3,7 +3,13 @@
     "version": "2.0.2",
     "author": "OpenNG",
     "description": "Utility functions and helpers for Optimus UI Libraries",
-    "keywords": ["utilities", "helpers", "optimus-ui", "angular"],
+    "homepage": "https://www.openng.org/",
+    "keywords": [
+        "utilities",
+        "helpers",
+        "optimus-ui",
+        "angular"
+    ],
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -32,7 +38,11 @@
         "access": "public"
     },
     "sideEffects": false,
-    "files": ["dist", "README.md", "LICENSE"],
+    "files": [
+        "dist",
+        "README.md",
+        "LICENSE"
+    ],
     "scripts": {
         "build": "cross-env NODE_ENV=production INPUT_DIR=src/ OUTPUT_DIR=dist/ pnpm run build:package",
         "build:dev": "cross-env NODE_ENV=development INPUT_DIR=src/ OUTPUT_DIR=dist/ pnpm run build:dev:package",
@@ -42,6 +52,12 @@
         "dev:link": "pnpm link --global && npm link"
     },
     "engines": {
-        "node": ">=12.11.0"
+        "node": "^22.22.3 || ^24.15.0 || >=26.0.0"
+    },
+    "devDependencies": {
+        "cross-env": "catalog:",
+        "fs-extra": "catalog:",
+        "glob": "catalog:",
+        "tsdown": "catalog:"
     }
 }

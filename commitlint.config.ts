@@ -15,10 +15,9 @@ const config: UserConfig = {
         }
     ],
     rules: {
-        'type-enum': [2, 'always', ['feat', 'fix', 'docs', 'style', 'refactor', 'test', 'chore']],
+        'type-enum': [2, 'always', ['feat', 'fix', 'docs', 'style', 'refactor', 'perf', 'test', 'build', 'ci', 'chore', 'revert']],
         'subject-case': [1, 'always', ['sentence-case', 'lower-case']],
         'body-max-line-length': [0],
-        'references-empty': [1, 'never'],
         'no-ai-co-author': [2, 'always']
     },
     ignores: [(commit: string) => commit.startsWith('Merge')],

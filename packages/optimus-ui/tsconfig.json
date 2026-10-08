@@ -9,7 +9,7 @@
     ],
     "angularCompilerOptions": {
         "disableTypeScriptVersionCheck": true,
-        "fullTemplateTypeCheck": false,
+        "fullTemplateTypeCheck": true,
         "annotateForClosureCompiler": false,
         "strictTemplates": false,
         "strictMetadataEmit": true,
