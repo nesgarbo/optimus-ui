@@ -5,6 +5,9 @@ import { By } from '@angular/platform-browser';
 import { FormControl, FormGroup, FormsModule, NgModel, ReactiveFormsModule } from '@angular/forms';
 import { TreeDragDropService, TreeNode } from '@openng/optimus-ui/api';
 import { Tree, UITreeNode } from './tree';
+import { provideZonelessChangeDetection as regZoneless } from '@angular/core';
+import { TestBed as RegTestBed } from '@angular/core/testing';
+import { Tree as RegTree } from './tree';
 
 // Test component for basic use cases
 @Component({
@@ -2978,3 +2981,18 @@ class TestFormIsolationTreeComponent {
     form = new FormGroup({ value: new FormControl<TreeNode[]>([]) });
     nodes: TreeNode[] = [{ key: '0', label: 'Root', children: [{ key: '0-0', label: 'Child' }] }];
 }
+
+// regression: style reads signals
+describe('Tree style classes read the signal inputs', () => {
+    it('applies the classes of the inputs', async () => {
+        RegTestBed.configureTestingModule({ imports: [RegTree], providers: [regZoneless()] });
+        const fixture = RegTestBed.createComponent(RegTree);
+        fixture.componentRef.setInput('loading', true);
+        fixture.componentRef.setInput('selectionMode', 'single');
+        fixture.componentRef.setInput('value', []);
+        await fixture.whenStable();
+        const has = (cls: string) => fixture.nativeElement.classList.contains(cls) || !!fixture.nativeElement.querySelector('.' + cls);
+        expect(has('p-tree-loading')).toBe(true);
+        expect(has('p-tree-selectable')).toBe(true);
+    });
+});

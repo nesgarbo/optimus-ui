@@ -4,6 +4,9 @@ import { By } from '@angular/platform-browser';
 
 import { MeterItem } from '@openng/optimus-ui/types/metergroup';
 import { MeterGroup, MeterGroupLabel, MeterGroupModule } from './metergroup';
+import { provideZonelessChangeDetection as regZoneless } from '@angular/core';
+import { TestBed as RegTestBed } from '@angular/core/testing';
+import { MeterGroup as RegMeterGroup } from './metergroup';
 
 @Component({
     changeDetection: ChangeDetectionStrategy.Eager,
@@ -941,5 +944,18 @@ describe('MeterGroup', () => {
 
             expect(totalPercent).toBe(Math.round((totalUsed / totalStorage) * 100));
         });
+    });
+});
+
+// regression: style reads signals
+describe('MeterGroup style classes read the signal inputs', () => {
+    it('applies the classes of the inputs', async () => {
+        RegTestBed.configureTestingModule({ imports: [RegMeterGroup], providers: [regZoneless()] });
+        const fixture = RegTestBed.createComponent(RegMeterGroup);
+        fixture.componentRef.setInput('orientation', 'vertical');
+        await fixture.whenStable();
+        const has = (cls: string) => fixture.nativeElement.classList.contains(cls) || !!fixture.nativeElement.querySelector('.' + cls);
+        expect(has('p-metergroup-vertical')).toBe(true);
+        expect(has('p-metergroup-horizontal')).toBe(false);
     });
 });

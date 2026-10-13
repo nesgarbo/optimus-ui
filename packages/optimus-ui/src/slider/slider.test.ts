@@ -8,6 +8,9 @@ import { SharedModule } from '@openng/optimus-ui/api';
 import { provideOptimus } from '@openng/optimus-ui/config';
 import { SliderChangeEvent, SliderSlideEndEvent } from '@openng/optimus-ui/types/slider';
 import { Slider, SliderModule } from './slider';
+import { provideZonelessChangeDetection as regZoneless } from '@angular/core';
+import { TestBed as RegTestBed } from '@angular/core/testing';
+import { Slider as RegSlider } from './slider';
 
 // Test Components
 @Component({
@@ -1542,5 +1545,18 @@ describe('Slider', () => {
                 expect(hookCalls).toContain('onDestroy');
             });
         });
+    });
+});
+
+// regression: style reads signals
+describe('Slider style classes read the signal inputs', () => {
+    it('applies the classes of the inputs', async () => {
+        RegTestBed.configureTestingModule({ imports: [RegSlider], providers: [regZoneless()] });
+        const fixture = RegTestBed.createComponent(RegSlider);
+        fixture.componentRef.setInput('orientation', 'vertical');
+        await fixture.whenStable();
+        const has = (cls: string) => fixture.nativeElement.classList.contains(cls) || !!fixture.nativeElement.querySelector('.' + cls);
+        expect(has('p-slider-vertical')).toBe(true);
+        expect(has('p-slider-horizontal')).toBe(false);
     });
 });

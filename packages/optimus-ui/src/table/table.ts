@@ -5554,14 +5554,14 @@ export class ReorderableRow extends BaseComponent {
                     <ng-container *ngTemplateOutlet="headerTemplate() || _headerTemplate; context: { $implicit: field() }"></ng-container>
                     @if (display() === 'row') {
                         <ul [class]="cx('filterConstraintList')" [pBind]="ptm('filterConstraintList')">
-                            @for (matchMode of matchModes; track matchMode().value; let i = $index) {
+                            @for (matchMode of matchModes; track matchMode.value; let i = $index) {
                                 <li
-                                    (click)="onRowMatchModeChange(matchMode().value)"
+                                    (click)="onRowMatchModeChange(matchMode.value)"
                                     (keydown)="onRowMatchModeKeyDown($event)"
-                                    (keydown.enter)="onRowMatchModeChange(matchMode().value)"
+                                    (keydown.enter)="onRowMatchModeChange(matchMode.value)"
                                     [class]="cx('filterConstraint')"
-                                    [pBind]="ptm('filterConstraint', ptmFilterConstraintOptions(matchMode()))"
-                                    [class.p-datatable-filter-constraint-selected]="isRowMatchModeSelected(matchMode().value)"
+                                    [pBind]="ptm('filterConstraint', ptmFilterConstraintOptions(matchMode))"
+                                    [class.p-datatable-filter-constraint-selected]="isRowMatchModeSelected(matchMode.value)"
                                     [attr.tabindex]="i === 0 ? '0' : null"
                                 >
                                     {{ matchMode.label }}

@@ -10,6 +10,9 @@ import { ButtonModule } from '@openng/optimus-ui/button';
 import { ListboxModule } from '@openng/optimus-ui/listbox';
 import { RippleModule } from '@openng/optimus-ui/ripple';
 import { OrderList } from './orderlist';
+import { provideZonelessChangeDetection as regZoneless } from '@angular/core';
+import { TestBed as RegTestBed } from '@angular/core/testing';
+import { OrderList as RegOrderList } from './orderlist';
 
 interface Product {
     id: string;
@@ -1927,5 +1930,19 @@ describe('OrderList', () => {
                 expect(contentChildOrderList).toBeTruthy();
             });
         });
+    });
+});
+
+// regression: style reads signals
+describe('OrderList style classes read the signal inputs', () => {
+    it('applies the classes of the inputs', async () => {
+        RegTestBed.configureTestingModule({ imports: [RegOrderList], providers: [regZoneless()] });
+        const fixture = RegTestBed.createComponent(RegOrderList);
+        fixture.componentRef.setInput('controlsPosition', 'right');
+        fixture.componentRef.setInput('value', []);
+        await fixture.whenStable();
+        const has = (cls: string) => fixture.nativeElement.classList.contains(cls) || !!fixture.nativeElement.querySelector('.' + cls);
+        expect(has('p-orderlist-controls-right')).toBe(true);
+        expect(has('p-orderlist-controls-left')).toBe(false);
     });
 });

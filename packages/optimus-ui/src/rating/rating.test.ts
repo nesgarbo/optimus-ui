@@ -7,6 +7,9 @@ import { SharedModule } from '@openng/optimus-ui/api';
 import { Rating } from './rating';
 
 import { provideOptimus } from '@openng/optimus-ui/config';
+import { provideZonelessChangeDetection as regZoneless } from '@angular/core';
+import { TestBed as RegTestBed } from '@angular/core/testing';
+import { Rating as RegRating } from './rating';
 
 // Basic Rating test component
 @Component({
@@ -1485,5 +1488,17 @@ describe('Rating', () => {
                 expect(inputEls.length).toBeGreaterThan(0);
             });
         });
+    });
+});
+
+// regression: style reads signals
+describe('Rating style classes read the signal inputs', () => {
+    it('applies the classes of the inputs', async () => {
+        RegTestBed.configureTestingModule({ imports: [RegRating], providers: [regZoneless()] });
+        const fixture = RegTestBed.createComponent(RegRating);
+        fixture.componentRef.setInput('readonly', true);
+        await fixture.whenStable();
+        const has = (cls: string) => fixture.nativeElement.classList.contains(cls) || !!fixture.nativeElement.querySelector('.' + cls);
+        expect(has('p-readonly')).toBe(true);
     });
 });

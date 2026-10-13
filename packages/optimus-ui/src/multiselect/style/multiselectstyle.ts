@@ -25,14 +25,14 @@ const classes = {
         'p-multiselect p-component p-inputwrapper',
         {
             'p-multiselect p-component p-inputwrapper': true,
-            'p-multiselect-display-chip': instance.display === 'chip',
+            'p-multiselect-display-chip': instance.display() === 'chip',
             'p-disabled': instance.$disabled(),
             'p-invalid': instance.$invalid(),
             'p-variant-filled': instance.$variant() === 'filled',
             'p-focus': instance.focused,
             'p-inputwrapper-filled': instance.$filled(),
-            'p-inputwrapper-focus': instance.focused || instance.overlayVisible,
-            'p-multiselect-open': instance.overlayVisible,
+            'p-inputwrapper-focus': instance.focused || instance.overlayVisible(),
+            'p-multiselect-open': instance.overlayVisible(),
             'p-multiselect-fluid': instance.hasFluid,
             'p-multiselect-sm p-inputfield-sm': instance.size() === 'small',
             'p-multiselect-lg p-inputfield-lg': instance.size() === 'large'
@@ -59,9 +59,9 @@ const classes = {
     optionGroup: 'p-multiselect-option-group',
     option: ({ instance }) => ({
         'p-multiselect-option': true,
-        'p-multiselect-option-selected': instance.selected && instance.highlightOnSelect,
-        'p-disabled': instance.disabled,
-        'p-focus': instance.focused
+        'p-multiselect-option-selected': instance.selected() && instance.highlightOnSelect(),
+        'p-disabled': instance.disabled(),
+        'p-focus': instance.focused()
     }),
     emptyMessage: 'p-multiselect-empty-message',
     clearIcon: 'p-multiselect-clear-icon'

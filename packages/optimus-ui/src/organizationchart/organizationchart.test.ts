@@ -5,6 +5,9 @@ import { By } from '@angular/platform-browser';
 import { TreeNode } from '@openng/optimus-ui/api';
 import { provideOptimus } from '@openng/optimus-ui/config';
 import { OrganizationChart, OrganizationChartNode } from './organizationchart';
+import { provideZonelessChangeDetection as regZoneless } from '@angular/core';
+import { TestBed as RegTestBed } from '@angular/core/testing';
+import { OrganizationChart as RegOrganizationChart } from './organizationchart';
 
 // Test component for basic use cases
 @Component({
@@ -1105,5 +1108,17 @@ describe('OrganizationChart', () => {
                 expect(selectedNode).toBeTruthy();
             });
         });
+    });
+});
+
+// regression: style reads signals
+describe('OrganizationChart style classes read the signal inputs', () => {
+    it('applies the classes of the inputs', async () => {
+        RegTestBed.configureTestingModule({ imports: [RegOrganizationChart], providers: [regZoneless()] });
+        const fixture = RegTestBed.createComponent(RegOrganizationChart);
+        fixture.componentRef.setInput('preserveSpace', false);
+        await fixture.whenStable();
+        const has = (cls: string) => fixture.nativeElement.classList.contains(cls) || !!fixture.nativeElement.querySelector('.' + cls);
+        expect(has('p-organizationchart-preservespace')).toBe(false);
     });
 });

@@ -424,7 +424,12 @@ describe('BlockEditor', () => {
     it('says it was touched when it loses the focus', async () => {
         tip().commands.focus();
         await settle();
-        (tip().view.dom as HTMLElement).blur();
+        const dom = tip().view.dom as HTMLElement;
+
+        dom.blur();
+        // A real blur only reaches the editor when the page itself has the focus, which a busy machine does not
+        // always give, so send the event as well.
+        dom.dispatchEvent(new FocusEvent('blur'));
         await settle();
 
         expect(host.touched).toBeGreaterThan(0);

@@ -2,6 +2,9 @@ import { ChangeDetectionStrategy, Component, DebugElement, input, provideZoneles
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ProgressBar } from './progressbar';
+import { provideZonelessChangeDetection as regZoneless } from '@angular/core';
+import { TestBed as RegTestBed } from '@angular/core/testing';
+import { ProgressBar as RegProgressBar } from './progressbar';
 
 @Component({
     changeDetection: ChangeDetectionStrategy.Eager,
@@ -965,5 +968,19 @@ describe('ProgressBar', () => {
                 expect(hookCalled).toBe(true);
             });
         });
+    });
+});
+
+// regression: style reads signals
+describe('ProgressBar style classes read the signal inputs', () => {
+    it('applies the classes of the inputs', async () => {
+        RegTestBed.configureTestingModule({ imports: [RegProgressBar], providers: [regZoneless()] });
+        const fixture = RegTestBed.createComponent(RegProgressBar);
+        fixture.componentRef.setInput('mode', 'indeterminate');
+        fixture.componentRef.setInput('value', 10);
+        await fixture.whenStable();
+        const has = (cls: string) => fixture.nativeElement.classList.contains(cls) || !!fixture.nativeElement.querySelector('.' + cls);
+        expect(has('p-progressbar-indeterminate')).toBe(true);
+        expect(has('p-progressbar-determinate')).toBe(false);
     });
 });

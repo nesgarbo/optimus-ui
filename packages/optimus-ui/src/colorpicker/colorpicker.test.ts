@@ -5,6 +5,9 @@ import { By } from '@angular/platform-browser';
 import { provideOptimus } from '@openng/optimus-ui/config';
 import { ColorPickerChangeEvent } from '@openng/optimus-ui/types/colorpicker';
 import { ColorPicker } from './colorpicker';
+import { provideZonelessChangeDetection as regZoneless } from '@angular/core';
+import { TestBed as RegTestBed } from '@angular/core/testing';
+import { ColorPicker as RegColorPicker } from './colorpicker';
 
 @Component({
     changeDetection: ChangeDetectionStrategy.Eager,
@@ -1752,5 +1755,18 @@ describe('ColorPicker', () => {
             const hue = fixture.nativeElement.querySelector('.p-colorpicker-hue');
             expect(hue?.style.opacity).toBe('1');
         });
+    });
+});
+
+// regression: style reads signals
+describe('ColorPicker style classes read the signal inputs', () => {
+    it('applies the classes of the inputs', async () => {
+        RegTestBed.configureTestingModule({ imports: [RegColorPicker], providers: [regZoneless()] });
+        const fixture = RegTestBed.createComponent(RegColorPicker);
+        fixture.componentRef.setInput('inline', true);
+        await fixture.whenStable();
+        const has = (cls: string) => fixture.nativeElement.classList.contains(cls) || !!fixture.nativeElement.querySelector('.' + cls);
+        expect(has('p-colorpicker-panel-inline')).toBe(true);
+        expect(has('p-colorpicker-overlay')).toBe(false);
     });
 });

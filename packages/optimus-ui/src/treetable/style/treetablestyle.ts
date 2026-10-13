@@ -511,25 +511,25 @@ const classes = {
     root: ({ instance }) => [
         'p-treetable p-component',
         {
-            'p-treetable-gridlines': instance.showGridlines,
-            'p-treetable-hoverable-rows': instance.rowHover || instance.selectionMode === 'single' || instance.selectionMode === 'multiple',
-            'p-treetable-auto-layout': instance.autoLayout,
-            'p-treetable-resizable': instance.resizableColumns,
-            'p-treetable-resizable-fit': instance.resizableColumns && instance.columnResizeMode === 'fit',
-            'p-treetable-flex-scrollable': instance.scrollable && instance.scrollHeight === 'flex'
+            'p-treetable-gridlines': instance.showGridlines(),
+            'p-treetable-hoverable-rows': instance.rowHover() || instance.selectionMode() === 'single' || instance.selectionMode() === 'multiple',
+            'p-treetable-auto-layout': instance.autoLayout(),
+            'p-treetable-resizable': instance.resizableColumns(),
+            'p-treetable-resizable-fit': instance.resizableColumns() && instance.columnResizeMode() === 'fit',
+            'p-treetable-flex-scrollable': instance.scrollable() && instance.scrollHeight() === 'flex'
         }
     ],
     loading: 'p-treetable-loading',
     mask: 'p-treetable-mask p-overlay-mask',
     loadingIcon: 'p-treetable-loading-icon',
     header: 'p-treetable-header',
-    pcPaginator: ({ instance }) => ['p-treetable-paginator-' + instance.paginatorPosition, instance.paginatorStyleClass],
+    pcPaginator: ({ instance }) => ['p-treetable-paginator-' + instance.paginatorPosition(), instance.paginatorStyleClass()],
     tableContainer: 'p-treetable-table-container',
     table: ({ instance }) => ({
         'p-treetable-table': true,
-        'p-treetable-scrollable-table': instance.scrollable,
-        'p-treetable-resizable-table': instance.resizableColumns,
-        'p-treetable-resizable-table-fit': instance.resizableColumns && instance.columnResizeMode === 'fit'
+        'p-treetable-scrollable-table': instance.scrollable(),
+        'p-treetable-resizable-table': instance.resizableColumns(),
+        'p-treetable-resizable-table-fit': instance.resizableColumns() && instance.columnResizeMode() === 'fit'
     }),
     thead: 'p-treetable-thead',
     sortableColumn: ({ instance }) => ({

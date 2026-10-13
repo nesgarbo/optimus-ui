@@ -4,6 +4,9 @@ import { By } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { DataView } from './dataview';
 import { PaginatorModule } from '@openng/optimus-ui/paginator';
+import { provideZonelessChangeDetection as regZoneless } from '@angular/core';
+import { TestBed as RegTestBed } from '@angular/core/testing';
+import { DataView as RegDataView } from './dataview';
 
 @Component({
     changeDetection: ChangeDetectionStrategy.Eager,
@@ -1774,3 +1777,16 @@ class TestDynamicDataViewComponent {
         }, 500);
     }
 }
+
+// regression: style reads signals
+describe('DataView style classes read the signal inputs', () => {
+    it('applies the classes of the inputs', async () => {
+        RegTestBed.configureTestingModule({ imports: [RegDataView], providers: [regZoneless()] });
+        const fixture = RegTestBed.createComponent(RegDataView);
+        fixture.componentRef.setInput('layout', 'grid');
+        await fixture.whenStable();
+        const has = (cls: string) => fixture.nativeElement.classList.contains(cls) || !!fixture.nativeElement.querySelector('.' + cls);
+        expect(has('p-dataview-grid')).toBe(true);
+        expect(has('p-dataview-list')).toBe(false);
+    });
+});

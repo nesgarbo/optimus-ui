@@ -7,6 +7,9 @@ import { AutoCompleteCompleteEvent, AutoCompleteDropdownClickEvent, AutoComplete
 import { BehaviorSubject } from 'rxjs';
 import type { Mock } from 'vitest';
 import { AUTOCOMPLETE_VALUE_ACCESSOR, AutoComplete, AutoCompleteModule } from './autocomplete';
+import { provideZonelessChangeDetection as regZoneless } from '@angular/core';
+import { TestBed as RegTestBed } from '@angular/core/testing';
+import { AutoComplete as RegAutoComplete } from './autocomplete';
 
 const mockCountries = [
     { name: 'Afghanistan', code: 'AF' },
@@ -2791,5 +2794,19 @@ describe('AutoComplete generic typing', () => {
         typedComponent.onAdd.emit({ originalEvent: new Event('blur'), value: ' Afghanistan ' });
 
         expect(addedValue).toBe('Afghanistan');
+    });
+});
+
+// regression: style reads signals
+describe('AutoComplete open state class', () => {
+    it('adds p-autocomplete-open while the overlay is visible', async () => {
+        RegTestBed.configureTestingModule({ imports: [RegAutoComplete], providers: [regZoneless()] });
+        const fixture = RegTestBed.createComponent(RegAutoComplete);
+        await fixture.whenStable();
+        expect(fixture.nativeElement.classList.contains('p-autocomplete-open')).toBe(false);
+
+        fixture.componentInstance.overlayVisible.set(true);
+        await fixture.whenStable();
+        expect(fixture.nativeElement.classList.contains('p-autocomplete-open')).toBe(true);
     });
 });

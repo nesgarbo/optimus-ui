@@ -43,14 +43,14 @@ const classes = {
             'p-disabled': instance.isForwardNavDisabled()
         }
     ],
-    indicatorList: ({ instance }) => ['p-carousel-indicator-list', instance.indicatorsContentClass],
+    indicatorList: ({ instance }) => ['p-carousel-indicator-list', instance.indicatorsContentClass()],
     indicator: ({ instance, index }) => [
         'p-carousel-indicator',
         {
             'p-carousel-indicator-active': instance._page === index
         }
     ],
-    indicatorButton: ({ instance }) => ['p-carousel-indicator-button', instance.indicatorStyleClass],
+    indicatorButton: ({ instance }) => ['p-carousel-indicator-button', instance.indicatorStyleClass()],
     footer: 'p-carousel-footer'
 };
 

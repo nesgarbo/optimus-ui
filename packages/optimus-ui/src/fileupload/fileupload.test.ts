@@ -7,6 +7,9 @@ import { By } from '@angular/platform-browser';
 import { MessageService } from '@openng/optimus-ui/api';
 import { BehaviorSubject, delay, of, Subscription, timer } from 'rxjs';
 import { FileUpload } from './fileupload';
+import { provideZonelessChangeDetection as regZoneless } from '@angular/core';
+import { TestBed as RegTestBed } from '@angular/core/testing';
+import { FileUpload as RegFileUpload } from './fileupload';
 
 describe('FileUpload', () => {
     let component: FileUpload;
@@ -3205,5 +3208,18 @@ describe('FileUpload Input Properties - Observable/Async Values', () => {
                 expect(component.onDestroyCalled).toBe(true);
             });
         });
+    });
+});
+
+// regression: style reads signals
+describe('FileUpload style classes read the signal inputs', () => {
+    it('applies the classes of the inputs', async () => {
+        RegTestBed.configureTestingModule({ imports: [RegFileUpload], providers: [regZoneless()] });
+        const fixture = RegTestBed.createComponent(RegFileUpload);
+        fixture.componentRef.setInput('mode', 'basic');
+        await fixture.whenStable();
+        const has = (cls: string) => fixture.nativeElement.classList.contains(cls) || !!fixture.nativeElement.querySelector('.' + cls);
+        expect(has('p-fileupload-basic')).toBe(true);
+        expect(has('p-fileupload-advanced')).toBe(false);
     });
 });

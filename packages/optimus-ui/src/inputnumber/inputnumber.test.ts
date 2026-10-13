@@ -7,6 +7,9 @@ import { By } from '@angular/platform-browser';
 import { provideOptimus } from '@openng/optimus-ui/config';
 import type { InputNumberInputEvent } from '@openng/optimus-ui/types/inputnumber';
 import { InputNumber, InputNumberModule } from './inputnumber';
+import { provideZonelessChangeDetection as regZoneless } from '@angular/core';
+import { TestBed as RegTestBed } from '@angular/core/testing';
+import { InputNumber as RegInputNumber } from './inputnumber';
 
 // Test Components
 @Component({
@@ -1539,5 +1542,19 @@ describe('InputNumber', () => {
 
             expect(component.value).toBeNull();
         });
+    });
+});
+
+// regression: style reads signals
+describe('InputNumber style classes read the signal inputs', () => {
+    it('applies the classes of the inputs', async () => {
+        RegTestBed.configureTestingModule({ imports: [RegInputNumber], providers: [regZoneless()] });
+        const fixture = RegTestBed.createComponent(RegInputNumber);
+        fixture.componentRef.setInput('showButtons', true);
+        fixture.componentRef.setInput('buttonLayout', 'horizontal');
+        await fixture.whenStable();
+        const has = (cls: string) => fixture.nativeElement.classList.contains(cls) || !!fixture.nativeElement.querySelector('.' + cls);
+        expect(has('p-inputnumber-horizontal')).toBe(true);
+        expect(has('p-inputnumber-stacked')).toBe(false);
     });
 });

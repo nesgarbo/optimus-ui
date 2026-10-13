@@ -4,6 +4,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
 import { Timeline } from './timeline';
+import { provideZonelessChangeDetection as regZoneless } from '@angular/core';
+import { TestBed as RegTestBed } from '@angular/core/testing';
+import { Timeline as RegTimeline } from './timeline';
 
 // Interface for event items
 interface EventItem {
@@ -783,5 +786,20 @@ describe('Timeline', () => {
             const events = fixture.debugElement.queryAll(By.css('[data-pc-section="event"]'));
             expect(events.length).toBe(2);
         });
+    });
+});
+
+// regression: style reads signals
+describe('Timeline style classes read the signal inputs', () => {
+    it('applies the classes of the inputs', async () => {
+        RegTestBed.configureTestingModule({ imports: [RegTimeline], providers: [regZoneless()] });
+        const fixture = RegTestBed.createComponent(RegTimeline);
+        fixture.componentRef.setInput('layout', 'horizontal');
+        fixture.componentRef.setInput('align', 'alternate');
+        await fixture.whenStable();
+        const has = (cls: string) => fixture.nativeElement.classList.contains(cls) || !!fixture.nativeElement.querySelector('.' + cls);
+        expect(has('p-timeline-horizontal')).toBe(true);
+        expect(has('p-timeline-alternate')).toBe(true);
+        expect(has('p-timeline-undefined')).toBe(false);
     });
 });

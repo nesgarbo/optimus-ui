@@ -7,6 +7,9 @@ import { provideOptimus } from '@openng/optimus-ui/config';
 import { TreeSelectNodeCollapseEvent, TreeSelectNodeExpandEvent } from '@openng/optimus-ui/types/treeselect';
 import { BehaviorSubject } from 'rxjs';
 import { TreeSelect, TreeSelectModule } from './treeselect';
+import { provideZonelessChangeDetection as regZoneless } from '@angular/core';
+import { TestBed as RegTestBed } from '@angular/core/testing';
+import { TreeSelect as RegTreeSelect } from './treeselect';
 
 const mockTreeNodes: TreeNode[] = [
     {
@@ -1595,5 +1598,19 @@ describe('TreeSelect', () => {
 
             expect(instance.overlayVisible()).toBeFalsy();
         });
+    });
+});
+
+// regression: style reads signals
+describe('TreeSelect open state class', () => {
+    it('adds p-treeselect-open while the overlay is visible', async () => {
+        RegTestBed.configureTestingModule({ imports: [RegTreeSelect], providers: [regZoneless()] });
+        const fixture = RegTestBed.createComponent(RegTreeSelect);
+        await fixture.whenStable();
+        expect(fixture.nativeElement.classList.contains('p-treeselect-open')).toBe(false);
+
+        fixture.componentInstance.overlayVisible.set(true);
+        await fixture.whenStable();
+        expect(fixture.nativeElement.classList.contains('p-treeselect-open')).toBe(true);
     });
 });

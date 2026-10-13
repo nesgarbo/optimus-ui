@@ -9,6 +9,9 @@ import { BehaviorSubject, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { MultiSelect, MultiSelectModule } from './multiselect';
 import type { MultiSelectBlurEvent, MultiSelectChangeEvent, MultiSelectFilterEvent, MultiSelectFocusEvent } from '@openng/optimus-ui/types/multiselect';
+import { provideZonelessChangeDetection as regZoneless } from '@angular/core';
+import { TestBed as RegTestBed } from '@angular/core/testing';
+import { MultiSelect as RegMultiSelect } from './multiselect';
 interface City {
     name: string;
     code: string;
@@ -3994,3 +3997,17 @@ class TestFormIsolationMultiSelectComponent {
         { name: 'Rotterdam', code: 'RTM' }
     ];
 }
+
+// regression: style reads signals
+describe('MultiSelect open state class', () => {
+    it('adds p-multiselect-open while the overlay is visible', async () => {
+        RegTestBed.configureTestingModule({ imports: [RegMultiSelect], providers: [regZoneless()] });
+        const fixture = RegTestBed.createComponent(RegMultiSelect);
+        await fixture.whenStable();
+        expect(fixture.nativeElement.classList.contains('p-multiselect-open')).toBe(false);
+
+        fixture.componentInstance.overlayVisible.set(true);
+        await fixture.whenStable();
+        expect(fixture.nativeElement.classList.contains('p-multiselect-open')).toBe(true);
+    });
+});

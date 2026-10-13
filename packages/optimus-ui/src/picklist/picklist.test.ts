@@ -19,6 +19,23 @@ import { PickList } from './picklist';
 
 @Component({
     changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: true,
+    imports: [PickList],
+    template: `
+        <p-picklist [source]="source" [target]="target">
+            <ng-template #item let-item>
+                <span class="regression-item">{{ item.name }}</span>
+            </ng-template>
+        </p-picklist>
+    `
+})
+class TestPickListItemTemplateComponent {
+    source = [{ name: 'A' }, { name: 'B' }, { name: 'C' }];
+    target = [{ name: 'D' }];
+}
+
+@Component({
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false,
     template: `
         <p-picklist
@@ -1860,5 +1877,15 @@ describe('PickList', () => {
                 });
             });
         });
+    });
+});
+
+describe('PickList item template', () => {
+    it('renders the item template of every item without reading the template context as a function', async () => {
+        TestBed.configureTestingModule({ imports: [TestPickListItemTemplateComponent], providers: [provideZonelessChangeDetection()] });
+        const fixture = TestBed.createComponent(TestPickListItemTemplateComponent);
+        await fixture.whenStable();
+
+        expect(fixture.nativeElement.querySelectorAll('.regression-item').length).toBe(4);
     });
 });

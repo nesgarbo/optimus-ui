@@ -205,7 +205,7 @@ const PICKLIST_INSTANCE = new InjectionToken<PickList>('PICKLIST_INSTANCE');
                     }
                     @if (itemTemplate() || _itemTemplate) {
                         <ng-template #item let-item let-index="index" let-selected="selected" let-disabled="disabled">
-                            <ng-container *ngTemplateOutlet="itemTemplate() || _itemTemplate; context: { $implicit: item, index: index, selected: selected, disabled: disabled() }"></ng-container>
+                            <ng-container *ngTemplateOutlet="itemTemplate() || _itemTemplate; context: { $implicit: item, index: index, selected: selected, disabled: disabled }"></ng-container>
                         </ng-template>
                     }
                     @if (emptyMessageSourceTemplate() || _emptyMessageSourceTemplate) {
@@ -367,7 +367,7 @@ const PICKLIST_INSTANCE = new InjectionToken<PickList>('PICKLIST_INSTANCE');
                     }
                     @if (itemTemplate() || _itemTemplate) {
                         <ng-template #item let-item let-index="index" let-selected="selected" let-disabled="disabled">
-                            <ng-container *ngTemplateOutlet="itemTemplate() || _itemTemplate; context: { $implicit: item, index: index, selected: selected, disabled: disabled() }"></ng-container>
+                            <ng-container *ngTemplateOutlet="itemTemplate() || _itemTemplate; context: { $implicit: item, index: index, selected: selected, disabled: disabled }"></ng-container>
                         </ng-template>
                     }
                     @if (emptyMessageTargetTemplate() || _emptyMessageTargetTemplate) {
