@@ -180,7 +180,9 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
     >(undefined);
 
     get rootInlineStyle() {
-        return { ...(this.sx('root') as any), ...(this.style() as any) };
+        const style = this.style();
+        // A string (for example a static style attribute) cannot be spread into a style object.
+        return { ...(this.sx('root') as any), ...(style && typeof style === 'object' ? (style as any) : {}) };
     }
     /**
      * Style class of the element.

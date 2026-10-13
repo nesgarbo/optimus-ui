@@ -2163,4 +2163,14 @@ describe('SpeedDial', () => {
             });
         });
     });
+
+    describe('Regression: string style', () => {
+        it('should not throw when style is a string instead of an object', async () => {
+            (component as any).style = "position: 'absolute'";
+            fixture.changeDetectorRef.markForCheck();
+            expect(() => fixture.detectChanges()).not.toThrow();
+            await fixture.whenStable();
+            expect(speedDialInstance.rootInlineStyle).toEqual(expect.not.objectContaining({ 0: expect.anything() }));
+        });
+    });
 });

@@ -1271,3 +1271,45 @@ describe('Badge', () => {
         });
     });
 });
+
+@Component({
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: true,
+    selector: 'test-badge-host',
+    template: `
+        <ng-content></ng-content>
+        @if (image()) {
+            <img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="" />
+        }
+    `
+})
+class TestBadgeHostComponent {
+    readonly image = input(true);
+}
+
+@Component({
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: true,
+    imports: [TestBadgeHostComponent, BadgeDirective],
+    template: `<test-badge-host pBadge value="4" severity="danger"></test-badge-host>`
+})
+class TestBadgeOnComponentHost {}
+
+describe('Badge directive on a component host', () => {
+    it('should render the badge when the first child of the host is a comment or a void element', async () => {
+        TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+        const errorHandler = vi.spyOn(console, 'error').mockImplementation(() => {});
+        const fixture = TestBed.createComponent(TestBadgeOnComponentHost);
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        const host = fixture.nativeElement.querySelector('test-badge-host') as HTMLElement;
+        const badge = host.querySelector('.p-badge');
+        const errors = errorHandler.mock.calls.length;
+        errorHandler.mockRestore();
+        expect(errors).toBe(0);
+        expect(badge).not.toBeNull();
+        expect(badge!.textContent).toBe('4');
+        expect(badge!.parentElement).toBe(host);
+    });
+});

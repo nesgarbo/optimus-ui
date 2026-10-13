@@ -778,7 +778,7 @@ describe('PanelMenu', () => {
         it('should handle Arrow Down key navigation', () => {
             const keyboardFixture = TestBed.createComponent(TestKeyboardPanelMenuComponent);
             const keyboardPanelMenu = keyboardFixture.debugElement.query(By.directive(PanelMenu)).componentInstance;
-            keyboardPanelMenu.containerViewChild = { nativeElement: { firstElementChild: null } };
+            (keyboardPanelMenu as any).containerViewChild = () => ({ nativeElement: { firstElementChild: null } });
             keyboardFixture.detectChanges();
 
             const panelHeader = keyboardFixture.debugElement.query(By.css('[data-pc-section="header"]'));
@@ -802,7 +802,7 @@ describe('PanelMenu', () => {
         it('should handle Arrow Up key navigation', () => {
             const keyboardFixture = TestBed.createComponent(TestKeyboardPanelMenuComponent);
             const keyboardPanelMenu = keyboardFixture.debugElement.query(By.directive(PanelMenu)).componentInstance;
-            keyboardPanelMenu.containerViewChild = { nativeElement: { lastElementChild: null } };
+            (keyboardPanelMenu as any).containerViewChild = () => ({ nativeElement: { lastElementChild: null } });
             keyboardFixture.detectChanges();
 
             const panelHeaders = keyboardFixture.debugElement.queryAll(By.css('[data-pc-section="header"]'));
@@ -830,7 +830,7 @@ describe('PanelMenu', () => {
         it('should handle Home key navigation', () => {
             const keyboardFixture = TestBed.createComponent(TestKeyboardPanelMenuComponent);
             const keyboardPanelMenu = keyboardFixture.debugElement.query(By.directive(PanelMenu)).componentInstance;
-            keyboardPanelMenu.containerViewChild = { nativeElement: { firstElementChild: null } };
+            (keyboardPanelMenu as any).containerViewChild = () => ({ nativeElement: { firstElementChild: null } });
             keyboardFixture.detectChanges();
 
             const panelHeader = keyboardFixture.debugElement.query(By.css('[data-pc-section="header"]'));
@@ -853,7 +853,7 @@ describe('PanelMenu', () => {
         it('should handle End key navigation', () => {
             const keyboardFixture = TestBed.createComponent(TestKeyboardPanelMenuComponent);
             const keyboardPanelMenu = keyboardFixture.debugElement.query(By.directive(PanelMenu)).componentInstance;
-            keyboardPanelMenu.containerViewChild = { nativeElement: { lastElementChild: null } };
+            (keyboardPanelMenu as any).containerViewChild = () => ({ nativeElement: { lastElementChild: null } });
             keyboardFixture.detectChanges();
 
             const panelHeader = keyboardFixture.debugElement.query(By.css('[data-pc-section="header"]'));
@@ -1411,6 +1411,25 @@ describe('PanelMenu', () => {
                 const hostElement = fixture.nativeElement;
                 expect(hostElement.classList.contains('HOOK_TEST_CLASS')).toBe(true);
             });
+        });
+    });
+
+    describe('Regression: stable track keys', () => {
+        it('should not warn about re-creating the whole collection when a panel is expanded', async () => {
+            const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+            component.transitionOptions = '400ms cubic-bezier(0.86, 0, 0.07, 1)';
+            fixture.changeDetectorRef.markForCheck();
+            await fixture.whenStable();
+
+            const panelHeader = fixture.debugElement.query(By.css('[data-pc-section="header"]'));
+            panelHeader.triggerEventHandler('click', { currentTarget: panelHeader.nativeElement });
+            await fixture.whenStable();
+            fixture.detectChanges();
+
+            const messages = warn.mock.calls.map((call) => String(call[0]));
+            warn.mockRestore();
+            expect(messages.filter((message) => message.includes('NG0956'))).toEqual([]);
+            expect(component.model![0].expanded).toBe(true);
         });
     });
 });

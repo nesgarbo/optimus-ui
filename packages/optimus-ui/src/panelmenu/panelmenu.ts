@@ -43,7 +43,7 @@ const PANELMENUSUB_INSTANCE = new InjectionToken<PanelMenuSub>('PANELMENUSUB_INS
     imports: [NgTemplateOutlet, RouterModule, TooltipModule, ChevronDownIcon, ChevronRightIcon, SharedModule, BindModule, MotionModule],
     standalone: true,
     template: `
-        @for (processedItem of items(); track processedItem; let index = $index) {
+        @for (processedItem of items(); track processedItem.key; let index = $index) {
             @if (processedItem.separator) {
                 <li [class]="cn(cx('separator'), getItemProp(processedItem, 'styleClass'))" role="separator" [pBind]="ptm('separator')"></li>
             }

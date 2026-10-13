@@ -92,7 +92,19 @@ export class BadgeDirective extends BaseComponent {
     _componentStyle = inject(BadgeStyle);
 
     private get activeElement(): HTMLElement {
-        return this.el.nativeElement.nodeName.indexOf('-') != -1 ? this.el.nativeElement.firstChild : this.el.nativeElement;
+        const host: HTMLElement = this.el.nativeElement;
+        if (host.nodeName.indexOf('-') === -1) {
+            return host;
+        }
+
+        // The first child can be a comment (control flow anchor) or text, and a void element (img, input) cannot contain the badge.
+        let child = host.firstChild;
+        while (child && child.nodeType !== Node.ELEMENT_NODE) {
+            child = child.nextSibling;
+        }
+
+        const voidElements = ['IMG', 'INPUT', 'BR', 'HR', 'AREA', 'BASE', 'COL', 'EMBED', 'LINK', 'META', 'SOURCE', 'TRACK', 'WBR'];
+        return child && !voidElements.includes((child as HTMLElement).nodeName) ? (child as HTMLElement) : host;
     }
 
     private get canUpdateBadge(): boolean {
