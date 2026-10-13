@@ -489,7 +489,13 @@ export class Overlay extends BaseComponent {
     onOverlayBeforeEnter(event: MotionEvent) {
         this.handleEvents('onBeforeShow', { overlay: this.overlayEl, target: this.targetEl, mode: this.overlayMode });
         this.container.set(this.overlayEl || event.element);
-        this.show(this.overlayEl, true);
+        // The motion starts a tick after `visible` turned true. If the caller hid the overlay in between
+        // (a focus and a blur in a row), `show()` would turn it back on and the overlay would stay open.
+        if (this.visible()) {
+            this.show(this.overlayEl, true);
+        } else {
+            this.handleEvents('onShow', { overlay: this.overlayEl, target: this.targetEl, mode: this.overlayMode });
+        }
         this.hostAttrSelector() && this.overlayEl && this.overlayEl.setAttribute(this.hostAttrSelector(), '');
         this.appendOverlay();
         this.alignOverlay();

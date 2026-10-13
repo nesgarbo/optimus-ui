@@ -439,3 +439,22 @@ describe('Overlay document listeners', () => {
         expect(runSpy).not.toHaveBeenCalled();
     });
 });
+
+describe('Overlay hidden before its motion starts', () => {
+    it('should not turn visible back on when the caller hid it before the enter motion', async () => {
+        await TestBed.configureTestingModule({
+            imports: [Overlay, BrowserAnimationsModule],
+            providers: [provideZonelessChangeDetection()]
+        }).compileComponents();
+
+        const overlay = TestBed.createComponent(Overlay).componentInstance;
+        const shown = vi.fn();
+
+        overlay.onShow.subscribe(shown);
+        overlay.visible.set(false);
+        overlay.onOverlayBeforeEnter({ element: document.createElement('div') } as any);
+
+        expect(overlay.visible()).toBe(false);
+        expect(shown).toHaveBeenCalled();
+    });
+});

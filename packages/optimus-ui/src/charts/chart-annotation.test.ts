@@ -34,7 +34,67 @@ class AnnotationHost {
     ];
 }
 
+@Component({
+    standalone: true,
+    imports: [ChartsModule],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    template: `
+        <p-chart-canvas id="canvas" [width]="500" [height]="300" [animation]="false">
+            <p-chart-bar [data]="data" categoryXField="m" valueYField="v" />
+            <p-chart-x-axis />
+            <p-chart-y-axis />
+            <p-chart-annotation>
+                <ng-template pChartAnnotationDef let-ctx>
+                    <svg:rect data-test="byIndex" [attr.x]="ctx.xScale(2)" [attr.y]="ctx.yScale(30)" width="4" height="4" />
+                    <svg:rect data-test="byLabel" [attr.x]="ctx.xScale('Mar')" [attr.y]="ctx.yScale(30)" width="4" height="4" />
+                </ng-template>
+            </p-chart-annotation>
+        </p-chart-canvas>
+        <p-chart-svg id="svg" [width]="500" [height]="300" [animation]="false">
+            <p-chart-bar [data]="data" categoryXField="m" valueYField="v" />
+            <p-chart-x-axis />
+            <p-chart-y-axis />
+            <p-chart-annotation>
+                <ng-template pChartAnnotationDef let-ctx>
+                    <svg:rect data-test="byIndex" [attr.x]="ctx.xScale(2)" [attr.y]="ctx.yScale(30)" width="4" height="4" />
+                </ng-template>
+            </p-chart-annotation>
+        </p-chart-svg>
+    `
+})
+class CanvasAnnotationHost {
+    readonly data = [
+        { m: 'Jan', v: 10 },
+        { m: 'Feb', v: 20 },
+        { m: 'Mar', v: 30 }
+    ];
+}
+
 describe('annotation scales', () => {
+    it('resolves a category index like a label with the canvas renderer, at the pixel of the svg one', async () => {
+        await TestBed.configureTestingModule({ imports: [CanvasAnnotationHost], providers: [provideZonelessChangeDetection()] }).compileComponents();
+
+        const fixture = TestBed.createComponent(CanvasAnnotationHost);
+
+        document.body.appendChild(fixture.nativeElement);
+        await fixture.whenStable();
+        await new Promise((resolve) => setTimeout(resolve, 60));
+        await fixture.whenStable();
+
+        const root = fixture.nativeElement as HTMLElement;
+        const attr = (host: string, test: string, name: string) => root.querySelector(`#${host} [data-test="${test}"]`)?.getAttribute(name);
+
+        expect(root.querySelector('#canvas canvas')).not.toBeNull();
+        expect(attr('canvas', 'byLabel', 'x')).toBeTruthy();
+        expect(attr('canvas', 'byLabel', 'x')).not.toBe('NaN');
+        expect(attr('canvas', 'byIndex', 'x')).toBe(attr('canvas', 'byLabel', 'x'));
+        expect(attr('canvas', 'byIndex', 'y')).not.toBe('NaN');
+        expect(attr('canvas', 'byIndex', 'x')).toBe(attr('svg', 'byIndex', 'x'));
+        expect(attr('canvas', 'byIndex', 'y')).toBe(attr('svg', 'byIndex', 'y'));
+
+        fixture.destroy();
+    });
+
     it('resolves a category index and a label to the same pixel on a band axis', async () => {
         await TestBed.configureTestingModule({ imports: [AnnotationHost], providers: [provideZonelessChangeDetection()] }).compileComponents();
 

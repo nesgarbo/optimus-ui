@@ -463,6 +463,18 @@ describe('Rating', () => {
             expect(component.ratingForm.get('rating')?.value).toBe(3 as any);
         });
 
+        it('should mark the control as touched when the focus leaves it without a rating', () => {
+            const control = component.ratingForm.get('rating')!;
+            const input = fixture.debugElement.query(By.css('input[type="radio"]')).nativeElement as HTMLInputElement;
+
+            expect(control.touched).toBe(false);
+
+            input.dispatchEvent(new Event('blur'));
+
+            expect(control.touched).toBe(true);
+            expect(control.value).toBeNull();
+        });
+
         it('should validate form controls', () => {
             const control = component.ratingForm.get('rating');
 

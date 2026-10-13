@@ -241,6 +241,7 @@ export class Rating extends BaseEditableHolder<RatingPassThrough> {
 
     onInputBlur(event) {
         this.focusedOptionIndex.set(-1);
+        this.onModelTouched();
         this.onBlur.emit(event);
     }
 
