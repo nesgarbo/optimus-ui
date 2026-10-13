@@ -17,6 +17,7 @@ Anota aquí lo que se está haciendo (fecha, qué, commit).
   - `nightly.yml` corregido.
   - Catalog `angular22`: core, router, etc. a ^22.2.1 y cdk a ^22.2.2. `pnpm install` hecho y build de la lib OK.
   - Overrides de `source-map-js` y `postcss-selector-parser`.
+- 2026-10-13. Cierre de la Fase B (sin commit al escribir esto): migración `ng update` para consumidores, `chart.js` dinámico, OnPush en menús, `DynamicDialog` y `OrganizationChart`, demos nuevas de `pPassword` y de signal forms con `p-rating` y `p-password`, y ids duplicados. Bugs reales encontrados en navegador: el panel de `p-password` quedaba abierto tras un blur rápido (`Overlay.onOverlayBeforeEnter` forzaba `visible=true`), `p-rating` no marcaba `touched` al perder el foco, y el medidor de `pPassword` con etiquetas traducidas. Verificado: 187 ficheros y 8830 tests, 159 tests de schematics, 0 errores de tipos y de lint, builds de lib y docs (producción con 136 rutas prerenderizadas).
 - 2026-10-13. Fase B (sin commit de este bloque al escribir): API de la librería a signals. Verificado: 186 ficheros y 8780 tests, 0 errores de tipos, build AOT de lib y docs, lint con 0 errores, y smoke test en navegador de 136 rutas (sin restos de la migración). Arreglos que tsc no detecta: hojas de estilo que leían `instance.x` sin llamar, restos `() {{ x }}` en plantillas, `matchMode()` y `disabled()` sobre variables de bucle, `isStateful()` comparando contra un signal, y `$hostName` devolviendo un signal. Versiones a 3.0.0. Reglas `prefer-*` a `error` en la librería.
 - 2026-10-08. Cuarto tramo, P5 a P8 (sin commit al escribir esto): ver "Resultado de P5 a P8" al final de P8. Verificado: formato, 0 errores de lint, 0 vulnerabilidades, builds de la lib, themes y docs (incluido producción con prerender), y 8761 tests (8760 pasan, 1 skip).
 - 2026-10-08. Tercer tramo (sin commit). Estado: prettier limpio, 0 errores de lint, build de la lib y de la docs OK, 8483 de 8484 tests pasan antes de arreglar el test del zoom (ya arreglado).
@@ -365,21 +366,22 @@ Rompe la API pública. Hecha el 2026-10-13; las versiones de los nueve paquetes 
 - [x] `@Output()` y `EventEmitter` restantes pasan a `output()`. Solo queda `acceptEvent` y `rejectEvent` en `api/confirmation.ts`, que son un tipo de datos del servicio.
 - [x] Setters y getters de inputs pasan a `computed`, `linkedSignal` o al hook `onChanges`.
 - [x] Las clases base y sus subclases se migraron juntas. `BaseComponent` desenvuelve `hostName` y `componentName` cuando son un input.
-- [ ] Codemod de migración para quien consuma la lib: una migración de `ng update` (`schematics/migrations.json`) que reescriba `instance.x = v` por `setInput` y las lecturas por `x()`. No se ha hecho; la guía describe los cambios a mano.
+- [x] Migración de `ng update` `migrate-signals-v3` (versión 3.0.0): reescribe lecturas y asignaciones a `model()` sobre referencias con tipo declarado y `instance.x` en funciones `pt`; deja `// TODO(optimus-ui 3.0)` en lo ambiguo. El manifiesto de la API se genera con `scripts/generate-signals-manifest.mjs`. No usa type checker, no toca plantillas y no se ha probado sobre código 2.x real de un consumidor (159 tests de schematics).
 - [x] Guía de migración 2.x a 3.0: sección "Migrating to 3.0: Signals API" en `apps/docs/doc/migration/update/signals-api-doc.ts`.
 - [x] Docs y demos migrados: la docs compila con la API nueva y un smoke test en navegador de las 136 rutas no encontró restos.
 - [x] `prefer-signals`, `prefer-inject` y `prefer-output-emitter-ref` están en `error` para `packages/optimus-ui/src` (tests aparte), y `template/prefer-control-flow` también. `prefer-signal-model` queda en `warn`: `drawer.visible` y `treetable.selection` mantienen un input con su evento a propósito.
 - [x] `wheel` de `p-chart-zoom` pasa al default `{ modifierKey: 'ctrl' }` (hecho; `[wheel]="true"` conserva el comportamiento de 2.x).
-- [ ] `chart.js/auto` import dinámico (Fase B original; sigue sin hacerse).
-- [ ] Pasar a OnPush los componentes que siguen en `Eager` (`Table`, `TableBody`, submenús, `TreeTable`, `DynamicDialog`, `organizationchart`) cuando sus datos dejen de mutarse en sitio.
+- [x] `chart.js/auto` con `import()` dinámico en `p-chart` (chunk perezoso de 441 KB; el chart se crea de forma asíncrona y `chart.chart` es `null` hasta entonces). No hay un evento de "chart creado".
+- [~] OnPush: pasaron `DynamicDialog`, `OrganizationChart` (+ nodo), `MenuItemContent` y los cinco submenús, con una comprobación de las propiedades simples en `ngDoCheck` (coste medido: menos de 0,5 ms con 1000 items). `Table`, `TableBody`, `TreeTable`, `TTBody` y `TTScrollableView` siguen en `Eager` y documentados: `expandedRowKeys[k] = true` mutado en sitio no repinta con OnPush, y `TreeTable` falla 2 tests de PT. Para pasarlos hará falta inmutabilidad en el consumidor.
 
 ### Riesgos conocidos tras la Fase B
 
 - `prevSize` del splitter y `focused` de toggleswitch y selectbutton son propiedades planas que un listener de `renderer.listen` no refrescaría en zoneless.
 - `PanelMenu.changeActiveItem` comparaba con la función del signal en lugar de `this.activeItem()` (error previo a la migración; sin arreglar).
 - Los avisos `no-input-rename`, `no-output-rename` y `no-output-native` son alias intencionados por compatibilidad de nombres.
-- Sin probar en navegador: la directiva `pPassword` (la docs no tiene demo), signal forms con `p-rating` y `p-password`, y el arreglo de anotaciones en `p-chart-canvas` (solo se vio en `p-chart-svg`).
-- `app-docsectiontext id="accessibility"` fijo en las docs de `gantt`, `gauges` e `imagecompare` duplica un id del DOM (previo a la migración).
+- Probado en navegador y arreglado: la directiva `pPassword` (demo nueva), signal forms con `p-rating` y `p-password` (demo nueva en la guía de signal forms), anotaciones sobre `p-chart-canvas` (se pintan como un SVG encima, con la misma escala) y los ids `accessibility` duplicados.
+- Sin comprobar por los agentes: el recorrido de ids en `/dialog` y `/charts`, y una revisión visual con capturas de las demos nuevas.
+- Los detalles de OnPush no cubren un cambio dentro de un objeto anidado (`item.style.color`) ni hijos añadidos a `item.items`: hay que reasignar.
 
 ## Notas
 
