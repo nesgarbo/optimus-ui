@@ -14,6 +14,6 @@
         "sourceMap": false,
         "types": ["node"]
     },
-    "include": ["ng-add/**/*.ts", "migrate-from-primeng/**/*.ts", "migrate-from-primeflex/**/*.ts", "migrate-signal-forms/**/*.ts", "utils/**/*.ts"],
+    "include": ["ng-add/**/*.ts", "migrate-from-primeng/**/*.ts", "migrate-from-primeflex/**/*.ts", "migrate-signal-forms/**/*.ts", "migrate-signals-v3/**/*.ts", "utils/**/*.ts"],
     "exclude": ["**/*.spec.ts", "test/**", "dist/**"]
 }

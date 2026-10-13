@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import fs from 'fs-extra';
+import { writeManifest } from './generate-signals-manifest.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const schematicsDir = path.resolve(__dirname, '../schematics');
@@ -46,6 +47,10 @@ versions['@openng/icons'] = iconsCatalogEntry[1];
 
 fs.writeJsonSync(path.join(schematicsDir, 'utils/versions.json'), versions, { spaces: 4 });
 
+// The signals manifest is generated from the library sources, never written by hand. The 3.0 migration
+// imports it, so it must exist before tsc runs.
+writeManifest(path.resolve(__dirname, '../src'), path.join(schematicsDir, 'migrate-signals-v3/manifest.json'));
+
 fs.removeSync(outDir);
 execSync('npx tsc -p tsconfig.json', { cwd: schematicsDir, stdio: 'inherit' });
 
@@ -57,6 +62,7 @@ fs.writeJsonSync(path.join(outDir, 'package.json'), { type: 'commonjs' }, { spac
 
 fs.copySync(path.join(schematicsDir, 'collection.json'), path.join(outDir, 'collection.json'));
 fs.copySync(path.join(schematicsDir, 'migrations.json'), path.join(outDir, 'migrations.json'));
+fs.copySync(path.join(schematicsDir, 'migrate-signals-v3/manifest.json'), path.join(outDir, 'migrate-signals-v3/manifest.json'));
 fs.copySync(path.join(schematicsDir, 'utils/versions.json'), path.join(outDir, 'utils/versions.json'));
 // tsc does not emit imported .json files, so copy the PrimeFlex -> Tailwind dictionary that
 // utils/primeflex.ts requires at runtime.

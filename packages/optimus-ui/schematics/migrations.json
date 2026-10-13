@@ -5,6 +5,11 @@
             "version": "2.1.0",
             "description": "Rename the removed minLength input of p-autocomplete to minQueryLength.",
             "factory": "./migrate-signal-forms/index#migrateSignalForms"
+        },
+        "migrate-signals-v3": {
+            "version": "3.0.0",
+            "description": "Move the code that uses the components to the signals API of 3.0: read inputs and models as functions (table.rows()), write models with set, and mark the inputs that cannot be assigned any more with a TODO comment.",
+            "factory": "./migrate-signals-v3/index#migrateSignalsV3"
         }
     }
 }
