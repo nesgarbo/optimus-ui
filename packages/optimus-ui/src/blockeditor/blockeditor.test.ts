@@ -27,10 +27,10 @@ const p = (text: string): BlockContent => ({ type: 'paragraph', content: [{ type
 })
 class Host {
     readonly editor = viewChild.required(BlockEditor);
-    value = signal<BlockValue>(doc(p('Hello'), p('World')));
-    format = signal<'json' | 'html'>('json');
-    locked = signal(false);
-    messages = signal<Record<string, string>>({});
+    readonly value = signal<BlockValue>(doc(p('Hello'), p('World')));
+    readonly format = signal<'json' | 'html'>('json');
+    readonly locked = signal(false);
+    readonly messages = signal<Record<string, string>>({});
     changes: string[] = [];
     requests = 0;
     touched = 0;
@@ -45,7 +45,7 @@ class Host {
 })
 class FormHost {
     readonly editor = viewChild.required(BlockEditor);
-    model = signal<{ body: BlockValue }>({ body: '<p>From the form</p>' });
+    readonly model = signal<{ body: BlockValue }>({ body: '<p>From the form</p>' });
     f = form(this.model);
 }
 

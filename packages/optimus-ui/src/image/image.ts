@@ -248,26 +248,26 @@ export class Image extends BaseComponent<ImagePassThrough> {
      * @defaultValue 'p-modal-enter'
      * @group Props
      */
-    modalEnterAnimation = input<string | null | undefined>('p-modal-enter');
+    readonly modalEnterAnimation = input<string | null | undefined>('p-modal-enter');
     /**
      * Leave animation class name of modal.
      * @defaultValue 'p-modal-leave'
      * @group Props
      */
-    modalLeaveAnimation = input<string | null | undefined>('p-modal-leave');
+    readonly modalLeaveAnimation = input<string | null | undefined>('p-modal-leave');
     /**
      * Target element to attach the overlay, valid values are "body" or a local ng-template variable of another element (note: use binding with brackets for template variables, e.g. [appendTo]="mydiv" for a div element having #mydiv as variable name).
      * @defaultValue 'self'
      * @group Props
      */
-    appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
+    readonly appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
     /**
      * The motion options for the mask.
      * @group Props
      */
-    maskMotionOptions = input<MotionOptions | undefined>(undefined);
+    readonly maskMotionOptions = input<MotionOptions | undefined>(undefined);
 
-    computedMaskMotionOptions = computed<MotionOptions>(() => {
+    readonly computedMaskMotionOptions = computed<MotionOptions>(() => {
         return {
             ...this.ptm('maskMotion'),
             ...this.maskMotionOptions()
@@ -277,9 +277,9 @@ export class Image extends BaseComponent<ImagePassThrough> {
      * The motion options.
      * @group Props
      */
-    motionOptions = input<MotionOptions | undefined>(undefined);
+    readonly motionOptions = input<MotionOptions | undefined>(undefined);
 
-    computedMotionOptions = computed<MotionOptions>(() => {
+    readonly computedMotionOptions = computed<MotionOptions>(() => {
         return {
             ...this.ptm('motion'),
             ...this.motionOptions()
@@ -356,9 +356,9 @@ export class Image extends BaseComponent<ImagePassThrough> {
      */
     readonly imageTemplate = contentChild<TemplateRef<ImageImageTemplateContext>>('image', { descendants: false });
 
-    renderMask = signal<boolean>(false);
+    readonly renderMask = signal<boolean>(false);
 
-    renderPreview = signal<boolean>(false);
+    readonly renderPreview = signal<boolean>(false);
 
     maskVisible: boolean = false;
 
@@ -376,7 +376,7 @@ export class Image extends BaseComponent<ImagePassThrough> {
 
     _componentStyle = inject(ImageStyle);
 
-    $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
+    readonly $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
 
     public get isZoomOutDisabled(): boolean {
         return this.scale - this.zoomSettings.step <= this.zoomSettings.min;

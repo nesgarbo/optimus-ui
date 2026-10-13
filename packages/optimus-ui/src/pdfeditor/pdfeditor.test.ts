@@ -71,10 +71,10 @@ class Host {
     readonly src = signal<Uint8Array | null>(null);
     readonly signature = signal<string | null>(null);
     readonly locked = signal(false);
-    annotations = signal<PdfAnnotation[]>([]);
-    formValues = signal<PdfFormValues>({});
-    pageIndex = signal(0);
-    tool = signal<any>('select');
+    readonly annotations = signal<PdfAnnotation[]>([]);
+    readonly formValues = signal<PdfFormValues>({});
+    readonly pageIndex = signal(0);
+    readonly tool = signal<any>('select');
     loadedCount = 0;
     failures: string[] = [];
     events: string[] = [];
@@ -649,7 +649,7 @@ describe('text the standard fonts cannot show', () => {
 class HostWithFont {
     readonly editor = viewChild.required(PdfEditor);
     readonly src = signal<Uint8Array | null>(null);
-    annotations = signal<PdfAnnotation[]>([]);
+    readonly annotations = signal<PdfAnnotation[]>([]);
     font = new URL('/node_modules/pdfjs-dist/standard_fonts/LiberationSans-Regular.ttf', location.origin).href;
 }
 

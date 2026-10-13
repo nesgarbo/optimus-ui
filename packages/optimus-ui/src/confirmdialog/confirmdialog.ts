@@ -287,7 +287,7 @@ export class ConfirmDialog extends BaseComponent<ConfirmDialogPassThrough> imple
      * @defaultValue 'body'
      * @group Props
      */
-    appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>('body');
+    readonly appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>('body');
     /**
      * Optional key to match the key of confirm object, necessary to use when component tree has multiple confirm dialogs.
      * @group Props
@@ -398,7 +398,7 @@ export class ConfirmDialog extends BaseComponent<ConfirmDialogPassThrough> imple
 
     readonly templates = contentChildren(PrimeTemplate);
 
-    $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
+    readonly $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
 
     _headerTemplate: TemplateRef<void> | undefined;
 

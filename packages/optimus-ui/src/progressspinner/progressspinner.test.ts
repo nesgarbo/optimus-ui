@@ -504,11 +504,11 @@ describe('ProgressSpinner', () => {
             template: `<p-progressspinner [strokeWidth]="strokeWidth()" [fill]="fill()" [animationDuration]="animationDuration()" [ariaLabel]="ariaLabel()" [pt]="pt()"></p-progressspinner>`
         })
         class TestPTProgressSpinnerComponent {
-            strokeWidth = input<string>('2');
-            fill = input<string>('none');
-            animationDuration = input<string>('2s');
-            ariaLabel = input<string | undefined>();
-            pt = input<any>();
+            readonly strokeWidth = input<string>('2');
+            readonly fill = input<string>('none');
+            readonly animationDuration = input<string>('2s');
+            readonly ariaLabel = input<string | undefined>();
+            readonly pt = input<any>();
         }
 
         describe('Case 1: Simple string classes', () => {

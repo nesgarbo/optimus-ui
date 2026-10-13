@@ -80,7 +80,7 @@ class TestListboxComponent {
     showReactiveForm: boolean = false;
 
     // Signal-based properties
-    signalOptions = signal([
+    readonly signalOptions = signal([
         { label: 'Signal Option 1', value: 'signal1' },
         { label: 'Signal Option 2', value: 'signal2' }
     ]);
@@ -1695,7 +1695,7 @@ class TestListboxViewChildComponent {
     ];
 
     // Signal-based scroll height
-    scrollHeightSignal = signal('400px');
+    readonly scrollHeightSignal = signal('400px');
 
     // Observable options with delay to test async behavior
     private optionsSubject = new BehaviorSubject([

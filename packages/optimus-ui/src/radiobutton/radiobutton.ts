@@ -151,13 +151,13 @@ export class RadioButton extends BaseEditableHolder<RadioButtonPassThrough> {
      * @defaultValue undefined
      * @group Props
      */
-    variant = input<'filled' | 'outlined' | undefined>();
+    readonly variant = input<'filled' | 'outlined' | undefined>();
     /**
      * Specifies the size of the component.
      * @defaultValue undefined
      * @group Props
      */
-    size = input<'large' | 'small' | undefined>();
+    readonly size = input<'large' | 'small' | undefined>();
     /**
      * Callback to invoke on radio button click.
      * @param {RadioButtonClickEvent} event - Custom click event.
@@ -179,7 +179,7 @@ export class RadioButton extends BaseEditableHolder<RadioButtonPassThrough> {
 
     readonly inputViewChild = viewChild.required<ElementRef>('input');
 
-    $variant = computed(() => this.variant() || this.config.inputStyle() || this.config.inputVariant());
+    readonly $variant = computed(() => this.variant() || this.config.inputStyle() || this.config.inputVariant());
 
     public checked: Nullable<boolean>;
 

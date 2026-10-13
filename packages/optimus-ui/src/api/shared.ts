@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Directive, NgModule, TemplateRef, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Directive, inject, input, NgModule, TemplateRef } from '@angular/core';
 
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -30,7 +30,7 @@ export class PrimeTemplate {
 
     readonly name = input<string | undefined>(undefined, { alias: 'pTemplate' });
 
-    constructor(public template: TemplateRef<any>) {}
+    readonly template: TemplateRef<any> = inject(TemplateRef);
 
     getType(): string {
         return this.name()!;

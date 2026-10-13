@@ -51,25 +51,25 @@ export class BaseComponent<PT = any> implements Lifecycle {
      * @defaultValue undefined
      * @group Props
      */
-    dt = input<Object | undefined>();
+    readonly dt = input<Object | undefined>();
     /**
      * Indicates whether the component should be rendered without styles.
      * @defaultValue undefined
      * @group Props
      */
-    unstyled = input<boolean | undefined>();
+    readonly unstyled = input<boolean | undefined>();
     /**
      * Used to pass attributes to DOM elements inside the component.
      * @defaultValue undefined
      * @group Props
      */
-    pt = input<PT | undefined>();
+    readonly pt = input<PT | undefined>();
     /**
      * Used to configure passthrough(pt) options of the component.
      * @group Props
      * @defaultValue undefined
      */
-    ptOptions = input<PassThroughOptions | undefined>();
+    readonly ptOptions = input<PassThroughOptions | undefined>();
 
     /******************** Computed ********************/
 
@@ -94,15 +94,15 @@ export class BaseComponent<PT = any> implements Lifecycle {
         return this.el?.nativeElement;
     }
 
-    directivePT = signal<any>(undefined);
+    readonly directivePT = signal<any>(undefined);
 
-    directiveUnstyled = signal<boolean | undefined>(undefined);
+    readonly directiveUnstyled = signal<boolean | undefined>(undefined);
 
-    $unstyled = computed(() => {
+    readonly $unstyled = computed(() => {
         return this.unstyled() ?? this.directiveUnstyled() ?? this.config?.unstyled() ?? false;
     });
 
-    $pt = computed(() => {
+    readonly $pt = computed(() => {
         return resolve(this.pt() || this.directivePT(), this.$params);
     });
 

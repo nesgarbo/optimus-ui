@@ -57,13 +57,13 @@ export class Tab extends BaseComponent<TabPassThrough> {
      * @defaultValue undefined
      * @group Props
      */
-    value = model<number | string | undefined>();
+    readonly value = model<number | string | undefined>();
     /**
      * Whether the tab is disabled.
      * @defaultValue false
      * @group Props
      */
-    disabled = input(false, { transform: booleanAttribute });
+    readonly disabled = input(false, { transform: booleanAttribute });
 
     pcTabs = inject(forwardRef(() => Tabs));
 
@@ -73,15 +73,15 @@ export class Tab extends BaseComponent<TabPassThrough> {
 
     _componentStyle = inject(TabStyle);
 
-    ripple = computed(() => this.config.ripple());
+    readonly ripple = computed(() => this.config.ripple());
 
-    id = computed(() => `${this.pcTabs.id()}_tab_${this.value()}`);
+    readonly id = computed(() => `${this.pcTabs.id()}_tab_${this.value()}`);
 
-    ariaControls = computed(() => `${this.pcTabs.id()}_tabpanel_${this.value()}`);
+    readonly ariaControls = computed(() => `${this.pcTabs.id()}_tabpanel_${this.value()}`);
 
-    active = computed(() => equals(this.pcTabs.value(), this.value()));
+    readonly active = computed(() => equals(this.pcTabs.value(), this.value()));
 
-    tabindex = computed(() => (this.disabled() ? -1 : this.active() ? this.pcTabs.tabindex() : -1));
+    readonly tabindex = computed(() => (this.disabled() ? -1 : this.active() ? this.pcTabs.tabindex() : -1));
 
     mutationObserver: MutationObserver | undefined;
 

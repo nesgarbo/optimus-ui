@@ -15,9 +15,9 @@ describe('Overlay', () => {
             </p-overlay>`
         })
         class TestPTOverlayComponent {
-            visible = input<boolean>(false);
-            mode = input<'overlay' | 'modal'>('overlay');
-            pt = input<any>();
+            readonly visible = input<boolean>(false);
+            readonly mode = input<'overlay' | 'modal'>('overlay');
+            readonly pt = input<any>();
         }
 
         let fixture: ComponentFixture<TestPTOverlayComponent>;

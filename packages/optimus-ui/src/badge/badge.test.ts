@@ -961,10 +961,10 @@ describe('Badge', () => {
             template: `<p-badge [value]="value()" [badgeSize]="badgeSize()" [severity]="severity()" [pt]="pt()"></p-badge>`
         })
         class TestPTBadgeComponent {
-            value = input<string | number | null>();
-            badgeSize = input<'small' | 'large' | 'xlarge' | null>();
-            severity = input<'secondary' | 'info' | 'success' | 'warn' | 'danger' | 'contrast' | null>();
-            pt = input<any>();
+            readonly value = input<string | number | null>();
+            readonly badgeSize = input<'small' | 'large' | 'xlarge' | null>();
+            readonly severity = input<'secondary' | 'info' | 'success' | 'warn' | 'danger' | 'contrast' | null>();
+            readonly pt = input<any>();
         }
 
         describe('Case 1: Simple string classes', () => {

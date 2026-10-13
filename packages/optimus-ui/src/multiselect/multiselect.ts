@@ -843,30 +843,30 @@ export class MultiSelect extends BaseEditableHolder<MultiSelectPassThrough> {
      * @defaultValue undefined
      * @group Props
      */
-    size = input<'large' | 'small' | undefined>();
+    readonly size = input<'large' | 'small' | undefined>();
     /**
      * Specifies the input variant of the component.
      * @defaultValue undefined
      * @group Props
      */
-    variant = input<'filled' | 'outlined' | undefined>();
+    readonly variant = input<'filled' | 'outlined' | undefined>();
     /**
      * Spans 100% width of the container when enabled.
      * @defaultValue undefined
      * @group Props
      */
-    fluid = input(undefined, { transform: booleanAttribute });
+    readonly fluid = input(undefined, { transform: booleanAttribute });
     /**
      * Target element to attach the overlay, valid values are "body" or a local ng-template variable of another element (note: use binding with brackets for template variables, e.g. [appendTo]="mydiv" for a div element having #mydiv as variable name).
      * @defaultValue 'self'
      * @group Props
      */
-    appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
+    readonly appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
     /**
      * The motion options.
      * @group Props
      */
-    motionOptions = input<MotionOptions | undefined>(undefined);
+    readonly motionOptions = input<MotionOptions | undefined>(undefined);
     /**
      * Callback to invoke when value changes.
      * @param {MultiSelectChangeEvent} event - Custom change event.
@@ -1128,9 +1128,9 @@ export class MultiSelect extends BaseEditableHolder<MultiSelectPassThrough> {
 
     _headerCheckboxIconTemplate: TemplateRef<MultiSelectHeaderCheckboxIconTemplateContext> | undefined;
 
-    $variant = computed(() => this.variant() || this.config.inputStyle() || this.config.inputVariant());
+    readonly $variant = computed(() => this.variant() || this.config.inputStyle() || this.config.inputVariant());
 
-    $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
+    readonly $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
 
     $pcMultiSelect: MultiSelect | undefined = inject(MULTISELECT_INSTANCE, { optional: true, skipSelf: true }) ?? undefined;
 
@@ -1229,15 +1229,15 @@ export class MultiSelect extends BaseEditableHolder<MultiSelectPassThrough> {
 
     itemsWrapper: any;
 
-    modelValue = signal<any>(null);
+    readonly modelValue = signal<any>(null);
 
-    _filterValue = linkedSignal<any>(() => this.filterValue() ?? null);
+    readonly _filterValue = linkedSignal<any>(() => this.filterValue() ?? null);
 
-    _options = computed(() => this.options() || [], { equal: (a, b) => deepEquals(a, b) });
+    readonly _options = computed(() => this.options() || [], { equal: (a, b) => deepEquals(a, b) });
 
-    startRangeIndex = signal<number>(-1);
+    readonly startRangeIndex = signal<number>(-1);
 
-    focusedOptionIndex = signal<number>(-1);
+    readonly focusedOptionIndex = signal<number>(-1);
 
     selectedOptions: any;
 
@@ -1267,7 +1267,7 @@ export class MultiSelect extends BaseEditableHolder<MultiSelectPassThrough> {
         return this.group() ? this.flatOptions(this._options()) : this._options();
     }
 
-    visibleOptions = computed(() => {
+    readonly visibleOptions = computed(() => {
         const options = this.getAllVisibleAndNonVisibleOptions();
         const isArrayOfObjects = isArray(options) && ObjectUtils.isObject(options[0]);
 
@@ -1304,7 +1304,7 @@ export class MultiSelect extends BaseEditableHolder<MultiSelectPassThrough> {
         return options;
     });
 
-    label = computed(() => {
+    readonly label = computed(() => {
         let label;
         const modelValue = this.modelValue();
 
@@ -1328,7 +1328,7 @@ export class MultiSelect extends BaseEditableHolder<MultiSelectPassThrough> {
         return label;
     });
 
-    chipSelectedItems = computed(() => {
+    readonly chipSelectedItems = computed(() => {
         return isNotEmpty(this.maxSelectedLabels()) && this.modelValue() && this.modelValue()?.length > (this.maxSelectedLabels() || 0) ? this.modelValue()?.slice(0, this.maxSelectedLabels()) : this.modelValue();
     });
 

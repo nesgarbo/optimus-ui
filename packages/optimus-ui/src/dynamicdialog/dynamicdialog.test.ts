@@ -88,9 +88,9 @@ class BoundContentDirective {}
     template: `<span class="bound-content">{{ title() }}|{{ subtitle() }}</span>`
 })
 class BoundContentComponent {
-    title = input('');
+    readonly title = input('');
 
-    subtitle = input('');
+    readonly subtitle = input('');
 }
 
 @Component({

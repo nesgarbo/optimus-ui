@@ -203,7 +203,7 @@ export class Dialog extends BaseComponent<DialogPassThrough> implements OnInit, 
      * Title text of the dialog.
      * @group Props
      */
-    header = input<string | undefined>(undefined);
+    readonly header = input<string | undefined>(undefined);
     /**
      * Enables dragging to change the position using header.
      * @group Props
@@ -335,9 +335,9 @@ export class Dialog extends BaseComponent<DialogPassThrough> implements OnInit, 
      * The motion options for the mask.
      * @group Props
      */
-    maskMotionOptions = input<MotionOptions | undefined>(undefined);
+    readonly maskMotionOptions = input<MotionOptions | undefined>(undefined);
 
-    computedMaskMotionOptions = computed<MotionOptions>(() => {
+    readonly computedMaskMotionOptions = computed<MotionOptions>(() => {
         return {
             ...this.ptm('maskMotion'),
             ...this.maskMotionOptions()
@@ -347,9 +347,9 @@ export class Dialog extends BaseComponent<DialogPassThrough> implements OnInit, 
      * The motion options.
      * @group Props
      */
-    motionOptions = input<MotionOptions | undefined>(undefined);
+    readonly motionOptions = input<MotionOptions | undefined>(undefined);
 
-    computedMotionOptions = computed<MotionOptions>(() => {
+    readonly computedMotionOptions = computed<MotionOptions>(() => {
         return {
             ...this.ptm('motion'),
             ...this.motionOptions()
@@ -422,13 +422,13 @@ export class Dialog extends BaseComponent<DialogPassThrough> implements OnInit, 
      * Identifier of the element that labels the dialog. Defaults to the id of the generated header title.
      * @group Props
      */
-    ariaLabelledBy = input<string | undefined>(undefined);
+    readonly ariaLabelledBy = input<string | undefined>(undefined);
     /**
      * Target element to attach the overlay, valid values are "body" or a local ng-template variable of another element (note: use binding with brackets for template variables, e.g. [appendTo]="mydiv" for a div element having #mydiv as variable name).
      * @defaultValue 'self'
      * @group Props
      */
-    appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
+    readonly appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
     /**
      * Callback to invoke when dialog is shown.
      * @group Emits
@@ -546,23 +546,23 @@ export class Dialog extends BaseComponent<DialogPassThrough> implements OnInit, 
      */
     readonly _headlessTemplate = contentChild<TemplateRef<void>>('headless', { descendants: false });
 
-    $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
+    readonly $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
 
-    renderMask = signal<boolean>(false);
+    readonly renderMask = signal<boolean>(false);
 
-    renderDialog = signal<boolean>(false);
+    readonly renderDialog = signal<boolean>(false);
 
-    maskVisible = signal<boolean>(false);
+    readonly maskVisible = signal<boolean>(false);
 
-    container = signal<Nullable<HTMLElement>>(null);
+    readonly container = signal<Nullable<HTMLElement>>(null);
 
     wrapper: Nullable<HTMLElement>;
 
     dragging: boolean | undefined;
 
-    headerId = computed<string | null>(() => (this.header() !== null ? this.id + '_header' : null));
+    readonly headerId = computed<string | null>(() => (this.header() !== null ? this.id + '_header' : null));
 
-    computedAriaLabelledBy = computed<string | null>(() => this.ariaLabelledBy() ?? this.headerId());
+    readonly computedAriaLabelledBy = computed<string | null>(() => this.ariaLabelledBy() ?? this.headerId());
 
     documentDragListener: VoidListener;
 
@@ -598,7 +598,7 @@ export class Dialog extends BaseComponent<DialogPassThrough> implements OnInit, 
 
     id: string = uuid('pn_id_');
 
-    _style = linkedSignal<any>(() => ({ ...(this.style() ?? {}) }));
+    readonly _style = linkedSignal<any>(() => ({ ...(this.style() ?? {}) }));
 
     transformOptions: any = 'scale(0.7)';
 

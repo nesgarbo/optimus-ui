@@ -136,9 +136,9 @@ export class MenuItemContent extends BaseComponent {
 
     readonly itemTemplate = input<any | undefined>(undefined);
 
-    menuitemId = input<string>('');
+    readonly menuitemId = input<string>('');
 
-    idx = input<number>(0);
+    readonly idx = input<number>(0);
 
     onMenuItemClick = output<any>();
 
@@ -386,14 +386,14 @@ export class Menu extends BaseComponent<MenuPassThrough> {
      * @defaultValue 'self'
      * @group Props
      */
-    appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
+    readonly appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
     /**
      * The motion options.
      * @group Props
      */
-    motionOptions = input<MotionOptions | undefined>(undefined);
+    readonly motionOptions = input<MotionOptions | undefined>(undefined);
 
-    computedMotionOptions = computed<MotionOptions>(() => {
+    readonly computedMotionOptions = computed<MotionOptions>(() => {
         return {
             ...this.ptm('motion'),
             ...this.motionOptions()
@@ -422,11 +422,11 @@ export class Menu extends BaseComponent<MenuPassThrough> {
      */
     readonly onFocus = output<Event | undefined>();
 
-    listViewChild = viewChild<ElementRef>('list');
+    readonly listViewChild = viewChild<ElementRef>('list');
 
-    containerViewChild = viewChild<ElementRef>('container');
+    readonly containerViewChild = viewChild<ElementRef>('container');
 
-    $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
+    readonly $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
 
     container: any;
 
@@ -443,7 +443,7 @@ export class Menu extends BaseComponent<MenuPassThrough> {
     /** Whether the popup is requested to be visible. */
     readonly visible = signal<boolean>(false);
 
-    focusedOptionId = computed(() => {
+    readonly focusedOptionId = computed(() => {
         return this.focusedOptionIndex() !== -1 ? this.focusedOptionIndex() : null;
     });
 

@@ -210,21 +210,21 @@ export class ConfirmPopup extends BaseComponent<ConfirmPopupPassThrough> {
      * Defines if the component is visible.
      * @group Props
      */
-    visible = input<boolean>();
+    readonly visible = input<boolean>();
 
-    private _visible = signal<boolean>(false);
+    private readonly _visible = signal<boolean>(false);
 
-    computedVisible = computed(() => this.visible() ?? this._visible());
+    readonly computedVisible = computed(() => this.visible() ?? this._visible());
 
-    render = signal<boolean>(false);
+    readonly render = signal<boolean>(false);
 
     /**
      * The motion options.
      * @group Props
      */
-    motionOptions = input<MotionOptions | undefined>(undefined);
+    readonly motionOptions = input<MotionOptions | undefined>(undefined);
 
-    computedMotionOptions = computed<MotionOptions>(() => {
+    readonly computedMotionOptions = computed<MotionOptions>(() => {
         return {
             ...this.ptm('motion'),
             ...this.motionOptions()
@@ -235,9 +235,9 @@ export class ConfirmPopup extends BaseComponent<ConfirmPopupPassThrough> {
      * @defaultValue 'body'
      * @group Props
      */
-    appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>('body');
+    readonly appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>('body');
 
-    $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
+    readonly $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
 
     container: HTMLElement | null;
 
@@ -273,9 +273,9 @@ export class ConfirmPopup extends BaseComponent<ConfirmPopupPassThrough> {
      */
     readonly headlessTemplate = contentChild<Nullable<TemplateRef<ConfirmPopupHeadlessTemplateContext>>>('headless', { descendants: false });
 
-    acceptButtonViewChild = viewChild('acceptButton', { read: ElementRef });
+    readonly acceptButtonViewChild = viewChild('acceptButton', { read: ElementRef });
 
-    rejectButtonViewChild = viewChild('rejectButton', { read: ElementRef });
+    readonly rejectButtonViewChild = viewChild('rejectButton', { read: ElementRef });
 
     _contentTemplate: TemplateRef<ConfirmPopupContentTemplateContext> | undefined;
 

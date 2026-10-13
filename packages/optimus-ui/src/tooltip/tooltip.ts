@@ -124,9 +124,9 @@ export class Tooltip extends BaseComponent<TooltipPassThroughOptions> {
      * @defaultValue 'self'
      * @group Props
      */
-    appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
+    readonly appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
 
-    $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
+    readonly $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
 
     _tooltipOptions = {
         tooltipLabel: null,
@@ -199,19 +199,19 @@ export class Tooltip extends BaseComponent<TooltipPassThroughOptions> {
      * @deprecated use pTooltipPT instead.
      * @group Props
      */
-    ptTooltip = input<TooltipPassThrough | undefined>();
+    readonly ptTooltip = input<TooltipPassThrough | undefined>();
     /**
      * Used to pass attributes to DOM elements inside the Tooltip component.
      * @defaultValue undefined
      * @group Props
      */
-    pTooltipPT = input<TooltipPassThrough | undefined>();
+    readonly pTooltipPT = input<TooltipPassThrough | undefined>();
     /**
      * Indicates whether the component should be rendered without styles.
      * @defaultValue undefined
      * @group Props
      */
-    pTooltipUnstyled = input<boolean | undefined>();
+    readonly pTooltipUnstyled = input<boolean | undefined>();
 
     zone: NgZone = inject(NgZone);
 

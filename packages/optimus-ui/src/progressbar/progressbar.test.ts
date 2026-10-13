@@ -637,12 +637,12 @@ describe('ProgressBar', () => {
             template: `<p-progressbar [value]="value()" [mode]="mode()" [showValue]="showValue()" [unit]="unit()" [color]="color()" [pt]="pt()"></p-progressbar>`
         })
         class TestPTProgressBarComponent {
-            value = input<number | undefined>(50);
-            mode = input<string>('determinate');
-            showValue = input<boolean>(true);
-            unit = input<string>('%');
-            color = input<string | undefined>();
-            pt = input<any>();
+            readonly value = input<number | undefined>(50);
+            readonly mode = input<string>('determinate');
+            readonly showValue = input<boolean>(true);
+            readonly unit = input<string>('%');
+            readonly color = input<string | undefined>();
+            readonly pt = input<any>();
         }
 
         describe('Case 1: Simple string classes', () => {

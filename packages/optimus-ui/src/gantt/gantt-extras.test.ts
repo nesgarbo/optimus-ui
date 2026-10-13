@@ -52,7 +52,7 @@ class Host {
         { field: 'variance', headerText: 'Var', width: 50 },
         { field: 'resourceInfo', headerText: 'Who', width: 100 }
     ];
-    data = signal<any[]>([
+    readonly data = signal<any[]>([
         { id: 1, name: 'Plan', start: '2026-10-05', days: 3, done: 100, planStart: '2026-10-05', planEnd: '2026-10-06', who: ['ana'], note: 'first' },
         { id: 2, name: 'Build', start: '2026-10-05', days: 4, done: 20, after: '1', who: 'ana,bo' },
         { id: 3, name: 'Test', start: '2026-10-08', days: 2, who: ['bo'] },

@@ -168,7 +168,7 @@ export class Knob extends BaseEditableHolder<KnobPassThrough> {
 
     maxRadians: number = -Math.PI / 3;
 
-    value = signal<number>(0);
+    readonly value = signal<number>(0);
 
     windowMouseMoveListener: VoidListener;
 

@@ -118,9 +118,9 @@ export class ToastItem extends BaseComponent<ToastPassThrough> {
 
     readonly hideTransitionOptions = input<string | undefined>(undefined);
 
-    motionOptions = input<MotionOptions>();
+    readonly motionOptions = input<MotionOptions>();
 
-    clearAll = input<any>(null);
+    readonly clearAll = input<any>(null);
 
     onAnimationStart = output<HTMLElement>();
 
@@ -149,7 +149,7 @@ export class ToastItem extends BaseComponent<ToastPassThrough> {
 
     timeout: any;
 
-    visible = signal<boolean | undefined>(undefined);
+    readonly visible = signal<boolean | undefined>(undefined);
 
     private isDestroyed = false;
 
@@ -345,9 +345,9 @@ export class Toast extends BaseComponent<ToastPassThrough> {
      * The motion options.
      * @group Props
      */
-    motionOptions = input<MotionOptions | undefined>(undefined);
+    readonly motionOptions = input<MotionOptions | undefined>(undefined);
 
-    computedMotionOptions = computed<MotionOptions>(() => {
+    readonly computedMotionOptions = computed<MotionOptions>(() => {
         return {
             ...this.ptm('motion'),
             ...this.motionOptions()
@@ -402,7 +402,7 @@ export class Toast extends BaseComponent<ToastPassThrough> {
 
     readonly templates = contentChildren(PrimeTemplate);
 
-    clearAllTrigger = signal<{} | null>(null);
+    readonly clearAllTrigger = signal<{} | null>(null);
 
     onInit() {
         this.messageSubscription = this.messageService.messageObserver.subscribe((messages) => {

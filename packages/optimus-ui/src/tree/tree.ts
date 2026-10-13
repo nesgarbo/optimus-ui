@@ -244,26 +244,26 @@ export class UITreeNode extends BaseComponent<TreePassThrough> {
         clearTimeout(this.timeout);
     }
 
-    isPrevDropPointHovered = signal<boolean>(false);
+    readonly isPrevDropPointHovered = signal<boolean>(false);
 
-    isNextDropPointHovered = signal<boolean>(false);
+    readonly isNextDropPointHovered = signal<boolean>(false);
 
-    isNodeDropHovered = signal<boolean>(false);
+    readonly isNodeDropHovered = signal<boolean>(false);
 
-    isPrevDropPointActive = computed(() => this.isPrevDropPointHovered() && this.isDroppable());
+    readonly isPrevDropPointActive = computed(() => this.isPrevDropPointHovered() && this.isDroppable());
 
-    isNextDropPointActive = computed(() => this.isNextDropPointHovered() && this.isDroppable());
+    readonly isNextDropPointActive = computed(() => this.isNextDropPointHovered() && this.isDroppable());
 
-    isNodeDropActive = computed(() => this.isNodeDropHovered() && this.isNodeDroppable());
+    readonly isNodeDropActive = computed(() => this.isNodeDropHovered() && this.isNodeDroppable());
 
-    dropPosition = computed(() => (this.isPrevDropPointActive() ? -1 : this.isNextDropPointActive() ? 1 : 0));
+    readonly dropPosition = computed(() => (this.isPrevDropPointActive() ? -1 : this.isNextDropPointActive() ? 1 : 0));
 
     _componentStyle = inject(TreeStyle);
 
     /**
      * Computed signal that reactively tracks selection state.
      */
-    private _selected = computed(() => {
+    private readonly _selected = computed(() => {
         // Reading selection() makes this computed reactive to selection changes
         this.tree.selection();
         return this.tree.isSelected(<TreeNode>this.node());
@@ -272,7 +272,7 @@ export class UITreeNode extends BaseComponent<TreePassThrough> {
     /**
      * Computed signal that reactively tracks context menu selection state.
      */
-    private _contextMenuSelected = computed(() => {
+    private readonly _contextMenuSelected = computed(() => {
         const selection = this.tree.contextMenuSelection();
         const node = this.node();
         if (!selection || !node) {
@@ -970,7 +970,7 @@ export class Tree extends BaseComponent<TreePassThrough> implements BlockableUI 
      * A single treenode instance or an array to refer to the selections.
      * @group Props
      */
-    selection = model<TreeNode<any> | TreeNode<any>[] | null | undefined>(null);
+    readonly selection = model<TreeNode<any> | TreeNode<any>[] | null | undefined>(null);
     /**
      * Style class of the component.
      * @deprecated since v20.0.0, use `class` instead.
@@ -991,7 +991,7 @@ export class Tree extends BaseComponent<TreePassThrough> implements BlockableUI 
      * Selected node with a context menu.
      * @group Props
      */
-    contextMenuSelection = model<TreeNode<any> | null>(null);
+    readonly contextMenuSelection = model<TreeNode<any> | null>(null);
     /**
      * Scope of the draggable nodes to match a droppableScope.
      * @group Props

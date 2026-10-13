@@ -44,7 +44,7 @@ class Host {
     readonly edits: GanttTaskbarEvent[] = [];
     readonly begins: GanttActionEvent[] = [];
     readonly problems: GanttInvalidEvent[] = [];
-    data = signal<any[]>([
+    readonly data = signal<any[]>([
         {
             id: 1,
             name: 'Design',

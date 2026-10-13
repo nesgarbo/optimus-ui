@@ -29,19 +29,19 @@ export class BadgeDirective extends BaseComponent {
      * @deprecated use pBadgePT instead.
      * @group Props
      */
-    ptBadgeDirective = input<BadgePassThrough | undefined>();
+    readonly ptBadgeDirective = input<BadgePassThrough | undefined>();
     /**
      * Used to pass attributes to DOM elements inside the Badge component.
      * @defaultValue undefined
      * @group Props
      */
-    pBadgePT = input<BadgePassThrough | undefined>();
+    readonly pBadgePT = input<BadgePassThrough | undefined>();
     /**
      * Indicates whether the component should be rendered without styles.
      * @defaultValue undefined
      * @group Props
      */
-    pBadgeUnstyled = input<boolean | undefined>();
+    readonly pBadgeUnstyled = input<boolean | undefined>();
     /**
      * When specified, disables the component.
      * @group Props
@@ -323,32 +323,32 @@ export class Badge extends BaseComponent<BadgePassThrough> {
      * @deprecated since v20.0.0, use `class` instead.
      * @group Props
      */
-    styleClass = input<string>();
+    readonly styleClass = input<string>();
     /**
      * Size of the badge, valid options are "large" and "xlarge".
      * @group Props
      */
-    badgeSize = input<'small' | 'large' | 'xlarge' | null>();
+    readonly badgeSize = input<'small' | 'large' | 'xlarge' | null>();
     /**
      * Size of the badge, valid options are "large" and "xlarge".
      * @group Props
      */
-    size = input<'small' | 'large' | 'xlarge' | null>();
+    readonly size = input<'small' | 'large' | 'xlarge' | null>();
     /**
      * Severity type of the badge.
      * @group Props
      */
-    severity = input<BadgeSeverity | null>();
+    readonly severity = input<BadgeSeverity | null>();
     /**
      * Value to display inside the badge.
      * @group Props
      */
-    value = input<string | number | null>();
+    readonly value = input<string | number | null>();
     /**
      * When specified, disables the component.
      * @group Props
      */
-    badgeDisabled = input<boolean, boolean>(false, { transform: booleanAttribute });
+    readonly badgeDisabled = input<boolean, boolean>(false, { transform: booleanAttribute });
 
     _componentStyle = inject(BadgeStyle);
 

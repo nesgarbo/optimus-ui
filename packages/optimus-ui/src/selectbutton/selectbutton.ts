@@ -149,13 +149,13 @@ export class SelectButton extends BaseEditableHolder<SelectButtonPassThrough> im
      * @defaultValue undefined
      * @group Props
      */
-    size = input<'large' | 'small' | undefined>();
+    readonly size = input<'large' | 'small' | undefined>();
     /**
      * Spans 100% width of the container when enabled.
      * @defaultValue undefined
      * @group Props
      */
-    fluid = input(undefined, { transform: booleanAttribute });
+    readonly fluid = input(undefined, { transform: booleanAttribute });
     /**
      * Callback to invoke on input click.
      * @param {SelectButtonOptionClickEvent} event - Custom click event.

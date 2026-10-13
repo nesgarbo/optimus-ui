@@ -599,30 +599,30 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
      * @defaultValue undefined
      * @group Props
      */
-    size = input<'large' | 'small' | undefined>();
+    readonly size = input<'large' | 'small' | undefined>();
     /**
      * Specifies the input variant of the component.
      * @defaultValue undefined
      * @group Props
      */
-    variant = input<'filled' | 'outlined' | undefined>();
+    readonly variant = input<'filled' | 'outlined' | undefined>();
     /**
      * Spans 100% width of the container when enabled.
      * @defaultValue undefined
      * @group Props
      */
-    fluid = input(undefined, { transform: booleanAttribute });
+    readonly fluid = input(undefined, { transform: booleanAttribute });
     /**
      * Target element to attach the overlay, valid values are "body" or a local ng-template variable of another element (note: use binding with brackets for template variables, e.g. [appendTo]="mydiv" for a div element having #mydiv as variable name).
      * @defaultValue 'self'
      * @group Props
      */
-    appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
+    readonly appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
     /**
      * The motion options.
      * @group Props
      */
-    motionOptions = input<MotionOptions | undefined>(undefined);
+    readonly motionOptions = input<MotionOptions | undefined>(undefined);
     /**
      * Callback to invoke on value change.
      * @param {CascadeSelectChangeEvent} event - Custom change event.
@@ -760,9 +760,9 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
 
     searchTimeout: any;
 
-    focusedOptionInfo = signal<any>({ index: -1, level: 0, parentKey: '' });
+    readonly focusedOptionInfo = signal<any>({ index: -1, level: 0, parentKey: '' });
 
-    activeOptionPath = signal<any>([]);
+    readonly activeOptionPath = signal<any>([]);
 
     processedOptions: string[] | string | undefined = [];
 
@@ -770,9 +770,9 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
 
     initialized: boolean = false;
 
-    $variant = computed(() => this.variant() || this.config.inputStyle() || this.config.inputVariant());
+    readonly $variant = computed(() => this.variant() || this.config.inputStyle() || this.config.inputVariant());
 
-    $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
+    readonly $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
 
     pcFluid: Fluid | null = inject(Fluid, { optional: true, host: true, skipSelf: true });
 
@@ -820,13 +820,13 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
         return this.hasSelectedOption() ? this.selectionMessageText.replaceAll('{0}', '1') : this.emptySelectionMessageText;
     }
 
-    visibleOptions = computed(() => {
+    readonly visibleOptions = computed(() => {
         const processedOption = this.activeOptionPath().find((p) => p.key === this.focusedOptionInfo().parentKey);
 
         return processedOption ? processedOption.children : this.processedOptions;
     });
 
-    label = computed(() => {
+    readonly label = computed(() => {
         const label = this.placeholder() || 'p-emptylabel';
 
         if (this.hasSelectedOption()) {
@@ -1477,8 +1477,8 @@ export class CascadeSelect extends BaseEditableHolder<CascadeSelectPassThrough> 
         });
     }
     query: any;
-    queryMatches = signal<boolean>(false);
-    mobileActive = signal<boolean>(false);
+    readonly queryMatches = signal<boolean>(false);
+    readonly mobileActive = signal<boolean>(false);
 
     onOptionChange(event) {
         const { processedOption, type } = event;

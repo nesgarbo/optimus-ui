@@ -2010,30 +2010,30 @@ class TestDynamicDataSourcesMultiSelectComponent {
     readonly computedMultiSelect = viewChild.required<MultiSelect>('computedMultiSelect');
 
     // Signals
-    citySignal = signal<City[]>([
+    readonly citySignal = signal<City[]>([
         { name: 'Signal City 1', code: 'SC1' },
         { name: 'Signal City 2', code: 'SC2' },
         { name: 'Signal City 3', code: 'SC3' }
     ]);
 
-    placeholderSignal = signal('Select from signal');
-    disabledSignal = signal(false);
-    filterSignal = signal(true);
+    readonly placeholderSignal = signal('Select from signal');
+    readonly disabledSignal = signal(false);
+    readonly filterSignal = signal(true);
 
     // Computed signals
-    computedOptions = computed(() => {
+    readonly computedOptions = computed(() => {
         return this.citySignal().map((city) => ({
             ...city,
             displayName: `${city.name} (${city.code})`
         }));
     });
 
-    computedPlaceholder = computed(() => {
+    readonly computedPlaceholder = computed(() => {
         const count = this.citySignal().length;
         return `Select from ${count} computed options`;
     });
 
-    computedMaxLabels = computed(() => {
+    readonly computedMaxLabels = computed(() => {
         return Math.min(3, this.citySignal().length);
     });
 

@@ -24,7 +24,7 @@ export class MotionDirective extends BaseComponent {
      * Whether the element is visible or not.
      * @group Props
      */
-    visible = input<boolean>(false, { alias: 'pMotion' });
+    readonly visible = input<boolean>(false, { alias: 'pMotion' });
     /**
      * The name of the motion. It can be a predefined motion name or a custom one.
      * phases:
@@ -36,77 +36,77 @@ export class MotionDirective extends BaseComponent {
      *     [name]-leave-to
      * @group Props
      */
-    name = input<MotionOptions['name']>(undefined, { alias: 'pMotionName' });
+    readonly name = input<MotionOptions['name']>(undefined, { alias: 'pMotionName' });
     /**
      * The type of the motion, valid values 'transition' and 'animation'.
      * @group Props
      */
-    type = input<MotionOptions['type']>(undefined, { alias: 'pMotionType' });
+    readonly type = input<MotionOptions['type']>(undefined, { alias: 'pMotionType' });
     /**
      * Whether the motion is safe.
      * @group Props
      */
-    safe = input<MotionOptions['safe']>(undefined, { alias: 'pMotionSafe' });
+    readonly safe = input<MotionOptions['safe']>(undefined, { alias: 'pMotionSafe' });
     /**
      * Whether the motion is disabled.
      * @group Props
      */
-    disabled = input<MotionOptions['disabled']>(false, { alias: 'pMotionDisabled' });
+    readonly disabled = input<MotionOptions['disabled']>(false, { alias: 'pMotionDisabled' });
     /**
      * Whether the motion should appear.
      * @group Props
      */
-    appear = input<MotionOptions['appear']>(false, { alias: 'pMotionAppear' });
+    readonly appear = input<MotionOptions['appear']>(false, { alias: 'pMotionAppear' });
     /**
      * Whether the motion should enter.
      * @group Props
      */
-    enter = input<MotionOptions['enter']>(true, { alias: 'pMotionEnter' });
+    readonly enter = input<MotionOptions['enter']>(true, { alias: 'pMotionEnter' });
     /**
      * Whether the motion should leave.
      * @group Props
      */
-    leave = input<MotionOptions['leave']>(true, { alias: 'pMotionLeave' });
+    readonly leave = input<MotionOptions['leave']>(true, { alias: 'pMotionLeave' });
     /**
      * The duration of the motion.
      * @group Props
      */
-    duration = input<MotionOptions['duration']>(undefined, { alias: 'pMotionDuration' });
+    readonly duration = input<MotionOptions['duration']>(undefined, { alias: 'pMotionDuration' });
     /**
      * The hide strategy of the motion, valid values 'display' and 'visibility'.
      * @group Props
      */
-    hideStrategy = input<'display' | 'visibility'>('display', { alias: 'pMotionHideStrategy' });
+    readonly hideStrategy = input<'display' | 'visibility'>('display', { alias: 'pMotionHideStrategy' });
     /**
      * The enter from class of the motion.
      * @group Props
      */
-    enterFromClass = input<ClassNameOptions['from']>(undefined, { alias: 'pMotionEnterFromClass' });
+    readonly enterFromClass = input<ClassNameOptions['from']>(undefined, { alias: 'pMotionEnterFromClass' });
     /**
      * The enter to class of the motion.
      * @group Props
      */
-    enterToClass = input<ClassNameOptions['to']>(undefined, { alias: 'pMotionEnterToClass' });
+    readonly enterToClass = input<ClassNameOptions['to']>(undefined, { alias: 'pMotionEnterToClass' });
     /**
      * The enter active class of the motion.
      * @group Props
      */
-    enterActiveClass = input<ClassNameOptions['active']>(undefined, { alias: 'pMotionEnterActiveClass' });
+    readonly enterActiveClass = input<ClassNameOptions['active']>(undefined, { alias: 'pMotionEnterActiveClass' });
     /**
      * The leave from class of the motion.
      * @group Props
      */
-    leaveFromClass = input<ClassNameOptions['from']>(undefined, { alias: 'pMotionLeaveFromClass' });
+    readonly leaveFromClass = input<ClassNameOptions['from']>(undefined, { alias: 'pMotionLeaveFromClass' });
     /**
      * The leave to class of the motion.
      * @group Props
      */
-    leaveToClass = input<ClassNameOptions['to']>(undefined, { alias: 'pMotionLeaveToClass' });
+    readonly leaveToClass = input<ClassNameOptions['to']>(undefined, { alias: 'pMotionLeaveToClass' });
     /**
      * The leave active class of the motion.
      * @group Props
      */
-    leaveActiveClass = input<ClassNameOptions['active']>(undefined, { alias: 'pMotionLeaveActiveClass' });
+    readonly leaveActiveClass = input<ClassNameOptions['active']>(undefined, { alias: 'pMotionLeaveActiveClass' });
 
     /******************** All Inputs ********************/
 
@@ -114,7 +114,7 @@ export class MotionDirective extends BaseComponent {
      * The motion options.
      * @group Props
      */
-    options = input<MotionOptions>({}, { alias: 'pMotionOptions' });
+    readonly options = input<MotionOptions>({}, { alias: 'pMotionOptions' });
 
     /******************** Outputs ********************/
 
@@ -177,7 +177,7 @@ export class MotionDirective extends BaseComponent {
 
     /******************** Computed ********************/
 
-    private motionOptions = computed<MotionOptions>(() => {
+    private readonly motionOptions = computed<MotionOptions>(() => {
         const options = this.options() ?? {};
 
         return {

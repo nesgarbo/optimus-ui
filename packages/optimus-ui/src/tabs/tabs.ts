@@ -41,44 +41,44 @@ export class Tabs extends BaseComponent<TabsPassThrough> {
      * @defaultValue undefined
      * @group Props
      */
-    value = model<string | number | undefined>(undefined);
+    readonly value = model<string | number | undefined>(undefined);
     /**
      * When specified, enables horizontal and/or vertical scrolling.
      * @type boolean
      * @defaultValue false
      * @group Props
      */
-    scrollable = input(false, { transform: booleanAttribute });
+    readonly scrollable = input(false, { transform: booleanAttribute });
     /**
      * When enabled, tabs are not rendered until activation.
      * @type boolean
      * @defaultValue false
      * @group Props
      */
-    lazy = input(false, { transform: booleanAttribute });
+    readonly lazy = input(false, { transform: booleanAttribute });
     /**
      * When enabled, the focused tab is activated.
      * @type boolean
      * @defaultValue false
      * @group Props
      */
-    selectOnFocus = input(false, { transform: booleanAttribute });
+    readonly selectOnFocus = input(false, { transform: booleanAttribute });
     /**
      * Whether to display navigation buttons in container when scrollable is enabled.
      * @type boolean
      * @defaultValue true
      * @group Props
      */
-    showNavigators = input(true, { transform: booleanAttribute });
+    readonly showNavigators = input(true, { transform: booleanAttribute });
     /**
      * Tabindex of the tab buttons.
      * @type number
      * @defaultValue 0
      * @group Props
      */
-    tabindex = input(0, { transform: numberAttribute });
+    readonly tabindex = input(0, { transform: numberAttribute });
 
-    id = signal<string>(uuid('pn_id_'));
+    readonly id = signal<string>(uuid('pn_id_'));
 
     _componentStyle = inject(TabsStyle);
 

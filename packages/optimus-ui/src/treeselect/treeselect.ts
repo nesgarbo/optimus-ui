@@ -485,30 +485,30 @@ export class TreeSelect extends BaseEditableHolder<TreeSelectPassThrough> {
      * @defaultValue undefined
      * @group Props
      */
-    size = input<'large' | 'small' | undefined>();
+    readonly size = input<'large' | 'small' | undefined>();
     /**
      * Specifies the input variant of the component.
      * @defaultValue undefined
      * @group Props
      */
-    variant = input<'filled' | 'outlined' | undefined>();
+    readonly variant = input<'filled' | 'outlined' | undefined>();
     /**
      * Spans 100% width of the container when enabled.
      * @defaultValue undefined
      * @group Props
      */
-    fluid = input(undefined, { transform: booleanAttribute });
+    readonly fluid = input(undefined, { transform: booleanAttribute });
     /**
      * Target element to attach the overlay, valid values are "body" or a local ng-template variable of another element (note: use binding with brackets for template variables, e.g. [appendTo]="mydiv" for a div element having #mydiv as variable name).
      * @defaultValue 'self'
      * @group Props
      */
-    appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
+    readonly appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
     /**
      * The motion options.
      * @group Props
      */
-    motionOptions = input<MotionOptions | undefined>(undefined);
+    readonly motionOptions = input<MotionOptions | undefined>(undefined);
     /**
      * Callback to invoke when a node is expanded.
      * @param {TreeSelectNodeExpandEvent} event - Custom node expand event.
@@ -568,7 +568,7 @@ export class TreeSelect extends BaseEditableHolder<TreeSelectPassThrough> {
      */
     onNodeSelect = output<TreeNodeSelectEvent>();
 
-    $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
+    readonly $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
 
     readonly focusInput = viewChild<Nullable<ElementRef>>('focusInput');
 
@@ -584,7 +584,7 @@ export class TreeSelect extends BaseEditableHolder<TreeSelectPassThrough> {
 
     readonly lastHiddenFocusableElementOnOverlay = viewChild<Nullable<ElementRef>>('lastHiddenFocusableEl');
 
-    $variant = computed(() => this.variant() || this.config.inputStyle() || this.config.inputVariant());
+    readonly $variant = computed(() => this.variant() || this.config.inputStyle() || this.config.inputVariant());
 
     pcFluid: Fluid | null = inject(Fluid, { optional: true, host: true, skipSelf: true });
 

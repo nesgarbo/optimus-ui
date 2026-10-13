@@ -92,26 +92,26 @@ const EVENTS: SchedulerEvent[] = [
     `
 })
 class TestHost {
-    events = signal(EVENTS);
+    readonly events = signal(EVENTS);
     categories = CATEGORIES;
-    view = signal<SchedulerViewType>('month');
+    readonly view = signal<SchedulerViewType>('month');
 
     resources: any[] = [];
 
-    monthCount = signal(1);
-    showMorePopover = signal(true);
-    density = signal<'comfortable' | 'compact'>('comfortable');
-    nowIndicator = signal(true);
-    showEmptyDays = signal(false);
-    showAggregatedEvents = signal(false);
-    timeFormat = signal<{ format?: '12h' | '24h' | 'auto' } | undefined>(undefined);
-    slots = signal<any[]>([]);
+    readonly monthCount = signal(1);
+    readonly showMorePopover = signal(true);
+    readonly density = signal<'comfortable' | 'compact'>('comfortable');
+    readonly nowIndicator = signal(true);
+    readonly showEmptyDays = signal(false);
+    readonly showAggregatedEvents = signal(false);
+    readonly timeFormat = signal<{ format?: '12h' | '24h' | 'auto' } | undefined>(undefined);
+    readonly slots = signal<any[]>([]);
     booked: any[] = [];
     cancelled: any[] = [];
     more: { date: Date; events: SchedulerEvent[]; view: SchedulerViewType }[] = [];
 
     allViews: SchedulerViewType[] = ['day', 'week', 'month', 'agenda', 'year', 'timeline', 'resourceTimeline'];
-    date = signal(DAY);
+    readonly date = signal(DAY);
 }
 
 describe('Scheduler', () => {

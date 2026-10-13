@@ -763,10 +763,10 @@ describe('BlockUI', () => {
             template: `<p-blockui [blocked]="blocked()" [autoZIndex]="autoZIndex()" [baseZIndex]="baseZIndex()" [pt]="pt()"></p-blockui>`
         })
         class TestPTBlockUIComponent {
-            blocked = input<boolean>(false);
-            autoZIndex = input<boolean>(true);
-            baseZIndex = input<number>(0);
-            pt = input<any>();
+            readonly blocked = input<boolean>(false);
+            readonly autoZIndex = input<boolean>(true);
+            readonly baseZIndex = input<number>(0);
+            readonly pt = input<any>();
         }
 
         describe('Case 1: Simple string classes', () => {

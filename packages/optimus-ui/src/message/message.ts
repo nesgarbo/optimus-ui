@@ -177,9 +177,9 @@ export class Message extends BaseComponent<MessagePassThrough> {
      * The motion options.
      * @group Props
      */
-    motionOptions = input<MotionOptions | undefined>(undefined);
+    readonly motionOptions = input<MotionOptions | undefined>(undefined);
 
-    computedMotionOptions = computed<MotionOptions>(() => {
+    readonly computedMotionOptions = computed<MotionOptions>(() => {
         return {
             ...this.ptm('motion'),
             ...this.motionOptions()
@@ -196,7 +196,7 @@ export class Message extends BaseComponent<MessagePassThrough> {
         return this.config.translation.aria ? this.config.translation.aria.close : undefined;
     }
 
-    visible = signal<boolean>(true);
+    readonly visible = signal<boolean>(true);
 
     /**
      * Custom template of the message container.

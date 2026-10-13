@@ -7,9 +7,9 @@ import type { ThemeConfigType } from './optimus.types';
 @Injectable({ providedIn: 'root' })
 export class ThemeProvider {
     // @todo define type for theme
-    theme = signal<any>(undefined);
+    readonly theme = signal<any>(undefined);
 
-    csp = signal<{ nonce: string | undefined }>({ nonce: undefined });
+    readonly csp = signal<{ nonce: string | undefined }>({ nonce: undefined });
 
     isThemeChanged: boolean = false;
 

@@ -250,7 +250,7 @@ export class PanelMenuSub extends BaseComponent {
 
     readonly parentExpanded = input<boolean | undefined, unknown>(undefined, { transform: booleanAttribute });
 
-    motionOptions = input<MotionOptions>();
+    readonly motionOptions = input<MotionOptions>();
 
     itemToggle = output<any>();
 
@@ -411,7 +411,7 @@ export class PanelMenuList extends BaseComponent {
 
     readonly activeItem = input<any>(undefined);
 
-    motionOptions = input<MotionOptions>();
+    readonly motionOptions = input<MotionOptions>();
 
     itemToggle = output<any>();
 
@@ -425,13 +425,13 @@ export class PanelMenuList extends BaseComponent {
 
     focused: boolean | undefined;
 
-    focusedItem = signal<any>(null);
+    readonly focusedItem = signal<any>(null);
 
-    activeItemPath = signal<any[]>([]);
+    readonly activeItemPath = signal<any[]>([]);
 
-    processedItems = signal<any[]>([]);
+    readonly processedItems = signal<any[]>([]);
 
-    visibleItems = computed(() => {
+    readonly visibleItems = computed(() => {
         const processedItems = this.processedItems();
         return this.flatItems(processedItems);
     });
@@ -1013,9 +1013,9 @@ export class PanelMenu extends BaseComponent<PanelMenuPassThrough> {
      * The motion options.
      * @group Props
      */
-    motionOptions = input<MotionOptions | undefined>(undefined);
+    readonly motionOptions = input<MotionOptions | undefined>(undefined);
 
-    computedMotionOptions = computed<MotionOptions>(() => {
+    readonly computedMotionOptions = computed<MotionOptions>(() => {
         return {
             ...this.ptm('motion'),
             ...this.motionOptions()
@@ -1061,7 +1061,7 @@ export class PanelMenu extends BaseComponent<PanelMenuPassThrough> {
 
     _itemTemplate: TemplateRef<PanelMenuItemTemplateContext> | undefined;
 
-    activeItem = signal<any>(null);
+    readonly activeItem = signal<any>(null);
 
     _componentStyle = inject(PanelMenuStyle);
 

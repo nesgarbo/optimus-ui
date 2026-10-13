@@ -65,19 +65,19 @@ export class ButtonLabel extends BaseComponent {
      * @deprecated use pButtonLabelPT instead.
      * @group Props
      */
-    ptButtonLabel = input<any>();
+    readonly ptButtonLabel = input<any>();
     /**
      * Used to pass attributes to DOM elements inside the pButtonLabel.
      * @defaultValue undefined
      * @group Props
      */
-    pButtonLabelPT = input<any>();
+    readonly pButtonLabelPT = input<any>();
     /**
      * Indicates whether the component should be rendered without styles.
      * @defaultValue undefined
      * @group Props
      */
-    pButtonLabelUnstyled = input<boolean | undefined>();
+    readonly pButtonLabelUnstyled = input<boolean | undefined>();
 
     $pcButtonLabel: ButtonLabel | undefined = inject(BUTTON_LABEL_INSTANCE, { optional: true, skipSelf: true }) ?? undefined;
 
@@ -118,19 +118,19 @@ export class ButtonIcon extends BaseComponent {
      * @deprecated use pButtonIconPT instead.
      * @group Props
      */
-    ptButtonIcon = input<any>();
+    readonly ptButtonIcon = input<any>();
     /**
      * Used to pass attributes to DOM elements inside the pButtonIcon.
      * @defaultValue undefined
      * @group Props
      */
-    pButtonIconPT = input<any>();
+    readonly pButtonIconPT = input<any>();
     /**
      * Indicates whether the component should be rendered without styles.
      * @defaultValue undefined
      * @group Props
      */
-    pButtonUnstyled = input<boolean | undefined>();
+    readonly pButtonUnstyled = input<boolean | undefined>();
 
     $pcButtonIcon: ButtonIcon | undefined = inject(BUTTON_ICON_INSTANCE, { optional: true, skipSelf: true }) ?? undefined;
 
@@ -181,19 +181,19 @@ export class ButtonDirective extends BaseComponent {
      * @deprecated use pButtonPT instead.
      * @group Props
      */
-    ptButtonDirective = input<ButtonPassThrough>();
+    readonly ptButtonDirective = input<ButtonPassThrough>();
     /**
      * Used to pass attributes to DOM elements inside the Button component.
      * @defaultValue undefined
      * @group Props
      */
-    pButtonPT = input<ButtonPassThrough>();
+    readonly pButtonPT = input<ButtonPassThrough>();
     /**
      * Indicates whether the component should be rendered without styles.
      * @defaultValue undefined
      * @group Props
      */
-    pButtonUnstyled = input<boolean | undefined>();
+    readonly pButtonUnstyled = input<boolean | undefined>();
 
     readonly hostName = input<any>('');
 
@@ -274,13 +274,13 @@ export class ButtonDirective extends BaseComponent {
      * @defaultValue undefined
      * @group Props
      */
-    fluid = input(undefined, { transform: booleanAttribute });
+    readonly fluid = input(undefined, { transform: booleanAttribute });
 
-    private iconSignal = contentChild(ButtonIcon);
+    private readonly iconSignal = contentChild(ButtonIcon);
 
-    private labelSignal = contentChild(ButtonLabel);
+    private readonly labelSignal = contentChild(ButtonLabel);
 
-    isIconOnly = computed(() => !!(!this.labelSignal() && this.iconSignal()));
+    readonly isIconOnly = computed(() => !!(!this.labelSignal() && this.iconSignal()));
 
     public initialized: boolean | undefined;
 
@@ -292,7 +292,7 @@ export class ButtonDirective extends BaseComponent {
 
     pcFluid: Fluid | null = inject(Fluid, { optional: true, host: true, skipSelf: true });
 
-    isTextButton = computed(() => !!(!this.iconSignal() && this.labelSignal() && this.text()));
+    readonly isTextButton = computed(() => !!(!this.iconSignal() && this.labelSignal() && this.text()));
 
     /**
      * Text of the button.
@@ -779,7 +779,7 @@ export class Button extends BaseComponent<ButtonPassThrough> {
      * @defaultValue undefined
      * @group Props
      */
-    fluid = input(undefined, { transform: booleanAttribute });
+    readonly fluid = input(undefined, { transform: booleanAttribute });
 
     /**
      * Callback to execute when button is clicked.

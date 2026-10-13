@@ -255,7 +255,7 @@ export class SplitButton extends BaseComponent<SplitButtonPassThrough> {
      * @defaultValue 'body'
      * @group Props
      */
-    appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>('body');
+    readonly appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>('body');
     /**
      * Indicates the direction of the element.
      * @group Props
@@ -282,9 +282,9 @@ export class SplitButton extends BaseComponent<SplitButtonPassThrough> {
      * The motion options.
      * @group Props
      */
-    motionOptions = input<MotionOptions | undefined>(undefined);
+    readonly motionOptions = input<MotionOptions | undefined>(undefined);
 
-    computedMotionOptions = computed<MotionOptions>(() => {
+    readonly computedMotionOptions = computed<MotionOptions>(() => {
         return {
             ...this.ptm('motion'),
             ...this.motionOptions()
@@ -364,7 +364,7 @@ export class SplitButton extends BaseComponent<SplitButtonPassThrough> {
 
     ariaId: string | undefined;
 
-    isExpanded = signal<boolean>(false);
+    readonly isExpanded = signal<boolean>(false);
 
     _componentStyle = inject(SplitButtonStyle);
 
@@ -377,7 +377,7 @@ export class SplitButton extends BaseComponent<SplitButtonPassThrough> {
 
     readonly _menuButtonDisabled = computed(() => !!this.disabled() || this.menuButtonDisabled());
 
-    $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
+    readonly $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
 
     onInit() {
         this.ariaId = uuid('pn_id_');

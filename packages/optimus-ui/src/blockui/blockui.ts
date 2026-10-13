@@ -73,7 +73,7 @@ export class BlockUI extends BaseComponent<BlockUIPassThrough> {
      */
     readonly contentTemplate = contentChild<TemplateRef<any>>('content', { descendants: false });
 
-    _blocked = signal<boolean>(false);
+    readonly _blocked = signal<boolean>(false);
 
     constructor() {
         super();

@@ -1052,12 +1052,12 @@ describe('Chip', () => {
             template: `<p-chip [label]="label()" [icon]="icon()" [image]="image()" [removable]="removable()" [removeIcon]="removeIcon()" [pt]="pt()"></p-chip>`
         })
         class TestPTChipComponent {
-            label = input<string | undefined>('Test');
-            icon = input<string | undefined>();
-            image = input<string | undefined>();
-            removable = input<boolean>(false);
-            removeIcon = input<string | undefined>();
-            pt = input<any>();
+            readonly label = input<string | undefined>('Test');
+            readonly icon = input<string | undefined>();
+            readonly image = input<string | undefined>();
+            readonly removable = input<boolean>(false);
+            readonly removeIcon = input<string | undefined>();
+            readonly pt = input<any>();
         }
 
         describe('Case 1: Simple string classes', () => {

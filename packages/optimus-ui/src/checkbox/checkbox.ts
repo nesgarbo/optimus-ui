@@ -192,13 +192,13 @@ export class Checkbox extends BaseEditableHolder<CheckboxPassThrough> {
      * @defaultValue undefined
      * @group Props
      */
-    variant = input<'filled' | 'outlined' | undefined>();
+    readonly variant = input<'filled' | 'outlined' | undefined>();
     /**
      * Specifies the size of the component.
      * @defaultValue undefined
      * @group Props
      */
-    size = input<'large' | 'small' | undefined>();
+    readonly size = input<'large' | 'small' | undefined>();
     /**
      * Callback to invoke on value change.
      * @param {CheckboxChangeEvent} event - Custom value change event.
@@ -224,7 +224,7 @@ export class Checkbox extends BaseEditableHolder<CheckboxPassThrough> {
         return this._indeterminate() ? false : this.binary() ? this.modelValue() === this.trueValue() : contains(this.value(), this.modelValue());
     }
 
-    _indeterminate = linkedSignal<any>(() => this.indeterminate());
+    readonly _indeterminate = linkedSignal<any>(() => this.indeterminate());
     /**
      * Custom checkbox icon template.
      * @group Templates
@@ -243,7 +243,7 @@ export class Checkbox extends BaseEditableHolder<CheckboxPassThrough> {
 
     $pcCheckbox: Checkbox | undefined = inject(CHECKBOX_INSTANCE, { optional: true, skipSelf: true }) ?? undefined;
 
-    $variant = computed(() => this.variant() || this.config.inputStyle() || this.config.inputVariant());
+    readonly $variant = computed(() => this.variant() || this.config.inputStyle() || this.config.inputVariant());
 
     onAfterContentInit() {
         this.templates()?.forEach((item) => {

@@ -48,17 +48,17 @@ export class Motion extends BaseComponent<MotionPassThrough> {
      * Whether the element is visible or not.
      * @group Props
      */
-    visible = input<boolean>(false);
+    readonly visible = input<boolean>(false);
     /**
      * Whether to mount the element on enter.
      * @group Props
      */
-    mountOnEnter = input<boolean>(true);
+    readonly mountOnEnter = input<boolean>(true);
     /**
      * Whether to unmount the element on leave.
      * @group Props
      */
-    unmountOnLeave = input<boolean>(true);
+    readonly unmountOnLeave = input<boolean>(true);
     /**
      * The name of the motion. It can be a predefined motion name or a custom one.
      * phases:
@@ -70,77 +70,77 @@ export class Motion extends BaseComponent<MotionPassThrough> {
      *     [name]-leave-to
      * @group Props
      */
-    name = input<MotionOptions['name']>(undefined);
+    readonly name = input<MotionOptions['name']>(undefined);
     /**
      * The type of the motion, valid values 'transition' and 'animation'.
      * @group Props
      */
-    type = input<MotionOptions['type']>(undefined);
+    readonly type = input<MotionOptions['type']>(undefined);
     /**
      * Whether the motion is safe.
      * @group Props
      */
-    safe = input<MotionOptions['safe']>(undefined);
+    readonly safe = input<MotionOptions['safe']>(undefined);
     /**
      * Whether the motion is disabled.
      * @group Props
      */
-    disabled = input<MotionOptions['disabled']>(false);
+    readonly disabled = input<MotionOptions['disabled']>(false);
     /**
      * Whether the motion should appear.
      * @group Props
      */
-    appear = input<MotionOptions['appear']>(false);
+    readonly appear = input<MotionOptions['appear']>(false);
     /**
      * Whether the motion should enter.
      * @group Props
      */
-    enter = input<MotionOptions['enter']>(true);
+    readonly enter = input<MotionOptions['enter']>(true);
     /**
      * Whether the motion should leave.
      * @group Props
      */
-    leave = input<MotionOptions['leave']>(true);
+    readonly leave = input<MotionOptions['leave']>(true);
     /**
      * The duration of the motion.
      * @group Props
      */
-    duration = input<MotionOptions['duration']>(undefined);
+    readonly duration = input<MotionOptions['duration']>(undefined);
     /**
      * The hide strategy of the motion, valid values 'display' and 'visibility'.
      * @group Props
      */
-    hideStrategy = input<'display' | 'visibility'>('display');
+    readonly hideStrategy = input<'display' | 'visibility'>('display');
     /**
      * The enter from class of the motion.
      * @group Props
      */
-    enterFromClass = input<ClassNameOptions['from']>(undefined);
+    readonly enterFromClass = input<ClassNameOptions['from']>(undefined);
     /**
      * The enter to class of the motion.
      * @group Props
      */
-    enterToClass = input<ClassNameOptions['to']>(undefined);
+    readonly enterToClass = input<ClassNameOptions['to']>(undefined);
     /**
      * The enter active class of the motion.
      * @group Props
      */
-    enterActiveClass = input<ClassNameOptions['active']>(undefined);
+    readonly enterActiveClass = input<ClassNameOptions['active']>(undefined);
     /**
      * The leave from class of the motion.
      * @group Props
      */
-    leaveFromClass = input<ClassNameOptions['from']>(undefined);
+    readonly leaveFromClass = input<ClassNameOptions['from']>(undefined);
     /**
      * The leave to class of the motion.
      * @group Props
      */
-    leaveToClass = input<ClassNameOptions['to']>(undefined);
+    readonly leaveToClass = input<ClassNameOptions['to']>(undefined);
     /**
      * The leave active class of the motion.
      * @group Props
      */
-    leaveActiveClass = input<ClassNameOptions['active']>(undefined);
+    readonly leaveActiveClass = input<ClassNameOptions['active']>(undefined);
 
     /******************** All Inputs ********************/
 
@@ -148,7 +148,7 @@ export class Motion extends BaseComponent<MotionPassThrough> {
      * The motion options.
      * @group Props
      */
-    options = input<MotionOptions>({});
+    readonly options = input<MotionOptions>({});
 
     /******************** Outputs ********************/
 
@@ -211,7 +211,7 @@ export class Motion extends BaseComponent<MotionPassThrough> {
 
     /******************** Computed ********************/
 
-    private motionOptions = computed<MotionOptions>(() => {
+    private readonly motionOptions = computed<MotionOptions>(() => {
         const options = this.options();
 
         return {
@@ -249,7 +249,7 @@ export class Motion extends BaseComponent<MotionPassThrough> {
     private cancelled = false;
     private destroyed = false;
 
-    rendered = signal(false);
+    readonly rendered = signal(false);
 
     private readonly handleBeforeEnter = (event?: MotionEvent) => !this.destroyed && this.onBeforeEnter.emit(event);
     private readonly handleEnter = (event?: MotionEvent) => !this.destroyed && this.onEnter.emit(event);

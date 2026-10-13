@@ -284,7 +284,7 @@ export class TieredMenuSub extends BaseComponent<TieredMenuPassThrough> {
 
     readonly focusedItemId = input<string | undefined>(undefined);
 
-    activeItemPath = input<any[]>([]);
+    readonly activeItemPath = input<any[]>([]);
 
     readonly motionOptions = input<MotionOptions[] | undefined>(undefined);
 
@@ -310,7 +310,7 @@ export class TieredMenuSub extends BaseComponent<TieredMenuPassThrough> {
 
     readonly sublistViewChild = viewChild<ElementRef>('sublist');
 
-    render = signal<boolean>(false);
+    readonly render = signal<boolean>(false);
 
     _componentStyle = inject(TieredMenuStyle);
 
@@ -585,14 +585,14 @@ export class TieredMenu extends BaseComponent<TieredMenuPassThrough> {
      * @defaultValue 'self'
      * @group Props
      */
-    appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
+    readonly appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
     /**
      * The motion options.
      * @group Props
      */
-    motionOptions = input<MotionOptions | undefined>(undefined);
+    readonly motionOptions = input<MotionOptions | undefined>(undefined);
 
-    computedMotionOptions = computed<MotionOptions>(() => {
+    readonly computedMotionOptions = computed<MotionOptions>(() => {
         return {
             ...this.ptm('motion'),
             ...this.motionOptions()
@@ -627,9 +627,9 @@ export class TieredMenu extends BaseComponent<TieredMenuPassThrough> {
 
     readonly templates = contentChildren(PrimeTemplate);
 
-    $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
+    readonly $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
 
-    render = signal<boolean>(false);
+    readonly render = signal<boolean>(false);
 
     container: HTMLElement | undefined;
 
@@ -643,7 +643,7 @@ export class TieredMenu extends BaseComponent<TieredMenuPassThrough> {
 
     relatedTarget: any;
 
-    private _visibleState = signal<boolean | undefined>(undefined);
+    private readonly _visibleState = signal<boolean | undefined>(undefined);
 
     get visible(): boolean | undefined {
         return this._visibleState();
@@ -655,7 +655,7 @@ export class TieredMenu extends BaseComponent<TieredMenuPassThrough> {
 
     dirty: boolean = false;
 
-    private _focusedState = signal<boolean>(false);
+    private readonly _focusedState = signal<boolean>(false);
 
     get focused(): boolean {
         return this._focusedState();
@@ -665,11 +665,11 @@ export class TieredMenu extends BaseComponent<TieredMenuPassThrough> {
         this._focusedState.set(value);
     }
 
-    activeItemPath = signal<any>([]);
+    readonly activeItemPath = signal<any>([]);
 
-    number = signal<number>(0);
+    readonly number = signal<number>(0);
 
-    focusedItemInfo = signal<any>({ index: -1, level: 0, parentKey: '', item: null });
+    readonly focusedItemInfo = signal<any>({ index: -1, level: 0, parentKey: '', item: null });
 
     searchValue: string = '';
 
@@ -683,7 +683,7 @@ export class TieredMenu extends BaseComponent<TieredMenuPassThrough> {
 
     private query: MediaQueryList;
 
-    public queryMatches = signal<boolean>(false);
+    public readonly queryMatches = signal<boolean>(false);
 
     _submenuIconTemplate: TemplateRef<void> | undefined;
 

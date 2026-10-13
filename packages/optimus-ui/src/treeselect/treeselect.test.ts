@@ -238,7 +238,7 @@ class TestTreeSelectComponent {
     showReactiveForm: boolean = false;
 
     // Dynamic data testing
-    signalOptions = signal(mockTreeNodes.slice(0, 1));
+    readonly signalOptions = signal(mockTreeNodes.slice(0, 1));
     observableOptions$ = new BehaviorSubject<TreeNode[]>(mockTreeNodes.slice(0, 1));
     lateLoadedOptions: TreeNode[] = [];
 

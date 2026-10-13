@@ -116,10 +116,10 @@ describe('PClass Directive', () => {
     imports: [ClassNamesModule]
 })
 class SignalTestComponent {
-    active1 = signal<boolean>(false);
-    active2 = signal<boolean>(false);
+    readonly active1 = signal<boolean>(false);
+    readonly active2 = signal<boolean>(false);
 
-    conditionalClasses = computed(() => ({
+    readonly conditionalClasses = computed(() => ({
         'p-4 rounded-lg cursor-pointer select-none border': true,
         'bg-primary': this.active1(),
         'text-primary-contrast': this.active1(),
@@ -127,7 +127,7 @@ class SignalTestComponent {
         'border-primary': this.active1()
     }));
 
-    comboClasses = computed(() => [
+    readonly comboClasses = computed(() => [
         'p-4',
         'rounded-lg',
         {

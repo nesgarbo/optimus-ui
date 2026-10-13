@@ -89,7 +89,7 @@ export class StepList extends BaseComponent<StepListPassThrough> {
 
     componentName = 'StepList';
 
-    steps = contentChildren(forwardRef(() => Step));
+    readonly steps = contentChildren(forwardRef(() => Step));
 
     _componentStyle = inject(StepListStyle);
 
@@ -166,13 +166,13 @@ export class StepItem extends BaseComponent<StepItemPassThrough> {
      * @defaultValue undefined
      * @group Props
      */
-    value: ModelSignal<number | undefined> = model<number | undefined>();
+    readonly value: ModelSignal<number | undefined> = model<number | undefined>();
 
-    isActive = computed(() => this.pcStepper.value() === this.value());
+    readonly isActive = computed(() => this.pcStepper.value() === this.value());
 
-    step = contentChild(forwardRef(() => Step));
+    readonly step = contentChild(forwardRef(() => Step));
 
-    stepPanel = contentChild(forwardRef(() => StepPanel));
+    readonly stepPanel = contentChild(forwardRef(() => StepPanel));
 
     constructor() {
         super();
@@ -253,26 +253,26 @@ export class Step extends BaseComponent<StepPassThrough> {
      * @defaultValue undefined
      * @group Props
      */
-    value: ModelSignal<number | undefined> = model<number | undefined>();
+    readonly value: ModelSignal<number | undefined> = model<number | undefined>();
     /**
      * Whether the step is disabled.
      * @type {boolean}
      * @defaultValue false
      * @group Props
      */
-    disabled: InputSignalWithTransform<any, boolean> = input(false, {
+    readonly disabled: InputSignalWithTransform<any, boolean> = input(false, {
         transform: (v: any | boolean) => transformToBoolean(v)
     });
 
-    active = computed(() => this.pcStepper.isStepActive(this.value()));
+    readonly active = computed(() => this.pcStepper.isStepActive(this.value()));
 
-    isStepDisabled = computed(() => !this.active() && (this.pcStepper.linear() || this.disabled()));
+    readonly isStepDisabled = computed(() => !this.active() && (this.pcStepper.linear() || this.disabled()));
 
-    id = computed(() => `${this.pcStepper.id()}_step_${this.value()}`);
+    readonly id = computed(() => `${this.pcStepper.id()}_step_${this.value()}`);
 
-    ariaControls = computed(() => `${this.pcStepper.id()}_steppanel_${this.value()}`);
+    readonly ariaControls = computed(() => `${this.pcStepper.id()}_steppanel_${this.value()}`);
 
-    isSeparatorVisible = computed(() => {
+    readonly isSeparatorVisible = computed(() => {
         if (this.pcStepper.stepList()) {
             const steps = this.pcStepper.stepList().steps();
             const index = steps.indexOf(this);
@@ -362,17 +362,17 @@ export class StepPanel extends BaseComponent<StepPanelPassThrough> {
      * @defaultValue undefined
      * @group Props
      */
-    value: ModelSignal<number | undefined> = model<number | undefined>(undefined);
+    readonly value: ModelSignal<number | undefined> = model<number | undefined>(undefined);
 
-    active = computed(() => this.pcStepper.value() === this.value());
+    readonly active = computed(() => this.pcStepper.value() === this.value());
 
-    ariaControls = computed(() => `${this.pcStepper.id()}_step_${this.value()}`);
+    readonly ariaControls = computed(() => `${this.pcStepper.id()}_step_${this.value()}`);
 
-    id = computed(() => `${this.pcStepper.id()}_steppanel_${this.value()}`);
+    readonly id = computed(() => `${this.pcStepper.id()}_steppanel_${this.value()}`);
 
-    isVertical = computed(() => this.pcStepper.stepItems().length > 0);
+    readonly isVertical = computed(() => this.pcStepper.stepItems().length > 0);
 
-    isSeparatorVisible = computed(() => {
+    readonly isSeparatorVisible = computed(() => {
         if (this.pcStepper.stepItems()) {
             const stepLen = this.pcStepper.stepItems().length;
             const stepPanelElements = find(this.pcStepper.el.nativeElement, '[data-pc-name="steppanel"]');
@@ -382,7 +382,7 @@ export class StepPanel extends BaseComponent<StepPanelPassThrough> {
         }
     });
 
-    computedMotionOptions = computed<MotionOptions>(() => {
+    readonly computedMotionOptions = computed<MotionOptions>(() => {
         return {
             ...this.ptm('motion'),
             ...this.pcStepper.computedMotionOptions()
@@ -482,14 +482,14 @@ export class Stepper extends BaseComponent<StepperPassThrough> {
      * @type {ModelSignal<number | undefined>}
      * @group Props
      */
-    value: ModelSignal<number | undefined> = model<number | undefined>(undefined);
+    readonly value: ModelSignal<number | undefined> = model<number | undefined>(undefined);
     /**
      * A boolean variable that captures user input.
      * @defaultValue false
      * @type {InputSignalWithTransform<any, boolean >}
      * @group Props
      */
-    linear: InputSignalWithTransform<any, boolean> = input(false, {
+    readonly linear: InputSignalWithTransform<any, boolean> = input(false, {
         transform: (v: any | boolean) => transformToBoolean(v)
     });
     /**
@@ -499,28 +499,28 @@ export class Stepper extends BaseComponent<StepperPassThrough> {
      * @group Props
      * @deprecated since v21.0.0, use `motionOptions` instead.
      */
-    transitionOptions: InputSignal<string> = input<string>('400ms cubic-bezier(0.86, 0, 0.07, 1)');
+    readonly transitionOptions: InputSignal<string> = input<string>('400ms cubic-bezier(0.86, 0, 0.07, 1)');
 
     /**
      * The motion options.
      * @group Props
      */
-    motionOptions = input<MotionOptions | undefined>(undefined);
+    readonly motionOptions = input<MotionOptions | undefined>(undefined);
 
-    computedMotionOptions = computed<MotionOptions>(() => {
+    readonly computedMotionOptions = computed<MotionOptions>(() => {
         return {
             ...this.ptm('motion'),
             ...this.motionOptions()
         };
     });
 
-    id = signal<string>(uuid('pn_id_'));
+    readonly id = signal<string>(uuid('pn_id_'));
 
-    stepItems = contentChildren(StepItem);
+    readonly stepItems = contentChildren(StepItem);
 
-    steps = contentChildren(Step);
+    readonly steps = contentChildren(Step);
 
-    stepList = contentChild(StepList);
+    readonly stepList = contentChild(StepList);
 
     updateValue(value: number) {
         this.value.set(value);

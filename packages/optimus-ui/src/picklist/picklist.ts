@@ -481,12 +481,12 @@ export class PickList extends BaseComponent {
      * An array of objects for the source list.
      * @group Props
      */
-    source = model<any[]>([]);
+    readonly source = model<any[]>([]);
     /**
      * An array of objects for the target list.
      * @group Props
      */
-    target = model<any[]>([]);
+    readonly target = model<any[]>([]);
     /**
      * Name of the field that uniquely identifies the options.
      * @group Props

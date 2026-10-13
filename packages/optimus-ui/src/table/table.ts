@@ -5888,9 +5888,9 @@ export class ColumnFilter extends BaseComponent {
             clear: { outlined: true, size: 'small' }
         }
     });
-    motionOptions = input<MotionOptions | undefined>(undefined);
+    readonly motionOptions = input<MotionOptions | undefined>(undefined);
 
-    computedMotionOptions = computed<MotionOptions>(() => {
+    readonly computedMotionOptions = computed<MotionOptions>(() => {
         return {
             ...this.ptm('motion'),
             ...this.motionOptions()
@@ -5917,7 +5917,7 @@ export class ColumnFilter extends BaseComponent {
 
     overlaySubscription: Subscription | undefined;
 
-    renderOverlay = signal<boolean>(false);
+    readonly renderOverlay = signal<boolean>(false);
 
     /**
      * Custom header template.

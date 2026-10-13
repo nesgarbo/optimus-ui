@@ -208,9 +208,9 @@ export class Dock extends BaseComponent<DockPassThrough> {
 
     query: any;
 
-    queryMatches = signal<boolean>(false);
+    readonly queryMatches = signal<boolean>(false);
 
-    mobileActive = signal<boolean>(false);
+    readonly mobileActive = signal<boolean>(false);
 
     get focusedOptionId() {
         return this.focusedOptionIndex !== -1 && this.focusedOptionIndex !== '-1' ? String(this.focusedOptionIndex) : null;

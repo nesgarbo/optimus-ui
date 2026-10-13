@@ -353,7 +353,7 @@ export class SpeedDial extends BaseComponent<SpeedDialPassThrough> {
 
     documentClickListener: any;
 
-    focusedOptionIndex = signal<any>(null);
+    readonly focusedOptionIndex = signal<any>(null);
 
     focused: boolean = false;
 

@@ -88,15 +88,15 @@ export class FileContent extends BaseComponent {
 
     onRemove = output<any>();
 
-    files = input<any>();
+    readonly files = input<any>();
 
-    badgeSeverity = input<BadgeSeverity>('warn');
+    readonly badgeSeverity = input<BadgeSeverity>('warn');
 
-    badgeValue = input<string>();
+    readonly badgeValue = input<string>();
 
-    previewWidth = input<number>(50);
+    readonly previewWidth = input<number>(50);
 
-    fileRemoveIconTemplate = input<any>();
+    readonly fileRemoveIconTemplate = input<any>();
 
     onRemoveClick(event: any, index: number) {
         this.onRemove.emit({ event, index });

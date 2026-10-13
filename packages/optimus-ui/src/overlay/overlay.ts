@@ -183,20 +183,20 @@ export class Overlay extends BaseComponent {
      * @defaultValue 'self'
      * @group Props
      */
-    appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
+    readonly appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
     /**
      * Specifies whether the overlay should be rendered inline within the current component's template.
      * @defaultValue false
      * @group Props
      */
-    inline = input<boolean>(false);
+    readonly inline = input<boolean>(false);
     /**
      * The motion options.
      * @group Props
      */
-    motionOptions = input<MotionOptions | undefined>(undefined);
+    readonly motionOptions = input<MotionOptions | undefined>(undefined);
 
-    computedMotionOptions = computed<MotionOptions>(() => {
+    readonly computedMotionOptions = computed<MotionOptions>(() => {
         return {
             ...this.ptm('motion'),
             ...(this.motionOptions() || this.overlayOptions?.motionOptions)
@@ -290,13 +290,13 @@ export class Overlay extends BaseComponent {
 
     readonly templates = contentChildren(PrimeTemplate);
 
-    hostAttrSelector = input<string>();
+    readonly hostAttrSelector = input<string>();
 
-    $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
+    readonly $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
 
     _contentTemplate: TemplateRef<OverlayContentTemplateContext> | undefined;
 
-    modalVisible = signal<boolean>(false);
+    readonly modalVisible = signal<boolean>(false);
 
     isOverlayClicked: boolean = false;
 
@@ -484,7 +484,7 @@ export class Overlay extends BaseComponent {
         this.isOverlayContentClicked = true;
     }
 
-    container = signal<any>(undefined);
+    readonly container = signal<any>(undefined);
 
     onOverlayBeforeEnter(event: MotionEvent) {
         this.handleEvents('onBeforeShow', { overlay: this.overlayEl, target: this.targetEl, mode: this.overlayMode });

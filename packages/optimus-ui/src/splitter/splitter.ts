@@ -162,9 +162,9 @@ export class Splitter extends BaseComponent<SplitterPassThrough> {
 
     readonly panelChildren = contentChildren<ElementRef>('panel');
 
-    splitter = contentChild(forwardRef(() => Splitter));
+    readonly splitter = contentChild(forwardRef(() => Splitter));
 
-    nestedState = computed(() => this.splitter());
+    readonly nestedState = computed(() => this.splitter());
 
     panels: any[] = [];
 

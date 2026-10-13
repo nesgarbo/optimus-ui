@@ -106,61 +106,61 @@ export class FieldError {
      * @defaultValue undefined
      * @group Props
      */
-    field = input<FieldErrorField>();
+    readonly field = input<FieldErrorField>();
     /**
      * A control of a classic form: a `FormControl`, or the `NgControl` of `formControl`, `formControlName` or `ngModel`.
      * @defaultValue undefined
      * @group Props
      */
-    control = input<AbstractControl | NgControl | null>();
+    readonly control = input<AbstractControl | NgControl | null>();
     /**
      * When the errors are shown.
      * @defaultValue 'interacted'
      * @group Props
      */
-    showWhen = input<FieldErrorShowWhen>('interacted');
+    readonly showWhen = input<FieldErrorShowWhen>('interacted');
     /**
      * Shows every error of the field. The first one is shown by default.
      * @defaultValue false
      * @group Props
      */
-    showAll = input(false, { transform: booleanAttribute });
+    readonly showAll = input(false, { transform: booleanAttribute });
     /**
      * Messages by error kind, which take precedence over the message of the rule and over the translation.
      * @defaultValue undefined
      * @group Props
      */
-    messages = input<FieldErrorMessages>();
+    readonly messages = input<FieldErrorMessages>();
     /**
      * A template that replaces the message, to show the errors in any other way, such as a list or a tooltip.
      * @defaultValue undefined
      * @group Props
      */
-    template = input<TemplateRef<FieldErrorTemplateContext>>();
+    readonly template = input<TemplateRef<FieldErrorTemplateContext>>();
     /**
      * Severity of the message.
      * @defaultValue 'error'
      * @group Props
      */
-    severity = input<'success' | 'info' | 'warn' | 'error' | 'secondary' | 'contrast'>('error');
+    readonly severity = input<'success' | 'info' | 'warn' | 'error' | 'secondary' | 'contrast'>('error');
     /**
      * Size of the message.
      * @defaultValue 'small'
      * @group Props
      */
-    size = input<'small' | 'large' | undefined>('small');
+    readonly size = input<'small' | 'large' | undefined>('small');
     /**
      * Variant of the message.
      * @defaultValue 'simple'
      * @group Props
      */
-    variant = input<'outlined' | 'text' | 'simple'>('simple');
+    readonly variant = input<'outlined' | 'text' | 'simple'>('simple');
     /**
      * Id of the element, which a control can reference with `aria-describedby`.
      * @defaultValue undefined
      * @group Props
      */
-    id = input<string>(`p-fielderror-${++nextId}`);
+    readonly id = input<string>(`p-fielderror-${++nextId}`);
 
     /** Bumped on each event of a classic control, which is not a signal. */
     private readonly classicVersion = signal(0);
@@ -253,25 +253,25 @@ export class FieldErrorDirective implements DoCheck, OnDestroy {
      * @defaultValue 'interacted'
      * @group Props
      */
-    pFieldError = input<FieldErrorShowWhen | ''>('');
+    readonly pFieldError = input<FieldErrorShowWhen | ''>('');
     /**
      * Messages by error kind, which take precedence over the message of the rule and over the translation.
      * @defaultValue undefined
      * @group Props
      */
-    pFieldErrorMessages = input<FieldErrorMessages>();
+    readonly pFieldErrorMessages = input<FieldErrorMessages>();
     /**
      * Shows every error of the field. The first one is shown by default.
      * @defaultValue false
      * @group Props
      */
-    pFieldErrorAll = input(false, { transform: booleanAttribute });
+    readonly pFieldErrorAll = input(false, { transform: booleanAttribute });
     /**
      * A template that replaces the message, to show the errors in any other way.
      * @defaultValue undefined
      * @group Props
      */
-    pFieldErrorTemplate = input<TemplateRef<FieldErrorTemplateContext>>();
+    readonly pFieldErrorTemplate = input<TemplateRef<FieldErrorTemplateContext>>();
 
     private readonly ref = (() => {
         const ref = this.container.createComponent(FieldError);

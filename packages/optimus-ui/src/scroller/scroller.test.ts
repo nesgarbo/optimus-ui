@@ -4070,11 +4070,11 @@ describe('Scroller', () => {
             `
         })
         class TestPTScrollerComponent {
-            items = input(Array.from({ length: 100 }, (_, i) => `Item ${i + 1}`));
-            itemSize = input(50);
-            pt = input<any>();
-            showLoader = input(false);
-            loading = input(false);
+            readonly items = input(Array.from({ length: 100 }, (_, i) => `Item ${i + 1}`));
+            readonly itemSize = input(50);
+            readonly pt = input<any>();
+            readonly showLoader = input(false);
+            readonly loading = input(false);
         }
 
         let fixture: ComponentFixture<TestPTScrollerComponent>;

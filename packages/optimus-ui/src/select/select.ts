@@ -725,12 +725,12 @@ export class Select extends BaseInput<SelectPassThrough> implements AfterViewIni
      * @defaultValue 'self'
      * @group Props
      */
-    appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
+    readonly appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
     /**
      * The motion options.
      * @group Props
      */
-    motionOptions = input<MotionOptions | undefined>(undefined);
+    readonly motionOptions = input<MotionOptions | undefined>(undefined);
     /**
      * Callback to invoke when value of select changes.
      * @param {SelectChangeEvent} event - custom change event.
@@ -806,7 +806,7 @@ export class Select extends BaseInput<SelectPassThrough> implements AfterViewIni
 
     itemsWrapper: Nullable<HTMLDivElement>;
 
-    $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
+    readonly $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
 
     /**
      * Custom item template.
@@ -943,12 +943,12 @@ export class Select extends BaseInput<SelectPassThrough> implements AfterViewIni
     /**
      * Options, compared deeply so a structurally equal array does not reset the state.
      */
-    _options = computed(() => this.options(), { equal: (a, b) => deepEquals(a, b) });
+    readonly _options = computed(() => this.options(), { equal: (a, b) => deepEquals(a, b) });
 
     /**
      * Placeholder shown, the input value unless the floating label overrides it.
      */
-    _placeholder = linkedSignal(() => this.placeholder());
+    readonly _placeholder = linkedSignal(() => this.placeholder());
 
     value: any;
 
@@ -968,7 +968,7 @@ export class Select extends BaseInput<SelectPassThrough> implements AfterViewIni
 
     selectedOptionUpdated: Nullable<boolean>;
 
-    _filterValue = linkedSignal<any>(() => this.filterValue());
+    readonly _filterValue = linkedSignal<any>(() => this.filterValue());
 
     searchValue: Nullable<string>;
 
@@ -982,13 +982,13 @@ export class Select extends BaseInput<SelectPassThrough> implements AfterViewIni
 
     preventModelTouched: Nullable<boolean>;
 
-    focusedOptionIndex = signal<number>(-1);
+    readonly focusedOptionIndex = signal<number>(-1);
 
     labelId: Nullable<string>;
 
     listId: Nullable<string>;
 
-    clicked = signal<boolean>(false);
+    readonly clicked = signal<boolean>(false);
 
     get emptyMessageLabel(): string {
         return this.emptyMessage() || this.config.getTranslation(TranslationKeys.EMPTY_MESSAGE);
@@ -1010,7 +1010,7 @@ export class Select extends BaseInput<SelectPassThrough> implements AfterViewIni
         return this.focusedOptionIndex() !== -1 ? `${this._id()}_${this.focusedOptionIndex()}` : null;
     }
 
-    visibleOptions = computed(() => {
+    readonly visibleOptions = computed(() => {
         const options = this.getAllVisibleAndNonVisibleOptions();
 
         if (this._filterValue()) {
@@ -1050,7 +1050,7 @@ export class Select extends BaseInput<SelectPassThrough> implements AfterViewIni
         return options;
     });
 
-    label = computed(() => {
+    readonly label = computed(() => {
         // use  getAllVisibleAndNonVisibleOptions verses just visible options
         // this will find the selected option whether or not the user is currently filtering  because the filtered (i.e. visible) options, are a subset of all the options
         const options = this.getAllVisibleAndNonVisibleOptions();

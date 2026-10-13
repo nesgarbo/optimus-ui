@@ -6,27 +6,27 @@ import { ThemeProvider } from './themeprovider';
 
 @Injectable({ providedIn: 'root' })
 export class Optimus extends ThemeProvider {
-    ripple = signal<boolean>(false);
+    readonly ripple = signal<boolean>(false);
 
     public platformId: any = inject(PLATFORM_ID);
     /**
      * @deprecated Since v20. Use `inputVariant` instead.
      */
-    inputStyle = signal<'outlined' | 'filled' | null>(null);
+    readonly inputStyle = signal<'outlined' | 'filled' | null>(null);
 
-    inputVariant = signal<'outlined' | 'filled' | null>(null);
+    readonly inputVariant = signal<'outlined' | 'filled' | null>(null);
 
-    overlayAppendTo = signal<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>('self');
+    readonly overlayAppendTo = signal<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>('self');
 
     overlayOptions: OverlayOptions = {};
 
-    csp = signal<{ nonce: string | undefined }>({ nonce: undefined });
+    readonly csp = signal<{ nonce: string | undefined }>({ nonce: undefined });
 
-    unstyled = signal<boolean | undefined>(undefined);
+    readonly unstyled = signal<boolean | undefined>(undefined);
 
-    pt = signal<OptimusConfigType['pt']>(undefined);
+    readonly pt = signal<OptimusConfigType['pt']>(undefined);
 
-    ptOptions = signal<OptimusConfigType['ptOptions']>(undefined);
+    readonly ptOptions = signal<OptimusConfigType['ptOptions']>(undefined);
 
     filterMatchModeOptions = {
         text: [FilterMatchMode.STARTS_WITH, FilterMatchMode.CONTAINS, FilterMatchMode.NOT_CONTAINS, FilterMatchMode.ENDS_WITH, FilterMatchMode.EQUALS, FilterMatchMode.NOT_EQUALS],

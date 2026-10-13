@@ -58,15 +58,15 @@ class Host {
     readonly map = viewChild.required(Map);
     // The test server serves the packages of the project under /node_modules, with or without coverage; an application copies the worker next to its scripts.
     readonly worker = new URL('/node_modules/maplibre-gl/dist/maplibre-gl-worker.mjs', location.origin).href;
-    center = signal<[number, number]>([0, 0]);
-    zoom = signal(3);
-    bearing = signal(0);
-    markers = signal([{ id: 1, at: [0, 0] as [number, number], text: 'Null Island' }]);
-    data = signal<object>(polygon);
-    visible = signal(true);
-    markerName = signal('Marker');
-    anchor = signal<'bottom' | 'top'>('bottom');
-    mapStyle = signal<StyleSpecification>(EMPTY_MAP_STYLE);
+    readonly center = signal<[number, number]>([0, 0]);
+    readonly zoom = signal(3);
+    readonly bearing = signal(0);
+    readonly markers = signal([{ id: 1, at: [0, 0] as [number, number], text: 'Null Island' }]);
+    readonly data = signal<object>(polygon);
+    readonly visible = signal(true);
+    readonly markerName = signal('Marker');
+    readonly anchor = signal<'bottom' | 'top'>('bottom');
+    readonly mapStyle = signal<StyleSpecification>(EMPTY_MAP_STYLE);
     loadedCount = 0;
     moves: number[] = [];
     clicks: [number, number][] = [];

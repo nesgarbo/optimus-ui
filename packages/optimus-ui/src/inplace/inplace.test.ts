@@ -1285,11 +1285,11 @@ describe('Inplace', () => {
             </p-inplace>`
         })
         class TestPTInplaceComponent {
-            active = input<boolean>(false);
-            closable = input<boolean>(false);
-            disabled = input<boolean>(false);
-            closeIcon = input<string | undefined>();
-            pt = input<any>();
+            readonly active = input<boolean>(false);
+            readonly closable = input<boolean>(false);
+            readonly disabled = input<boolean>(false);
+            readonly closeIcon = input<string | undefined>();
+            readonly pt = input<any>();
         }
 
         let fixture: ComponentFixture<TestPTInplaceComponent>;

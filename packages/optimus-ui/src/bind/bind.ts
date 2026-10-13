@@ -1,4 +1,4 @@
-import { computed, Directive, effect, ElementRef, input, NgModule, Renderer2, signal } from '@angular/core';
+import { computed, Directive, effect, ElementRef, inject, input, NgModule, Renderer2, signal } from '@angular/core';
 import { cn, equals } from '@openng/optimus-ui-utils';
 
 /**
@@ -18,20 +18,21 @@ export class Bind {
      * Dynamic attributes, properties, and event listeners to be applied to the host element.
      * @group Props
      */
-    pBind = input<{ [key: string]: any } | undefined>(undefined);
+    readonly pBind = input<{ [key: string]: any } | undefined>(undefined);
 
-    private _attrs = signal<{ [key: string]: any } | undefined>(undefined);
-    private attrs = computed(() => this._attrs() || this.pBind());
+    private readonly _attrs = signal<{ [key: string]: any } | undefined>(undefined);
+    private readonly attrs = computed(() => this._attrs() || this.pBind());
 
-    styles = computed(() => this.attrs()?.style);
-    classes = computed(() => cn(this.attrs()?.class));
+    readonly styles = computed(() => this.attrs()?.style);
+    readonly classes = computed(() => cn(this.attrs()?.class));
 
     private listeners: { eventName: string; unlisten: () => void }[] = [];
 
-    constructor(
-        private el: ElementRef,
-        private renderer: Renderer2
-    ) {
+    private readonly el: ElementRef = inject(ElementRef);
+
+    private readonly renderer: Renderer2 = inject(Renderer2);
+
+    constructor() {
         effect(() => {
             const { style, class: className, ...rest } = this.attrs() || {};
 

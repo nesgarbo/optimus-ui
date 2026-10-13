@@ -254,9 +254,9 @@ export class Galleria extends BaseComponent<GalleriaPassThrough> {
      * The motion options.
      * @group Props
      */
-    motionOptions = input<MotionOptions | undefined>(undefined);
+    readonly motionOptions = input<MotionOptions | undefined>(undefined);
 
-    computedMotionOptions = computed<MotionOptions>(() => {
+    readonly computedMotionOptions = computed<MotionOptions>(() => {
         return {
             ...this.ptm('motion'),
             ...this.motionOptions()
@@ -266,9 +266,9 @@ export class Galleria extends BaseComponent<GalleriaPassThrough> {
      * The mask motion options.
      * @group Props
      */
-    maskMotionOptions = input<MotionOptions | undefined>(undefined);
+    readonly maskMotionOptions = input<MotionOptions | undefined>(undefined);
 
-    computedMaskMotionOptions = computed<MotionOptions>(() => {
+    readonly computedMaskMotionOptions = computed<MotionOptions>(() => {
         return {
             ...this.ptm('maskMotion'),
             ...this.maskMotionOptions()
@@ -296,8 +296,8 @@ export class Galleria extends BaseComponent<GalleriaPassThrough> {
         });
     }
 
-    renderMask = signal<boolean>(false);
-    renderContent = signal<boolean>(false);
+    readonly renderMask = signal<boolean>(false);
+    readonly renderContent = signal<boolean>(false);
     readonly container = viewChild<ElementRef>('container');
 
     /**
@@ -377,7 +377,7 @@ export class Galleria extends BaseComponent<GalleriaPassThrough> {
     readonly _thumbnailTemplate = contentChild<TemplateRef<GalleriaThumbnailTemplateContext>>('thumbnail', { descendants: false });
     thumbnailTemplate: TemplateRef<GalleriaThumbnailTemplateContext> | undefined;
 
-    maskVisible = signal<boolean>(false);
+    readonly maskVisible = signal<boolean>(false);
 
     numVisibleLimit = 0;
 

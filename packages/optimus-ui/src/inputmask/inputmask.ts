@@ -87,44 +87,44 @@ export class InputMaskDirective extends BaseComponent<InputMaskPassThrough> {
      * @defaultValue undefined
      * @group Props
      */
-    pInputMaskPT = input<any>();
+    readonly pInputMaskPT = input<any>();
 
     /**
      * Indicates whether the component should be rendered without styles.
      * @defaultValue undefined
      * @group Props
      */
-    pInputMaskUnstyled = input<boolean | undefined>();
+    readonly pInputMaskUnstyled = input<boolean | undefined>();
 
     /**
      * Mask pattern.
      * @group Props
      */
-    pInputMask = input<string>();
+    readonly pInputMask = input<string>();
 
     /**
      * Placeholder character in mask, default is underscore.
      * @group Props
      */
-    slotChar = input<string>('_');
+    readonly slotChar = input<string>('_');
 
     /**
      * Clears the incomplete value on blur.
      * @group Props
      */
-    autoClear = input<boolean, boolean>(true, { transform: booleanAttribute });
+    readonly autoClear = input<boolean, boolean>(true, { transform: booleanAttribute });
 
     /**
      * Regex pattern for alpha characters.
      * @group Props
      */
-    characterPattern = input<string>('[A-Za-z]');
+    readonly characterPattern = input<string>('[A-Za-z]');
 
     /**
      * When present, it specifies that whether to clean buffer value from model.
      * @group Props
      */
-    keepBuffer = input<boolean, boolean>(false, { transform: booleanAttribute });
+    readonly keepBuffer = input<boolean, boolean>(false, { transform: booleanAttribute });
 
     /**
      * Callback to invoke when the mask is completed.
@@ -781,7 +781,7 @@ export class InputMask extends BaseInput<InputMaskPassThrough> {
         return this.config.getTranslation(TranslationKeys.CLEAR) || 'Clear';
     }
 
-    ptmParams = computed(() => ({ context: { filled: this.$variant() === 'filled' } }));
+    readonly ptmParams = computed(() => ({ context: { filled: this.$variant() === 'filled' } }));
 
     /**
      * HTML5 input type.

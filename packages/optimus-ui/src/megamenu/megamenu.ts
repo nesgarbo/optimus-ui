@@ -596,9 +596,9 @@ export class MegaMenu extends BaseComponent<MegaMenuPassThrough> {
 
     focused: boolean = false;
 
-    activeItem = signal<any>(null);
+    readonly activeItem = signal<any>(null);
 
-    focusedItemInfo = signal<any>({ index: -1, level: 0, parentKey: '', item: null });
+    readonly focusedItemInfo = signal<any>({ index: -1, level: 0, parentKey: '', item: null });
 
     searchValue: string = '';
 
@@ -610,9 +610,9 @@ export class MegaMenu extends BaseComponent<MegaMenuPassThrough> {
 
     private query: MediaQueryList;
 
-    public queryMatches = signal<boolean>(false);
+    public readonly queryMatches = signal<boolean>(false);
 
-    private _mobileActive = signal<boolean>(false);
+    private readonly _mobileActive = signal<boolean>(false);
 
     get mobileActive(): boolean {
         return this._mobileActive();

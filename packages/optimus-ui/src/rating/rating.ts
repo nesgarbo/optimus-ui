@@ -184,7 +184,7 @@ export class Rating extends BaseEditableHolder<RatingPassThrough> {
 
     isFocusVisibleItem: boolean = true;
 
-    focusedOptionIndex = signal<number>(-1);
+    readonly focusedOptionIndex = signal<number>(-1);
 
     nameattr: string | undefined;
 

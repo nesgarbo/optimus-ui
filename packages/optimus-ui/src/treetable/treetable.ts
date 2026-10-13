@@ -920,7 +920,7 @@ export class TreeTable extends BaseComponent<TreeTablePassThrough> implements Bl
 
     rowTouched: Nullable<boolean>;
 
-    private _editingCell = signal<Nullable<Element>>(undefined);
+    private readonly _editingCell = signal<Nullable<Element>>(undefined);
 
     get editingCell(): Nullable<Element> {
         return this._editingCell();

@@ -137,13 +137,13 @@ class TestDynamicAvatarComponent {
     template: `<p-avatar [label]="label()" [icon]="icon()" [image]="image()" [size]="size()" [shape]="shape()" [ariaLabel]="ariaLabel()" [pt]="pt()"></p-avatar>`
 })
 class TestPTAvatarComponent {
-    label = input<string | undefined>('PT');
-    icon = input<string | undefined>();
-    image = input<string | undefined>();
-    size = input<'normal' | 'large' | 'xlarge' | undefined>();
-    shape = input<'square' | 'circle' | undefined>();
-    ariaLabel = input<string | undefined>();
-    pt = input<any>();
+    readonly label = input<string | undefined>('PT');
+    readonly icon = input<string | undefined>();
+    readonly image = input<string | undefined>();
+    readonly size = input<'normal' | 'large' | 'xlarge' | undefined>();
+    readonly shape = input<'square' | 'circle' | undefined>();
+    readonly ariaLabel = input<string | undefined>();
+    readonly pt = input<any>();
 }
 
 describe('Avatar', () => {

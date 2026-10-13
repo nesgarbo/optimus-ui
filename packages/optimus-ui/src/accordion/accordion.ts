@@ -87,15 +87,15 @@ export class AccordionPanel extends BaseComponent<AccordionPanelPassThrough> {
      * @defaultValue undefined
      * @group Props
      */
-    value = model<undefined | null | string | number | string[] | number[]>(undefined);
+    readonly value = model<undefined | null | string | number | string[] | number[]>(undefined);
     /**
      * Disables the tab when enabled.
      * @defaultValue false
      * @group Props
      */
-    disabled: InputSignalWithTransform<any, boolean> = input(false, { transform: (v: any) => transformToBoolean(v) });
+    readonly disabled: InputSignalWithTransform<any, boolean> = input(false, { transform: (v: any) => transformToBoolean(v) });
 
-    active = computed(() => (this.pcAccordion.multiple() ? this.valueEquals(this.pcAccordion.value(), this.value()) : this.pcAccordion.value() === this.value()));
+    readonly active = computed(() => (this.pcAccordion.multiple() ? this.valueEquals(this.pcAccordion.value(), this.value()) : this.pcAccordion.value() === this.value()));
 
     valueEquals(currentValue: any, value: any): boolean {
         if (Array.isArray(currentValue)) {
@@ -173,13 +173,13 @@ export class AccordionHeader extends BaseComponent<AccordionHeaderPassThrough> {
 
     pcAccordionPanel = inject(forwardRef(() => AccordionPanel));
 
-    id = computed(() => `${this.pcAccordion.id()}_accordionheader_${this.pcAccordionPanel.value()}`);
+    readonly id = computed(() => `${this.pcAccordion.id()}_accordionheader_${this.pcAccordionPanel.value()}`);
 
-    active = computed(() => this.pcAccordionPanel.active());
+    readonly active = computed(() => this.pcAccordionPanel.active());
 
-    disabled = computed(() => this.pcAccordionPanel.disabled());
+    readonly disabled = computed(() => this.pcAccordionPanel.disabled());
 
-    ariaControls = computed(() => `${this.pcAccordion.id()}_accordioncontent_${this.pcAccordionPanel.value()}`);
+    readonly ariaControls = computed(() => `${this.pcAccordion.id()}_accordioncontent_${this.pcAccordionPanel.value()}`);
     /**
      * Toggle icon template.
      * @type {TemplateRef<AccordionToggleIconTemplateContext>} context - Context of the template
@@ -360,17 +360,17 @@ export class AccordionContent extends BaseComponent<AccordionContentPassThrough>
 
     pcAccordionPanel = inject(forwardRef(() => AccordionPanel));
 
-    active = computed(() => this.pcAccordionPanel.active());
+    readonly active = computed(() => this.pcAccordionPanel.active());
 
-    ariaLabelledby = computed(() => `${this.pcAccordion.id()}_accordionheader_${this.pcAccordionPanel.value()}`);
+    readonly ariaLabelledby = computed(() => `${this.pcAccordion.id()}_accordionheader_${this.pcAccordionPanel.value()}`);
 
-    id = computed(() => `${this.pcAccordion.id()}_accordioncontent_${this.pcAccordionPanel.value()}`);
+    readonly id = computed(() => `${this.pcAccordion.id()}_accordioncontent_${this.pcAccordionPanel.value()}`);
 
     _componentStyle = inject(AccordionStyle);
 
-    ptParams = computed(() => ({ context: this.active() }));
+    readonly ptParams = computed(() => ({ context: this.active() }));
 
-    computedMotionOptions = computed<MotionOptions>(() => {
+    readonly computedMotionOptions = computed<MotionOptions>(() => {
         return {
             ...this.ptm('motion', this.ptParams()),
             ...this.pcAccordion.computedMotionOptions()
@@ -411,13 +411,13 @@ export class Accordion extends BaseComponent<AccordionPassThrough> implements Bl
      * @defaultValue undefined
      * @group Props
      */
-    value = model<undefined | null | string | number | string[] | number[]>(undefined);
+    readonly value = model<undefined | null | string | number | string[] | number[]>(undefined);
     /**
      * When enabled, multiple tabs can be activated at the same time.
      * @defaultValue false
      * @group Props
      */
-    multiple = input(false, { transform: (v: any) => transformToBoolean(v) });
+    readonly multiple = input(false, { transform: (v: any) => transformToBoolean(v) });
     /**
      * Class of the element.
      * @deprecated since v20.0.0, use `class` instead.
@@ -439,7 +439,7 @@ export class Accordion extends BaseComponent<AccordionPassThrough> implements Bl
      * @defaultValue false
      * @group Props
      */
-    selectOnFocus = input(false, { transform: (v: any) => transformToBoolean(v) });
+    readonly selectOnFocus = input(false, { transform: (v: any) => transformToBoolean(v) });
     /**
      * Transition options of the animation.
      * @group Props
@@ -451,9 +451,9 @@ export class Accordion extends BaseComponent<AccordionPassThrough> implements Bl
      * The motion options.
      * @group Props
      */
-    motionOptions = input<MotionOptions | undefined>(undefined);
+    readonly motionOptions = input<MotionOptions | undefined>(undefined);
 
-    computedMotionOptions = computed<MotionOptions>(() => {
+    readonly computedMotionOptions = computed<MotionOptions>(() => {
         return {
             ...this.ptm('motion'),
             ...this.motionOptions()
@@ -473,7 +473,7 @@ export class Accordion extends BaseComponent<AccordionPassThrough> implements Bl
      */
     onOpen = output<AccordionTabOpenEvent>();
 
-    id = signal(uuid('pn_id_'));
+    readonly id = signal(uuid('pn_id_'));
 
     _componentStyle = inject(AccordionStyle);
 

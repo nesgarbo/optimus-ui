@@ -121,6 +121,23 @@ export default [
         }
     },
     {
+        // The public API of the library is signals only (3.0): a decorator, a constructor injection or a signal
+        // that is not readonly is a mistake. The tests keep their warnings.
+        files: ['packages/optimus-ui/src/**/*.ts'],
+        ignores: ['**/*.test.ts'],
+        rules: {
+            '@angular-eslint/prefer-signals': 'error',
+            '@angular-eslint/prefer-inject': 'error',
+            '@angular-eslint/prefer-output-emitter-ref': 'error'
+        }
+    },
+    {
+        files: ['packages/optimus-ui/src/**/*.html'],
+        languageOptions: { parser: templateParser },
+        plugins: { '@angular-eslint/template': angularTemplate },
+        rules: { '@angular-eslint/template/prefer-control-flow': 'error' }
+    },
+    {
         files: ['**/*.html'],
         languageOptions: { parser: templateParser },
         plugins: { '@angular-eslint/template': angularTemplate },

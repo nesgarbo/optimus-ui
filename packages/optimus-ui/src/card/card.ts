@@ -139,7 +139,7 @@ export class Card extends BaseComponent<CardPassThrough> implements BlockableUI 
 
     _footerTemplate: TemplateRef<void> | undefined;
 
-    _style = computed(() => this.style());
+    readonly _style = computed(() => this.style());
 
     getBlockableElement(): HTMLElement {
         return this.el.nativeElement;

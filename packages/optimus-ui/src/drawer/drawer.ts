@@ -129,14 +129,14 @@ export class Drawer extends BaseComponent<DrawerPassThrough> {
      * @defaultValue 'self'
      * @group Props
      */
-    appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
+    readonly appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
     /**
      * The motion options.
      * @group Props
      */
-    motionOptions = input<MotionOptions | undefined>(undefined);
+    readonly motionOptions = input<MotionOptions | undefined>(undefined);
 
-    computedMotionOptions = computed<MotionOptions>(() => {
+    readonly computedMotionOptions = computed<MotionOptions>(() => {
         return {
             ...this.ptm('motion'),
             ...this.motionOptions()
@@ -222,17 +222,17 @@ export class Drawer extends BaseComponent<DrawerPassThrough> {
      * @defaultValue 'left'
      * @group Props
      */
-    position = input<'left' | 'right' | 'bottom' | 'top' | 'full'>('left');
+    readonly position = input<'left' | 'right' | 'bottom' | 'top' | 'full'>('left');
     /**
      * Adds a close icon to the header to hide the dialog.
      * @defaultValue false
      * @group Props
      */
-    fullScreen = input<boolean>(false);
+    readonly fullScreen = input<boolean>(false);
 
-    $enterAnimation = computed(() => (this.fullScreen() ? 'p-drawer-enter-full' : `p-drawer-enter-${this.position()}`));
+    readonly $enterAnimation = computed(() => (this.fullScreen() ? 'p-drawer-enter-full' : `p-drawer-enter-${this.position()}`));
 
-    $leaveAnimation = computed(() => (this.fullScreen() ? 'p-drawer-leave-full' : `p-drawer-leave-${this.position()}`));
+    readonly $leaveAnimation = computed(() => (this.fullScreen() ? 'p-drawer-leave-full' : `p-drawer-leave-${this.position()}`));
 
     /**
      * Title content of the dialog.
@@ -292,7 +292,7 @@ export class Drawer extends BaseComponent<DrawerPassThrough> {
 
     _fullScreen: boolean = false;
 
-    modalVisible = signal<boolean>(false);
+    readonly modalVisible = signal<boolean>(false);
 
     container: Nullable<HTMLDivElement>;
 
@@ -337,7 +337,7 @@ export class Drawer extends BaseComponent<DrawerPassThrough> {
      */
     readonly headlessTemplate = contentChild<TemplateRef<void>>('headless', { descendants: false });
 
-    $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
+    readonly $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
 
     _headerTemplate: TemplateRef<void> | undefined;
 

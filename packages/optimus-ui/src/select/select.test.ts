@@ -294,13 +294,13 @@ class TestSelectRefTemplateComponent {
     template: ` <p-select [options]="dynamicOptions()" [(ngModel)]="selectedValue" optionLabel="label" optionValue="value" [placeholder]="dynamicPlaceholder()" [disabled]="dynamicDisabled()" [loading]="dynamicLoading()"> </p-select> `
 })
 class TestDynamicSelectComponent {
-    private _options = signal([
+    private readonly _options = signal([
         { label: 'Dynamic 1', value: 'dyn1' },
         { label: 'Dynamic 2', value: 'dyn2' }
     ]);
-    private _placeholder = signal('Dynamic placeholder');
-    private _disabled = signal(false);
-    private _loading = signal(false);
+    private readonly _placeholder = signal('Dynamic placeholder');
+    private readonly _disabled = signal(false);
+    private readonly _loading = signal(false);
     selectedValue: any;
 
     dynamicOptions = this._options.asReadonly();
@@ -390,15 +390,15 @@ class TestDynamicSelectComponent {
 })
 class TestDynamicDataSourcesComponent {
     // Signal-based properties
-    private _signalOptions = signal([
+    private readonly _signalOptions = signal([
         { label: 'Signal Option 1', value: 'sig1', category: 'A' },
         { label: 'Signal Option 2', value: 'sig2', category: 'B' }
     ]);
-    private _signalLabel = signal('label');
-    private _signalValue = signal('value');
-    private _signalPlaceholder = signal('Select from signals');
-    private _signalDisabled = signal(false);
-    private _signalLoading = signal(false);
+    private readonly _signalLabel = signal('label');
+    private readonly _signalValue = signal('value');
+    private readonly _signalPlaceholder = signal('Select from signals');
+    private readonly _signalDisabled = signal(false);
+    private readonly _signalLoading = signal(false);
 
     signalOptions = this._signalOptions.asReadonly();
     signalLabel = this._signalLabel.asReadonly();
@@ -477,20 +477,20 @@ class TestDynamicDataSourcesComponent {
     selectedLateLoaded: any = null as any;
 
     // Computed properties
-    private baseItems = signal([
+    private readonly baseItems = signal([
         { name: 'Item A', value: 'a', active: true },
         { name: 'Item B', value: 'b', active: false },
         { name: 'Item C', value: 'c', active: true }
     ]);
-    private showInactive = signal(false);
+    private readonly showInactive = signal(false);
 
-    computedOptions = computed(() => {
+    readonly computedOptions = computed(() => {
         const items = this.baseItems();
         return this.showInactive() ? items : items.filter((item) => item.active);
     });
 
-    computedLabel = computed(() => 'name');
-    computedPlaceholder = computed(() => `Select from ${this.computedOptions().length} computed options`);
+    readonly computedLabel = computed(() => 'name');
+    readonly computedPlaceholder = computed(() => `Select from ${this.computedOptions().length} computed options`);
 
     selectedComputed: any = null as any;
 

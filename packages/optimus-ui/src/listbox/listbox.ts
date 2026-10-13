@@ -640,7 +640,7 @@ export class Listbox extends BaseEditableHolder<ListBoxPassThrough> {
     /**
      * Computed property for stable CDK drop list data reference
      */
-    cdkDropData = computed(() => {
+    readonly cdkDropData = computed(() => {
         return this.dropListData() || this._options();
     });
     /**
@@ -648,7 +648,7 @@ export class Listbox extends BaseEditableHolder<ListBoxPassThrough> {
      * @defaultValue undefined
      * @group Props
      */
-    fluid = input(undefined, { transform: booleanAttribute });
+    readonly fluid = input(undefined, { transform: booleanAttribute });
     /**
      * Callback to invoke on value change.
      * @param {ListboxChangeEvent} event - Custom change event.
@@ -828,7 +828,7 @@ export class Listbox extends BaseEditableHolder<ListBoxPassThrough> {
 
     _loaderTemplate: TemplateRef<ListboxLoaderTemplateContext> | undefined;
 
-    public _filterValue = linkedSignal<string | null | undefined>(() => this.filterValue());
+    public readonly _filterValue = linkedSignal<string | null | undefined>(() => this.filterValue());
 
     public _filteredOptions: any[] | undefined | null;
 
@@ -904,19 +904,19 @@ export class Listbox extends BaseEditableHolder<ListBoxPassThrough> {
 
     searchTimeout: any;
 
-    _options = linkedSignal<any>(() => this.options());
+    readonly _options = linkedSignal<any>(() => this.options());
 
-    startRangeIndex = signal<number>(-1);
+    readonly startRangeIndex = signal<number>(-1);
 
-    focusedOptionIndex = signal<number>(-1);
+    readonly focusedOptionIndex = signal<number>(-1);
 
-    isDragging = signal<boolean>(false);
+    readonly isDragging = signal<boolean>(false);
 
     onHostFocusOut(event: FocusEvent) {
         this.onFocusout(event);
     }
 
-    visibleOptions = computed(() => {
+    readonly visibleOptions = computed(() => {
         const options = this.group() ? this.flatOptions(this._options()) : this._options() || [];
         return this._filterValue() ? this.filterService.filter(options, this.searchFields, this._filterValue(), this.filterMatchMode(), this.filterLocale()) : options;
     });

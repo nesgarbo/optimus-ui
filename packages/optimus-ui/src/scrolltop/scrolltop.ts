@@ -124,9 +124,9 @@ export class ScrollTop extends BaseComponent<ScrollTopPassThrough> {
      * The motion options.
      * @group Props
      */
-    motionOptions = input<MotionOptions | undefined>(undefined);
+    readonly motionOptions = input<MotionOptions | undefined>(undefined);
 
-    computedMotionOptions = computed<MotionOptions>(() => {
+    readonly computedMotionOptions = computed<MotionOptions>(() => {
         return {
             ...this.ptm('motion'),
             ...this.motionOptions()
@@ -158,9 +158,9 @@ export class ScrollTop extends BaseComponent<ScrollTopPassThrough> {
 
     parentScrollListener: VoidFunction | null | undefined;
 
-    visible = signal<boolean>(false);
+    readonly visible = signal<boolean>(false);
 
-    render = signal<boolean>(false);
+    readonly render = signal<boolean>(false);
 
     overlay: any;
 

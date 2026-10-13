@@ -111,9 +111,9 @@ export class TabList extends BaseComponent<TabListPassThrough> {
 
     pcTabs = inject(forwardRef(() => Tabs));
 
-    isPrevButtonEnabled = signal<boolean>(false);
+    readonly isPrevButtonEnabled = signal<boolean>(false);
 
-    isNextButtonEnabled = signal<boolean>(false);
+    readonly isNextButtonEnabled = signal<boolean>(false);
 
     private zone: NgZone = inject(NgZone);
 
@@ -121,11 +121,11 @@ export class TabList extends BaseComponent<TabListPassThrough> {
 
     inkBarTimer: ReturnType<typeof setTimeout> | undefined;
 
-    showNavigators = computed(() => this.pcTabs.showNavigators());
+    readonly showNavigators = computed(() => this.pcTabs.showNavigators());
 
-    tabindex = computed(() => this.pcTabs.tabindex());
+    readonly tabindex = computed(() => this.pcTabs.tabindex());
 
-    scrollable = computed(() => this.pcTabs.scrollable());
+    readonly scrollable = computed(() => this.pcTabs.scrollable());
 
     _componentStyle = inject(TabListStyle);
 

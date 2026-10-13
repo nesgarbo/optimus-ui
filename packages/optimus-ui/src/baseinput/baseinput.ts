@@ -11,93 +11,93 @@ export class BaseInput<PT = any> extends BaseEditableHolder<PT> {
      * @defaultValue false
      * @group Props
      */
-    fluid = input(undefined, { transform: booleanAttribute });
+    readonly fluid = input(undefined, { transform: booleanAttribute });
     /**
      * Specifies the input variant of the component.
      * @defaultValue 'outlined'
      * @group Props
      */
-    variant = input<'filled' | 'outlined' | undefined>();
+    readonly variant = input<'filled' | 'outlined' | undefined>();
     /**
      * Specifies the size of the component.
      * @defaultValue undefined
      * @group Props
      */
-    size = input<'large' | 'small' | undefined>();
+    readonly size = input<'large' | 'small' | undefined>();
     /**
      * Specifies the visible width of the input element in characters.
      * @defaultValue undefined
      * @group Props
      */
-    inputSize = input<number | null | undefined>();
+    readonly inputSize = input<number | null | undefined>();
     /**
      * Specifies the value must match the pattern.
      * @defaultValue undefined
      * @group Props
      */
-    pattern = input<string | RegExp | readonly RegExp[] | null | undefined>();
+    readonly pattern = input<string | RegExp | readonly RegExp[] | null | undefined>();
     /**
      * The value must be greater than or equal to the value.
      * @defaultValue undefined
      * @group Props
      */
-    min = input<number | string | Date | null | undefined, unknown>(undefined, { transform: asLimit });
+    readonly min = input<number | string | Date | null | undefined, unknown>(undefined, { transform: asLimit });
     /**
      * The value must be less than or equal to the value.
      * @defaultValue undefined
      * @group Props
      */
-    max = input<number | string | Date | null | undefined, unknown>(undefined, { transform: asLimit });
+    readonly max = input<number | string | Date | null | undefined, unknown>(undefined, { transform: asLimit });
     /**
      * Unless the step is set to the any literal, the value must be min + an integral multiple of the step.
      * @defaultValue undefined
      * @group Props
      */
-    step = input<number | null | undefined>();
+    readonly step = input<number | null | undefined>();
     /**
      * The number of characters (code points) must not be less than the value of the attribute, if non-empty.
      * @defaultValue undefined
      * @group Props
      */
-    minlength = input<number | null | undefined>();
+    readonly minlength = input<number | null | undefined>();
     /**
      * The number of characters (code points) must not exceed the value of the attribute.
      * @defaultValue undefined
      * @group Props
      */
-    maxlength = input<number | null | undefined>();
+    readonly maxlength = input<number | null | undefined>();
     /**
      * Same as `minlength`, with the name a signal form (`[formField]`) binds.
      * @defaultValue undefined
      * @group Props
      */
-    minLength = input<number | null | undefined, unknown>(undefined, { transform: nullableNumber });
+    readonly minLength = input<number | null | undefined, unknown>(undefined, { transform: nullableNumber });
     /**
      * Same as `maxlength`, with the name a signal form (`[formField]`) binds.
      * @defaultValue undefined
      * @group Props
      */
-    maxLength = input<number | null | undefined, unknown>(undefined, { transform: nullableNumber });
+    readonly maxLength = input<number | null | undefined, unknown>(undefined, { transform: nullableNumber });
 
     /** `min` as a number, or null when it is not numeric (a signal form binds the field type, such as a `Date`). */
-    $min = computed(() => toNumber(this.min()));
+    readonly $min = computed(() => toNumber(this.min()));
 
     /** `max` as a number, or null when it is not numeric. */
-    $max = computed(() => toNumber(this.max()));
+    readonly $max = computed(() => toNumber(this.max()));
 
     /** `pattern` as the string of the native attribute: the first regular expression of a signal form. */
-    $pattern = computed(() => {
+    readonly $pattern = computed(() => {
         const pattern = this.pattern();
         const first = Array.isArray(pattern) ? pattern[0] : pattern;
 
         return first instanceof RegExp ? first.source : ((first as string | null | undefined) ?? null);
     });
 
-    $minlength = computed(() => this.minlength() ?? this.minLength() ?? null);
+    readonly $minlength = computed(() => this.minlength() ?? this.minLength() ?? null);
 
-    $maxlength = computed(() => this.maxlength() ?? this.maxLength() ?? null);
+    readonly $maxlength = computed(() => this.maxlength() ?? this.maxLength() ?? null);
 
-    $variant = computed(() => this.variant() || this.config.inputStyle() || this.config.inputVariant());
+    readonly $variant = computed(() => this.variant() || this.config.inputStyle() || this.config.inputVariant());
 
     get hasFluid() {
         return this.fluid() ?? !!this.pcFluid;

@@ -142,13 +142,13 @@ export class InputOtp extends BaseEditableHolder<InputOtpPassThrough> implements
      * @defaultValue undefined
      * @group Props
      */
-    variant = input<'filled' | 'outlined' | undefined>();
+    readonly variant = input<'filled' | 'outlined' | undefined>();
     /**
      * Specifies the size of the component.
      * @defaultValue undefined
      * @group Props
      */
-    size = input<'large' | 'small' | undefined>();
+    readonly size = input<'large' | 'small' | undefined>();
     /**
      * Callback to invoke on value change.
      * @group Emits
@@ -182,7 +182,7 @@ export class InputOtp extends BaseEditableHolder<InputOtpPassThrough> implements
 
     value: any;
 
-    $variant = computed(() => this.variant() || this.config.inputStyle() || this.config.inputVariant());
+    readonly $variant = computed(() => this.variant() || this.config.inputStyle() || this.config.inputVariant());
 
     get inputMode(): string {
         return this.integerOnly() ? 'numeric' : 'text';

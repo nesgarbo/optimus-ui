@@ -1074,11 +1074,11 @@ describe('Tag', () => {
             template: `<p-tag [value]="value()" [icon]="icon()" [severity]="severity()" [rounded]="rounded()" [pt]="pt()"></p-tag>`
         })
         class TestPTTagComponent {
-            value = input<string | undefined>('PT Tag');
-            icon = input<string | undefined>();
-            severity = input<'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast' | string | undefined>();
-            rounded = input<boolean>(false);
-            pt = input<any>();
+            readonly value = input<string | undefined>('PT Tag');
+            readonly icon = input<string | undefined>();
+            readonly severity = input<'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast' | string | undefined>();
+            readonly rounded = input<boolean>(false);
+            readonly pt = input<any>();
         }
 
         let fixture: ComponentFixture<TestPTTagComponent>;

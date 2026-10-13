@@ -36,19 +36,19 @@ export class InputText extends BaseModelHolder<InputTextPassThrough> {
      * @deprecated use pInputTextPT instead.
      * @group Props
      */
-    ptInputText = input<InputTextPassThrough>();
+    readonly ptInputText = input<InputTextPassThrough>();
     /**
      * Used to pass attributes to DOM elements inside the InputText component.
      * @defaultValue undefined
      * @group Props
      */
-    pInputTextPT = input<InputTextPassThrough>();
+    readonly pInputTextPT = input<InputTextPassThrough>();
     /**
      * Indicates whether the component should be rendered without styles.
      * @defaultValue undefined
      * @group Props
      */
-    pInputTextUnstyled = input<boolean | undefined>();
+    readonly pInputTextUnstyled = input<boolean | undefined>();
 
     bindDirectiveInstance = inject(Bind, { self: true });
 
@@ -68,33 +68,33 @@ export class InputText extends BaseModelHolder<InputTextPassThrough> {
      * @defaultValue undefined
      * @group Props
      */
-    variant = input<'filled' | 'outlined' | undefined>();
+    readonly variant = input<'filled' | 'outlined' | undefined>();
     /**
      * Spans 100% width of the container when enabled.
      * @defaultValue undefined
      * @group Props
      */
-    fluid = input(undefined, { transform: booleanAttribute });
+    readonly fluid = input(undefined, { transform: booleanAttribute });
     /**
      * When present, it specifies that the component should have invalid state style.
      * @defaultValue false
      * @group Props
      */
-    invalid = input(undefined, { transform: booleanAttribute });
+    readonly invalid = input(undefined, { transform: booleanAttribute });
     /**
      * Whether the user has interacted with the field. A signal form (`[formField]`) sets it, so the invalid state shows only after the field is touched.
      * @defaultValue undefined
      * @group Props
      */
-    touched = input(undefined, { transform: booleanAttribute });
+    readonly touched = input(undefined, { transform: booleanAttribute });
 
     /** Whether the user typed in the field. */
     private readonly edited = signal(false);
 
     /** The invalid state to render: with `[formField]`, the field state counts once the user typed or left the field. */
-    $invalid = computed(() => (this.injector.get(FORM_FIELD, null, { optional: true, self: true }) ? !!this.invalid() && (!!this.touched() || this.edited()) : !!this.invalid()));
+    readonly $invalid = computed(() => (this.injector.get(FORM_FIELD, null, { optional: true, self: true }) ? !!this.invalid() && (!!this.touched() || this.edited()) : !!this.invalid()));
 
-    $variant = computed(() => this.variant() || this.config.inputStyle() || this.config.inputVariant());
+    readonly $variant = computed(() => this.variant() || this.config.inputStyle() || this.config.inputVariant());
 
     _componentStyle = inject(InputTextStyle);
 

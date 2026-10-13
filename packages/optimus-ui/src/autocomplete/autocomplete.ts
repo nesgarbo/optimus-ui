@@ -686,12 +686,12 @@ export class AutoComplete<T = any> extends BaseInput<AutoCompletePassThrough> {
      * @defaultValue 'self'
      * @group Props
      */
-    appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
+    readonly appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
     /**
      * The motion options.
      * @group Props
      */
-    motionOptions = input<MotionOptions | undefined>(undefined);
+    readonly motionOptions = input<MotionOptions | undefined>(undefined);
     /**
      * Callback to invoke to search for suggestions.
      * @param {AutoCompleteCompleteEvent} event - Custom complete event.
@@ -908,21 +908,21 @@ export class AutoComplete<T = any> extends BaseInput<AutoCompletePassThrough> {
 
     _dropdownIconTemplate: TemplateRef<void> | undefined;
 
-    focusedMultipleOptionIndex = signal<number>(-1);
+    readonly focusedMultipleOptionIndex = signal<number>(-1);
 
-    focusedOptionIndex = signal<number>(-1);
+    readonly focusedOptionIndex = signal<number>(-1);
 
-    selectedItemTemplateLabel = signal<string | null>(null);
+    readonly selectedItemTemplateLabel = signal<string | null>(null);
 
     _componentStyle = inject(AutoCompleteStyle);
 
-    $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
+    readonly $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
 
-    visibleOptions = computed(() => {
+    readonly visibleOptions = computed(() => {
         return this.group() ? this.flatOptions(this.suggestions()) : this.suggestions() || [];
     });
 
-    inputValue = computed(() => {
+    readonly inputValue = computed(() => {
         const modelValue = this.modelValue();
         const selectedOption = this.optionValueSelected ? (this.suggestions() || []).find((option: any) => this.isOptionEqualToValue(option, modelValue)) : modelValue;
 

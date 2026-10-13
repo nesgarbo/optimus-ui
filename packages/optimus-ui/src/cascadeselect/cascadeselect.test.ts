@@ -204,7 +204,7 @@ class TestCascadeSelectComponent {
     showReactiveForm: boolean = false;
 
     // Dynamic data testing
-    signalOptions = signal(mockCountries.slice(0, 1));
+    readonly signalOptions = signal(mockCountries.slice(0, 1));
     observableOptions$ = new BehaviorSubject<any[]>(mockCountries.slice(0, 1));
     lateLoadedOptions: any[] = [];
 

@@ -168,7 +168,7 @@ class TestAutocompleteComponent {
     showReactiveForm: boolean = false;
 
     // Dynamic data testing
-    signalOptions = signal(['Signal Item 1', 'Signal Item 2']);
+    readonly signalOptions = signal(['Signal Item 1', 'Signal Item 2']);
     observableOptions$ = new BehaviorSubject<string[]>(['Observable Item 1', 'Observable Item 2']);
     lateLoadedOptions: string[] = [];
 

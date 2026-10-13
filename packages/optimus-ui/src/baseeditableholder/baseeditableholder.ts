@@ -18,35 +18,35 @@ export class BaseEditableHolder<PT = any> extends BaseModelHolder<PT> implements
      * @defaultValue false
      * @group Props
      */
-    required = input(undefined, { transform: booleanAttribute });
+    readonly required = input(undefined, { transform: booleanAttribute });
     /**
      * When present, it specifies that the component should have invalid state style.
      * @defaultValue false
      * @group Props
      */
-    invalid = input(undefined, { transform: booleanAttribute });
+    readonly invalid = input(undefined, { transform: booleanAttribute });
     /**
      * When present, it specifies that the component should have disabled state style.
      * @defaultValue false
      * @group Props
      */
-    disabled = input(undefined, { transform: booleanAttribute });
+    readonly disabled = input(undefined, { transform: booleanAttribute });
     /**
      * When present, it specifies that the name of the input.
      * @defaultValue undefined
      * @group Props
      */
-    name = input<string | undefined>();
+    readonly name = input<string | undefined>();
     /**
      * Whether the user has interacted with the component. A signal form (`[formField]`) sets it, so the invalid state shows only after the field is touched.
      * @defaultValue undefined
      * @group Props
      */
-    touched = input(undefined, { transform: booleanAttribute });
+    readonly touched = input(undefined, { transform: booleanAttribute });
 
-    _disabled = signal<boolean>(false);
+    readonly _disabled = signal<boolean>(false);
 
-    $disabled = computed(() => this.disabled() || this._disabled());
+    readonly $disabled = computed(() => this.disabled() || this._disabled());
 
     /** Whether the user changed the value, which is told to the form through `onModelChange`. */
     private readonly edited = signal(false);
@@ -56,7 +56,7 @@ export class BaseEditableHolder<PT = any> extends BaseModelHolder<PT> implements
      * so the error waits for the user to interact: to change the value, which shows it while typing, or to leave the field (`touched`).
      * Without `[formField]`, `invalid` is used as is.
      */
-    $invalid = computed(() => (this.formField ? !!this.invalid() && (!!this.touched() || this.edited()) : !!this.invalid()));
+    readonly $invalid = computed(() => (this.formField ? !!this.invalid() && (!!this.touched() || this.edited()) : !!this.invalid()));
 
     onModelChange: Function = () => {};
 

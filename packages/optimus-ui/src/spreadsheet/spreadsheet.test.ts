@@ -25,7 +25,7 @@ const wait = (ms = 150) => new Promise((r) => setTimeout(r, ms));
 })
 class Host {
     readonly sheet = viewChild.required(Spreadsheet);
-    value = signal<SpreadsheetData | null>(
+    readonly value = signal<SpreadsheetData | null>(
         rowsToWorkbook([
             ['Item', 'Price', 'Qty', 'Total'],
             ['Pen', 1.5, 4, '=B2*C2'],
@@ -33,9 +33,9 @@ class Host {
             ['', '', 'Sum', '=SUM(D2:D3)']
         ])
     );
-    locale = signal<'en-US' | 'es-ES'>('en-US');
-    locked = signal(false);
-    dark = signal(false);
+    readonly locale = signal<'en-US' | 'es-ES'>('en-US');
+    readonly locked = signal(false);
+    readonly dark = signal(false);
     created = 0;
     touched = 0;
     changes: SpreadsheetData[] = [];
@@ -49,7 +49,7 @@ class Host {
 })
 class FormHost {
     readonly sheet = viewChild.required(Spreadsheet);
-    model = signal<{ book: SpreadsheetData | null }>({ book: rowsToWorkbook([['Name', 'Ada']]) });
+    readonly model = signal<{ book: SpreadsheetData | null }>({ book: rowsToWorkbook([['Name', 'Ada']]) });
     f = form(this.model);
 }
 

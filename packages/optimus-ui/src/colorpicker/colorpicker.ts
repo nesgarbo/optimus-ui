@@ -160,17 +160,17 @@ export class ColorPicker extends BaseEditableHolder<ColorPickerPassThrough> impl
      * @defaultValue 'self'
      * @group Props
      */
-    appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
+    readonly appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
     /**
      * Whether to use overlay API feature. The properties of overlay API can be used like an object in it.
      * @group Props
      */
-    overlayOptions = input<OverlayOptions | undefined>(undefined);
+    readonly overlayOptions = input<OverlayOptions | undefined>(undefined);
     /**
      * The motion options.
      * @group Props
      */
-    motionOptions = input<MotionOptions | undefined>(undefined);
+    readonly motionOptions = input<MotionOptions | undefined>(undefined);
     /**
      * Callback to invoke on value change.
      * @param {ColorPickerChangeEvent} event - Custom value change event.
@@ -192,11 +192,11 @@ export class ColorPicker extends BaseEditableHolder<ColorPickerPassThrough> impl
 
     readonly overlayViewChild = viewChild.required<ElementRef<HTMLDivElement>>('overlay');
 
-    $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
+    readonly $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
 
     value: any = { h: 0, s: 100, b: 100 };
 
-    private _inputBgColor = signal<string | undefined>(undefined);
+    private readonly _inputBgColor = signal<string | undefined>(undefined);
 
     get inputBgColor(): string | undefined {
         return this._inputBgColor();

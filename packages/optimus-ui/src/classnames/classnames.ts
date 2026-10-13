@@ -23,9 +23,9 @@ export class ClassNames {
      * Class value(s) to be applied. Can be a string, array, object, or combination.
      * @group Props
      */
-    classNames = input<PClassValue>(undefined, { alias: 'pClass' });
+    readonly classNames = input<PClassValue>(undefined, { alias: 'pClass' });
 
-    classes = computed(() => cn(this.classNames()));
+    readonly classes = computed(() => cn(this.classNames()));
 }
 
 @NgModule({

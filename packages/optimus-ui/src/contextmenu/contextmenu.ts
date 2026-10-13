@@ -303,7 +303,7 @@ export class ContextMenuSub extends BaseComponent<ContextMenuPassThrough> implem
 
     readonly sublistViewChild = viewChild<ElementRef>('sublist');
 
-    render = signal<boolean>(false);
+    readonly render = signal<boolean>(false);
 
     hostName = 'ContextMenu';
 
@@ -571,14 +571,14 @@ export class ContextMenu extends BaseComponent<ContextMenuPassThrough> {
      * @defaultValue 'self'
      * @group Props
      */
-    appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
+    readonly appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
     /**
      * The motion options.
      * @group Props
      */
-    motionOptions = input<MotionOptions | undefined>(undefined);
+    readonly motionOptions = input<MotionOptions | undefined>(undefined);
 
-    computedMotionOptions = computed<MotionOptions>(() => {
+    readonly computedMotionOptions = computed<MotionOptions>(() => {
         return {
             ...this.ptm('motion'),
             ...this.motionOptions()
@@ -617,19 +617,19 @@ export class ContextMenu extends BaseComponent<ContextMenuPassThrough> {
 
     pageY: number;
 
-    visible = signal(false);
+    readonly visible = signal(false);
 
-    render = signal<boolean>(false);
+    readonly render = signal<boolean>(false);
 
     focused: boolean = false;
 
-    activeItemPath = signal<any>([]);
+    readonly activeItemPath = signal<any>([]);
 
-    focusedItemInfo = signal<any>({ index: -1, level: 0, parentKey: '', item: null });
+    readonly focusedItemInfo = signal<any>({ index: -1, level: 0, parentKey: '', item: null });
 
-    submenuVisible = signal<boolean>(false);
+    readonly submenuVisible = signal<boolean>(false);
 
-    $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
+    readonly $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
 
     searchValue: string = '';
 
@@ -643,7 +643,7 @@ export class ContextMenu extends BaseComponent<ContextMenuPassThrough> {
 
     private query: MediaQueryList;
 
-    public queryMatches = signal<boolean>(false);
+    public readonly queryMatches = signal<boolean>(false);
 
     _componentStyle = inject(ContextMenuStyle);
 

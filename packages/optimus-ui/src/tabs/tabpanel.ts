@@ -58,30 +58,30 @@ export class TabPanel extends BaseComponent<TabPanelPassThrough> {
      * @defaultValue false
      * @group Props
      */
-    lazy = input(false, { transform: booleanAttribute });
+    readonly lazy = input(false, { transform: booleanAttribute });
     /**
      * Value of the active tab.
      * @defaultValue undefined
      * @group Props
      */
-    value = model<string | number | undefined>(undefined);
+    readonly value = model<string | number | undefined>(undefined);
     /**
      * Template for initializing complex content when lazy is enabled.
      * @group Templates
      */
-    content = contentChild('content');
+    readonly content = contentChild('content');
 
-    id = computed(() => `${this.pcTabs.id()}_tabpanel_${this.value()}`);
+    readonly id = computed(() => `${this.pcTabs.id()}_tabpanel_${this.value()}`);
 
-    ariaLabelledby = computed(() => `${this.pcTabs.id()}_tab_${this.value()}`);
+    readonly ariaLabelledby = computed(() => `${this.pcTabs.id()}_tab_${this.value()}`);
 
-    active = computed(() => equals(this.pcTabs.value(), this.value()));
+    readonly active = computed(() => equals(this.pcTabs.value(), this.value()));
 
-    isLazyEnabled = computed(() => this.pcTabs.lazy() || this.lazy());
+    readonly isLazyEnabled = computed(() => this.pcTabs.lazy() || this.lazy());
 
     private hasBeenRendered = false;
 
-    shouldRender = computed(() => {
+    readonly shouldRender = computed(() => {
         if (!this.isLazyEnabled() || this.hasBeenRendered) {
             return true;
         }

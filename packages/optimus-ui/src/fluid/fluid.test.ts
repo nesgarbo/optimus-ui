@@ -726,7 +726,7 @@ describe('Fluid', () => {
             template: `<p-fluid [pt]="pt()"><div class="test-content">Test Content</div></p-fluid>`
         })
         class TestPTFluidComponent {
-            pt = input<any>();
+            readonly pt = input<any>();
         }
 
         describe('Case 1: Simple string classes', () => {

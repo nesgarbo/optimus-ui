@@ -318,7 +318,7 @@ export class Paginator extends BaseComponent<PaginatorPassThrough> {
      * @defaultValue 'self'
      * @group Props
      */
-    appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
+    readonly appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>(undefined);
     /**
      * Callback to invoke when page changes, the event object contains information about the new state.
      * @param {PaginatorState} event - Paginator state.
@@ -387,7 +387,7 @@ export class Paginator extends BaseComponent<PaginatorPassThrough> {
 
     _componentStyle = inject(PaginatorStyle);
 
-    $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
+    readonly $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
 
     get display(): string | null {
         return this.alwaysShow() || (this.pageLinks && this.pageLinks.length > 1) ? null : 'none';

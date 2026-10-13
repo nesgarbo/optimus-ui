@@ -547,7 +547,7 @@ export class Menubar extends BaseComponent<MenubarPassThrough> {
 
     readonly rootmenu = viewChild<MenubarSub>('rootmenu');
 
-    private _mobileActive = signal<boolean>(false);
+    private readonly _mobileActive = signal<boolean>(false);
 
     get mobileActive(): boolean {
         return this._mobileActive();
@@ -580,7 +580,7 @@ export class Menubar extends BaseComponent<MenubarPassThrough> {
 
     private query: MediaQueryList;
 
-    public queryMatches = signal<boolean>(false);
+    public readonly queryMatches = signal<boolean>(false);
 
     outsideClickListener: VoidListener;
 
@@ -592,11 +592,11 @@ export class Menubar extends BaseComponent<MenubarPassThrough> {
 
     focused: boolean = false;
 
-    activeItemPath = signal<any>([]);
+    readonly activeItemPath = signal<any>([]);
 
-    number = signal<number>(0);
+    readonly number = signal<number>(0);
 
-    focusedItemInfo = signal<any>({ index: -1, level: 0, parentKey: '', item: null });
+    readonly focusedItemInfo = signal<any>({ index: -1, level: 0, parentKey: '', item: null });
 
     searchValue: string = '';
 
