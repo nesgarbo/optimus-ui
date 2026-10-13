@@ -38,6 +38,15 @@ import { Code } from '@/domain/code';
                     <i>NG0953</i>.
                 </li>
                 <li>
+                    <b>A directive cannot set the inputs of the component on its element.</b> Writing <i>this.select.options = x</i> from a directive that injects the component does not compile, and a host binding such as
+                    <i>'[options]': 'x()'</i> only reaches DOM properties, not the inputs of another directive. Give the value as a signal, put an <i>exportAs</i> on the directive and bind it in the template:
+                    <i>&lt;p-select myDirective #d="myDirective" [options]="d.options()" /&gt;</i>. A value accessor that wraps a component does the same with <i>[files]</i> and <i>[disabled]</i>.
+                </li>
+                <li>
+                    <b>Do not use outputToObservable in registerOnChange or registerOnTouched.</b> Angular Forms calls them again with an empty function when it releases the control, which can happen while the view is destroyed, and
+                    <i>outputToObservable</i> throws <i>NG0911</i> there. Subscribe to the output directly and unsubscribe the previous subscription each time.
+                </li>
+                <li>
                     <b>PassThrough functions receive signals.</b> In <i>pt</i>, <i>instance.disabled</i> is a signal now: write <i>instance.disabled()</i>. This is true of the host name too: <i>hostName</i> and <i>componentName</i> can be an input.
                 </li>
                 <li>
