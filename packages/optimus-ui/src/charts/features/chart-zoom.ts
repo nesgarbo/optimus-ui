@@ -68,13 +68,13 @@ export class ChartZoom {
     /**
      * Wheel zoom, optionally requiring a modifier.
      *
-     * The default zooms on a bare wheel. That takes the scroll away from the page whenever the
-     * pointer crosses the chart, so pass `{ modifierKey: 'ctrl' }` to ask for the Ctrl key (which a
-     * trackpad pinch also sets), `false` to switch it off, or a config to choose the modifier.
-     * @defaultValue true
+     * The default asks for the Ctrl key (which a trackpad pinch also sets), because a wheel that zooms
+     * on its own takes the scroll away from the page whenever the pointer crosses the chart. Pass `true`
+     * to zoom on a bare wheel, `false` to switch it off, or a config to choose the modifier.
+     * @defaultValue { modifierKey: 'ctrl' }
      * @group Props
      */
-    readonly wheel = input<boolean | ZoomWheelConfig>(true);
+    readonly wheel = input<boolean | ZoomWheelConfig>({ modifierKey: 'ctrl' });
     /**
      * Drag a rectangle to zoom into it.
      * @defaultValue false

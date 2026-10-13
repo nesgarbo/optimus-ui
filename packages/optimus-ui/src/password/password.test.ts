@@ -1336,6 +1336,45 @@ describe('PasswordDirective', () => {
         });
     });
 
+    describe('Meter with translated labels', () => {
+        const type = async (value: string) => {
+            const inputEl = fixture.debugElement.query(By.css('input')).nativeElement as HTMLInputElement;
+
+            inputEl.value = value;
+
+            const keyupEvent = new KeyboardEvent('keyup');
+
+            Object.defineProperty(keyupEvent, 'target', { value: inputEl });
+            directive.onKeyup(keyupEvent);
+            await fixture.whenStable();
+        };
+
+        it('should size and color the meter by level, not by the text of the label', async () => {
+            component.weakLabel = 'Debil';
+            component.mediumLabel = 'Media';
+            component.strongLabel = 'Fuerte';
+            fixture.detectChanges();
+            await fixture.whenStable();
+            directive.createPanel();
+
+            await type('abc');
+            expect(directive.info?.textContent).toBe('Debil');
+            expect(directive.meter?.style.width).toBe('33.33%');
+            expect(directive.meter?.classList.contains('p-password-meter-weak')).toBe(true);
+
+            await type('Abcdef12!x');
+            expect(directive.info?.textContent).toBe('Fuerte');
+            expect(directive.meter?.style.width).toBe('100%');
+            expect(directive.meter?.classList.contains('p-password-meter-strong')).toBe(true);
+            expect(directive.meter?.classList.contains('p-password-meter-weak')).toBe(false);
+
+            await type('');
+            expect(directive.info?.textContent).toBe('Enter password');
+            expect(directive.meter?.style.width).toBe('');
+            expect(directive.meter?.classList.contains('p-password-meter-strong')).toBe(false);
+        });
+    });
+
     describe('Password Strength Algorithm', () => {
         it('should test strength correctly', () => {
             expect(directive.testStrength('')).toBe(0);

@@ -12,11 +12,29 @@
  */
 import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, contentChild, inject, input } from '@angular/core';
-import type { AnnotationContext, ScaleFunction } from '@openng/optimus-ui/types/charts';
+import type { AnnotationContext, AxisScale, ScaleFunction } from '@openng/optimus-ui/types/charts';
 import { responsiveTier } from '../core/layout';
 import { responsiveContext } from '../core/responsive';
 import { CHART_CONTEXT } from '../charts-registry';
 import { ChartAnnotationDef } from './chart-defs';
+
+/**
+ * Wraps an axis scale for annotation templates. A band scale is keyed by category label, so a
+ * category index (`xScale(3)`) would come out as `NaN` and poison every attribute it feeds. An
+ * integer inside the domain that is not itself a label is read as the category's position instead.
+ * A value that resolves to nothing stays `NaN`, which is the documented "not on this axis" answer.
+ */
+export function annotationScale(scale: AxisScale): ScaleFunction {
+    return (value: unknown) => {
+        const pixel = scale.scale(value);
+
+        if (Number.isNaN(pixel) && scale.type === 'band' && typeof value === 'number' && Number.isInteger(value) && value >= 0 && value < scale.domain.length) {
+            return scale.scale(scale.domain[value]);
+        }
+
+        return pixel;
+    };
+}
 
 /**
  * Places custom content in the chart's coordinate space.
@@ -80,13 +98,13 @@ export class ChartAnnotation {
             height: this.height(),
             chartArea: area,
             center: { x: area.x + area.width / 2, y: area.y + area.height / 2 },
-            xScale: cartesian ? (value: unknown) => xScale!.scale(value) : null,
-            yScale: cartesian ? (value: unknown) => yScale!.scale(value) : null,
+            xScale: cartesian ? annotationScale(xScale!) : null,
+            yScale: cartesian ? annotationScale(yScale!) : null,
             getScale: cartesian
                 ? (axisId: string) => {
                       const found = scales?.get(`x:${axisId}`) ?? scales?.get(`y:${axisId}`);
 
-                      return found ? (value: unknown) => found.scale(value) : undefined;
+                      return found ? annotationScale(found) : undefined;
                   }
                 : null,
             fontFamily: context?.fontFamily() ?? 'inherit',

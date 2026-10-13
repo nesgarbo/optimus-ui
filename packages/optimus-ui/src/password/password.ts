@@ -78,13 +78,13 @@ export class PasswordDirective extends BaseEditableHolder {
      * @defaultValue undefined
      * @group Props
      */
-    pPasswordPT = input<PasswordPassThrough | undefined>();
+    readonly pPasswordPT = input<PasswordPassThrough | undefined>();
     /**
      * Indicates whether the component should be rendered without styles.
      * @defaultValue undefined
      * @group Props
      */
-    pPasswordUnstyled = input<boolean | undefined>();
+    readonly pPasswordUnstyled = input<boolean | undefined>();
 
     onAfterViewChecked(): void {
         this.bindDirectiveInstance.setAttrs(this.ptms(['host', 'root']));
@@ -126,23 +126,23 @@ export class PasswordDirective extends BaseEditableHolder {
      * @defaultValue 'outlined'
      * @group Props
      */
-    variant = input<'filled' | 'outlined' | undefined>();
+    readonly variant = input<'filled' | 'outlined' | undefined>();
     /**
      * Spans 100% width of the container when enabled.
      * @defaultValue false
      * @group Props
      */
-    fluid = input(undefined, { transform: booleanAttribute });
+    readonly fluid = input(undefined, { transform: booleanAttribute });
     /**
      * Specifies the size of the component.
      * @defaultValue undefined
      * @group Props
      */
-    size = input<'large' | 'small' | undefined>(undefined, { alias: 'pSize' });
+    readonly size = input<'large' | 'small' | undefined>(undefined, { alias: 'pSize' });
 
     pcFluid: Fluid | null = inject(Fluid, { optional: true, host: true, skipSelf: true });
 
-    $variant = computed(() => this.variant() || this.config.inputStyle() || this.config.inputVariant());
+    readonly $variant = computed(() => this.variant() || this.config.inputStyle() || this.config.inputVariant());
 
     get hasFluid() {
         return this.fluid() ?? !!this.pcFluid;
@@ -265,7 +265,10 @@ export class PasswordDirective extends BaseEditableHolder {
         this.hideOverlay();
     }
 
-    labelSignal = signal('');
+    readonly labelSignal = signal('');
+
+    /** The level the meter shows, apart from its (possibly translated) label. */
+    private strength: 'weak' | 'medium' | 'strong' | null = null;
 
     onKeyup(e: Event) {
         if (this.feedback()) {
@@ -276,17 +279,27 @@ export class PasswordDirective extends BaseEditableHolder {
             if (value.length === 0) {
                 label = this.promptLabel();
                 meterPos = '0px 0px';
+                this.strength = null;
+                this.labelSignal.set('');
+
+                if (this.meter) {
+                    ['weak', 'medium', 'strong'].forEach((level) => this.renderer.removeClass(this.meter, this.strengthClass(level)));
+                    this.renderer.setStyle(this.meter, 'width', '');
+                }
             } else {
                 var score = this.testStrength(value);
 
                 if (score < 30) {
                     label = this.weakLabel();
+                    this.strength = 'weak';
                     meterPos = '0px -10px';
                 } else if (score >= 30 && score < 80) {
                     label = this.mediumLabel();
+                    this.strength = 'medium';
                     meterPos = '0px -20px';
                 } else if (score >= 80) {
                     label = this.strongLabel();
+                    this.strength = 'strong';
                     meterPos = '0px -30px';
                 }
 
@@ -311,11 +324,12 @@ export class PasswordDirective extends BaseEditableHolder {
     updateMeter() {
         if (this.labelSignal() && this.meter && this.info) {
             const label = this.labelSignal();
-            const strengthClass = this.strengthClass(label.toLowerCase());
-            const width = this.getWidth(label.toLowerCase());
+            // Keyed by the level and not by the label: a translated label ('Débil') matches no class or width.
+            const strength = this.strength ?? '';
 
-            this.renderer.addClass(this.meter, strengthClass);
-            this.renderer.setStyle(this.meter, 'width', width);
+            ['weak', 'medium', 'strong'].forEach((level) => this.renderer.removeClass(this.meter, this.strengthClass(level)));
+            this.renderer.addClass(this.meter, this.strengthClass(strength));
+            this.renderer.setStyle(this.meter, 'width', this.getWidth(strength));
             (this.info as HTMLDivElement).textContent = label;
         }
     }
@@ -584,7 +598,7 @@ export class Password extends BaseInput<PasswordPassThrough> {
      * @defaultValue false
      * @group Props
      */
-    readonly = input(false, { transform: booleanAttribute });
+    readonly readonly = input(false, { transform: booleanAttribute });
     /**
      * Text to prompt password entry. Defaults to Optimus I18N API configuration.
      * @group Props
@@ -694,12 +708,12 @@ export class Password extends BaseInput<PasswordPassThrough> {
      * @defaultValue 'self'
      * @group Props
      */
-    appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>('self');
+    readonly appendTo = input<HTMLElement | ElementRef | TemplateRef<any> | 'self' | 'body' | null | undefined | any>('self');
     /**
      * The motion options.
      * @group Props
      */
-    motionOptions = input<MotionOptions | undefined>(undefined);
+    readonly motionOptions = input<MotionOptions | undefined>(undefined);
     /**
      * Whether to use overlay API feature. The properties of overlay API can be used like an object in it.
      * @group Props
@@ -769,7 +783,7 @@ export class Password extends BaseInput<PasswordPassThrough> {
 
     readonly templates = contentChildren(PrimeTemplate);
 
-    $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
+    readonly $appendTo = computed(() => this.appendTo() || this.config.overlayAppendTo());
 
     _contentTemplate: TemplateRef<void> | undefined;
 

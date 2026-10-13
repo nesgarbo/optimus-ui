@@ -27,9 +27,9 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
             </p>
             <h3>Charts</h3>
             <p>
-                <i>wheel</i> of <i>p-chart-zoom</i> is still <i>true</i>, so a bare wheel zooms and takes the scroll from the page. Use <i>[wheel]="&#123; modifierKey: 'ctrl' &#125;"</i> to ask for Ctrl; that will be the default in the next major
-                version. A null value is not shown as 0 in the tooltip any more, the legend has the <i>group</i> role, a numeric string is read as a number, and the CSV export writes a cell that starts with <i>=</i>, <i>+</i>, <i>-</i> or
-                <i>@</i> with a leading quote. <i>ariaLabel</i> names the chart, and <i>ChartAccessibility</i> moves the hover with the arrow keys, <i>home</i>, <i>end</i> and <i>escape</i>.
+                <i>wheel</i> of <i>p-chart-zoom</i> stayed <i>true</i> in 2.x, so a bare wheel zoomed the chart and took the scroll from the page. From 3.0 the default asks for the Ctrl key (<i>&#123; modifierKey: 'ctrl' &#125;</i>); pass
+                <i>[wheel]="true"</i> to keep the old behavior. A null value is not shown as 0 in the tooltip any more, the legend has the <i>group</i> role, a numeric string is read as a number, and the CSV export writes a cell that starts with
+                <i>=</i>, <i>+</i>, <i>-</i> or <i>@</i> with a leading quote. <i>ariaLabel</i> names the chart, and <i>ChartAccessibility</i> moves the hover with the arrow keys, <i>home</i>, <i>end</i> and <i>escape</i>.
             </p>
             <h3>QueryBuilder</h3>
             <p>

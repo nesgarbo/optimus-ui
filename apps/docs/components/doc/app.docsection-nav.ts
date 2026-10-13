@@ -15,7 +15,7 @@ import { fromEvent } from 'rxjs';
     template: `
         <div class="doc-section-nav-container">
             <ul #nav class="doc-section-nav">
-                @for (doc of docs(); track doc.label) {
+                @for (doc of docs(); track doc.id) {
                     @if (!doc.isInterface) {
                         <li class="navbar-item" [ngClass]="{ 'active-navbar-item': activeId() === doc.id }">
                             <div class="navbar-item-content">
@@ -23,7 +23,7 @@ import { fromEvent } from 'rxjs';
                             </div>
                             @if (doc.children) {
                                 <ul>
-                                    @for (child of doc.children; track child.label) {
+                                    @for (child of doc.children; track child.id) {
                                         <li class="navbar-item" [ngClass]="{ 'active-navbar-item': activeId() === child.id }">
                                             <div class="navbar-item-content">
                                                 <button (click)="onButtonClick(child)">

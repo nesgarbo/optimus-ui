@@ -32,13 +32,10 @@ function priceSeries(n: number) {
     template: `
         <app-docsectiontext>
             <p>
-                Wheel zoom is enabled by default. Set <i>wheel</i> to <i>false</i> to disable it, or pass a <i>ZoomWheelConfig</i> object to customize speed and require a modifier key. Set <i>modifierKey</i> to <i>'ctrl'</i> to avoid accidental zoom
-                while scrolling a page.
+                Wheel zoom is enabled by default, and it asks for the Ctrl key (a trackpad pinch sets it too) so that the page can still scroll when the pointer crosses the chart. Set <i>wheel</i> to <i>false</i> to disable it, to <i>true</i> to zoom
+                on a bare wheel, or pass a <i>ZoomWheelConfig</i> object to customize the speed and the modifier key.
             </p>
-            <p>
-                The default of <i>wheel</i> is still <i>true</i>, so a bare wheel zooms the chart and takes the scroll away from the page whenever the pointer crosses it. To ask for the Ctrl key (a trackpad pinch sets it too), use
-                <i>[wheel]="{{ '{' }} modifierKey: 'ctrl' {{ '}' }}"</i>. The default is expected to change to that in the next major version.
-            </p>
+            <p>Before 3.0 the default of <i>wheel</i> was <i>true</i>, so a bare wheel zoomed the chart. Pass <i>[wheel]="true"</i> to keep that.</p>
         </app-docsectiontext>
         @defer (on viewport) {
             <div class="card">
