@@ -1,5 +1,6 @@
 import { MajorVersionsDoc } from '@/doc/migration/update/major-versions-doc';
 import { BehaviorChangesDoc } from '@/doc/migration/update/behavior-changes-doc';
+import { SignalsApiDoc } from '@/doc/migration/update/signals-api-doc';
 import { NgUpdateDoc } from '@/doc/migration/update/ng-update-doc';
 import { UpdateOverviewDoc } from '@/doc/migration/update/overview-doc';
 import { ReleaseNotesDoc } from '@/doc/migration/update/release-notes-doc';
@@ -32,6 +33,11 @@ export class MigrationUpdateDemo {
             id: 'behavior-changes',
             label: 'Behavior Changes in 2.x',
             component: BehaviorChangesDoc
+        },
+        {
+            id: 'signals-api',
+            label: 'Migrating to 3.0: Signals API',
+            component: SignalsApiDoc
         },
         {
             id: 'release-notes',
