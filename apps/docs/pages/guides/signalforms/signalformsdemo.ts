@@ -2,6 +2,7 @@ import { AppDoc } from '@/components/doc/app.doc';
 import { BasicDoc } from '@/doc/guides/signalforms/basic-doc';
 import { ControlsDoc } from '@/doc/guides/signalforms/controls-doc';
 import { MigrationDoc } from '@/doc/guides/signalforms/migration-doc';
+import { RatingPasswordDoc } from '@/doc/guides/signalforms/ratingpassword-doc';
 import { ValidationDoc } from '@/doc/guides/signalforms/validation-doc';
 import { Component } from '@angular/core';
 
@@ -15,6 +16,7 @@ export class SignalFormsDemoComponent {
     docs = [
         { id: 'basic', label: 'Basic', component: BasicDoc },
         { id: 'validation', label: 'Validation', component: ValidationDoc },
+        { id: 'ratingpassword', label: 'Rating and Password', component: RatingPasswordDoc },
         { id: 'controls', label: 'Controls', component: ControlsDoc },
         { id: 'migration', label: 'Migration', component: MigrationDoc }
     ];

@@ -6,7 +6,7 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
     standalone: true,
     imports: [AppDocSectionText],
     template: `
-        <app-docsectiontext id="accessibility">
+        <app-docsectiontext>
             <h3>Screen Reader</h3>
             <p>
                 The grid is a <i>treegrid</i>. Each row has its <i>aria-level</i>, <i>aria-expanded</i> when it is a parent, <i>aria-selected</i> and an <i>aria-description</i> with the dates, the progress and whether it is a milestone or on the

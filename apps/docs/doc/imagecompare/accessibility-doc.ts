@@ -8,7 +8,7 @@ import { Component } from '@angular/core';
     standalone: true,
     imports: [AppDocSectionText, AppCodeModule],
     template: ` <div>
-        <app-docsectiontext id="accessibility" label="Accessibility">
+        <app-docsectiontext label="Accessibility">
             <h3>Screen Reader</h3>
             <p>ImageComponent component uses a native range <i>slider</i> internally. Value to describe the component can be defined using <i>aria-labelledby</i> and <i>aria-label</i> props.</p>
             <app-code [code]="code" [hideToggleCode]="true"></app-code>

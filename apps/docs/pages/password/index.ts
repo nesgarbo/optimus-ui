@@ -1,5 +1,6 @@
 import { AccessibilityDoc } from '@/doc/password/accessibility-doc';
 import { BasicDoc } from '@/doc/password/basic-doc';
+import { DirectiveDoc } from '@/doc/password/directive-doc';
 import { DisabledDoc } from '@/doc/password/disabled-doc';
 import { FilledDoc } from '@/doc/password/filled-doc';
 import { FloatLabelDoc } from '@/doc/password/floatlabel-doc';
@@ -60,6 +61,11 @@ export class PasswordDemo {
             id: 'togglemask',
             label: 'Toggle Mask',
             component: ToggleMaskDoc
+        },
+        {
+            id: 'directive',
+            label: 'Directive',
+            component: DirectiveDoc
         },
         {
             id: 'template',

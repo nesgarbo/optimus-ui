@@ -6,7 +6,7 @@ import { AppDocSectionText } from '@/components/doc/app.docsectiontext';
     standalone: true,
     imports: [AppDocSectionText],
     template: `
-        <app-docsectiontext id="accessibility">
+        <app-docsectiontext>
             <h3>Screen Reader</h3>
             <p>
                 A gauge with one pointer has the <i>meter</i> role, with <i>aria-valuemin</i>, <i>aria-valuemax</i>, <i>aria-valuenow</i> and an <i>aria-valuetext</i> written through the label format, so it reads "132 km/h". With several pointers it
