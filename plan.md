@@ -17,6 +17,7 @@ Anota aquí lo que se está haciendo (fecha, qué, commit).
   - `nightly.yml` corregido.
   - Catalog `angular22`: core, router, etc. a ^22.2.1 y cdk a ^22.2.2. `pnpm install` hecho y build de la lib OK.
   - Overrides de `source-map-js` y `postcss-selector-parser`.
+- 2026-10-13. Fase B (sin commit de este bloque al escribir): API de la librería a signals. Verificado: 186 ficheros y 8780 tests, 0 errores de tipos, build AOT de lib y docs, lint con 0 errores, y smoke test en navegador de 136 rutas (sin restos de la migración). Arreglos que tsc no detecta: hojas de estilo que leían `instance.x` sin llamar, restos `() {{ x }}` en plantillas, `matchMode()` y `disabled()` sobre variables de bucle, `isStateful()` comparando contra un signal, y `$hostName` devolviendo un signal. Versiones a 3.0.0. Reglas `prefer-*` a `error` en la librería.
 - 2026-10-08. Cuarto tramo, P5 a P8 (sin commit al escribir esto): ver "Resultado de P5 a P8" al final de P8. Verificado: formato, 0 errores de lint, 0 vulnerabilidades, builds de la lib, themes y docs (incluido producción con prerender), y 8761 tests (8760 pasan, 1 skip).
 - 2026-10-08. Tercer tramo (sin commit). Estado: prettier limpio, 0 errores de lint, build de la lib y de la docs OK, 8483 de 8484 tests pasan antes de arreglar el test del zoom (ya arreglado).
   - Decisiones: `Eager` devuelto a los componentes que mutan en sitio (submenús, `TreeTable`, `TTBody`, `TTScrollableView`, `DynamicDialog`, `organizationchart`, `Table`, `TableBody`); default de `wheel` en charts vuelve a `true` (Fase B: Ctrl); `SafeHtmlPipe` de `menu` sanitiza (se avisa en las notas de migración).
@@ -355,19 +356,28 @@ Auditado el 2026-10-08: 4 hechos, 3 parciales y 2 sin hacer de 9 ítems. Queda, 
 - [ ] Los tests de `map` imprimen un NG0953 en dos casos (pasan).
 - [x] `TTScrollableView` no recibía el `pt` del TreeTable (arreglado con `[pt]="pt()"` en las dos vistas).
 
-## Fase B - API con signals (3.0, el último paso)
+## Fase B - API con signals (3.0)
 
-Rompe la API pública. No se empieza hasta terminar P0 a P8 y Fase A, y se publica como major 3.0.
+Rompe la API pública. Hecha el 2026-10-13; las versiones de los nueve paquetes están en 3.0.0. Pendiente solo lo que se indica abajo.
 
-- [ ] `@Input()` a `input()` y `input.required()`, con `transform` donde haga falta. Los pares `x` y `xChange` pasan a `model()`.
-- [ ] Propiedades públicas leídas por los consumidores (`table.value`, `table.first`, `table.selection`...) pasan a signals de solo lectura.
-- [ ] `@Output()` y `EventEmitter` restantes pasan a `output()`.
-- [ ] Setters y getters de inputs pasan a `computed` o `linkedSignal`.
-- [ ] Las clases base (`BaseComponent`, `BaseInput`...) y sus subclases se migran juntas.
-- [ ] Codemod de migración (`ng update` o un script) para quien consuma la lib: inputs asignados por código, referencias de template y herencia.
-- [ ] Guía de migración 2.x a 3.0 y changelog de breaking changes.
-- [ ] Docs y demos migrados a la API nueva.
-- [ ] Sube a `error` las reglas `prefer-signals` y `prefer-signal-model` en todo `packages/optimus-ui/src`.
+- [x] `@Input()` a `input()` y `input.required()`, con `transform` donde haga falta. Los pares `x` y `xChange` pasan a `model()` cuando el componente escribe el valor. Los schematics de Angular migraron 1704 de 1847 inputs y 15 agentes el resto.
+- [x] Propiedades públicas leídas por los consumidores (`table.first`, `table.selection`...) pasan a signals de solo lectura o `model()`. El estado vivo está en signals internos con guion bajo (`_value`, `_filters`, `_id`...).
+- [x] `@Output()` y `EventEmitter` restantes pasan a `output()`. Solo queda `acceptEvent` y `rejectEvent` en `api/confirmation.ts`, que son un tipo de datos del servicio.
+- [x] Setters y getters de inputs pasan a `computed`, `linkedSignal` o al hook `onChanges`.
+- [x] Las clases base y sus subclases se migraron juntas. `BaseComponent` desenvuelve `hostName` y `componentName` cuando son un input.
+- [ ] Codemod de migración para quien consuma la lib: una migración de `ng update` (`schematics/migrations.json`) que reescriba `instance.x = v` por `setInput` y las lecturas por `x()`. No se ha hecho; la guía describe los cambios a mano.
+- [x] Guía de migración 2.x a 3.0: sección "Migrating to 3.0: Signals API" en `apps/docs/doc/migration/update/signals-api-doc.ts`.
+- [x] Docs y demos migrados: la docs compila con la API nueva y un smoke test en navegador de las 136 rutas no encontró restos.
+- [x] `prefer-signals`, `prefer-inject` y `prefer-output-emitter-ref` están en `error` para `packages/optimus-ui/src` (tests aparte), y `template/prefer-control-flow` también. `prefer-signal-model` queda en `warn`: `drawer.visible` y `treetable.selection` mantienen un input con su evento a propósito.
+- [ ] `wheel` de `p-chart-zoom` pasa al default `{ modifierKey: 'ctrl' }` (la guía de 3.0 ya lo dice).
+- [ ] `chart.js/auto` import dinámico (Fase B original; sigue sin hacerse).
+- [ ] Pasar a OnPush los componentes que siguen en `Eager` (`Table`, `TableBody`, submenús, `TreeTable`, `DynamicDialog`, `organizationchart`) cuando sus datos dejen de mutarse en sitio.
+
+### Riesgos conocidos tras la Fase B
+
+- `prevSize` del splitter y `focused` de toggleswitch y selectbutton son propiedades planas que un listener de `renderer.listen` no refrescaría en zoneless.
+- `PanelMenu.changeActiveItem` comparaba con la función del signal en lugar de `this.activeItem()` (error previo a la migración; sin arreglar).
+- Los 5 avisos `no-input-rename` y `no-output-native` son alias intencionados por compatibilidad de nombres.
 
 ## Notas
 
