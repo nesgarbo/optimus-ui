@@ -369,7 +369,7 @@ Rompe la API pública. Hecha el 2026-10-13; las versiones de los nueve paquetes 
 - [x] Guía de migración 2.x a 3.0: sección "Migrating to 3.0: Signals API" en `apps/docs/doc/migration/update/signals-api-doc.ts`.
 - [x] Docs y demos migrados: la docs compila con la API nueva y un smoke test en navegador de las 136 rutas no encontró restos.
 - [x] `prefer-signals`, `prefer-inject` y `prefer-output-emitter-ref` están en `error` para `packages/optimus-ui/src` (tests aparte), y `template/prefer-control-flow` también. `prefer-signal-model` queda en `warn`: `drawer.visible` y `treetable.selection` mantienen un input con su evento a propósito.
-- [ ] `wheel` de `p-chart-zoom` pasa al default `{ modifierKey: 'ctrl' }` (la guía de 3.0 ya lo dice).
+- [x] `wheel` de `p-chart-zoom` pasa al default `{ modifierKey: 'ctrl' }` (hecho; `[wheel]="true"` conserva el comportamiento de 2.x).
 - [ ] `chart.js/auto` import dinámico (Fase B original; sigue sin hacerse).
 - [ ] Pasar a OnPush los componentes que siguen en `Eager` (`Table`, `TableBody`, submenús, `TreeTable`, `DynamicDialog`, `organizationchart`) cuando sus datos dejen de mutarse en sitio.
 
@@ -377,7 +377,9 @@ Rompe la API pública. Hecha el 2026-10-13; las versiones de los nueve paquetes 
 
 - `prevSize` del splitter y `focused` de toggleswitch y selectbutton son propiedades planas que un listener de `renderer.listen` no refrescaría en zoneless.
 - `PanelMenu.changeActiveItem` comparaba con la función del signal en lugar de `this.activeItem()` (error previo a la migración; sin arreglar).
-- Los 5 avisos `no-input-rename` y `no-output-native` son alias intencionados por compatibilidad de nombres.
+- Los avisos `no-input-rename`, `no-output-rename` y `no-output-native` son alias intencionados por compatibilidad de nombres.
+- Sin probar en navegador: la directiva `pPassword` (la docs no tiene demo), signal forms con `p-rating` y `p-password`, y el arreglo de anotaciones en `p-chart-canvas` (solo se vio en `p-chart-svg`).
+- `app-docsectiontext id="accessibility"` fijo en las docs de `gantt`, `gauges` e `imagecompare` duplica un id del DOM (previo a la migración).
 
 ## Notas
 
