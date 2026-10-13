@@ -5,24 +5,29 @@ const manifest: Manifest = {
     package: '@openng/optimus-ui',
     modules: {
         '@openng/optimus-ui/table': {
-            Table: { members: { rows: 'model', first: 'model', value: 'input', onPage: 'output', contentViewChild: 'viewChild' }, hasTemplates: true }
+            Table: { members: { rows: 'model', first: 'model', value: 'input', onPage: 'output', contentViewChild: 'viewChild' }, hasTemplates: true, live: { value: { name: '_value', call: true } } }
+        },
+        '@openng/optimus-ui/fileupload': {
+            FileUpload: { members: { files: 'input', name: 'input' }, live: { files: { name: '_files', call: false } } }
         },
         '@openng/optimus-ui/dialog': {
-            Dialog: { members: { header: 'input', visible: 'model', onHide: 'output' } }
+            Dialog: { members: { header: 'input', visible: 'model', onHide: 'output', headerTemplate: 'input', disabled: 'input' } }
         }
     },
-    instanceMembers: ['disabled', 'header', 'visible'],
-    ambiguousInstanceMembers: ['value']
+    instanceMembers: ['disabled', 'header', 'visible', 'label'],
+    ambiguousInstanceMembers: ['value'],
+    instanceLive: { label: { name: '_label', call: true } }
 };
 
-const run = (body: string, imports = `import { Table } from '@openng/optimus-ui/table';\nimport { Dialog } from '@openng/optimus-ui/dialog';\n`) => rewriteSignalsV3(`${imports}${body}`, manifest);
+const run = (body: string, imports = `import { Table } from '@openng/optimus-ui/table';\nimport { Dialog } from '@openng/optimus-ui/dialog';\nimport { FileUpload } from '@openng/optimus-ui/fileupload';\n`) =>
+    rewriteSignalsV3(`${imports}${body}`, manifest);
 const out = (body: string) => run(body).text.slice(run('').text.length);
 
 describe('rewriteSignalsV3', () => {
     it('reads a member of a decorated query as a function', () => {
         const body = `class A {\n    @ViewChild(Table) table!: Table;\n    go() {\n        const r = this.table.rows;\n        return this.table?.value.length + r;\n    }\n}\n`;
 
-        expect(out(body)).toBe(body.replace('this.table.rows;', 'this.table.rows();').replace('this.table?.value.length', 'this.table?.value().length'));
+        expect(out(body)).toBe(body.replace('this.table.rows;', 'this.table.rows();').replace('this.table?.value.length', 'this.table?._value().length'));
     });
 
     it('reads a member through viewChild, inject, a typed variable and a cast', () => {
@@ -81,6 +86,40 @@ describe('rewriteSignalsV3', () => {
         expect(result.text).not.toContain('instance.value()');
     });
 
+    it('reads the live state of an input from its underscore member', () => {
+        const body = `class A {\n    fu = viewChild.required(FileUpload);\n    @ViewChild(Table) table!: Table;\n    go(u?: FileUpload) {\n        return [this.fu().files?.[0], this.fu()?.files, u?.files, u!.files.length, this.table.value, this.table!.value.length, this.fu().name];\n    }\n}\n`;
+
+        expect(out(body)).toBe(
+            body
+                .replace('this.fu().files?.[0]', 'this.fu()._files?.[0]')
+                .replace('this.fu()?.files', 'this.fu()?._files')
+                .replace('u?.files', 'u?._files')
+                .replace('u!.files.length', 'u!._files.length')
+                .replace('this.table.value,', 'this.table._value(),')
+                .replace('this.table!.value.length', 'this.table!._value().length')
+                .replace('this.fu().name', 'this.fu().name()')
+        );
+    });
+
+    it('does not rewrite the write to an input with live state, and leaves the underscore read alone', () => {
+        const result = run(`function f(fu: FileUpload, t: Table) {\n    fu.files = [];\n    t.value = rows;\n    return [fu._files, t._value()];\n}\n`);
+
+        expect(result.todos).toBe(2);
+        expect(result.text).toContain('fu._files, t._value()');
+        expect(result.text).not.toContain('fu._files =');
+        expect(rewriteSignalsV3(result.text, manifest).text).toBe(result.text);
+    });
+
+    it('uses the live state in a pass through function when every component agrees', () => {
+        expect(out(`const pt = { root: ({ instance }) => instance.label };\n`)).toBe(`const pt = { root: ({ instance }) => instance._label() };\n`);
+    });
+
+    it('keeps `disabled` and a template input out of the live state', () => {
+        const body = `function f(d: Dialog) {\n    return [d.disabled, d.disabled(), d.headerTemplate, d._disabled(), d._headerTemplate()];\n}\n`;
+
+        expect(out(body)).toBe(body.replace('d.disabled,', 'd.disabled(),').replace('d.headerTemplate,', 'd.headerTemplate(),'));
+    });
+
     it('is idempotent', () => {
         const body = `class A {\n    @ViewChild(Table) table!: Table;\n    dialog = inject(Dialog);\n    pt = { root: ({ instance }) => instance.disabled };\n    go() {\n        this.table.first = 2;\n        this.dialog.header = 'x';\n        this.table.onPage.pipe();\n        return this.table.rows + this.table.value.length;\n    }\n}\n`;
         const first = run(body);
@@ -94,7 +133,7 @@ describe('rewriteSignalsV3', () => {
     it('does not touch a call that already uses the signal', () => {
         const body = `function f(table: Table) {\n    table.first.set(1);\n    return table.rows() + table.value.length;\n}\n`;
 
-        expect(out(body)).toBe(body.replace('table.value.length', 'table.value().length'));
+        expect(out(body)).toBe(body.replace('table.value.length', 'table._value().length'));
     });
 
     it('does not touch a name with conflicting or unknown declarations', () => {

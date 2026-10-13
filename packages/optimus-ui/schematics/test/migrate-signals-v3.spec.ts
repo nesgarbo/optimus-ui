@@ -28,6 +28,17 @@ describe('migrate-signals-v3', () => {
         const manifest = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../dist/migrate-signals-v3/manifest.json'), 'utf8'));
 
         expect(manifest.modules['@openng/optimus-ui/table'].Table.members).toMatchObject({ first: 'model', rows: 'model', value: 'input', onPage: 'output' });
+        expect(manifest.modules['@openng/optimus-ui/fileupload'].FileUpload.live.files).toEqual({ name: '_files', call: false });
+        expect(manifest.modules['@openng/optimus-ui/table'].Table.live.value).toEqual({ name: '_value', call: true });
+        const live = Object.values(manifest.modules as Record<string, Record<string, { live?: Record<string, unknown> }>>).flatMap((classes) =>
+            Object.entries(classes).flatMap(([name, info]) => Object.keys(info.live ?? {}).map((member) => `${name}.${member}`))
+        );
+
+        // Base layer members and template inputs are not live state; neither are the ones checked against 2.x and left out.
+        expect(live.filter((entry) => /\.disabled$/.test(entry) && !entry.startsWith('Scroller.'))).toEqual([]);
+        expect(live.filter((entry) => /Template$/.test(entry))).toEqual([]);
+        expect(live).not.toContain('Drawer.position');
+        expect(live).not.toContain('Select.placeholder');
         expect(manifest.modules['@openng/optimus-ui/dialog'].Dialog.members).toMatchObject({ visible: 'model' });
     });
 
@@ -41,10 +52,11 @@ import { Dialog } from '@openng/optimus-ui/dialog';
 export class List {
     table = viewChild.required(Table);
     dialog = viewChild(Dialog);
-    pt = { root: ({ instance }) => ({ class: instance.severity ? 'off' : 'on' }) };
+    pt = { root: ({ instance }) => ({ class: instance.showClear ? 'off' : 'on' }) };
 
     go() {
         const rows = this.table().rows;
+        const items = this.table().value;
         this.table().first = 20;
         this.dialog()!.header = 'x';
     }
@@ -55,9 +67,10 @@ export class List {
 
         expect(content).toContain('const rows = this.table().rows();');
         expect(content).toContain('this.table().first.set(20);');
+        expect(content).toContain('const items = this.table()._value();');
         expect(content).toContain(`// TODO(optimus-ui 3.0): inputs are read only signals; bind it in the template or use componentRef.setInput('header', ...)\n        this.dialog()!.header = 'x';`);
-        expect(content).toContain('instance.severity() ?');
-        expect(logs.join('\n')).toContain('1 file(s) changed, 3 rewrite(s), 1 TODO comment(s) left');
+        expect(content).toContain('instance.showClear() ?');
+        expect(logs.join('\n')).toContain('1 file(s) changed, 4 rewrite(s), 1 TODO comment(s) left');
         expect(logs.join('\n')).toContain('Migrating to 3.0: Signals API');
     });
 

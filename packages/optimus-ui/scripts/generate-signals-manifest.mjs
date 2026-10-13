@@ -134,9 +134,50 @@ export function generateManifest(srcDir) {
         return result;
     }
 
+    /**
+     * Inputs whose `_x` is NOT the live state that `x` returned in 2.x, checked one by one against the 2.x sources
+     * (tag v2, commit 0be749ac55) and the 3.0 ones. A wrong `live` entry rewrites a read to something else, so
+     * a doubtful input stays out and its read becomes `x()`.
+     */
+    const LIVE_EXCLUDED = new Set([
+        // `x` was already a signal in 2.x, so consumers called it before.
+        'Drawer.fullScreen',
+        'Drawer.position',
+        'Select.placeholder', // 2.x getter returned `_placeholder.asReadonly()`
+        // `_x` is a different thing than the input.
+        'InputNumber.currency', // `_currency` is the RegExp built from `currency`
+        'InputNumber.prefix', // `_prefix` is the RegExp built from `prefix`
+        'InputNumber.suffix', // `_suffix` is the RegExp built from `suffix`
+        'Tooltip.tooltipOptions', // `_tooltipOptions` holds the defaults merged with the input
+        'DataView.layout', // `_layout` is declared but nothing reads or writes it
+        'DataView.value', // `_value` is the bound value, the same that `value()` returns
+        'SplitButton.buttonDisabled', // `_buttonDisabled` also includes `disabled()`: it is the effective state, not what `buttonDisabled` returned
+        'SplitButton.menuButtonDisabled', // same as buttonDisabled
+        // `_x` is a derived signal that is never written and equals the input.
+        'Card.style',
+        'Paginator.rows',
+        'Select.options'
+    ]);
+
+    const BASE_LAYER = new Set(['BaseComponent', 'BaseEditableHolder', 'BaseInput', 'BaseModelHolder']);
+
+    /** True when the member is declared by one of the base layer classes, or inherited from them. */
+    function fromBaseLayer(info, name, seen = new Set()) {
+        if (seen.has(info)) return false;
+        seen.add(info);
+
+        if (info.members.has(name) || info.plain.has(name)) return BASE_LAYER.has(info.name);
+
+        const base = resolveBase(info);
+
+        return base ? fromBaseLayer(base, name, seen) : false;
+    }
+
     const modules = {};
     const signalNames = new Set();
     const plainNames = new Set();
+    /** name -> descriptors of how every class gives it: 'none', or the JSON of its live state. */
+    const descriptors = new Map();
 
     for (const infos of byName.values()) {
         for (const info of infos) {
@@ -154,7 +195,33 @@ export function generateManifest(srcDir) {
                 if (kind !== 'output' && kind !== 'viewChildren' && kind !== 'contentChildren') signalNames.add(name);
             });
 
+            // The live state of an input: 3.0 keeps what the component works with in a public `_x`
+            // (a signal that is called, or a plain field that is read), and `x()` is only what was bound.
+            const live = {};
+
+            for (const [name, kind] of api) {
+                // The base layer was already made of signals in 2.x, so a consumer calls it as before and `_x` is only
+                // the state the form writes. A `*Template` input is a template, and its `_xTemplate` is derived from PrimeTemplate.
+                if (kind !== 'input' || fromBaseLayer(info, name) || /Template$/.test(name) || LIVE_EXCLUDED.has(`${info.name}.${name}`)) continue;
+
+                const signalState = members.get(`_${name}`);
+
+                if (signalState) live[name] = { name: `_${name}`, call: true };
+                else if (plainProps.has(`_${name}`)) live[name] = { name: `_${name}`, call: false };
+            }
+
+            for (const [name, kind] of api) {
+                if (kind === 'output' || kind === 'viewChildren' || kind === 'contentChildren') continue;
+
+                const list = descriptors.get(name) ?? new Set();
+
+                list.add(live[name] ? JSON.stringify(live[name]) : 'none');
+                descriptors.set(name, list);
+            }
+
             const entry = { members: Object.fromEntries(api) };
+
+            if (Object.keys(live).length) entry.live = live;
 
             if (hasTemplates) entry.hasTemplates = true;
 
@@ -165,10 +232,13 @@ export function generateManifest(srcDir) {
     // The `instance` of a pass through function can be any component. A name that is a signal in some class
     // is safe to read as a signal there only when no class keeps it as a plain property; otherwise the
     // migration cannot tell and leaves a TODO.
-    const instanceMembers = [...signalNames].filter((name) => !plainNames.has(name)).sort();
-    const ambiguousInstanceMembers = [...signalNames].filter((name) => plainNames.has(name)).sort();
+    // The same goes for the live state: it counts only when every class that has the name agrees on it.
+    const consistent = (name) => !plainNames.has(name) && (descriptors.get(name)?.size ?? 0) <= 1;
+    const instanceMembers = [...signalNames].filter(consistent).sort();
+    const ambiguousInstanceMembers = [...signalNames].filter((name) => !consistent(name)).sort();
+    const instanceLive = Object.fromEntries(instanceMembers.filter((name) => [...(descriptors.get(name) ?? [])][0] !== 'none').map((name) => [name, JSON.parse([...descriptors.get(name)][0])]));
 
-    return { generatedBy: 'scripts/generate-signals-manifest.mjs', package: PACKAGE, modules, instanceMembers, ambiguousInstanceMembers };
+    return { generatedBy: 'scripts/generate-signals-manifest.mjs', package: PACKAGE, modules, instanceMembers, ambiguousInstanceMembers, instanceLive };
 }
 
 export function writeManifest(srcDir, outFile) {

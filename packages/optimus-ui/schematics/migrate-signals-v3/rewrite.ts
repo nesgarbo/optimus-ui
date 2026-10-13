@@ -6,6 +6,8 @@ export type MemberKind = 'input' | 'model' | 'output' | 'viewChild' | 'viewChild
 export interface ClassInfo {
     members: Record<string, MemberKind>;
     hasTemplates?: boolean;
+    /** Inputs whose live state is in a public `_x`: `call` when it is a signal, else it is a plain field. */
+    live?: Record<string, { name: string; call: boolean }>;
 }
 
 export interface Manifest {
@@ -14,6 +16,8 @@ export interface Manifest {
     instanceMembers: string[];
     /** Signal in some component and a plain property in another: a pass through function cannot tell which. */
     ambiguousInstanceMembers?: string[];
+    /** Live state of the names every component agrees on, for the pass through functions. */
+    instanceLive?: Record<string, { name: string; call: boolean }>;
 }
 
 export interface RewriteResult {
@@ -319,7 +323,11 @@ export function rewriteSignalsV3(text: string, manifest: Manifest): RewriteResul
         // `x.rows.set(...)`, `x.rows.update(...)`: the member is already a signal.
         if (ts.isPropertyAccessExpression(parent) && parent.expression === access && ['set', 'update', 'asReadonly'].includes(parent.name.text)) return;
 
-        edit(access.name.end, access.name.end, '()');
+        const live = kind === 'input' ? info.live?.[name] : undefined;
+
+        // The live state of an input is in `_x`: `x()` would give only what was bound.
+        if (live) edit(access.name.getStart(sf), access.name.end, live.name + (live.call ? '()' : ''));
+        else edit(access.name.end, access.name.end, '()');
         rewrites++;
     };
 
@@ -342,7 +350,10 @@ export function rewriteSignalsV3(text: string, manifest: Manifest): RewriteResul
             return;
         }
 
-        edit(access.name.end, access.name.end, '()');
+        const live = manifest.instanceLive?.[name];
+
+        if (live) edit(access.name.getStart(sf), access.name.end, live.name + (live.call ? '()' : ''));
+        else edit(access.name.end, access.name.end, '()');
         rewrites++;
     };
 
