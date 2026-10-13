@@ -1,6 +1,6 @@
 import { isPlatformBrowser } from '@angular/common';
 import { booleanAttribute, ChangeDetectionStrategy, Component, ElementRef, inject, InjectionToken, NgModule, NgZone, SimpleChanges, ViewEncapsulation, input, output } from '@angular/core';
-import Chart from 'chart.js/auto';
+import type { Chart } from 'chart.js';
 import { SharedModule } from '@openng/optimus-ui/api';
 import { BaseComponent } from '@openng/optimus-ui/basecomponent';
 import { ChartStyle } from './style/chartstyle';
@@ -12,9 +12,10 @@ const CHART_INSTANCE = new InjectionToken<UIChart>('CHART_INSTANCE');
 /**
  * Chart groups a collection of contents in tabs.
  *
- * It imports `chart.js/auto`, which registers every Chart.js controller, element and scale, so the
- * whole library ends up in the bundle of any app that uses it. To ship only the pieces you draw, use
- * the SVG/Canvas charts (`p-chart-svg`, `p-chart-canvas`), which have no such dependency.
+ * Chart.js (`chart.js/auto`, which registers every controller, element and scale) is loaded with a
+ * dynamic `import()` the first time a chart is created, so it lands in a lazy chunk instead of the main
+ * bundle. The chart therefore appears asynchronously, and `chart` is `null` until it is created. To ship
+ * only the pieces you draw, use the SVG/Canvas charts (`p-chart-svg`, `p-chart-canvas`), which have no such dependency.
  * @group Components
  */
 @Component({
@@ -137,25 +138,37 @@ export class UIChart extends BaseComponent<ChartPassThrough> {
         }
     }
 
-    initChart() {
-        if (isPlatformBrowser(this.platformId)) {
-            const opts = this.options() || {};
-            opts.responsive = this.responsive();
+    private generation = 0;
 
-            // allows chart to resize in responsive mode
-            if (opts.responsive && (this.height() || this.width())) {
-                opts.maintainAspectRatio = false;
-            }
+    /**
+     * Creates the chart once Chart.js has loaded. A newer call, or destroying the component, cancels any pending creation.
+     */
+    async initChart(): Promise<void> {
+        if (!isPlatformBrowser(this.platformId)) return;
 
-            this.zone.runOutsideAngular(() => {
-                this.chart = new Chart(this.el.nativeElement.children[0], {
-                    type: this.type(),
-                    data: this.data(),
-                    options: this.options(),
-                    plugins: this.plugins()
-                });
-            });
+        const generation = ++this.generation;
+        const canvas = this.el.nativeElement.children[0];
+
+        const { default: ChartCtor }: { default: typeof Chart } = await import('chart.js/auto');
+
+        if (generation !== this.generation) return;
+
+        const opts = this.options() || {};
+        opts.responsive = this.responsive();
+
+        // allows chart to resize in responsive mode
+        if (opts.responsive && (this.height() || this.width())) {
+            opts.maintainAspectRatio = false;
         }
+
+        this.zone.runOutsideAngular(() => {
+            this.chart = new ChartCtor(canvas, {
+                type: this.type(),
+                data: this.data(),
+                options: this.options(),
+                plugins: this.plugins()
+            });
+        });
     }
 
     getCanvas() {
@@ -163,7 +176,7 @@ export class UIChart extends BaseComponent<ChartPassThrough> {
     }
 
     getBase64Image() {
-        return this.chart.toBase64Image();
+        return this.chart?.toBase64Image();
     }
 
     generateLegend() {
@@ -179,18 +192,25 @@ export class UIChart extends BaseComponent<ChartPassThrough> {
     }
 
     reinit() {
+        if (!this.initialized) return;
+
         if (this.chart) {
             this.chart.destroy();
-            this.initChart();
+            this.chart = null;
         }
+
+        this.initChart();
     }
 
     onDestroy() {
+        this.generation++;
+
         if (this.chart) {
             this.chart.destroy();
-            this.initialized = false;
             this.chart = null;
         }
+
+        this.initialized = false;
     }
 }
 
