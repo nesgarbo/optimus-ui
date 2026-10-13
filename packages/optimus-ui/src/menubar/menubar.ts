@@ -1,5 +1,6 @@
 import { NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
 import {
+    DestroyRef,
     booleanAttribute,
     ChangeDetectionStrategy,
     Component,
@@ -54,9 +55,82 @@ export class MenubarService {
     );
 }
 
+/** Item properties the submenu templates read through getItemProp; compared in ngDoCheck to repaint items mutated in place. */
+const MENU_ITEM_KEYS = [
+    'label',
+    'icon',
+    'disabled',
+    'visible',
+    'separator',
+    'badge',
+    'badgeStyleClass',
+    'styleClass',
+    'class',
+    'style',
+    'title',
+    'url',
+    'target',
+    'routerLink',
+    'routerLinkActiveOptions',
+    'queryParams',
+    'queryParamsHandling',
+    'fragment',
+    'preserveFragment',
+    'skipLocationChange',
+    'replaceUrl',
+    'state',
+    'automationId',
+    'linkClass',
+    'linkStyle',
+    'iconClass',
+    'iconStyle',
+    'labelClass',
+    'labelStyle',
+    'escape',
+    'id',
+    'tooltip',
+    'tooltipOptions',
+    'expanded',
+    'to'
+] as const;
+
+/** Reads (resolving function-valued properties like the template does) one item into `seen` at `offset`; returns whether any value changed. */
+function syncMenuItemSnapshot(item: any, seen: unknown[], offset: number): boolean {
+    let changed = false;
+    for (let i = 0; i < MENU_ITEM_KEYS.length; i++) {
+        const value = resolve(item[MENU_ITEM_KEYS[i]]);
+        if (seen[offset + i] !== value) {
+            seen[offset + i] = value;
+            changed = true;
+        }
+    }
+    return changed;
+}
+
+/** Same for the `item` of every processed item of a level; also reports a different number of items. */
+function syncMenuItemsSnapshot(processedItems: any[] | undefined, seen: unknown[]): boolean {
+    const count = processedItems ? processedItems.length : 0;
+    const size = count * MENU_ITEM_KEYS.length;
+    let changed = seen.length !== size;
+    seen.length = size;
+    for (let n = 0; n < count; n++) {
+        const item = processedItems![n]?.item;
+        if (item && syncMenuItemSnapshot(item, seen, n * MENU_ITEM_KEYS.length)) {
+            changed = true;
+        }
+    }
+    return changed;
+}
+
 @Component({
-    // Eager on purpose: items and nodes are often mutated in place, which OnPush cannot see.
-    changeDetection: ChangeDetectionStrategy.Eager,
+    // OnPush: an item mutated in place (item.label = 'x', item.disabled = true) still repaints. The outermost MenubarSub of a menu drives the check from its
+    // ngDoCheck, which runs whenever the parent Menubar view is refreshed (the same moment an Eager view would be refreshed): it compares the ~35 item
+    // properties the template reads (function values resolved like getItemProp does) of every MenubarSub below it, kept in a flat registry because a
+    // clean OnPush parent never runs the ngDoCheck of its children, and only a level that changed calls markForCheck. Cost: ~35 reads per item per Menubar
+    // refresh (see the 1000 items test). Not seen: a new `items` array pushed into an item (the Menubar builds its processed items from `model`, so
+    // reassign `model`), and mutations nested inside a property (item.style.color = 'x'): assign a new object. Today the Menubar also re-dirties its subs at
+    // every refresh through the unstable [pBind]="ptm('rootList')" binding, so there this check is the guarantee that survives a stable binding.
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'p-menubarSub, p-menubarsub, [pMenubarSub]',
     standalone: true,
     imports: [NgTemplateOutlet, RouterModule, Ripple, TooltipModule, AngleDownIcon, AngleRightIcon, BadgeModule, SharedModule, BindModule],
@@ -239,6 +313,38 @@ export class MenubarService {
     }
 })
 export class MenubarSub extends BaseComponent<MenubarPassThrough> {
+    private readonly parentSub: MenubarSub | null = inject(MenubarSub, { optional: true, skipSelf: true });
+
+    private readonly rootSub: MenubarSub = this.parentSub ? this.parentSub.rootSub : this;
+
+    private readonly descendantSubs = new Set<MenubarSub>();
+
+    private readonly seenItems: unknown[] = [];
+
+    constructor() {
+        super();
+        if (this.rootSub !== this) {
+            const root = this.rootSub;
+            root.descendantSubs.add(this);
+            inject(DestroyRef).onDestroy(() => root.descendantSubs.delete(this));
+        }
+    }
+
+    onDoCheck(): void {
+        if (this.rootSub !== this) {
+            return;
+        }
+        this.checkItems();
+        this.descendantSubs.forEach((sub) => sub.checkItems());
+    }
+
+    private checkItems(): void {
+        let changed = syncMenuItemsSnapshot(this.items(), this.seenItems);
+        if (changed) {
+            this.cd.markForCheck();
+        }
+    }
+
     readonly items = input<any[]>([]);
 
     readonly itemTemplate = input<TemplateRef<MenubarItemTemplateContext> | undefined>(undefined);

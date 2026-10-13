@@ -402,8 +402,13 @@ export class TableService {
         }
     `,
     providers: [TableService, TableStyle, { provide: TABLE_INSTANCE, useExisting: Table }, { provide: PARENT_INSTANCE, useExisting: Table }],
-    // Eager on purpose: the table renders consumer data that is often mutated in place (rows, selection, expanded or editing keys) and its
-    // templates are consumer-owned; an OnPush table would stop showing those changes. State changed outside of events must call markForCheck.
+    // Eager on purpose (OnPush tried in 3.0, not adopted). With OnPush the 79 existing tests pass and `row.field = x` still repaints, because row templates are
+    // declared in the consumer and Angular refreshes those transplanted views with their declaring component. What breaks is an in-place change of state that
+    // TableBody reads in its OWN view, e.g. `expandedRowKeys[key] = true` (see 'Table in-place mutation contract' in table.test.ts: the expanded row is not shown
+    // until the table is marked dirty); the editing keys are read from the same place. A differ would have to walk the keys of those objects on every parent
+    // cycle, and rows are not covered by any shallow differ at all (thousands of rows, `row.field = x` is invisible to an IterableDiffer), so no cheap and safe
+    // design was found. To move to OnPush in a future major the consumer must update immutably (`expanded = { ...expanded, [id]: true }`, new `value` and
+    // `selection` arrays) or call markForCheck after mutating; the existing markForCheck calls stay.
     changeDetection: ChangeDetectionStrategy.Eager,
     encapsulation: ViewEncapsulation.None,
     host: {
@@ -3437,8 +3442,8 @@ export class Table<RowData = any> extends BaseComponent<TablePassThrough> implem
             <ng-container *ngTemplateOutlet="dataTable.emptyMessageTemplate || dataTable._emptyMessageTemplate(); context: { $implicit: columns(), frozen: frozen() }"></ng-container>
         }
     `,
-    // Eager on purpose: it renders consumer row templates whose context (selection, expansion, editing) is read from the table, and the rows are
-    // mutated in place by consumers. It must be checked every time the table is.
+    // Eager on purpose: it renders the rows, and its own template reads the table state that consumers mutate in place (expandedRowKeys, editing keys); it
+    // must be checked every time the table is. See the Table decorator for the exact case and what the consumer would have to change for OnPush.
     changeDetection: ChangeDetectionStrategy.Eager,
     encapsulation: ViewEncapsulation.None,
     host: {

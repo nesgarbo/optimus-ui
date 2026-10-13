@@ -127,7 +127,14 @@ export class TreeTableService {
  * @group Components
  */
 @Component({
-    // Eager on purpose: items and nodes are often mutated in place, which OnPush cannot see.
+    // Eager on purpose (OnPush tried in 3.0, not adopted). Switching TreeTable, TTBody and TTScrollableView to OnPush makes two existing tests fail, without
+    // touching their intent: 'TreeTable PT > Case 1: Simple string classes > should apply string class to header' and '... to footer' (the pt classes of the
+    // header/footer are no longer rendered at the first check). Beyond that the table keeps its own derived state (serializedValue, filtered and sorted
+    // copies) that is rebuilt only when `value` is reassigned or a toggle happens, so `node.expanded = false` or `children.push(...)` on a rendered node does not
+    // show even today (see 'TreeTable in-place mutation contract' in treetable.test.ts); only `node.data.field = x` inside the consumer body template repaints,
+    // and it does with OnPush too (transplanted views). A differ over thousands of nodes cannot see nested `node.data` changes, so no cheap and safe design was
+    // found. For OnPush in a future major the consumer should update immutably (new `value` with new TreeNode objects) and call markForCheck after imperative
+    // changes; the existing markForCheck calls stay.
     changeDetection: ChangeDetectionStrategy.Eager,
     selector: 'p-treeTable, p-treetable, p-tree-table',
     standalone: false,
@@ -2435,7 +2442,7 @@ export class TreeTable extends BaseComponent<TreeTablePassThrough> implements Bl
 }
 
 @Component({
-    // Eager on purpose: items and nodes are often mutated in place, which OnPush cannot see.
+    // Eager on purpose: it renders rows from the table's derived state and consumer row templates; it follows the TreeTable decision (see its decorator).
     changeDetection: ChangeDetectionStrategy.Eager,
     selector: '[pTreeTableBody]',
     standalone: false,
@@ -2520,7 +2527,7 @@ export class TTBody extends BaseComponent {
 }
 
 @Component({
-    // Eager on purpose: items and nodes are often mutated in place, which OnPush cannot see.
+    // Eager on purpose: it hosts the scrollable header, body and footer of the TreeTable and follows the TreeTable decision (see its decorator).
     changeDetection: ChangeDetectionStrategy.Eager,
     selector: '[ttScrollableView]',
     standalone: false,

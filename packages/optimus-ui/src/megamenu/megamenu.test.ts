@@ -1,3 +1,4 @@
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { ChangeDetectionStrategy, Component, DebugElement, provideZonelessChangeDetection, input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
@@ -5,7 +6,7 @@ import { By } from '@angular/platform-browser';
 import { RouterTestingModule } from '@angular/router/testing';
 import { MegaMenuItem, SharedModule } from '@openng/optimus-ui/api';
 import { provideOptimus } from '@openng/optimus-ui/config';
-import { MegaMenu } from './megamenu';
+import { MegaMenu, MegaMenuSub } from './megamenu';
 
 @Component({
     changeDetection: ChangeDetectionStrategy.Eager,
@@ -1740,5 +1741,94 @@ describe('MegaMenu', () => {
                 }
             });
         });
+    });
+});
+
+// OnPush MegaMenuSub: items mutated in place still repaint when the MegaMenu is refreshed
+describe('MegaMenu submenus repaint items mutated in place (OnPush + ngDoCheck)', () => {
+    @Component({
+        changeDetection: ChangeDetectionStrategy.Eager,
+        standalone: true,
+        imports: [MegaMenu],
+        template: `<p-megamenu [model]="model" />`
+    })
+    class MutationHostComponent {
+        model: any[] = [{ label: 'File', items: [[{ label: 'Group', items: [{ label: 'New' }, { label: 'Open' }] }]] }, { label: 'Edit' }];
+    }
+
+    let fixture: ComponentFixture<MutationHostComponent>;
+    let top: MegaMenu;
+
+    const labels = () => Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.p-megamenu-item-label')).map((el) => el.textContent?.trim());
+    const subs = () => fixture.debugElement.queryAll(By.directive(MegaMenuSub)).map((d) => d.componentInstance as MegaMenuSub);
+    const refresh = async () => {
+        top.cd.markForCheck();
+        await fixture.whenStable();
+    };
+
+    beforeEach(async () => {
+        TestBed.configureTestingModule({ imports: [MutationHostComponent], providers: [provideZonelessChangeDetection(), provideNoopAnimations()] });
+        fixture = TestBed.createComponent(MutationHostComponent);
+        await fixture.whenStable();
+        top = fixture.debugElement.query(By.directive(MegaMenu)).componentInstance;
+    });
+
+    it('repaints item.label changed in place', async () => {
+        expect(labels()).toContain('Edit');
+
+        fixture.componentInstance.model[1].label = 'Renamed';
+        await refresh();
+
+        expect(labels()).toContain('Renamed');
+        expect(labels()).not.toContain('Edit');
+    });
+
+    it('repaints item.disabled = true', async () => {
+        const li = () =>
+            Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.p-megamenu-item-label'))
+                .find((el) => el.textContent?.trim() === 'Edit')!
+                .closest('li')!;
+        expect(li().getAttribute('data-p-disabled')).not.toBe('true');
+
+        fixture.componentInstance.model[1].disabled = true;
+        await refresh();
+
+        expect(li().getAttribute('data-p-disabled')).toBe('true');
+    });
+
+    it('marks only the level that changed', async () => {
+        const all = subs();
+        expect(all.length).toBeGreaterThan(1);
+        const root = all.find((s) => (s as any).rootSub === s)!;
+        root.onDoCheck(); // settles the snapshots of the levels created after the last check
+        const spies = all.map((s) => vi.spyOn(s.cd, 'markForCheck'));
+        root.onDoCheck();
+        expect(spies.every((spy) => spy.mock.calls.length === 0)).toBe(true);
+
+        fixture.componentInstance.model[1].label = 'Changed';
+        root.onDoCheck();
+        expect(spies[all.indexOf(root)]).toHaveBeenCalledTimes(1);
+        expect(spies.filter((spy) => spy.mock.calls.length > 0).length).toBe(1);
+    });
+
+    it('keeps the ngDoCheck cheap with 1000 items', async () => {
+        fixture.componentInstance.model = Array.from({ length: 1000 }, (_, i) => ({ label: `Item ${i}` }));
+        fixture.changeDetectorRef.markForCheck();
+        await fixture.whenStable();
+
+        await refresh();
+
+        const root = subs().find((s) => (s as any).rootSub === s)!;
+        expect(root.items()!.length).toBe(1000);
+        root.onDoCheck();
+
+        const start = performance.now();
+        for (let i = 0; i < 20; i++) {
+            root.onDoCheck();
+        }
+        const perCycle = (performance.now() - start) / 20;
+
+        // The bound only guards against an accidental O(n^2) or a per-check allocation.
+        expect(perCycle).toBeLessThan(10);
     });
 });

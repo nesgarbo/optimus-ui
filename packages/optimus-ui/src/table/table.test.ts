@@ -1790,3 +1790,58 @@ describe('Table robustness', () => {
         expect(table._value().map((r: any) => r.n)).toEqual([3, 2, 1]);
     });
 });
+
+// Documents why Table and TableBody stay Eager: the cases below are the typical in-place mutations a consumer does and what an OnPush table shows.
+describe('Table in-place mutation contract (why it is not OnPush)', () => {
+    @Component({
+        changeDetection: ChangeDetectionStrategy.Eager,
+        standalone: true,
+        imports: [TableModule],
+        template: `
+            <p-table [value]="rows" dataKey="id" [(expandedRowKeys)]="expanded" [selectionMode]="'multiple'" [(selection)]="selected">
+                <ng-template #body let-row>
+                    <tr [pSelectableRow]="row">
+                        <td class="name">{{ row.name }}</td>
+                        <td><button class="toggle" [pRowToggler]="row">toggle</button></td>
+                    </tr>
+                </ng-template>
+                <ng-template #expandedrow let-row>
+                    <tr class="detail">
+                        <td colspan="2">detail {{ row.id }}</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        `
+    })
+    class MutationHostComponent {
+        rows: any[] = [
+            { id: 1, name: 'one' },
+            { id: 2, name: 'two' }
+        ];
+        expanded: Record<string, boolean> = {};
+        selected: any[] = [];
+    }
+
+    let fixture: ComponentFixture<MutationHostComponent>;
+    const names = () => Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('td.name')).map((el) => el.textContent?.trim());
+    const consumerCycle = () => fixture.componentRef.hostView.detectChanges();
+
+    beforeEach(async () => {
+        TestBed.configureTestingModule({ imports: [MutationHostComponent], providers: [provideZonelessChangeDetection()] });
+        fixture = TestBed.createComponent(MutationHostComponent);
+        await fixture.whenStable();
+    });
+
+    it('row.field = x in a consumer body template repaints', () => {
+        fixture.componentInstance.rows[0].name = 'changed';
+        consumerCycle();
+        expect(names()).toEqual(['changed', 'two']);
+    });
+
+    it('expandedRowKeys[key] = true mutated in place shows the expanded row', () => {
+        expect(fixture.nativeElement.querySelectorAll('tr.detail').length).toBe(0);
+        fixture.componentInstance.expanded[1] = true;
+        consumerCycle();
+        expect(fixture.nativeElement.querySelectorAll('tr.detail').length).toBe(1);
+    });
+});

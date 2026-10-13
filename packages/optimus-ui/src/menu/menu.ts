@@ -61,9 +61,64 @@ export class SafeHtmlPipe implements PipeTransform {
     }
 }
 
+const MENU_ITEM_KEYS = [
+    'label',
+    'icon',
+    'disabled',
+    'visible',
+    'separator',
+    'badge',
+    'badgeStyleClass',
+    'styleClass',
+    'style',
+    'title',
+    'url',
+    'target',
+    'routerLink',
+    'queryParams',
+    'queryParamsHandling',
+    'fragment',
+    'preserveFragment',
+    'skipLocationChange',
+    'replaceUrl',
+    'state',
+    'routerLinkActiveOptions',
+    'automationId',
+    'linkClass',
+    'linkStyle',
+    'iconClass',
+    'iconStyle',
+    'labelClass',
+    'labelStyle',
+    'escape',
+    'items'
+] as const;
+
+/** Reads the item properties the template depends on, plus the number of children, so two reads can be compared cheaply. */
+function readMenuItem(item: any, into: unknown[]): unknown[] {
+    for (let i = 0; i < MENU_ITEM_KEYS.length; i++) {
+        into[i] = item[MENU_ITEM_KEYS[i]];
+    }
+    into[MENU_ITEM_KEYS.length] = item.items?.length;
+    return into;
+}
+
+function menuItemChanged(item: any, seen: unknown[]): boolean {
+    for (let i = 0; i < MENU_ITEM_KEYS.length; i++) {
+        if (seen[i] !== item[MENU_ITEM_KEYS[i]]) {
+            return true;
+        }
+    }
+    return seen[MENU_ITEM_KEYS.length] !== item.items?.length;
+}
+
 @Component({
-    // Eager on purpose: items and nodes are often mutated in place, which OnPush cannot see.
-    changeDetection: ChangeDetectionStrategy.Eager,
+    // OnPush: an item mutated in place (item.label = 'x', item.disabled = true) still repaints. ngDoCheck runs whenever the parent Menu is refreshed (the
+    // same moment an Eager view would be refreshed) and compares the ~25 item properties the template reads against the last seen values; only an item
+    // that changed calls markForCheck. Cost: ~25 property reads per rendered item per Menu refresh (see the 1000 items test). Mutating something nested
+    // inside an item property (item.style.color = 'x', item.queryParams.a = 1) is not seen: assign a new object. Today the Menu also re-dirties each item at
+    // every refresh through the unstable [pBind]="ptm('item')" binding on the item host, so this check is the guarantee that survives a stable binding.
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: '[pMenuItemContent]',
     standalone: true,
     imports: [NgTemplateOutlet, RouterModule, Ripple, TooltipModule, BadgeModule, SharedModule, SafeHtmlPipe, BindModule],
@@ -147,6 +202,21 @@ export class MenuItemContent extends BaseComponent {
     _componentStyle = inject(MenuStyle);
 
     hostName = 'Menu';
+
+    private seenItem: unknown[] | undefined;
+
+    onDoCheck(): void {
+        const item = this.item();
+        if (!item) {
+            return;
+        }
+        if (!this.seenItem) {
+            this.seenItem = readMenuItem(item, []);
+        } else if (menuItemChanged(item, this.seenItem)) {
+            readMenuItem(item, this.seenItem);
+            this.cd.markForCheck();
+        }
+    }
 
     onItemClick(event, item) {
         this.onMenuItemClick.emit({ originalEvent: event, item });

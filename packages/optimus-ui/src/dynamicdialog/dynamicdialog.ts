@@ -1,5 +1,5 @@
 import { NgComponentOutlet } from '@angular/common';
-import { Binding, ChangeDetectionStrategy, Component, ComponentRef, DirectiveWithBindings, inject, InjectionToken, inputBinding, NgModule, Type, ViewEncapsulation, viewChild } from '@angular/core';
+import { Binding, ChangeDetectionStrategy, Component, ComponentRef, DirectiveWithBindings, inject, InjectionToken, inputBinding, KeyValueDiffer, KeyValueDiffers, NgModule, Type, ViewEncapsulation, viewChild } from '@angular/core';
 import { uuid } from '@openng/optimus-ui-utils';
 import { SharedModule, TranslationKeys } from '@openng/optimus-ui/api';
 import { BaseComponent, PARENT_INSTANCE } from '@openng/optimus-ui/basecomponent';
@@ -100,8 +100,10 @@ const DYNAMIC_DIALOG_INSTANCE = new InjectionToken<DynamicDialog>('DYNAMIC_DIALO
             }
         </p-dialog>
     `,
-    // Eager on purpose: items and nodes are often mutated in place, which OnPush cannot see.
-    changeDetection: ChangeDetectionStrategy.Eager,
+    // OnPush: the template only reads the top-level fields of ddconfig, so a shallow KeyValueDiffer in onDoCheck marks the view dirty when the
+    // consumer mutates ddconfig in place (ddconfig.header = 'x'); cost is one pass over ~40 keys per parent cycle. Mutating something nested
+    // inside a field (ddconfig.style.width = ...) is not seen: reassign the field (ddconfig.style = { ... }) or call markForCheck on the ref.
+    changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
     providers: [DynamicDialogStyle, { provide: DYNAMIC_DIALOG_INSTANCE, useExisting: DynamicDialog }, { provide: PARENT_INSTANCE, useExisting: DynamicDialog }],
     hostDirectives: [Bind]
@@ -262,6 +264,14 @@ export class DynamicDialog extends BaseComponent<DialogPassThrough> {
     documentEscapeListener: any;
 
     ddconfig: DynamicDialogConfig = inject(DynamicDialogConfig);
+
+    private readonly configDiffer: KeyValueDiffer<string, unknown> = inject(KeyValueDiffers).find({}).create();
+
+    onDoCheck(): void {
+        if (this.configDiffer.diff(this.ddconfig as unknown as Record<string, unknown>)) {
+            this.cd.markForCheck();
+        }
+    }
 
     private dialogRef: DynamicDialogRef = inject(DynamicDialogRef);
 

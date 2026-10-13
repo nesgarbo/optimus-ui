@@ -106,8 +106,12 @@ const ORGANIZATIONCHART_INSTANCE = new InjectionToken<OrganizationChart>('ORGANI
         }
     `,
     encapsulation: ViewEncapsulation.None,
-    // Eager on purpose: a TreeNode mutated from outside (node.expanded = false) must repaint, and OnPush cannot see it.
-    changeDetection: ChangeDetectionStrategy.Eager,
+    // OnPush: a TreeNode mutated in place (node.expanded = false, node.label = 'x', node.children.push(...)) is still repainted. The chart keeps a flat
+    // registry of its node components and, in its ngDoCheck, asks each one to compare the few primitives its template reads (checkMutation); only a
+    // node that changed calls markForCheck. A flat loop is used because an OnPush parent that is not dirty would never run the ngDoCheck of its children.
+    // Cost: O(nodes) cheap comparisons per parent cycle (measured in the tests with 1000 nodes). Not seen: mutations of node.data read by a node
+    // template (those templates are consumer-owned and refreshed with their declaring component) and of properties not listed in checkMutation.
+    changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [OrganizationChartStyle, { provide: PARENT_INSTANCE, useExisting: OrganizationChartNode }]
 })
 export class OrganizationChartNode extends BaseComponent {
@@ -129,9 +133,30 @@ export class OrganizationChartNode extends BaseComponent {
 
     cd: ChangeDetectorRef = inject(ChangeDetectorRef);
 
+    private seenNode: TreeNode<any> | undefined;
+
+    private seenExpanded: boolean | undefined;
+
+    private seenLabel: string | undefined;
+
+    private seenStyleClass: string | undefined;
+
+    private seenType: string | undefined;
+
+    private seenSelectable: boolean | undefined;
+
+    private seenLeaf: boolean | undefined;
+
+    private seenChildren: TreeNode<any>[] | undefined;
+
+    private seenChildrenLength = 0;
+
+    private seenSelected = false;
+
     constructor() {
         super();
         this.chart = inject(forwardRef(() => OrganizationChart));
+        this.chart.registerNode(this);
         this.subscription = this.chart.selectionSource$.subscribe(() => {
             this.cd.markForCheck();
         });
@@ -194,7 +219,54 @@ export class OrganizationChartNode extends BaseComponent {
         return this.chart.isSelected(this.node() as TreeNode);
     }
 
+    /**
+     * Compares the node properties the template reads with the ones seen when the view was last rendered and marks it dirty when one differs.
+     * Called by the chart from its ngDoCheck, so an in-place mutation of the TreeNode repaints an OnPush view.
+     */
+    checkMutation(): void {
+        const node = this.node();
+        if (!node) {
+            return;
+        }
+
+        const children = node.children;
+
+        if (
+            node !== this.seenNode ||
+            node.expanded !== this.seenExpanded ||
+            node.label !== this.seenLabel ||
+            node.styleClass !== this.seenStyleClass ||
+            node.type !== this.seenType ||
+            node.selectable !== this.seenSelectable ||
+            node.leaf !== this.seenLeaf ||
+            children !== this.seenChildren ||
+            (children ? children.length : 0) !== this.seenChildrenLength ||
+            this.isSelected() !== this.seenSelected
+        ) {
+            this.cd.markForCheck();
+        }
+    }
+
+    onAfterViewChecked(): void {
+        const node = this.node();
+        if (!node) {
+            return;
+        }
+
+        this.seenNode = node;
+        this.seenExpanded = node.expanded;
+        this.seenLabel = node.label;
+        this.seenStyleClass = node.styleClass;
+        this.seenType = node.type;
+        this.seenSelectable = node.selectable;
+        this.seenLeaf = node.leaf;
+        this.seenChildren = node.children;
+        this.seenChildrenLength = node.children ? node.children.length : 0;
+        this.seenSelected = this.isSelected();
+    }
+
     onDestroy() {
+        this.chart.unregisterNode(this);
         this.subscription.unsubscribe();
     }
 }
@@ -211,8 +283,9 @@ export class OrganizationChartNode extends BaseComponent {
             <table [class]="cx('table')" [collapsible]="collapsible()" pOrganizationChartNode [pt]="pt" [unstyled]="unstyled()" [node]="root" [pBind]="ptm('table')"></table>
         }
     `,
-    // Eager on purpose: a TreeNode mutated from outside (node.expanded = false) must repaint, and OnPush cannot see it.
-    changeDetection: ChangeDetectionStrategy.Eager,
+    // OnPush: see OrganizationChartNode; the chart drives the in-place mutation check of every node from its own ngDoCheck. Reassigning `value`,
+    // or changing its first node in place, repaints through the input / the root comparison.
+    changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [OrganizationChartStyle, { provide: ORGANIZATIONCHART_INSTANCE, useExisting: OrganizationChart }, { provide: PARENT_INSTANCE, useExisting: OrganizationChart }],
     host: {
         '[class]': "cn(cx('root'), styleClass())"
@@ -312,7 +385,27 @@ export class OrganizationChart extends BaseComponent<OrganizationChartPassThroug
     }
 
     onAfterViewChecked(): void {
+        this.seenRoot = this.root;
         this.bindDirectiveInstance.setAttrs(this.ptms(['host', 'root']));
+    }
+
+    private readonly nodeComponents = new Set<OrganizationChartNode>();
+
+    private seenRoot: TreeNode<any> | null | undefined;
+
+    registerNode(node: OrganizationChartNode): void {
+        this.nodeComponents.add(node);
+    }
+
+    unregisterNode(node: OrganizationChartNode): void {
+        this.nodeComponents.delete(node);
+    }
+
+    onDoCheck(): void {
+        if (this.root !== this.seenRoot) {
+            this.cd.markForCheck();
+        }
+        this.nodeComponents.forEach((node) => node.checkMutation());
     }
 
     get root(): TreeNode<any> | null {

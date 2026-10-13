@@ -1,10 +1,11 @@
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { ChangeDetectionStrategy, Component, provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
 import { RouterTestingModule } from '@angular/router/testing';
 import { MenuItem, SharedModule } from '@openng/optimus-ui/api';
-import { PanelMenu } from './panelmenu';
+import { PanelMenu, PanelMenuList, PanelMenuSub } from './panelmenu';
 
 @Component({
     changeDetection: ChangeDetectionStrategy.Eager,
@@ -1431,5 +1432,96 @@ describe('PanelMenu', () => {
             expect(messages.filter((message) => message.includes('NG0956'))).toEqual([]);
             expect(component.model![0].expanded).toBe(true);
         });
+    });
+});
+
+// OnPush PanelMenuSub: items mutated in place still repaint when the PanelMenu is refreshed (the panel headers are rendered by PanelMenu itself, so the items under test are the nested ones)
+describe('PanelMenu submenus repaint items mutated in place (OnPush + ngDoCheck)', () => {
+    @Component({
+        changeDetection: ChangeDetectionStrategy.Eager,
+        standalone: true,
+        imports: [PanelMenu],
+        template: `<p-panelmenu [model]="model" />`
+    })
+    class MutationHostComponent {
+        model: any[] = [{ label: 'File', expanded: true, items: [{ label: 'New' }, { label: 'Open' }] }, { label: 'Open' }];
+    }
+
+    let fixture: ComponentFixture<MutationHostComponent>;
+    let top: PanelMenu;
+
+    const labels = () => Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.p-panelmenu-item-label')).map((el) => el.textContent?.trim());
+    const subs = () => fixture.debugElement.queryAll(By.directive(PanelMenuSub)).map((d) => d.componentInstance as PanelMenuSub);
+    const refresh = async () => {
+        top.cd.markForCheck();
+        // PanelMenuList is already OnPush and sits between the PanelMenu and the first PanelMenuSub: it has to be refreshed for the Sub to be reached.
+        fixture.debugElement.queryAll(By.directive(PanelMenuList)).forEach((d) => d.componentInstance.cd.markForCheck());
+        await fixture.whenStable();
+    };
+
+    beforeEach(async () => {
+        TestBed.configureTestingModule({ imports: [MutationHostComponent], providers: [provideZonelessChangeDetection(), provideNoopAnimations()] });
+        fixture = TestBed.createComponent(MutationHostComponent);
+        await fixture.whenStable();
+        top = fixture.debugElement.query(By.directive(PanelMenu)).componentInstance;
+    });
+
+    it('repaints item.label changed in place', async () => {
+        expect(labels()).toContain('Open');
+
+        fixture.componentInstance.model[0].items[1].label = 'Renamed';
+        await refresh();
+
+        expect(labels()).toContain('Renamed');
+        expect(labels()).not.toContain('Open');
+    });
+
+    it('repaints item.disabled = true', async () => {
+        const li = () =>
+            Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.p-panelmenu-item-label'))
+                .find((el) => el.textContent?.trim() === 'Open')!
+                .closest('li')!;
+        expect(li().getAttribute('data-p-disabled')).not.toBe('true');
+
+        fixture.componentInstance.model[0].items[1].disabled = true;
+        await refresh();
+
+        expect(li().getAttribute('data-p-disabled')).toBe('true');
+    });
+
+    it('marks only the level that changed', async () => {
+        const all = subs();
+        expect(all.length).toBeGreaterThan(1);
+        const root = all.find((s) => (s as any).rootSub === s)!;
+        root.onDoCheck(); // settles the snapshots of the levels created after the last check
+        const spies = all.map((s) => vi.spyOn(s.cd, 'markForCheck'));
+        root.onDoCheck();
+        expect(spies.every((spy) => spy.mock.calls.length === 0)).toBe(true);
+
+        fixture.componentInstance.model[0].items[1].label = 'Changed';
+        root.onDoCheck();
+        expect(spies[all.indexOf(root)]).toHaveBeenCalledTimes(1);
+        expect(spies.filter((spy) => spy.mock.calls.length > 0).length).toBe(1);
+    });
+
+    it('keeps the ngDoCheck cheap with 1000 items', async () => {
+        fixture.componentInstance.model = [{ label: 'Big', expanded: true, items: Array.from({ length: 1000 }, (_, i) => ({ label: `Item ${i}` })) }];
+        fixture.changeDetectorRef.markForCheck();
+        await fixture.whenStable();
+
+        await refresh();
+
+        const root = subs().find((s) => (s as any).rootSub === s)!;
+        expect(root.items()!.length).toBe(1000);
+        root.onDoCheck();
+
+        const start = performance.now();
+        for (let i = 0; i < 20; i++) {
+            root.onDoCheck();
+        }
+        const perCycle = (performance.now() - start) / 20;
+
+        // The bound only guards against an accidental O(n^2) or a per-check allocation.
+        expect(perCycle).toBeLessThan(10);
     });
 });

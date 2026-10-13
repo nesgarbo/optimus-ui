@@ -3847,3 +3847,63 @@ describe('TreeTable Inline PT', () => {
         expect(host?.classList.contains('INLINE_HOST_CLASS')).toBe(true);
     });
 });
+
+// Documents why TreeTable, TTBody and TTScrollableView stay Eager: the typical in-place mutations a consumer does and what an OnPush tree shows.
+describe('TreeTable in-place mutation contract (why it is not OnPush)', () => {
+    @Component({
+        changeDetection: ChangeDetectionStrategy.Eager,
+        standalone: true,
+        imports: [TreeTableModule],
+        template: `
+            <p-treetable [value]="nodes">
+                <ng-template #body let-rowNode let-rowData="rowData">
+                    <tr [ttRow]="rowNode">
+                        <td class="name">
+                            <p-treeTableToggler [rowNode]="rowNode" />
+                            {{ rowData.name }}
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-treetable>
+        `
+    })
+    class MutationHostComponent {
+        nodes: TreeNode[] = [{ data: { name: 'Root' }, expanded: true, children: [{ data: { name: 'Child' } }] }, { data: { name: 'Other' } }];
+    }
+
+    let fixture: ComponentFixture<MutationHostComponent>;
+    const names = () => Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('td.name')).map((el) => el.textContent?.trim());
+    const consumerCycle = () => fixture.componentRef.hostView.detectChanges();
+
+    beforeEach(async () => {
+        TestBed.configureTestingModule({ imports: [MutationHostComponent], providers: [provideZonelessChangeDetection()] });
+        fixture = TestBed.createComponent(MutationHostComponent);
+        await fixture.whenStable();
+    });
+
+    it('node.data.field = x in a consumer body template repaints', () => {
+        fixture.componentInstance.nodes[0].data.name = 'Renamed';
+        consumerCycle();
+        expect(names()).toEqual(['Renamed', 'Child', 'Other']);
+    });
+
+    it('node.expanded = false on a rendered node is shown once the value is reassigned (same with an Eager table)', () => {
+        fixture.componentInstance.nodes[0].expanded = false;
+        consumerCycle();
+        expect(names()).toEqual(['Root', 'Child', 'Other']);
+
+        fixture.componentInstance.nodes = [...fixture.componentInstance.nodes];
+        consumerCycle();
+        expect(names()).toEqual(['Root', 'Other']);
+    });
+
+    it('a node added to children in place is not shown until the value is reassigned (same with an Eager table)', () => {
+        fixture.componentInstance.nodes[0].children!.push({ data: { name: 'Added' } });
+        consumerCycle();
+        expect(names()).toEqual(['Root', 'Child', 'Other']);
+
+        fixture.componentInstance.nodes = [...fixture.componentInstance.nodes];
+        consumerCycle();
+        expect(names()).toEqual(['Root', 'Child', 'Added', 'Other']);
+    });
+});

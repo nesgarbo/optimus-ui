@@ -1122,3 +1122,92 @@ describe('OrganizationChart style classes read the signal inputs', () => {
         expect(has('p-organizationchart-preservespace')).toBe(false);
     });
 });
+
+// OnPush: in-place mutation of the TreeNode must repaint without markForCheck
+describe('OrganizationChart repaints TreeNodes mutated in place (OnPush + per-node check)', () => {
+    @Component({
+        changeDetection: ChangeDetectionStrategy.Eager,
+        standalone: true,
+        imports: [OrganizationChart],
+        template: `<p-organizationChart [value]="data" [collapsible]="true" />`
+    })
+    class MutationHostComponent {
+        data: TreeNode[] = [
+            {
+                label: 'Root',
+                expanded: true,
+                children: [{ label: 'Child 1' }, { label: 'Child 2', expanded: true, children: [{ label: 'Grandchild' }] }]
+            }
+        ];
+    }
+
+    let fixture: ComponentFixture<MutationHostComponent>;
+
+    const labels = () => Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.p-organizationchart-node')).map((el) => el.textContent?.trim());
+    const hiddenRows = () => Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('tr.p-organizationchart-node-children')).map((el) => el.style.visibility);
+
+    beforeEach(async () => {
+        TestBed.configureTestingModule({ imports: [MutationHostComponent], providers: [provideZonelessChangeDetection()] });
+        fixture = TestBed.createComponent(MutationHostComponent);
+        await fixture.whenStable();
+    });
+
+    it('repaints node.expanded = false on the root', () => {
+        expect(hiddenRows()[0]).toBe('inherit');
+
+        fixture.componentInstance.data[0].expanded = false;
+        fixture.componentRef.hostView.detectChanges();
+
+        expect(hiddenRows()[0]).toBe('hidden');
+    });
+
+    it('repaints node.expanded = false on a deep node', () => {
+        expect(hiddenRows()[2]).toBe('inherit');
+
+        fixture.componentInstance.data[0].children![1].expanded = false;
+        fixture.componentRef.hostView.detectChanges();
+
+        expect(hiddenRows()[2]).toBe('hidden');
+    });
+
+    it('repaints node.label changes on a deep node', () => {
+        fixture.componentInstance.data[0].children![1].children![0].label = 'Renamed';
+        fixture.componentRef.hostView.detectChanges();
+
+        expect(labels()).toContain('Renamed');
+    });
+
+    it('repaints children.push on a node, and removal', () => {
+        fixture.componentInstance.data[0].children![0].children = [{ label: 'New leaf' }];
+        fixture.componentRef.hostView.detectChanges();
+        expect(labels()).toContain('New leaf');
+
+        fixture.componentInstance.data[0].children![0].children!.push({ label: 'Second leaf' });
+        fixture.componentRef.hostView.detectChanges();
+        expect(labels()).toContain('Second leaf');
+
+        fixture.componentInstance.data[0].children!.pop();
+        fixture.componentRef.hostView.detectChanges();
+        expect(labels()).not.toContain('Child 2');
+    });
+
+    it('keeps the per-cycle check cheap with 1000 nodes', async () => {
+        const big: TreeNode[] = [{ label: 'Root', expanded: true, children: Array.from({ length: 999 }, (_, i) => ({ label: `N${i}` })) }];
+        fixture.componentInstance.data = big;
+        fixture.componentRef.hostView.detectChanges();
+        await fixture.whenStable();
+        fixture.componentRef.hostView.detectChanges();
+
+        // Measured at about 0.08 ms per cycle for 1000 nodes; the bound only guards against an accidental O(n^2).
+        expect(fixture.nativeElement.querySelectorAll('.p-organizationchart-node').length).toBe(1000);
+        const chart: OrganizationChart = fixture.debugElement.query(By.directive(OrganizationChart)).componentInstance;
+        chart.onDoCheck();
+        const start = performance.now();
+        for (let i = 0; i < 100; i++) {
+            chart.onDoCheck();
+        }
+        const perCycle = (performance.now() - start) / 100;
+
+        expect(perCycle).toBeLessThan(5);
+    });
+});

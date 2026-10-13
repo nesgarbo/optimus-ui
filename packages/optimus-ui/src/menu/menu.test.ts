@@ -5,7 +5,7 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
 import { MenuItem, OverlayService, SharedModule } from '@openng/optimus-ui/api';
 import { provideOptimus } from '@openng/optimus-ui/config';
-import { Menu } from './menu';
+import { Menu, MenuItemContent } from './menu';
 import type { Mock } from 'vitest';
 
 @Component({
@@ -2129,5 +2129,96 @@ describe('Menu scroll handler zone', () => {
 
         expect(menu.scrollHandler?.zone).toBe(TestBed.inject(NgZone));
         menu.scrollHandler?.destroy();
+    });
+});
+
+// OnPush MenuItemContent: items mutated in place still repaint when the Menu is refreshed
+describe('Menu item content repaints items mutated in place (OnPush + ngDoCheck)', () => {
+    @Component({
+        changeDetection: ChangeDetectionStrategy.Eager,
+        standalone: true,
+        imports: [Menu],
+        template: `<p-menu [model]="model" />`
+    })
+    class MutationHostComponent {
+        model: MenuItem[] = [
+            { label: 'File', icon: 'pi pi-file' },
+            { label: 'Edit', disabled: false }
+        ];
+    }
+
+    let fixture: ComponentFixture<MutationHostComponent>;
+    let menu: Menu;
+
+    const labels = () => Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.p-menu-item-label')).map((el) => el.textContent?.trim());
+
+    beforeEach(async () => {
+        TestBed.configureTestingModule({ imports: [MutationHostComponent], providers: [provideZonelessChangeDetection(), provideNoopAnimations(), OverlayService] });
+        fixture = TestBed.createComponent(MutationHostComponent);
+        await fixture.whenStable();
+        menu = fixture.debugElement.query(By.directive(Menu)).componentInstance;
+    });
+
+    // The Menu is refreshed for any other reason (hover, focus, an input); its OnPush items must still pick up the mutation.
+    const refreshMenu = async () => {
+        menu.cd.markForCheck();
+        await fixture.whenStable();
+    };
+
+    it('repaints item.label and item.icon changed in place', async () => {
+        expect(labels()).toEqual(['File', 'Edit']);
+
+        fixture.componentInstance.model[0].label = 'Renamed';
+        fixture.componentInstance.model[0].icon = 'pi pi-star';
+        await refreshMenu();
+
+        expect(labels()).toEqual(['Renamed', 'Edit']);
+        expect(fixture.nativeElement.querySelector('.pi-star')).toBeTruthy();
+    });
+
+    it('repaints item.disabled = true', async () => {
+        const items = () => Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('li[role="menuitem"]'));
+        expect(items()[1].getAttribute('data-p-disabled')).not.toBe('true');
+
+        fixture.componentInstance.model[1].disabled = true;
+        await refreshMenu();
+
+        expect(items()[1].getAttribute('data-p-disabled')).toBe('true');
+    });
+
+    it('does not refresh an item that did not change', async () => {
+        const contents = fixture.debugElement.queryAll(By.directive(MenuItemContent)).map((d) => d.componentInstance as MenuItemContent);
+        const spies = contents.map((c) => vi.spyOn(c.cd, 'markForCheck'));
+        // The DOM tests above cannot tell the ngDoCheck from the parent: the Menu binds [pBind]="ptm('item')" (a new object per refresh) on the item host, which
+        // already marks an OnPush item dirty. This test pins the contract of the ngDoCheck itself: mark only the item that changed.
+
+        await refreshMenu();
+        expect(spies.every((spy) => spy.mock.calls.length === 0)).toBe(true);
+
+        fixture.componentInstance.model[0].label = 'Changed';
+        contents.forEach((c) => c.onDoCheck());
+        expect(spies[0]).toHaveBeenCalledTimes(1);
+        expect(spies[1]).not.toHaveBeenCalled();
+    });
+
+    it('keeps the per-item check cheap with 1000 items', async () => {
+        fixture.componentInstance.model = Array.from({ length: 1000 }, (_, i) => ({ label: `Item ${i}` }));
+        fixture.changeDetectorRef.markForCheck();
+        await fixture.whenStable();
+        menu.cd.markForCheck();
+        fixture.componentRef.hostView.detectChanges();
+
+        const contents = fixture.debugElement.queryAll(By.directive(MenuItemContent)).map((d) => d.componentInstance as MenuItemContent);
+        expect(contents.length).toBe(1000);
+        contents.forEach((c) => c.onDoCheck());
+
+        const start = performance.now();
+        for (let i = 0; i < 20; i++) {
+            contents.forEach((c) => c.onDoCheck());
+        }
+        const perCycle = (performance.now() - start) / 20;
+
+        // The bound only guards against an accidental O(n^2) or a per-check allocation.
+        expect(perCycle).toBeLessThan(10);
     });
 });

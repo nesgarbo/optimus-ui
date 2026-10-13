@@ -873,6 +873,33 @@ describe('DynamicDialog', () => {
             expect(headerElement.nativeElement.textContent.trim()).toBe('Template Dialog');
         });
 
+        it('should repaint when ddconfig is mutated in place without markForCheck (OnPush + KeyValueDiffer)', async () => {
+            fixture.changeDetectorRef.markForCheck();
+            await fixture.whenStable();
+            expect(fixture.debugElement.query(By.css('.p-dialog-title')).nativeElement.textContent.trim()).toBe('Template Dialog');
+
+            mockConfig.header = 'Mutated header';
+            mockConfig.footer = 'Mutated footer';
+            // A parent change detection cycle: ngDoCheck runs, the differ sees the mutation and marks the view dirty. No markForCheck here.
+            fixture.componentRef.hostView.detectChanges();
+
+            expect(fixture.debugElement.query(By.css('.p-dialog-title')).nativeElement.textContent.trim()).toBe('Mutated header');
+            expect(fixture.nativeElement.textContent).toContain('Mutated footer');
+        });
+
+        it('should keep ngDoCheck cheap: 1000 parent cycles over ddconfig stay far below a frame budget', async () => {
+            fixture.changeDetectorRef.markForCheck();
+            await fixture.whenStable();
+
+            const start = performance.now();
+            for (let i = 0; i < 1000; i++) {
+                component.onDoCheck();
+            }
+            const elapsed = performance.now() - start;
+
+            expect(elapsed).toBeLessThan(200);
+        });
+
         it('should display footer content', async () => {
             fixture.changeDetectorRef.markForCheck();
             await fixture.whenStable();
