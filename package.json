@@ -61,15 +61,15 @@
         "@openng/optimus-ui-styles": "workspace:*",
         "@openng/optimus-ui-themes": "workspace:*",
         "@openng/optimus-ui-utils": "workspace:*",
-        "@typescript-eslint/eslint-plugin": "^8.71.1",
-        "@typescript-eslint/parser": "^8.71.1",
+        "@typescript-eslint/eslint-plugin": "^8.71.2",
+        "@typescript-eslint/parser": "^8.71.2",
         "cross-env": "catalog:",
         "eslint": "^10.12.0",
         "eslint-config-prettier": "^10.1.8",
         "fs-extra": "catalog:",
         "glob": "catalog:",
         "globals": "^17.13.0",
-        "lefthook": "^2.2.0",
+        "lefthook": "^2.2.1",
         "ng-packagr": "catalog:angular22",
         "prettier": "catalog:",
         "rimraf": "catalog:",
@@ -79,7 +79,7 @@
     "publishConfig": {
         "access": "public"
     },
-    "packageManager": "pnpm@12.10.1",
+    "packageManager": "pnpm@12.11.2",
     "engines": {
         "node": "^22.22.3 || ^24.15.0 || >=26.0.0"
     }
