@@ -14,6 +14,13 @@ import { Code } from '@/domain/code';
                 <i>contentChild()</i> and <i>contentChildren()</i>. No component uses &#64;Input, &#64;Output, &#64;ViewChild, &#64;ContentChild, &#64;HostListener or &#64;HostBinding. Bindings in a template do not change: <i>[value]</i>,
                 <i>[(visible)]</i> and <i>(onClick)</i> work as they did.
             </p>
+            <h3>Let ng update do the first pass</h3>
+            <p>
+                <i>ng update &#64;openng/optimus-ui</i> runs the <i>migrate-signals-v3</i> migration. It rewrites what it can prove: the read of a member that is a signal now (<i>table.rows</i> becomes <i>table.rows()</i>) and the assignment to a
+                model (<i>table.first = 20</i> becomes <i>table.first.set(20)</i>), on a reference with a declared type, and the <i>instance.x</i> reads in <i>pt</i> functions. It does not guess the rest: an assignment to an input, a <i>pipe</i> on
+                an output, a <i>QueryList</i> and the <i>pt</i> members that are a signal in some classes and a plain property in others get a <i>TODO(optimus-ui 3.0)</i> comment. It does not change the templates, because the bindings are the same.
+                Run it on a clean git tree, review the diff and look for the TODO comments.
+            </p>
             <h3>What changes in your code</h3>
             <ul>
                 <li><b>Read a property as a function.</b> A component instance that you reach with a template reference or <i>viewChild</i> gives its inputs as signals: <i>table.rows()</i>, <i>select.options()</i>, <i>dialog.visible()</i>.</li>
@@ -65,12 +72,17 @@ import { Code } from '@/domain/code';
             <p>
                 <i>pButton</i> gives the effective <i>label</i>, <i>icon</i>, <i>loading</i> and <i>severity</i>, with <i>buttonProps</i> applied, in <i>_label()</i>, <i>_icon()</i>, <i>_loading()</i> and <i>_severity()</i>. Chip does the same with
                 <i>chipProps</i> (<i>_label()</i>, <i>_icon()</i>...) and <i>visible</i> is a signal. Fieldset <i>collapsed</i> and Inplace <i>active</i> are inputs, and the live state is in <i>_collapsed()</i> and <i>_active()</i>. The
-                <i>onActivate</i> and <i>onDeactivate</i> events of Inplace carry an <i>Event</i> or nothing. p-chart <i>data</i> and <i>options</i> are read only signals.
+                <i>onActivate</i> and <i>onDeactivate</i> events of Inplace carry an <i>Event</i> or nothing. p-chart <i>data</i> and <i>options</i> are read only signals. p-chart also loads Chart.js with a dynamic <i>import()</i>, so it leaves the
+                main bundle and the chart is created a moment after the view. <i>chart.chart</i> is <i>null</i> until the chunk loads and <i>getBase64Image()</i> returns <i>undefined</i> meanwhile: if you read the instance or export the image right
+                after the render, wait until it exists. A change of <i>data</i> or <i>options</i> during the load joins the creation that is pending.
             </p>
             <h3>Behavior that is different from 2.x</h3>
             <p>
-                <i>wheel</i> of <i>p-chart-zoom</i> asks for Ctrl by default, so a bare wheel no longer takes the scroll of the page; pass <i>[wheel]="true"</i> to get the old behavior. The <i>Table</i> and the sub menus stay with the default change
-                detection, because rows and items are mutated in place and OnPush cannot see that. The effective state in the signals above is the one to read; the input is what was bound.
+                <i>wheel</i> of <i>p-chart-zoom</i> asks for Ctrl by default, so a bare wheel no longer takes the scroll of the page; pass <i>[wheel]="true"</i> to get the old behavior. Table and TreeTable keep the default change detection, and
+                changing a row or a node in place still repaints them. The menus (Menu, Menubar, MegaMenu, TieredMenu, ContextMenu and PanelMenu), DynamicDialog and OrganizationChart use OnPush, and they check the simple properties that their
+                template reads (<i>label</i>, <i>disabled</i>, <i>visible</i>, <i>icon</i>, <i>badge</i>, <i>expanded</i>, <i>header</i>, <i>footer</i>...) on each cycle, so <i>item.disabled = true</i> still works. They do not see a change inside a
+                nested object (<i>item.style.color</i>, <i>ddconfig.style.width</i>), and they do not see children added to <i>item.items</i>: assign a new object, or a new <i>model</i>, for those. The effective state in the signals above is the one
+                to read; the input is what was bound.
             </p>
         </app-docsectiontext>
     `
